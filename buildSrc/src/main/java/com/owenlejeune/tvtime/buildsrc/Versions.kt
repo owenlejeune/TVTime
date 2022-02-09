@@ -5,6 +5,8 @@ object Versions {
     const val ktlint = "0.43.2"
     const val compose = "1.1.0-rc03"
     const val compose_material3 = "1.0.0-alpha04"
+    const val compose_accompanist = "0.22.1-rc"
+    const val compose_navigation = "2.4.0"
     const val gradle = "7.1.0"
     const val junit = "4.13.2"
     const val androidx_junit = "1.1.3"

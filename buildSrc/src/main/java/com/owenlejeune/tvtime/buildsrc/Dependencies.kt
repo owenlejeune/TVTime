@@ -9,10 +9,13 @@ object Dependencies {
 
     object Compose {
         const val material3 = "androidx.compose.material3:material3:${Versions.compose_material3}"
+        const val material = "androidx.compose.material:material:${Versions.compose}"
         const val ui = "androidx.compose.ui:ui:${Versions.compose}"
         const val uiToolingPreview = "androidx.compose.ui:ui-tooling-preview:${Versions.compose}"
         const val uiTooling = "androidx.compose.ui:ui-tooling:${Versions.compose}"
         const val activity = "androidx.activity:activity-compose:${Versions.activity_compose}"
+        const val accompanistSystemUi = "com.google.accompanist:accompanist-systemuicontroller:${Versions.compose_accompanist}"
+        const val navigation = "androidx.navigation:navigation-compose:${Versions.compose_navigation}"
     }
 
     object Lifecycle {

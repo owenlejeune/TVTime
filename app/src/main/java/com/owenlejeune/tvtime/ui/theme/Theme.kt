@@ -1,10 +1,11 @@
 package com.owenlejeune.tvtime.ui.theme
 
+import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.lightColorScheme
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
 private val DarkColorPalette = darkColorScheme(
     primary = Purple200,
@@ -28,15 +29,27 @@ private val LightColorPalette = lightColorScheme(
 )
 
 @Composable
-fun TVTimeTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable () -> Unit) {
-    val colors = if (darkTheme) {
-        DarkColorPalette
-    } else {
-        LightColorPalette
+fun TVTimeTheme(
+    isDarkTheme: Boolean = isSystemInDarkTheme(),
+    isDynamicColor: Boolean = true,
+    content: @Composable () -> Unit) {
+    val dynamicColor = isDynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+    val colorScheme = when {
+        dynamicColor && isDarkTheme -> {
+            dynamicDarkColorScheme(LocalContext.current)
+        }
+        dynamicColor && !isDarkTheme -> {
+            dynamicLightColorScheme(LocalContext.current)
+        }
+        isDarkTheme -> DarkColorPalette
+        else -> LightColorPalette
     }
 
+    val systemUiController = rememberSystemUiController()
+    systemUiController.setStatusBarColor(colorScheme.background, !isDarkTheme)
+
     MaterialTheme(
-        colorScheme = colors,
+        colorScheme = colorScheme,
         typography = Typography,
         content = content
     )
