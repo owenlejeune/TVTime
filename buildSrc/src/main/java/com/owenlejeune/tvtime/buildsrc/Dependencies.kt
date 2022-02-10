@@ -5,6 +5,7 @@ object Dependencies {
     object AndroidX {
         const val appCompat = "androidx.appcompat:appcompat:${Versions.androidx}"
         const val ktxCore = "androidx.core:core-ktx:${Versions.core_ktx}"
+        const val paging = "androidx.paging:paging-common-ktx:${Versions.paging}"
     }
 
     object Compose {
@@ -16,6 +17,7 @@ object Dependencies {
         const val activity = "androidx.activity:activity-compose:${Versions.activity_compose}"
         const val accompanistSystemUi = "com.google.accompanist:accompanist-systemuicontroller:${Versions.compose_accompanist}"
         const val navigation = "androidx.navigation:navigation-compose:${Versions.compose_navigation}"
+        const val paging = "androidx.paging:paging-compose:${Versions.compose_paging}"
     }
 
     object Lifecycle {
@@ -46,5 +48,9 @@ object Dependencies {
 
     object DI {
         const val koin = "io.insert-koin:koin-android:${Versions.koin}"
+    }
+
+    object Coil {
+        const val coil = "io.coil-kt:coil-compose:${Versions.coil}"
     }
 }

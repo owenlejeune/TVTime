@@ -6,6 +6,7 @@ object Versions {
     const val compose_material3 = "1.0.0-alpha04"
     const val compose_accompanist = "0.22.1-rc"
     const val compose_navigation = "2.4.0"
+    const val compose_paging = "1.0.0-alpha04"
     const val gradle = "7.1.0"
     const val junit = "4.13.2"
     const val androidx_junit = "1.1.3"
@@ -19,5 +20,7 @@ object Versions {
     const val stetho = "1.6.0"
     const val gson = "2.8.7"
     const val koin = "3.1.4"
+    const val paging = "3.1.0"
+    const val coil = "1.4.0"
 
 }

@@ -38,6 +38,7 @@ android {
     }
     kotlinOptions {
         jvmTarget = '1.8'
+        useIR = true
     }
     buildFeatures {
         compose true
@@ -55,6 +56,7 @@ android {
 dependencies {
 
     implementation Dependencies.AndroidX.ktxCore
+    implementation Dependencies.AndroidX.paging
 
     implementation Dependencies.Compose.ui
     implementation Dependencies.Compose.material3
@@ -63,6 +65,7 @@ dependencies {
     implementation Dependencies.Compose.activity
     implementation Dependencies.Compose.accompanistSystemUi
     implementation Dependencies.Compose.navigation
+    implementation Dependencies.Compose.paging
 
     implementation Dependencies.Lifecycle.runtime
 
@@ -73,6 +76,8 @@ dependencies {
     implementation Dependencies.Network.stethoOkHttp
 
     implementation Dependencies.DI.koin
+
+    implementation Dependencies.Coil.coil
 
     testImplementation Dependencies.Testing.junit
     androidTestImplementation Dependencies.Testing.androidXJunit
