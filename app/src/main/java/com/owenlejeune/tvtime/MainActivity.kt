@@ -1,11 +1,18 @@
 package com.owenlejeune.tvtime
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.rememberSplineBasedDecay
 import androidx.compose.material.Scaffold
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavController
@@ -35,10 +42,14 @@ class MainActivity : ComponentActivity() {
 fun MyApp() {
     TVTimeTheme {
         val navController = rememberNavController()
-
         val appBarTitle = remember { mutableStateOf(NavItems.Items[0].name) }
+        val decayAnimationSpec = rememberSplineBasedDecay<Float>()
+        val scrollBehavior = remember(decayAnimationSpec) {
+            TopAppBarDefaults.exitUntilCollapsedScrollBehavior(decayAnimationSpec)
+        }
 
         Scaffold(
+            modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
             backgroundColor = MaterialTheme.colorScheme.background,
             bottomBar = {
                 BottomNavBar(
@@ -47,7 +58,13 @@ fun MyApp() {
                 )
             },
             topBar = {
-                TopBar(title = appBarTitle)
+                TopBar(
+                    title = appBarTitle,
+                    scrollBehavior = scrollBehavior
+                )
+            },
+            floatingActionButton = {
+                SearchFab()
             }
         ) {
             NavigationRoutes(navController = navController)
@@ -57,9 +74,10 @@ fun MyApp() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun TopBar(title: MutableState<String>) {
+private fun TopBar(title: MutableState<String>, scrollBehavior: TopAppBarScrollBehavior) {
     LargeTopAppBar(
-        title = { Text(text = title.value) }
+        title = { Text(text = title.value) },
+        scrollBehavior = scrollBehavior
     )
 }
 
@@ -106,6 +124,16 @@ private fun NavigationRoutes(navController: NavHostController) {
         composable(NavItems.Settings.route) {
             SettingsTab()
         }
+    }
+}
+
+@Composable
+private fun SearchFab() {
+    val context = LocalContext.current
+    FloatingActionButton(onClick = {
+        Toast.makeText(context, "Search Clicked!", Toast.LENGTH_SHORT).show()
+    }) {
+        Icon(Icons.Filled.Search, "")
     }
 }
 
