@@ -3,10 +3,12 @@ package com.owenlejeune.tvtime
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.rememberSplineBasedDecay
 import androidx.compose.material.Scaffold
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavController
@@ -27,23 +29,51 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MyApp() {
     TVTimeTheme {
         val navController = rememberNavController()
+
+        val appBarTitle = remember { mutableStateOf(NavItems.Items[0].name) }
+
         Scaffold(
             backgroundColor = MaterialTheme.colorScheme.background,
-            bottomBar = { Navbar(navController) }
+            bottomBar = {
+                BottomNavBar(
+                    navController = navController,
+                    appBarTitle = appBarTitle
+                )
+            },
+            topBar = {
+                TopBar(title = appBarTitle)
+            }
         ) {
             NavigationRoutes(navController = navController)
         }
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun Navbar(navController: NavController) {
+private fun TopBar(title: MutableState<String>) {
+    val decayAnimationSpec = rememberSplineBasedDecay<Float>()
+    val scrollBehavior = remember(decayAnimationSpec) {
+        TopAppBarDefaults.exitUntilCollapsedScrollBehavior(decayAnimationSpec)
+    }
+
+    LargeTopAppBar(
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        title = { Text(text = title.value) },
+        scrollBehavior = scrollBehavior
+    )
+}
+
+@Composable
+private fun BottomNavBar(navController: NavController, appBarTitle: MutableState<String>) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
+
     NavigationBar {
         NavItems.Items.forEachIndexed { index, item ->
             NavigationBarItem(
@@ -51,6 +81,7 @@ private fun Navbar(navController: NavController) {
                 label = { Text(item.name) },
                 selected = currentRoute == item.route,
                 onClick = {
+                    appBarTitle.value = item.name
                     navController.navigate(item.route) {
                         navController.graph.startDestinationRoute?.let { screenRoute ->
                             popUpTo(screenRoute) {

@@ -3,11 +3,11 @@ package com.owenlejeune.tvtime.ui.components
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 
 @Composable
 fun MoviesTab() {
@@ -18,7 +18,7 @@ fun MoviesTab() {
     ) {
         Text(
             text = "Movies Tab",
-            color = Color.White
+            color = MaterialTheme.colorScheme.onBackground
         )
     }
 }
@@ -32,7 +32,7 @@ fun TvTab() {
     ) {
         Text(
             text = "TV Tab",
-            color = Color.White
+            color = MaterialTheme.colorScheme.onBackground
         )
     }
 }
@@ -46,7 +46,7 @@ fun FavouritesTab() {
     ) {
         Text(
             text = "Favourites Tab",
-            color = Color.White
+            color = MaterialTheme.colorScheme.onBackground
         )
     }
 }
@@ -60,7 +60,7 @@ fun SettingsTab() {
     ) {
         Text(
             text = "Settings Tab",
-            color = Color.White
+            color = MaterialTheme.colorScheme.onBackground
         )
     }
 }
