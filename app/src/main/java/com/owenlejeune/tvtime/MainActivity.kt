@@ -5,6 +5,8 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.rememberSplineBasedDecay
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Scaffold
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
@@ -66,8 +68,10 @@ fun MyApp() {
             floatingActionButton = {
                 SearchFab()
             }
-        ) {
-            NavigationRoutes(navController = navController)
+        ) { innerPadding ->
+            Box(modifier = Modifier.padding(innerPadding)) {
+                NavigationRoutes(navController = navController)
+            }
         }
     }
 }

@@ -2,23 +2,25 @@ package com.owenlejeune.tvtime.ui.screens
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import com.owenlejeune.tvtime.ui.components.PaletteView
+import com.owenlejeune.tvtime.ui.components.TopLevelSwitch
 
 @Composable
 fun SettingsTab() {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .wrapContentSize(Alignment.Center)
-    ) {
-        Text(
-            text = "Settings Tab",
-            color = MaterialTheme.colorScheme.onBackground
+    Column(modifier = Modifier.fillMaxSize()) {
+        val showPalette = remember { mutableStateOf(false) }
+        TopLevelSwitch(
+            text = "Show Palette",
+            onCheckChanged = { isChecked ->
+                showPalette.value = isChecked
+            }
         )
+        if (showPalette.value) {
+            PaletteView()
+        }
     }
 }
