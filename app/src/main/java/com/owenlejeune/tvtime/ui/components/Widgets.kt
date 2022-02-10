@@ -11,6 +11,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -144,4 +148,20 @@ fun TopLevelSwitchPreview() {
     TopLevelSwitch("This is a switch") { isChecked ->
         Toast.makeText(context, "Switch changed to $isChecked", Toast.LENGTH_SHORT).show()
     }
+}
+
+@Composable
+fun SearchFab() {
+    val context = LocalContext.current
+    FloatingActionButton(onClick = {
+        Toast.makeText(context, "Search Clicked!", Toast.LENGTH_SHORT).show()
+    }) {
+        Icon(Icons.Filled.Search, "")
+    }
+}
+
+@Preview
+@Composable
+fun SearchFabPreview() {
+    SearchFab()
 }

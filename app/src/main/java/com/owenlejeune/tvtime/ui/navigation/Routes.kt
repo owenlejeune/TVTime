@@ -4,11 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.owenlejeune.tvtime.MainAppView
-import com.owenlejeune.tvtime.ui.screens.FavouritesTab
-import com.owenlejeune.tvtime.ui.screens.MoviesTab
-import com.owenlejeune.tvtime.ui.screens.SettingsTab
-import com.owenlejeune.tvtime.ui.screens.TvTab
+import com.owenlejeune.tvtime.ui.screens.*
 
 @Composable
 fun MainNavigationRoutes(navController: NavHostController) {
