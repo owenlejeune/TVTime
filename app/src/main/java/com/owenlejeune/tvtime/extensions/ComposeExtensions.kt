@@ -19,7 +19,7 @@ fun <T: Any> LazyGridScope.items(
 @OptIn(ExperimentalFoundationApi::class)
 fun <T: Any> LazyGridScope.items(
     items: List<T>,
-    itemContent: @Composable (value: T?) -> Unit
+    itemContent: @Composable (value: T) -> Unit
 ) {
     items(items.size) { index ->
         itemContent(items[index])

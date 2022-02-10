@@ -1,24 +1,19 @@
 package com.owenlejeune.tvtime.ui.screens
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
+import com.owenlejeune.tvtime.api.tmdb.TvService
+import com.owenlejeune.tvtime.ui.components.PosterGrid
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun TvTab() {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .wrapContentSize(Alignment.Center)
-    ) {
-        Text(
-            text = "TV Tab",
-            color = MaterialTheme.colorScheme.onBackground
-        )
+    PosterGrid { tvList ->
+        val service = TvService()
+        service.getPopularTv { isSuccessful, response ->
+            if (isSuccessful) {
+                tvList.value = response!!.tv
+            }
+        }
     }
 }

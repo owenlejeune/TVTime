@@ -26,6 +26,10 @@ class TmdbClient: KoinComponent {
         return client.create(MoviesApi::class.java)
     }
 
+    fun createTvService(): TvApi {
+        return client.create(TvApi::class.java)
+    }
+
     private inner class TmdbInterceptor: Interceptor {
         override fun intercept(chain: Interceptor.Chain): Response {
             val apiParam = QueryParam("api_key", BuildConfig.TMDB_ApiKey)
