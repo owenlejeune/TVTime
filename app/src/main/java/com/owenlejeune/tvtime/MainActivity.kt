@@ -3,12 +3,9 @@ package com.owenlejeune.tvtime
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.animation.rememberSplineBasedDecay
 import androidx.compose.material.Scaffold
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavController
@@ -17,7 +14,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.owenlejeune.tvtime.ui.components.*
+import com.owenlejeune.tvtime.ui.components.NavItems
+import com.owenlejeune.tvtime.ui.screens.FavouritesTab
+import com.owenlejeune.tvtime.ui.screens.MoviesTab
+import com.owenlejeune.tvtime.ui.screens.SettingsTab
+import com.owenlejeune.tvtime.ui.screens.TvTab
 import com.owenlejeune.tvtime.ui.theme.TVTimeTheme
 
 class MainActivity : ComponentActivity() {
@@ -57,15 +58,8 @@ fun MyApp() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun TopBar(title: MutableState<String>) {
-    val decayAnimationSpec = rememberSplineBasedDecay<Float>()
-    val scrollBehavior = remember(decayAnimationSpec) {
-        TopAppBarDefaults.exitUntilCollapsedScrollBehavior(decayAnimationSpec)
-    }
-
     LargeTopAppBar(
-        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-        title = { Text(text = title.value) },
-        scrollBehavior = scrollBehavior
+        title = { Text(text = title.value) }
     )
 }
 
