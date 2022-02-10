@@ -37,55 +37,6 @@ import com.owenlejeune.tvtime.api.tmdb.model.MediaItem
 import com.owenlejeune.tvtime.extensions.dpToPx
 import com.owenlejeune.tvtime.extensions.listItems
 
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-fun PosterGrid(fetchMedia: (MutableState<List<MediaItem>>) -> Unit) {
-    val mediaList = remember { mutableStateOf(emptyList<MediaItem>()) }
-    fetchMedia(mediaList)
-
-    LazyVerticalGrid(
-        cells = GridCells.Fixed(count = 3),
-        contentPadding = PaddingValues(8.dp)
-    ) {
-        listItems(mediaList.value) { item ->
-            PosterItem(mediaItem = item)
-        }
-    }
-}
-
-@Composable
-fun PosterItem(mediaItem: MediaItem) {
-    val context = LocalContext.current
-    val poster = TmdbUtils.getFullPosterPath(mediaItem)
-    Image(
-        painter = rememberImagePainter(
-            data = poster,
-            builder = {
-                transformations(RoundedCornersTransformation(5f.dpToPx(context)))
-                placeholder(R.drawable.placeholder)
-            }
-        ),
-        contentDescription = mediaItem.title,
-        modifier = Modifier
-            .size(190.dp)
-            .padding(5.dp)
-            .clickable {
-                Toast
-                    .makeText(context, "${mediaItem.title} clicked", Toast.LENGTH_SHORT)
-                    .show()
-            }
-    )
-}
-
-@Preview
-@Composable
-fun PosterItemPreview() {
-    PosterItem(mediaItem = object : MediaItem(
-        title = "Deadpool",
-        posterPath = "/fSRb7vyIP8rQpL0I47P3qUsEKX3.jpg"
-    ){})
-}
-
 @Composable
 fun TopLevelSwitch(
     text: String,
@@ -134,7 +85,7 @@ fun TopLevelSwitch(
 }
 
 @Composable
-fun CustomSwitch(
+private fun CustomSwitch(
     modifier: Modifier = Modifier,
     switchState: MutableState<Boolean> = remember { mutableStateOf(false) },
     onCheckChanged: (Boolean) -> Unit = {}
@@ -192,55 +143,5 @@ fun TopLevelSwitchPreview() {
     val context = LocalContext.current
     TopLevelSwitch("This is a switch") { isChecked ->
         Toast.makeText(context, "Switch changed to $isChecked", Toast.LENGTH_SHORT).show()
-    }
-}
-
-@Composable
-fun PaletteView() {
-    class PaletteItem(val color: Color, val textColor: Color, val text: String)
-
-    val items = listOf(
-        PaletteItem(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.onPrimary, "primary"),
-        PaletteItem(MaterialTheme.colorScheme.primaryContainer, MaterialTheme.colorScheme.onPrimaryContainer, "primary container"),
-        PaletteItem(MaterialTheme.colorScheme.inversePrimary, Color.Black, "inverse primary"),
-        PaletteItem(MaterialTheme.colorScheme.secondary, MaterialTheme.colorScheme.onSecondary, "secondary"),
-        PaletteItem(MaterialTheme.colorScheme.secondaryContainer, MaterialTheme.colorScheme.onSecondaryContainer, "secondary container"),
-        PaletteItem(MaterialTheme.colorScheme.tertiary, MaterialTheme.colorScheme.onTertiary, "tertiary"),
-        PaletteItem(MaterialTheme.colorScheme.tertiaryContainer, MaterialTheme.colorScheme.onTertiaryContainer, "tertiary container"),
-        PaletteItem(MaterialTheme.colorScheme.background, MaterialTheme.colorScheme.onBackground, "background"),
-        PaletteItem(MaterialTheme.colorScheme.surface, MaterialTheme.colorScheme.onSurface, "surface"),
-        PaletteItem(MaterialTheme.colorScheme.surfaceVariant, MaterialTheme.colorScheme.onSurfaceVariant, "surface variant"),
-        PaletteItem(MaterialTheme.colorScheme.inverseSurface, MaterialTheme.colorScheme.inverseOnSurface, "inverse surface"),
-        PaletteItem(MaterialTheme.colorScheme.error, MaterialTheme.colorScheme.onError, "error"),
-        PaletteItem(MaterialTheme.colorScheme.errorContainer, MaterialTheme.colorScheme.onErrorContainer, "primary"),
-        PaletteItem(MaterialTheme.colorScheme.outline, Color.Black, "outline")
-    )
-
-    LazyColumn(modifier = Modifier.fillMaxSize()) {
-        listItems(items) { item ->
-            PaletteItemView(
-                surfaceColor = item.color,
-                textColor = item.textColor,
-                text = item.text
-            )
-        }
-    }
-}
-
-@Composable
-fun PaletteItemView(surfaceColor: Color, textColor: Color, text: String) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(100.dp)
-            .padding(12.dp),
-        shape = RoundedCornerShape(30.dp),
-        backgroundColor = surfaceColor
-    ) {
-        Text(
-            text = text,
-            color = textColor,
-            modifier = Modifier.padding(30.dp, 12.dp)
-        )
     }
 }
