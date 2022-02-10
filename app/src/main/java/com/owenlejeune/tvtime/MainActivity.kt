@@ -18,16 +18,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavController
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.owenlejeune.tvtime.ui.components.NavItems
-import com.owenlejeune.tvtime.ui.screens.FavouritesTab
-import com.owenlejeune.tvtime.ui.screens.MoviesTab
-import com.owenlejeune.tvtime.ui.screens.SettingsTab
-import com.owenlejeune.tvtime.ui.screens.TvTab
+import com.owenlejeune.tvtime.ui.navigation.BottomNavItem
+import com.owenlejeune.tvtime.ui.navigation.BottomNavigationRoutes
+import com.owenlejeune.tvtime.ui.navigation.MainNavigationRoutes
 import com.owenlejeune.tvtime.ui.theme.TVTimeTheme
 
 class MainActivity : ComponentActivity() {
@@ -39,49 +34,58 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MyApp() {
     TVTimeTheme {
-        val navController = rememberNavController()
-        val appBarTitle = remember { mutableStateOf(NavItems.Items[0].name) }
-        val decayAnimationSpec = rememberSplineBasedDecay<Float>()
-        val scrollBehavior = remember(decayAnimationSpec) {
-            TopAppBarDefaults.exitUntilCollapsedScrollBehavior(decayAnimationSpec)
+
+        val appNavController = rememberNavController()
+        Box {
+            MainNavigationRoutes(navController = appNavController)
         }
 
-        val navBackStackEntry by navController.currentBackStackEntryAsState()
-        val currentRoute = navBackStackEntry?.destination?.route
-
-        Scaffold(
-            modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-            backgroundColor = MaterialTheme.colorScheme.background,
-            bottomBar = {
-                BottomNavBar(
-                    navController = navController,
-                    appBarTitle = appBarTitle
-                )
-            },
-            topBar = {
-                TopBar(
-                    title = appBarTitle,
-                    scrollBehavior = scrollBehavior
-                )
-            },
-            floatingActionButton = {
-                if (currentRoute in listOf(NavItems.Movies.route, NavItems.TV.route)) {
-                    SearchFab()
-                }
-            }
-        ) { innerPadding ->
-            Box(modifier = Modifier.padding(innerPadding)) {
-                NavigationRoutes(navController = navController)
-            }
-        }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun MainAppView(appNavController: NavController) {
+    val navController = rememberNavController()
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+
+    val appBarTitle = remember { mutableStateOf(BottomNavItem.Items[0].name) }
+    val decayAnimationSpec = rememberSplineBasedDecay<Float>()
+    val scrollBehavior = remember(decayAnimationSpec) {
+        TopAppBarDefaults.exitUntilCollapsedScrollBehavior(decayAnimationSpec)
+    }
+
+    Scaffold(
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        backgroundColor = MaterialTheme.colorScheme.background,
+        bottomBar = {
+            BottomNavBar(
+                navController = navController,
+                appBarTitle = appBarTitle
+            )
+        },
+        topBar = {
+            TopBar(
+                title = appBarTitle,
+                scrollBehavior = scrollBehavior
+            )
+        },
+        floatingActionButton = {
+            if (currentRoute in listOf(BottomNavItem.Movies.route, BottomNavItem.TV.route)) {
+                SearchFab()
+            }
+        }
+    ) { innerPadding ->
+        Box(modifier = Modifier.padding(innerPadding)) {
+            BottomNavigationRoutes(navController = navController)
+        }
+    }
+}
+
 @Composable
 private fun TopBar(title: MutableState<String>, scrollBehavior: TopAppBarScrollBehavior) {
     LargeTopAppBar(
@@ -96,43 +100,37 @@ private fun BottomNavBar(navController: NavController, appBarTitle: MutableState
     val currentRoute = navBackStackEntry?.destination?.route
 
     NavigationBar {
-        NavItems.Items.forEachIndexed { index, item ->
+        BottomNavItem.Items.forEach { item ->
             NavigationBarItem(
                 icon = { Icon(painter = painterResource(id = item.icon), contentDescription = null) },
                 label = { Text(item.name) },
                 selected = currentRoute == item.route,
                 onClick = {
-                    appBarTitle.value = item.name
-                    navController.navigate(item.route) {
-                        navController.graph.startDestinationRoute?.let { screenRoute ->
-                            popUpTo(screenRoute) {
-                                saveState = true
-                            }
-                        }
-                        launchSingleTop = true
-                        restoreState = true
-                    }
+                    onBottomAppBarItemClicked(
+                        navController = navController,
+                        appBarTitle = appBarTitle,
+                        item = item
+                    )
                 }
             )
         }
     }
 }
 
-@Composable
-private fun NavigationRoutes(navController: NavHostController) {
-    NavHost(navController = navController, startDestination = NavItems.Movies.route) {
-        composable(NavItems.Movies.route) {
-            MoviesTab()
+private fun onBottomAppBarItemClicked(
+    navController: NavController,
+    appBarTitle: MutableState<String>,
+    item: BottomNavItem
+) {
+    appBarTitle.value = item.name
+    navController.navigate(item.route) {
+        navController.graph.startDestinationRoute?.let { screenRoute ->
+            popUpTo(screenRoute) {
+                saveState = true
+            }
         }
-        composable(NavItems.TV.route) {
-            TvTab()
-        }
-        composable(NavItems.Favourites.route) {
-            FavouritesTab()
-        }
-        composable(NavItems.Settings.route) {
-            SettingsTab()
-        }
+        launchSingleTop = true
+        restoreState = true
     }
 }
 
