@@ -22,6 +22,8 @@ android {
         vectorDrawables {
             useSupportLibrary true
         }
+
+        buildConfigField("String", "TMDB_ApiKey", TMDB_ApiKey)
     }
 
     buildTypes {
@@ -53,14 +55,25 @@ android {
 dependencies {
 
     implementation Dependencies.AndroidX.ktxCore
+
     implementation Dependencies.Compose.ui
     implementation Dependencies.Compose.material3
     implementation Dependencies.Compose.material
     implementation Dependencies.Compose.uiToolingPreview
-    implementation Dependencies.Lifecycle.runtime
     implementation Dependencies.Compose.activity
     implementation Dependencies.Compose.accompanistSystemUi
     implementation Dependencies.Compose.navigation
+
+    implementation Dependencies.Lifecycle.runtime
+
+    implementation Dependencies.Network.retrofit
+    implementation Dependencies.Network.retrofitGson
+    implementation Dependencies.Network.gson
+    implementation Dependencies.Network.stetho
+    implementation Dependencies.Network.stethoOkHttp
+
+    implementation Dependencies.DI.koin
+
     testImplementation Dependencies.Testing.junit
     androidTestImplementation Dependencies.Testing.androidXJunit
     androidTestImplementation Dependencies.Testing.espressoCore

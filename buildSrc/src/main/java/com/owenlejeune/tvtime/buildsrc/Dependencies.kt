@@ -35,4 +35,16 @@ object Dependencies {
         const val kotlinGradle = "org.jetbrains.kotlin:kotlin-gradle-plugin:${Versions.kotlin}"
         const val extensions = "org.jetbrains.kotlin:kotlin-android-extensions:${Versions.kotlin}"
     }
+
+    object Network {
+        const val retrofit = "com.squareup.retrofit2:retrofit:${Versions.retrofit}"
+        const val retrofitGson = "com.squareup.retrofit2:converter-gson:${Versions.retrofit}"
+        const val gson = "com.google.code.gson:gson:${Versions.gson}"
+        const val stetho = "com.facebook.stetho:stetho:${Versions.stetho}"
+        const val stethoOkHttp = "com.facebook.stetho:stetho-okhttp3:${Versions.stetho}"
+    }
+
+    object DI {
+        const val koin = "io.insert-koin:koin-android:${Versions.koin}"
+    }
 }
