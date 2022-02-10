@@ -50,6 +50,9 @@ fun MyApp() {
             TopAppBarDefaults.exitUntilCollapsedScrollBehavior(decayAnimationSpec)
         }
 
+        val navBackStackEntry by navController.currentBackStackEntryAsState()
+        val currentRoute = navBackStackEntry?.destination?.route
+
         Scaffold(
             modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
             backgroundColor = MaterialTheme.colorScheme.background,
@@ -66,7 +69,9 @@ fun MyApp() {
                 )
             },
             floatingActionButton = {
-                SearchFab()
+                if (currentRoute in listOf(NavItems.Movies.route, NavItems.TV.route)) {
+                    SearchFab()
+                }
             }
         ) { innerPadding ->
             Box(modifier = Modifier.padding(innerPadding)) {
