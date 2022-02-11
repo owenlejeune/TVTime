@@ -51,7 +51,7 @@ fun MainAppView(appNavController: NavController) {
         }
     ) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)) {
-            BottomNavigationRoutes(navController = navController)
+            BottomNavigationRoutes(appNavController = appNavController, navController = navController)
         }
     }
 }

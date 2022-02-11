@@ -1,4 +1,4 @@
-package com.owenlejeune.tvtime.ui.screens
+package com.owenlejeune.tvtime.ui.screens.tabs
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize

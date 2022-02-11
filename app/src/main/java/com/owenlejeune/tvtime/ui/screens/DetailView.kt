@@ -1,4 +1,4 @@
-package com.owenlejeune.tvtime.ui.screens.tabs
+package com.owenlejeune.tvtime.ui.screens
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -8,16 +8,20 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavController
 
 @Composable
-fun FavouritesTab() {
+fun DetailView(
+    appNavController: NavController,
+    itemId: Int?
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
             .wrapContentSize(Alignment.Center)
     ) {
         Text(
-            text = "Favourites Tab",
+            text = itemId.toString(),
             color = MaterialTheme.colorScheme.onBackground
         )
     }
