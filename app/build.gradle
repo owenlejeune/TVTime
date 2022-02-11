@@ -1,6 +1,5 @@
-import com.owenlejeune.tvtime.buildsrc.Dependencies
-import com.owenlejeune.tvtime.buildsrc.Versions
 import com.owenlejeune.tvtime.buildsrc.Config
+import com.owenlejeune.tvtime.buildsrc.Versions
 
 plugins {
     id 'com.android.application'
@@ -55,36 +54,36 @@ android {
 
 dependencies {
 
-    implementation Dependencies.AndroidX.ktxCore
-    implementation Dependencies.AndroidX.paging
+    implementation "androidx.core:core-ktx:${Versions.core_ktx}"
+    implementation "androidx.paging:paging-common-ktx:${Versions.paging}"
 
-    implementation Dependencies.Compose.ui
-    implementation Dependencies.Compose.material3
-    implementation Dependencies.Compose.material
-    implementation Dependencies.Compose.uiToolingPreview
-    implementation Dependencies.Compose.activity
-    implementation Dependencies.Compose.accompanistSystemUi
-    implementation Dependencies.Compose.navigation
-    implementation Dependencies.Compose.paging
+    implementation "androidx.compose.ui:ui:${Versions.compose}"
+    implementation "androidx.compose.material3:material3:${Versions.compose_material3}"
+    implementation "androidx.compose.material:material:${Versions.compose}"
+    implementation "androidx.compose.ui:ui-tooling-preview:${Versions.compose}"
+    implementation "androidx.activity:activity-compose:${Versions.activity_compose}"
+    implementation "com.google.accompanist:accompanist-systemuicontroller:${Versions.compose_accompanist}"
+    implementation "androidx.navigation:navigation-compose:${Versions.compose_navigation}"
+    implementation "androidx.paging:paging-compose:${Versions.compose_paging}"
 
-    implementation Dependencies.Lifecycle.runtime
+    implementation "androidx.lifecycle:lifecycle-runtime-ktx:${Versions.lifecycle_runtime}"
 
-    implementation Dependencies.Network.retrofit
-    implementation Dependencies.Network.retrofitGson
-    implementation Dependencies.Network.gson
-    implementation Dependencies.Network.stetho
-    implementation Dependencies.Network.stethoOkHttp
+    implementation "com.squareup.retrofit2:retrofit:${Versions.retrofit}"
+    implementation "com.squareup.retrofit2:converter-gson:${Versions.retrofit}"
+    implementation "com.google.code.gson:gson:${Versions.gson}"
+    implementation "com.facebook.stetho:stetho:${Versions.stetho}"
+    implementation "com.facebook.stetho:stetho-okhttp3:${Versions.stetho}"
 
-    implementation Dependencies.DI.koin
+    implementation "io.insert-koin:koin-android:${Versions.koin}"
 
-    implementation Dependencies.Coil.coil
+    implementation "io.coil-kt:coil-compose:${Versions.coil}"
 
     //Coroutines
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.0'
 
-    testImplementation Dependencies.Testing.junit
-    androidTestImplementation Dependencies.Testing.androidXJunit
-    androidTestImplementation Dependencies.Testing.espressoCore
-    androidTestImplementation Dependencies.Testing.composeJunit
-    debugImplementation Dependencies.Compose.uiTooling
+    testImplementation "junit:junit:${Versions.junit}"
+    androidTestImplementation "androidx.test.ext:junit:${Versions.androidx_junit}"
+    androidTestImplementation "androidx.test.espresso:espresso-core:${Versions.espresso_core}"
+    androidTestImplementation "androidx.compose.ui:ui-test-junit4:${Versions.compose}"
+    debugImplementation "androidx.compose.ui:ui-tooling:${Versions.compose}"
 }
