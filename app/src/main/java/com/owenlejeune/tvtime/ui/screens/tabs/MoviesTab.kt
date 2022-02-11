@@ -5,6 +5,10 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavController
 import com.owenlejeune.tvtime.api.tmdb.MoviesService
 import com.owenlejeune.tvtime.ui.components.PosterGrid
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -14,9 +18,12 @@ fun MoviesTab(appNavController: NavController) {
 //    val movieListItems: LazyPagingItems<PopularMovie> = moviesList.collectAsLazyPagingItems()
     PosterGrid(appNavController = appNavController) { moviesList ->
         val service = MoviesService()
-        service.getPopularMovies { isSuccessful, response ->
-            if (isSuccessful) {
-                moviesList.value = response!!.movies
+        CoroutineScope(Dispatchers.IO).launch {
+            val response = service.getPopularMovies()
+            if (response.isSuccessful) {
+                withContext(Dispatchers.Main) {
+                    moviesList.value = response.body()!!.movies
+                }
             }
         }
     }
