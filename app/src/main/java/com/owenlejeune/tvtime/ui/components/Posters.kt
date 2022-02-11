@@ -1,6 +1,5 @@
 package com.owenlejeune.tvtime.ui.components
 
-import android.widget.Toast
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -15,25 +14,29 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import coil.compose.rememberImagePainter
 import coil.transform.RoundedCornersTransformation
 import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.api.tmdb.TmdbUtils
-import com.owenlejeune.tvtime.api.tmdb.model.MediaItem
+import com.owenlejeune.tvtime.api.tmdb.model.TmdbItem
 import com.owenlejeune.tvtime.extensions.dpToPx
 import com.owenlejeune.tvtime.extensions.listItems
 import com.owenlejeune.tvtime.ui.navigation.MainNavItem
+import com.owenlejeune.tvtime.ui.screens.DetailViewType
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun PosterGrid(
     appNavController: NavController,
-    fetchMedia: (MutableState<List<MediaItem>>) -> Unit
+    type: DetailViewType,
+    fetchMedia: (MutableState<List<TmdbItem>>) -> Unit
 ) {
-    val mediaList = remember { mutableStateOf(emptyList<MediaItem>()) }
+    val mediaList = remember { mutableStateOf(emptyList<TmdbItem>()) }
     fetchMedia(mediaList)
 
     LazyVerticalGrid(
@@ -41,36 +44,50 @@ fun PosterGrid(
         contentPadding = PaddingValues(8.dp)
     ) {
         listItems(mediaList.value) { item ->
-            PosterItem(appNavController = appNavController, mediaItem = item)
+            PosterItem(
+                appNavController = appNavController,
+                mediaItem = item,
+                type = type
+            )
         }
     }
 }
 
 @Composable
 fun PosterItem(
+    modifier: Modifier = Modifier,
     appNavController: NavController,
-    mediaItem: MediaItem
+    mediaItem: TmdbItem?,
+    type: DetailViewType? = null,
+    width: Dp = 127.dp,
+    height: Dp = 190.dp
 ) {
     val context = LocalContext.current
-    val poster = TmdbUtils.getFullPosterPath(mediaItem)
+    val poster = mediaItem?.let { TmdbUtils.getFullPosterPath(mediaItem) }
     Image(
-        painter = rememberImagePainter(
-            data = poster,
-            builder = {
-                transformations(RoundedCornersTransformation(5f.dpToPx(context)))
-                placeholder(R.drawable.placeholder)
-            }
-        ),
-        contentDescription = mediaItem.title,
-        modifier = Modifier
-            .size(190.dp)
+        painter = if (mediaItem != null) {
+            rememberImagePainter(
+                data = poster,
+                builder = {
+                    transformations(RoundedCornersTransformation(5f.dpToPx(context)))
+                    placeholder(R.drawable.placeholder)
+                }
+            )
+        } else {
+               rememberImagePainter(ContextCompat.getDrawable(context, R.drawable.placeholder))
+        },
+        contentDescription = mediaItem?.title,
+        modifier = modifier
+            .size(width = width, height = height)
             .padding(5.dp)
             .clickable {
-                appNavController.navigate("${MainNavItem.DetailView.route}/${mediaItem.id}")
-//                appNavController.n
-//                Toast
-//                    .makeText(context, "${mediaItem.title} clicked", Toast.LENGTH_SHORT)
-//                    .show()
+                type?.let {
+                    mediaItem?.let {
+                        appNavController.navigate(
+                            "${MainNavItem.DetailView.route}/${type}/${mediaItem.id}"
+                        )
+                    }
+                }
             }
     )
 }

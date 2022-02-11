@@ -7,7 +7,9 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.owenlejeune.tvtime.ui.screens.*
+import com.owenlejeune.tvtime.ui.screens.DetailView
+import com.owenlejeune.tvtime.ui.screens.DetailViewType
+import com.owenlejeune.tvtime.ui.screens.MainAppView
 import com.owenlejeune.tvtime.ui.screens.tabs.FavouritesTab
 import com.owenlejeune.tvtime.ui.screens.tabs.MoviesTab
 import com.owenlejeune.tvtime.ui.screens.tabs.SettingsTab
@@ -20,13 +22,17 @@ fun MainNavigationRoutes(navController: NavHostController) {
             MainAppView(appNavController = navController)
         }
         composable(
-            MainNavItem.DetailView.route.plus("/{ID_KEY}"),
-            arguments = listOf(navArgument("ID_KEY") { type = NavType.IntType })
+            MainNavItem.DetailView.route.plus("/{TYPE_KEY}/{ID_KEY}"),
+            arguments = listOf(
+                navArgument("ID_KEY") { type = NavType.IntType },
+                navArgument("TYPE_KEY") { type = NavType.EnumType(DetailViewType::class.java) }
+            )
         ) { navBackStackEntry ->
             val args = navBackStackEntry.arguments
             DetailView(
                 appNavController = navController,
-                itemId = navBackStackEntry.arguments?.getInt("ID_KEY")
+                itemId = args?.getInt("ID_KEY"),
+                type = args?.getSerializable("TYPE_KEY") as DetailViewType
             )
         }
     }

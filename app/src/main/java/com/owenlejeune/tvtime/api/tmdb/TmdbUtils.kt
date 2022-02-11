@@ -1,6 +1,6 @@
 package com.owenlejeune.tvtime.api.tmdb
 
-import com.owenlejeune.tvtime.api.tmdb.model.MediaItem
+import com.owenlejeune.tvtime.api.tmdb.model.TmdbItem
 
 object TmdbUtils {
 
@@ -8,8 +8,8 @@ object TmdbUtils {
         return "https://image.tmdb.org/t/p/original${posterPath}"
     }
 
-    fun getFullPosterPath(mediaItem: MediaItem): String {
-        return getFullPosterPath(mediaItem.posterPath)
+    fun getFullPosterPath(tmdbItem: TmdbItem): String {
+        return getFullPosterPath(tmdbItem.posterPath)
     }
 
 }
