@@ -43,7 +43,6 @@ fun DetailView(
         ) = createRefs()
 
         PosterItem(
-            appNavController = appNavController,
             mediaItem = mediaItem.value,
             modifier = Modifier
                 .constrainAs(posterImage) {

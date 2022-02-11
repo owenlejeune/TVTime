@@ -32,9 +32,8 @@ import com.owenlejeune.tvtime.ui.screens.DetailViewType
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun PosterGrid(
-    appNavController: NavController,
-    type: DetailViewType,
-    fetchMedia: (MutableState<List<TmdbItem>>) -> Unit
+    fetchMedia: (MutableState<List<TmdbItem>>) -> Unit = {},
+    onClick: (Int) -> Unit = {}
 ) {
     val mediaList = remember { mutableStateOf(emptyList<TmdbItem>()) }
     fetchMedia(mediaList)
@@ -45,9 +44,8 @@ fun PosterGrid(
     ) {
         listItems(mediaList.value) { item ->
             PosterItem(
-                appNavController = appNavController,
                 mediaItem = item,
-                type = type
+                onClick = onClick
             )
         }
     }
@@ -56,11 +54,10 @@ fun PosterGrid(
 @Composable
 fun PosterItem(
     modifier: Modifier = Modifier,
-    appNavController: NavController,
-    mediaItem: TmdbItem?,
-    type: DetailViewType? = null,
     width: Dp = 127.dp,
-    height: Dp = 190.dp
+    height: Dp = 190.dp,
+    onClick: (Int) -> Unit = {},
+    mediaItem: TmdbItem?
 ) {
     val context = LocalContext.current
     val poster = mediaItem?.let { TmdbUtils.getFullPosterPath(mediaItem) }
@@ -81,12 +78,8 @@ fun PosterItem(
             .size(width = width, height = height)
             .padding(5.dp)
             .clickable {
-                type?.let {
-                    mediaItem?.let {
-                        appNavController.navigate(
-                            "${MainNavItem.DetailView.route}/${type}/${mediaItem.id}"
-                        )
-                    }
+                mediaItem?.let {
+                    onClick(mediaItem.id)
                 }
             }
     )

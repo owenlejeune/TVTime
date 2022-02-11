@@ -5,6 +5,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavController
 import com.owenlejeune.tvtime.api.tmdb.MoviesService
 import com.owenlejeune.tvtime.ui.components.PosterGrid
+import com.owenlejeune.tvtime.ui.navigation.MainNavItem
 import com.owenlejeune.tvtime.ui.screens.DetailViewType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -17,15 +18,22 @@ fun MoviesTab(appNavController: NavController) {
 //    val moviesViewModel = viewModel(PopularMovieViewModel::class.java)
 //    val moviesList = moviesViewModel.moviePage
 //    val movieListItems: LazyPagingItems<PopularMovie> = moviesList.collectAsLazyPagingItems()
-    PosterGrid(appNavController = appNavController, type = DetailViewType.MOVIE) { moviesList ->
-        val service = MoviesService()
-        CoroutineScope(Dispatchers.IO).launch {
-            val response = service.getPopularMovies()
-            if (response.isSuccessful) {
-                withContext(Dispatchers.Main) {
-                    moviesList.value = response.body()!!.movies
+    PosterGrid(
+        fetchMedia =  { moviesList ->
+            val service = MoviesService()
+            CoroutineScope(Dispatchers.IO).launch {
+                val response = service.getPopularMovies()
+                if (response.isSuccessful) {
+                    withContext(Dispatchers.Main) {
+                        moviesList.value = response.body()!!.movies
+                    }
                 }
             }
+        },
+        onClick = { id ->
+            appNavController.navigate(
+                "${MainNavItem.DetailView.route}/${DetailViewType.MOVIE}/${id}"
+            )
         }
-    }
+    )
 }
