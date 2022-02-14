@@ -85,6 +85,8 @@ private fun BottomNavBar(navController: NavController, appBarTitle: MutableState
             )
         }
     }
+
+    appBarTitle.value = BottomNavItem.getByRoute(currentRoute)?.name ?: ""
 }
 
 private fun onBottomAppBarItemClicked(

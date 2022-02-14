@@ -6,6 +6,16 @@ sealed class BottomNavItem(val name: String, val icon: Int, val route: String) {
 
     companion object {
         val Items = listOf(Movies, TV, Favourites, Settings)
+
+        fun getByRoute(route: String?): BottomNavItem? {
+            return when (route) {
+                Movies.route -> Movies
+                TV.route -> TV
+                Favourites.route -> Favourites
+                Settings.route -> Settings
+                else -> null
+            }
+        }
     }
 
     object Movies: BottomNavItem("Movies", R.drawable.ic_movie, "movies_route")
