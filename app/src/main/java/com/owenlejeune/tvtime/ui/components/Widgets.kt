@@ -68,6 +68,7 @@ fun TopLevelSwitch(
             )
             CustomSwitch(
                 modifier = Modifier.padding(40.dp, 12.dp),
+                switchState = checkedState,
                 onCheckChanged = { isChecked ->
                     checkedState.value = isChecked
                     onCheckChanged(isChecked)

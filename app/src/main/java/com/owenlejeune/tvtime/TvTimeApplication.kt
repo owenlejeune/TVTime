@@ -3,6 +3,7 @@ package com.owenlejeune.tvtime
 import android.app.Application
 import com.facebook.stetho.Stetho
 import com.owenlejeune.tvtime.di.modules.networkModule
+import com.owenlejeune.tvtime.di.modules.preferencesModule
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 import org.koin.core.context.startKoin
@@ -19,7 +20,10 @@ class TvTimeApplication: Application() {
                 if (BuildConfig.DEBUG) Level.ERROR else Level.NONE
             )
             androidContext(this@TvTimeApplication)
-            modules(networkModule)
+            modules(
+                networkModule,
+                preferencesModule
+            )
         }
 
         if (BuildConfig.DEBUG) {
