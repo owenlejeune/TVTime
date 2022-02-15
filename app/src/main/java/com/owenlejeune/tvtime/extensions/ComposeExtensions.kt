@@ -1,10 +1,12 @@
 package com.owenlejeune.tvtime.extensions
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.lazy.LazyGridScope
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import androidx.paging.compose.LazyPagingItems
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -34,4 +36,9 @@ fun <T: Any> LazyListScope.listItems(
     items(items.size) { index ->
         itemContent(items[index])
     }
+}
+
+@Composable
+fun Color.unlessDarkMode(other: Color): Color {
+    return if (isSystemInDarkTheme()) this else other
 }
