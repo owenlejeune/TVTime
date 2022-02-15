@@ -29,6 +29,8 @@ fun MainAppView(appNavController: NavController) {
         TopAppBarDefaults.exitUntilCollapsedScrollBehavior(decayAnimationSpec)
     }
 
+    // todo - scroll state not remember when returing from detail screen
+
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         backgroundColor = MaterialTheme.colorScheme.background,

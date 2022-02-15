@@ -17,6 +17,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.core.view.WindowCompat
 import androidx.navigation.NavController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
@@ -29,17 +30,21 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            MyApp()
+            val displayUnderStatusBar = remember { mutableStateOf(false) }
+//            if (displayUnderStatusBar.value) {
+                WindowCompat.setDecorFitsSystemWindows(window, !displayUnderStatusBar.value)
+//            }
+            MyApp(displayUnderStatusBar = displayUnderStatusBar)
         }
     }
 }
 
 @Composable
-fun MyApp() {
+fun MyApp(displayUnderStatusBar: MutableState<Boolean> = mutableStateOf(false)) {
     TVTimeTheme {
         val appNavController = rememberNavController()
         Box {
-            MainNavigationRoutes(navController = appNavController)
+            MainNavigationRoutes(navController = appNavController, displayUnderStatusBar = displayUnderStatusBar)
         }
     }
 }

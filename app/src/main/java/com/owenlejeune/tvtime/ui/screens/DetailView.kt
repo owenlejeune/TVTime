@@ -13,11 +13,12 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
-import androidx.core.view.WindowCompat
 import androidx.navigation.NavController
 import com.owenlejeune.tvtime.api.tmdb.DetailService
 import com.owenlejeune.tvtime.api.tmdb.MoviesService
@@ -87,7 +88,7 @@ fun DetailView(
             modifier = Modifier
                 .constrainAs(title) {
                     bottom.linkTo(backdropImage.bottom, margin = 8.dp)
-                    start.linkTo(parent.start, margin = 16.dp)
+                    start.linkTo(parent.start, margin = 20.dp)
                     end.linkTo(parent.end, margin = 16.dp)
                 }
                 .padding(start = 16.dp, end = 16.dp)
@@ -101,9 +102,10 @@ fun DetailView(
             onClick = { appNavController.popBackStack() },
             modifier = Modifier
                 .constrainAs(backButton) {
-                    top.linkTo(parent.top, 8.dp)
+                    top.linkTo(parent.top, 16.dp)
                     start.linkTo(parent.start, 12.dp)
                 }
+                .background(brush = Brush.radialGradient(colors = listOf(Color.Black, Color.Transparent)))
                 .wrapContentSize()
         ) {
             Icon(
