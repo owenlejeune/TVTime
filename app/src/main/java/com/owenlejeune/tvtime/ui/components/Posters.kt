@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.GridCells
 import androidx.compose.foundation.lazy.LazyVerticalGrid
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -67,28 +69,35 @@ fun PosterItem(
 ) {
     val context = LocalContext.current
     val poster = mediaItem?.let { TmdbUtils.getFullPosterPath(mediaItem) }
-    Image(
-        painter = if (mediaItem != null) {
-            rememberImagePainter(
-                data = poster,
-                builder = {
-                    transformations(RoundedCornersTransformation(5f.dpToPx(context)))
-                    placeholder(R.drawable.placeholder)
-                }
-            )
-        } else {
-               rememberImagePainter(ContextCompat.getDrawable(context, R.drawable.placeholder))
-        },
-        contentDescription = mediaItem?.title,
+    Card(
+        elevation = 8.dp,
         modifier = modifier
             .size(width = width, height = height)
-            .padding(5.dp)
-            .clickable {
-                mediaItem?.let {
-                    onClick(mediaItem.id)
+            .padding(5.dp),
+        shape = RoundedCornerShape(5.dp)
+    ) {
+        Image(
+            painter = if (mediaItem != null) {
+                rememberImagePainter(
+                    data = poster,
+                    builder = {
+                        transformations(RoundedCornersTransformation(5f.dpToPx(context)))
+                        placeholder(R.drawable.placeholder)
+                    }
+                )
+            } else {
+                rememberImagePainter(ContextCompat.getDrawable(context, R.drawable.placeholder))
+            },
+            contentDescription = mediaItem?.title,
+            modifier = Modifier
+                .size(width = width, height = height)
+                .clickable {
+                    mediaItem?.let {
+                        onClick(mediaItem.id)
+                    }
                 }
-            }
-    )
+        )
+    }
 }
 
 @SuppressLint("CoroutineCreationDuringComposition")

@@ -1,5 +1,6 @@
 package com.owenlejeune.tvtime.api.tmdb
 
+import com.owenlejeune.tvtime.api.tmdb.model.CastAndCrew
 import com.owenlejeune.tvtime.api.tmdb.model.ImageCollection
 import com.owenlejeune.tvtime.api.tmdb.model.PopularTvResponse
 import com.owenlejeune.tvtime.api.tmdb.model.DetailedTv
@@ -18,5 +19,8 @@ interface TvApi {
 
     @GET("tv/{id}/images")
     suspend fun getTvImages(@Path("id") id: Int): Response<ImageCollection>
+
+    @GET("tv/{id}/credits")
+    suspend fun getCastAndCrew(@Path("id") id: Int): Response<CastAndCrew>
 
 }

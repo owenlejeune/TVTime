@@ -1,28 +1,20 @@
 package com.owenlejeune.tvtime
 
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.animation.rememberSplineBasedDecay
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material.Scaffold
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.view.WindowCompat
-import androidx.navigation.NavController
-import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.owenlejeune.tvtime.ui.navigation.BottomNavItem
-import com.owenlejeune.tvtime.ui.navigation.BottomNavigationRoutes
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.owenlejeune.tvtime.ui.navigation.MainNavigationRoutes
 import com.owenlejeune.tvtime.ui.theme.TVTimeTheme
 
@@ -31,7 +23,14 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             val displayUnderStatusBar = remember { mutableStateOf(false) }
-            WindowCompat.setDecorFitsSystemWindows(window, !displayUnderStatusBar.value)
+//            WindowCompat.setDecorFitsSystemWindows(window, !displayUnderStatusBar.value)
+//            val statusBarColor = if (displayUnderStatusBar.value) {
+//                Color.Transparent
+//            } else {
+//                MaterialTheme.colorScheme.background
+//            }
+//            val systemUiController = rememberSystemUiController()
+//            systemUiController.setStatusBarColor(statusBarColor, !isSystemInDarkTheme())
             MyApp(displayUnderStatusBar = displayUnderStatusBar)
         }
     }

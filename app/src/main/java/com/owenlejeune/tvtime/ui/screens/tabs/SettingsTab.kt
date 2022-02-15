@@ -14,6 +14,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.owenlejeune.tvtime.preferences.AppPreferences
 import com.owenlejeune.tvtime.ui.components.PaletteView
@@ -67,7 +68,7 @@ private fun PaletteDialog(showDialog: MutableState<Boolean>) {
                 modifier = Modifier.fillMaxWidth(),
                 onClick = { showDialog.value = false }
             ) {
-                Text(text = "Dismiss")
+                Text(text = "Dismiss", color = Color.White)
             }
         },
         confirmButton = {},

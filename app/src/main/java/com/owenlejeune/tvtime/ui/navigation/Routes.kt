@@ -26,8 +26,6 @@ fun MainNavigationRoutes(navController: NavHostController, displayUnderStatusBar
     NavHost(navController = navController, startDestination = MainNavItem.MainView.route) {
         composable(MainNavItem.MainView.route) {
             displayUnderStatusBar.value = false
-            val systemUiController = rememberSystemUiController()
-            systemUiController.setStatusBarColor(MaterialTheme.colorScheme.background, !isSystemInDarkTheme())
             MainAppView(appNavController = navController)
         }
         composable(
@@ -38,8 +36,6 @@ fun MainNavigationRoutes(navController: NavHostController, displayUnderStatusBar
             )
         ) { navBackStackEntry ->
             displayUnderStatusBar.value = true
-            val systemUiController = rememberSystemUiController()
-            systemUiController.setStatusBarColor(Color.Transparent, !isSystemInDarkTheme())
             val args = navBackStackEntry.arguments
             DetailView(
                 appNavController = navController,

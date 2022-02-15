@@ -1,5 +1,6 @@
 package com.owenlejeune.tvtime.api.tmdb
 
+import com.owenlejeune.tvtime.api.tmdb.model.CastAndCrew
 import com.owenlejeune.tvtime.api.tmdb.model.ImageCollection
 import com.owenlejeune.tvtime.api.tmdb.model.DetailedItem
 import org.koin.core.component.KoinComponent
@@ -17,6 +18,10 @@ class MoviesService: KoinComponent, DetailService {
 
     override suspend fun getImages(id: Int): Response<ImageCollection> {
         return service.getMovieImages(id)
+    }
+
+    override suspend fun getCastAndCrew(id: Int): Response<CastAndCrew> {
+        return service.getCastAndCrew(id)
     }
 
 }
