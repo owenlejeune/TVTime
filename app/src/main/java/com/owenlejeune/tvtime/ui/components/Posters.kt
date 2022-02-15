@@ -1,5 +1,6 @@
 package com.owenlejeune.tvtime.ui.components
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -10,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.GridCells
 import androidx.compose.foundation.lazy.LazyVerticalGrid
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -22,11 +24,16 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import coil.compose.rememberImagePainter
 import coil.transform.RoundedCornersTransformation
+import com.google.accompanist.pager.ExperimentalPagerApi
+import com.google.accompanist.pager.HorizontalPager
+import com.google.accompanist.pager.rememberPagerState
 import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.api.tmdb.TmdbUtils
+import com.owenlejeune.tvtime.api.tmdb.model.ImageCollection
 import com.owenlejeune.tvtime.api.tmdb.model.TmdbItem
 import com.owenlejeune.tvtime.extensions.dpToPx
 import com.owenlejeune.tvtime.extensions.listItems
+import kotlinx.coroutines.*
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -84,17 +91,20 @@ fun PosterItem(
     )
 }
 
+@SuppressLint("CoroutineCreationDuringComposition")
+@OptIn(ExperimentalPagerApi::class)
 @Composable
 fun BackdropImage(
     modifier: Modifier = Modifier,
-    imageUrl: String?
+    imageUrl: String? = null,
+    collection: ImageCollection? = null
 ) {
     val context = LocalContext.current
 
     var sizeImage by remember { mutableStateOf(IntSize.Zero) }
 
     val gradient = Brush.verticalGradient(
-        colors = listOf(Color.Transparent, Color.Black),
+        colors = listOf(Color.Transparent, MaterialTheme.colorScheme.background),
         startY = sizeImage.height.toFloat() / 3,
         endY = sizeImage.height.toFloat()
     )
@@ -102,24 +112,45 @@ fun BackdropImage(
     Box(
         modifier = modifier
     ) {
-        Image(
-            painter = if (imageUrl != null) {
-                rememberImagePainter(
-                    data = imageUrl,
-                    builder = {
-                        placeholder(R.drawable.placeholder)
+        if (collection != null) {
+            val pagerState = rememberPagerState()
+            HorizontalPager(count = collection.backdrops.size, state = pagerState) { page ->
+                val backdrop = collection.backdrops[page]
+                Image(
+                    painter = rememberImagePainter(
+                        data = TmdbUtils.getFullBackdropPath(backdrop),
+                        builder = {
+                            placeholder(R.drawable.placeholder)
+                        }
+                    ),
+                    contentDescription = "",
+                    modifier = Modifier.onGloballyPositioned {
+                        sizeImage = it.size
                     }
                 )
-            } else {
-                rememberImagePainter(ContextCompat.getDrawable(context, R.drawable.placeholder))
-            },
-            contentDescription = "",
-            modifier = Modifier.onGloballyPositioned {
-                sizeImage = it.size
             }
-        )
+        } else {
+            Image(
+                painter = if (imageUrl != null) {
+                    rememberImagePainter(
+                        data = imageUrl,
+                        builder = {
+                            placeholder(R.drawable.placeholder)
+                        }
+                    )
+                } else {
+                    rememberImagePainter(ContextCompat.getDrawable(context, R.drawable.placeholder))
+                },
+                contentDescription = "",
+                modifier = Modifier.onGloballyPositioned {
+                    sizeImage = it.size
+                }
+            )
+        }
         Box(
-            modifier = Modifier.matchParentSize().background(gradient)
+            modifier = Modifier
+                .matchParentSize()
+                .background(gradient)
         )
     }
 }

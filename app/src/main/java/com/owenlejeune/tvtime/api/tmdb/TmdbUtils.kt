@@ -1,6 +1,7 @@
 package com.owenlejeune.tvtime.api.tmdb
 
 import com.owenlejeune.tvtime.api.tmdb.model.DetailedItem
+import com.owenlejeune.tvtime.api.tmdb.model.Image
 import com.owenlejeune.tvtime.api.tmdb.model.TmdbItem
 
 object TmdbUtils {
@@ -13,12 +14,20 @@ object TmdbUtils {
         return tmdbItem?.let { getFullPosterPath(tmdbItem.posterPath) }
     }
 
+    fun getFullPosterPath(image: Image): String? {
+        return getFullPosterPath(image.filePath)
+    }
+
     fun getFullBackdropPath(backdropPath: String?): String? {
         return backdropPath?.let { "https://www.themoviedb.org/t/p/original${backdropPath}" }
     }
 
     fun getFullBackdropPath(detailItem: DetailedItem?): String? {
         return detailItem?.let { getFullBackdropPath(detailItem.backdropPath) }
+    }
+
+    fun getFullBackdropPath(image: Image): String? {
+        return getFullBackdropPath(image.filePath)
     }
 
 }

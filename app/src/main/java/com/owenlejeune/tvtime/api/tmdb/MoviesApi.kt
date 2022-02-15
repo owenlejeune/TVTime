@@ -1,7 +1,7 @@
 package com.owenlejeune.tvtime.api.tmdb
 
+import com.owenlejeune.tvtime.api.tmdb.model.ImageCollection
 import com.owenlejeune.tvtime.api.tmdb.model.DetailedMovie
-import com.owenlejeune.tvtime.api.tmdb.model.PopularMovie
 import com.owenlejeune.tvtime.api.tmdb.model.PopularMoviesResponse
 import retrofit2.Response
 import retrofit2.http.GET
@@ -15,5 +15,8 @@ interface MoviesApi {
 
     @GET("movie/{id}")
     suspend fun getMovieById(@Path("id") id: Int): Response<DetailedMovie>
+
+    @GET("movie/{id}/images")
+    suspend fun getMovieImages(@Path("id") id: Int): Response<ImageCollection>
 
 }

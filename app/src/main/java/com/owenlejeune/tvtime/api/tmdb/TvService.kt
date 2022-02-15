@@ -1,5 +1,6 @@
 package com.owenlejeune.tvtime.api.tmdb
 
+import com.owenlejeune.tvtime.api.tmdb.model.ImageCollection
 import com.owenlejeune.tvtime.api.tmdb.model.DetailedItem
 import org.koin.core.component.KoinComponent
 import retrofit2.Response
@@ -10,7 +11,11 @@ class TvService: KoinComponent, DetailService {
 
     suspend fun getPopularTv(page: Int = 1) = service.getPoplarTv(page)
 
-    override suspend fun getById(id: Int): Response<DetailedItem> {
-        return service.getTvShowById(id) as Response<DetailedItem>
+    override suspend fun getById(id: Int): Response<out DetailedItem> {
+        return service.getTvShowById(id)
+    }
+
+    override suspend fun getImages(id: Int): Response<ImageCollection> {
+        return service.getTvImages(id)
     }
 }

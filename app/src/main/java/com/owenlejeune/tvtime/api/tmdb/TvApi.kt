@@ -1,5 +1,6 @@
 package com.owenlejeune.tvtime.api.tmdb
 
+import com.owenlejeune.tvtime.api.tmdb.model.ImageCollection
 import com.owenlejeune.tvtime.api.tmdb.model.PopularTvResponse
 import com.owenlejeune.tvtime.api.tmdb.model.DetailedTv
 import retrofit2.Response
@@ -13,6 +14,9 @@ interface TvApi {
     suspend fun getPoplarTv(@Query("page") page: Int = 1): Response<PopularTvResponse>
 
     @GET("tv/{id}")
-    suspend fun getTvShowById(@Path("id") id: Int): Response<DetailedTv>
+    suspend fun getTvShowById(@Path("id") id: Int): Response<out DetailedTv>
+
+    @GET("tv/{id}/images")
+    suspend fun getTvImages(@Path("id") id: Int): Response<ImageCollection>
 
 }

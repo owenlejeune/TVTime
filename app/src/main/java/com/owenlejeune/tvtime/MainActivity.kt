@@ -31,9 +31,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             val displayUnderStatusBar = remember { mutableStateOf(false) }
-//            if (displayUnderStatusBar.value) {
-                WindowCompat.setDecorFitsSystemWindows(window, !displayUnderStatusBar.value)
-//            }
+            WindowCompat.setDecorFitsSystemWindows(window, !displayUnderStatusBar.value)
             MyApp(displayUnderStatusBar = displayUnderStatusBar)
         }
     }

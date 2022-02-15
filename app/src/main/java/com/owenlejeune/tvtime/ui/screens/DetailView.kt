@@ -25,6 +25,8 @@ import com.owenlejeune.tvtime.api.tmdb.MoviesService
 import com.owenlejeune.tvtime.api.tmdb.TmdbUtils
 import com.owenlejeune.tvtime.api.tmdb.TvService
 import com.owenlejeune.tvtime.api.tmdb.model.DetailedItem
+import com.owenlejeune.tvtime.api.tmdb.model.Image
+import com.owenlejeune.tvtime.api.tmdb.model.ImageCollection
 import com.owenlejeune.tvtime.ui.components.BackdropImage
 import com.owenlejeune.tvtime.ui.components.PosterItem
 import kotlinx.coroutines.CoroutineScope
@@ -39,14 +41,19 @@ fun DetailView(
     type: DetailViewType
 ) {
     val context = LocalContext.current
-
-    val mediaItem = remember { mutableStateOf<DetailedItem?>(null) }
     val service = when(type) {
         DetailViewType.MOVIE -> MoviesService()
         DetailViewType.TV -> TvService()
     }
+
+    val mediaItem = remember { mutableStateOf<DetailedItem?>(null) }
     itemId?.let {
         fetchMediaItem(itemId, service, mediaItem)
+    }
+
+    val images = remember { mutableStateOf<ImageCollection?>(null) }
+    itemId?.let {
+        fetchImages(itemId, service, images)
     }
 
     ConstraintLayout(
@@ -69,7 +76,8 @@ fun DetailView(
                 }
                 .fillMaxWidth()
                 .size(0.dp, 280.dp),
-            imageUrl = TmdbUtils.getFullBackdropPath(mediaItem.value)
+            imageUrl = TmdbUtils.getFullBackdropPath(mediaItem.value),
+            collection = images.value
         )
 
         PosterItem(
@@ -78,7 +86,7 @@ fun DetailView(
                 .constrainAs(posterImage) {
                     bottom.linkTo(title.top, margin = 8.dp)
                     start.linkTo(parent.start, margin = 16.dp)
-                    top.linkTo(backButton.bottom)
+                    top.linkTo(backButton.bottom, margin = 8.dp)
                 }
         )
 
@@ -122,7 +130,18 @@ private fun fetchMediaItem(id: Int, service: DetailService, mediaItem: MutableSt
         val response = service.getById(id)
         if (response.isSuccessful) {
             withContext(Dispatchers.Main) {
-                mediaItem.value = response.body()!!
+                mediaItem.value = response.body()
+            }
+        }
+    }
+}
+
+private fun fetchImages(id: Int, service: DetailService, images: MutableState<ImageCollection?>) {
+    CoroutineScope(Dispatchers.IO).launch {
+        val response = service.getImages(id)
+        if (response.isSuccessful) {
+            withContext(Dispatchers.Main) {
+                images.value = response.body()
             }
         }
     }
