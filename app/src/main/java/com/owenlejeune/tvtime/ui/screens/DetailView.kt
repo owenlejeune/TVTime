@@ -14,18 +14,13 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.navigation.NavController
 import coil.compose.rememberImagePainter
@@ -35,11 +30,10 @@ import com.owenlejeune.tvtime.api.tmdb.DetailService
 import com.owenlejeune.tvtime.api.tmdb.MoviesService
 import com.owenlejeune.tvtime.api.tmdb.TmdbUtils
 import com.owenlejeune.tvtime.api.tmdb.TvService
-import com.owenlejeune.tvtime.api.tmdb.model.CastAndCrew
-import com.owenlejeune.tvtime.api.tmdb.model.DetailedItem
-import com.owenlejeune.tvtime.api.tmdb.model.ImageCollection
+import com.owenlejeune.tvtime.api.tmdb.model.*
 import com.owenlejeune.tvtime.extensions.dpToPx
 import com.owenlejeune.tvtime.ui.components.BackdropImage
+import com.owenlejeune.tvtime.ui.components.MinLinesText
 import com.owenlejeune.tvtime.ui.components.PosterItem
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -65,13 +59,6 @@ fun DetailView(
         }
     }
 
-    val images = remember { mutableStateOf<ImageCollection?>(null) }
-    itemId?.let {
-        if (images.value == null) {
-            fetchImages(itemId, service, images)
-        }
-    }
-
     val scrollState = rememberScrollState()
 
     ConstraintLayout(
@@ -81,23 +68,15 @@ fun DetailView(
             .verticalScroll(state = scrollState)
     ) {
         val (
-            backButton,
-            backdropImage,
-            posterImage,
-            titleText,
-            contentColumn
+            backButton, backdropImage, posterImage, titleText, contentColumn
         ) = createRefs()
 
-        BackdropImage(
-            modifier = Modifier
-                .constrainAs(backdropImage) {
-                    top.linkTo(parent.top)
-                    start.linkTo(parent.start)
-                }
-                .fillMaxWidth()
-                .height(280.dp),
-            imageUrl = TmdbUtils.getFullBackdropPath(mediaItem.value),
-//            collection = images.value
+        Backdrop(
+            modifier = Modifier.constrainAs(backdropImage) {
+                top.linkTo(parent.top)
+                start.linkTo(parent.start)
+            },
+            mediaItem = mediaItem
         )
 
         PosterItem(
@@ -110,148 +89,201 @@ fun DetailView(
                 }
         )
 
-        Text(
-            text = mediaItem.value?.title ?: "",
-            color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier
-                .constrainAs(titleText) {
-                    bottom.linkTo(posterImage.bottom)
-                    start.linkTo(posterImage.end, margin = 8.dp)
-                    end.linkTo(parent.end, margin = 16.dp)
-                }
-                .padding(start = 16.dp, end = 16.dp)
-                .fillMaxWidth(.6f),
-            style = MaterialTheme.typography.headlineMedium,
-            textAlign = TextAlign.Start,
-            softWrap = true
+        TitleText(
+            modifier = Modifier.constrainAs(titleText) {
+                bottom.linkTo(posterImage.bottom)
+                start.linkTo(posterImage.end, margin = 8.dp)
+                end.linkTo(parent.end, margin = 16.dp)
+            },
+            mediaItem = mediaItem
         )
 
-        IconButton(
-            onClick = { appNavController.popBackStack() },
-            modifier = Modifier
-                .constrainAs(backButton) {
-                    top.linkTo(parent.top)//, 8.dp)
-                    start.linkTo(parent.start, 12.dp)
-                    bottom.linkTo(posterImage.top)
-                }
-                .background(
-                    brush = Brush.radialGradient(
-                        colors = listOf(
-                            Color.Black,
-                            Color.Transparent
-                        )
+        BackButton(
+            modifier = Modifier.constrainAs(backButton) {
+                top.linkTo(parent.top)//, 8.dp)
+                start.linkTo(parent.start, 12.dp)
+                bottom.linkTo(posterImage.top)
+            },
+            appNavController = appNavController
+        )
+
+        ContentColumn(
+            modifier = Modifier.constrainAs(contentColumn) {
+               top.linkTo(backdropImage.bottom, margin = 8.dp)
+            },
+            itemId = itemId,
+            mediaItem = mediaItem,
+            service = service
+        )
+    }
+}
+
+@Composable
+private fun Backdrop(modifier: Modifier, mediaItem: MutableState<DetailedItem?>) {
+//        val images = remember { mutableStateOf<ImageCollection?>(null) }
+//        itemId?.let {
+//            if (images.value == null) {
+//                fetchImages(itemId, service, images)
+//            }
+//        }
+    BackdropImage(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(280.dp),
+        imageUrl = TmdbUtils.getFullBackdropPath(mediaItem.value),
+//            collection = images.value
+    )
+}
+
+@Composable
+private fun TitleText(modifier: Modifier, mediaItem: MutableState<DetailedItem?>) {
+    Text(
+        text = mediaItem.value?.title ?: "",
+        color = MaterialTheme.colorScheme.primary,
+        modifier = modifier
+            .padding(start = 16.dp, end = 16.dp)
+            .fillMaxWidth(.6f),
+        style = MaterialTheme.typography.headlineMedium,
+        textAlign = TextAlign.Start,
+        softWrap = true
+    )
+}
+
+@Composable
+private fun BackButton(modifier: Modifier, appNavController: NavController) {
+    IconButton(
+        onClick = { appNavController.popBackStack() },
+        modifier = modifier
+            .background(
+                brush = Brush.radialGradient(
+                    colors = listOf(
+                        Color.Black,
+                        Color.Transparent
                     )
                 )
-                .wrapContentSize()
-        ) {
-            Icon(
-                imageVector = Icons.Filled.ArrowBack,
-                contentDescription = "Back",
-                tint = MaterialTheme.colorScheme.primary
             )
-        }
+            .wrapContentSize()
+    ) {
+        Icon(
+            imageVector = Icons.Filled.ArrowBack,
+            contentDescription = "Back",
+            tint = MaterialTheme.colorScheme.primary
+        )
+    }
+}
 
-        val castAndCrew = remember { mutableStateOf<CastAndCrew?>(null) }
-        itemId?.let {
-            if (castAndCrew.value == null) {
-                fetchCastAndCrew(itemId, service, castAndCrew)
-            }
-        }
+@Composable
+private fun ContentColumn(modifier: Modifier,
+                          itemId: Int?,
+                          mediaItem: MutableState<DetailedItem?>,
+                          service: DetailService
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .wrapContentHeight()
+            .padding(horizontal = 16.dp)
+    ) {
+        OverviewCard(mediaItem = mediaItem)
 
-        Column(
+        CastCard(itemId = itemId, service = service)
+    }
+}
+
+@Composable
+private fun OverviewCard(mediaItem: MutableState<DetailedItem?>) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .wrapContentHeight()
+            .padding(bottom = 12.dp),
+        shape = RoundedCornerShape(10.dp),
+        backgroundColor = MaterialTheme.colorScheme.surfaceVariant,
+        elevation = 8.dp
+    ) {
+        Text(
             modifier = Modifier
                 .fillMaxWidth()
                 .wrapContentHeight()
-                .padding(horizontal = 16.dp)
-                .constrainAs(contentColumn) {
-                    top.linkTo(backdropImage.bottom, margin = 8.dp)
-                }
-        ) {
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .wrapContentHeight()
-                    .padding(bottom = 12.dp),
-                shape = RoundedCornerShape(10.dp),
-                backgroundColor = MaterialTheme.colorScheme.surfaceVariant,
-                elevation = 8.dp
-            ) {
-                Text(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .wrapContentHeight()
-                        .padding(vertical = 12.dp, horizontal = 16.dp),
-                    text = mediaItem.value?.overview ?: "",
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
+                .padding(vertical = 12.dp, horizontal = 16.dp),
+            text = mediaItem.value?.overview ?: "",
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            style = MaterialTheme.typography.bodyMedium
+        )
+    }
+}
 
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .wrapContentHeight(),
-                shape = RoundedCornerShape(10.dp),
-                backgroundColor = MaterialTheme.colorScheme.primary,
-                elevation = 8.dp
-            ) {
-                LazyRow(modifier = Modifier
-                    .fillMaxSize()
-                    .padding(12.dp)
-                ) {
-                    items(castAndCrew.value?.cast?.size ?: 0) { i ->
-                        val castMember = castAndCrew.value!!.cast[i]
-                        Column(
-                            modifier = Modifier
-                                .width(124.dp)
-                                .wrapContentHeight()
-                                .padding(end = 12.dp)
-                        ) {
-                            Image(
-                                modifier = Modifier
-                                    .size(width = 120.dp, height = 180.dp),
-                                painter = rememberImagePainter(
-                                    data = TmdbUtils.getFullPersonImagePath(castMember),
-                                    builder = {
-                                        transformations(RoundedCornersTransformation(5f.dpToPx(context)))
-                                        placeholder(R.drawable.placeholder)
-                                    }
-                                ),
-                                contentDescription = ""
-                            )
-                            val nameLineHeight = MaterialTheme.typography.bodyMedium.fontSize*4/3
-                            Text(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(top = 5.dp)
-                                    .sizeIn(
-                                        minHeight = with(LocalDensity.current) {
-                                            (nameLineHeight * 2).toDp()
-                                        }
-                                    ),
-                                text = castMember.name,
-                                color = MaterialTheme.colorScheme.onPrimary,
-                                style = MaterialTheme.typography.bodyMedium,
-                                lineHeight = nameLineHeight
-                            )
-                            val characterLineHeight = MaterialTheme.typography.bodySmall.fontSize*4/3
-                            Text(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .sizeIn(
-                                        minHeight = with(LocalDensity.current) {
-                                            (characterLineHeight * 2).toDp()
-                                        }
-                                    ),
-                                text = castMember.character,
-                                style = MaterialTheme.typography.bodySmall,
-                                lineHeight = characterLineHeight
-                            )
-                        }
-                    }
-                }
+@Composable
+private fun CastCard(itemId: Int?, service: DetailService) {
+    val castAndCrew = remember { mutableStateOf<CastAndCrew?>(null) }
+    itemId?.let {
+        if (castAndCrew.value == null) {
+            fetchCastAndCrew(itemId, service, castAndCrew)
+        }
+    }
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .wrapContentHeight(),
+        shape = RoundedCornerShape(10.dp),
+        backgroundColor = MaterialTheme.colorScheme.primary,
+        elevation = 8.dp
+    ) {
+        LazyRow(modifier = Modifier
+            .fillMaxSize()
+            .padding(12.dp)
+        ) {
+            items(castAndCrew.value?.cast?.size ?: 0) { i ->
+                val castMember = castAndCrew.value!!.cast[i]
+
+                CastCrewCard(person = castMember)
             }
         }
+    }
+}
+
+@Composable
+private fun CastCrewCard(person: Person) {
+    val context = LocalContext.current
+    Column(
+        modifier = Modifier
+            .width(124.dp)
+            .wrapContentHeight()
+            .padding(end = 12.dp)
+    ) {
+        Image(
+            modifier = Modifier
+                .size(width = 120.dp, height = 180.dp),
+            painter = rememberImagePainter(
+                data = TmdbUtils.getFullPersonImagePath(person),
+                builder = {
+                    transformations(RoundedCornersTransformation(5f.dpToPx(context)))
+                    placeholder(R.drawable.placeholder)
+                }
+            ),
+            contentDescription = ""
+        )
+        MinLinesText(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 5.dp),
+            minLines = 2,
+            text = person.name,
+            color = MaterialTheme.colorScheme.onPrimary,
+            style = MaterialTheme.typography.bodyMedium
+        )
+        MinLinesText(
+            modifier = Modifier
+                .fillMaxWidth(),
+            minLines = 2,
+            text = when (person) {
+                is CastMember -> person.character
+                is CrewMember -> person.job
+                else -> ""
+            },
+            style = MaterialTheme.typography.bodySmall
+        )
     }
 }
 

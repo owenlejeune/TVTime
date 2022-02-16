@@ -12,6 +12,7 @@ class DetailedTv(
     @SerializedName("production_companies") override val productionCompanies: List<ProductionCompany>,
     @SerializedName("status") override val status: String,
     @SerializedName("tagline") override val tagline: String?,
+    @SerializedName("vote_average") override val voteAverage: Float,
     @SerializedName("created_by") val createdBy: List<Person>,
     @SerializedName("first_air_date") val firstAirDate: String,
     @SerializedName("in_production") val inProduction: Boolean,
@@ -19,4 +20,4 @@ class DetailedTv(
     @SerializedName("number_of_episodes") val numberOfEpisodes: Int,
     @SerializedName("number_of_seasons") val numberOfSeasons: Int,
     @SerializedName("seasons") val seasons: List<Season>
-): DetailedItem(id, title, posterPath, backdropPath, genres, overview, productionCompanies, status, tagline)
+): DetailedItem(id, title, posterPath, backdropPath, genres, overview, productionCompanies, status, tagline, voteAverage)

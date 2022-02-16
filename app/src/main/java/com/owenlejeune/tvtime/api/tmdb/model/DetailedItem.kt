@@ -9,5 +9,6 @@ abstract class DetailedItem(
     @Transient open val overview: String?,
     @Transient open val productionCompanies: List<ProductionCompany>,
     @Transient open val status: String,
-    @Transient open val tagline: String?
+    @Transient open val tagline: String?,
+    @Transient open val voteAverage: Float
 ): TmdbItem(id, title, posterPath)

@@ -12,9 +12,10 @@ class DetailedMovie(
     @SerializedName("production_companies") override val productionCompanies: List<ProductionCompany>,
     @SerializedName("status") override val status: String,
     @SerializedName("tagline") override val tagline: String?,
+    @SerializedName("vote_average") override val voteAverage: Float,
     @SerializedName("adult") val isAdult: Boolean,
     @SerializedName("budget") val budget: Int,
     @SerializedName("release_date") val releaseDate: String,
     @SerializedName("revenue") val revenue: Int,
     @SerializedName("runtime") val runtime: Int?
-): DetailedItem(id, title, posterPath, backdropPath, genres, overview, productionCompanies, status, tagline)
+): DetailedItem(id, title, posterPath, backdropPath, genres, overview, productionCompanies, status, tagline, voteAverage)
