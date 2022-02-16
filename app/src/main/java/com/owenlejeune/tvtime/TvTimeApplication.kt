@@ -2,6 +2,7 @@ package com.owenlejeune.tvtime
 
 import android.app.Application
 import com.facebook.stetho.Stetho
+import com.owenlejeune.tvtime.di.modules.appModule
 import com.owenlejeune.tvtime.di.modules.networkModule
 import com.owenlejeune.tvtime.di.modules.preferencesModule
 import org.koin.android.ext.koin.androidContext
@@ -22,7 +23,8 @@ class TvTimeApplication: Application() {
             androidContext(this@TvTimeApplication)
             modules(
                 networkModule,
-                preferencesModule
+                preferencesModule,
+                appModule
             )
         }
 

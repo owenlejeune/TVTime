@@ -9,6 +9,8 @@ object TmdbUtils {
     private const val BACKDROP_BASE = "https://www.themoviedb.org/t/p/original"
     private const val PERSON_BASE = "https://www.themoviedb.org/t/p/w600_and_h900_bestv2"
 
+    private const val DEF_REGION = "US"
+
     fun getFullPosterPath(posterPath: String?): String? {
         return posterPath?.let { "https://image.tmdb.org/t/p/original${posterPath}" }
     }
@@ -93,11 +95,10 @@ object TmdbUtils {
             return ""
         }
 
-        val defRegion = "US"
         val currentRegion = Locale.current.language
         val certifications = HashMap<String, String>()
         releases.releaseDates.forEach { releaseDateResult ->
-            if (releaseDateResult.region == currentRegion || releaseDateResult.region == defRegion) {
+            if (releaseDateResult.region == currentRegion || releaseDateResult.region == DEF_REGION) {
                 val cert = releaseDateResult.releaseDates.firstOrNull { it.certification.isNotEmpty() }
                 if (cert != null) {
                     certifications[releaseDateResult.region] = cert.certification
@@ -105,7 +106,7 @@ object TmdbUtils {
             }
         }
         if (certifications.isNotEmpty()) {
-            return certifications[currentRegion] ?: certifications[defRegion] ?: ""
+            return certifications[currentRegion] ?: certifications[DEF_REGION] ?: ""
         }
         return ""
     }
@@ -115,16 +116,15 @@ object TmdbUtils {
             return ""
         }
 
-        val defRegion = "US"
         val currentRegion = Locale.current.language
         val certifications = HashMap<String, String>()
         contentRatings.results.forEach { contentRating ->
-            if (contentRating.language == currentRegion || contentRating.language == defRegion) {
+            if (contentRating.language == currentRegion || contentRating.language == DEF_REGION) {
                 certifications[contentRating.language] = contentRating.rating
             }
         }
         if (certifications.isNotEmpty()) {
-            return certifications[currentRegion] ?: certifications[defRegion] ?: ""
+            return certifications[currentRegion] ?: certifications[DEF_REGION] ?: ""
         }
         return ""
     }

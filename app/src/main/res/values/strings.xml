@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">TVTime</string>
+    <string name="nav_movies_title">Movies</string>
+    <string name="nav_tv_title">TV</string>
+    <string name="nav_favourites_title">Favourites</string>
+    <string name="nav_settings_title">Settings</string>
 </resources>
