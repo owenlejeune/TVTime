@@ -1,9 +1,6 @@
 package com.owenlejeune.tvtime.api.tmdb
 
-import com.owenlejeune.tvtime.api.tmdb.model.CastAndCrew
-import com.owenlejeune.tvtime.api.tmdb.model.ImageCollection
-import com.owenlejeune.tvtime.api.tmdb.model.DetailedMovie
-import com.owenlejeune.tvtime.api.tmdb.model.PopularMoviesResponse
+import com.owenlejeune.tvtime.api.tmdb.model.*
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Path
@@ -22,5 +19,8 @@ interface MoviesApi {
 
     @GET("movie/{id}/credits")
     suspend fun getCastAndCrew(@Path("id") id: Int): Response<CastAndCrew>
+
+    @GET("movie/{id}/release_dates")
+    suspend fun getReleaseDates(@Path("id") id: Int): Response<MovieReleaseResults>
 
 }

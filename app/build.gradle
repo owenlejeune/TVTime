@@ -64,6 +64,7 @@ dependencies {
     implementation "androidx.activity:activity-compose:${Versions.activity_compose}"
     implementation "com.google.accompanist:accompanist-systemuicontroller:${Versions.compose_accompanist}"
     implementation "com.google.accompanist:accompanist-pager:${Versions.compose_accompanist}"
+    implementation "com.google.accompanist:accompanist-flowlayout:${Versions.compose_accompanist}"
     implementation "androidx.navigation:navigation-compose:${Versions.compose_navigation}"
     implementation "androidx.paging:paging-compose:${Versions.compose_paging}"
     implementation "androidx.constraintlayout:constraintlayout-compose:${Versions.compose_constraint_layout}"

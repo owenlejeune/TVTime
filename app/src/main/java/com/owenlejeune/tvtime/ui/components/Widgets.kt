@@ -6,6 +6,8 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.*
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material.icons.Icons
@@ -36,6 +38,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.google.accompanist.flowlayout.FlowRow
 
 @Composable
 fun TopLevelSwitch(
@@ -206,4 +209,60 @@ fun MinLinesText(
         onTextLayout = onTextLayout,
         style = style
     )
+}
+
+@Composable
+fun Chip(
+    text: String,
+    style: TextStyle = MaterialTheme.typography.bodySmall,
+    isSelected: Boolean = true,
+    onSelectionChanged: (String) -> Unit = {}
+) {
+    Surface(
+        modifier = Modifier.padding(4.dp),
+        shadowElevation = 8.dp,
+        shape = RoundedCornerShape(5.dp),
+        color = if (isSelected) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.secondary
+    ) {
+        Row(
+            modifier = Modifier
+                .toggleable(
+                    value = isSelected,
+                    onValueChange = {
+                        onSelectionChanged(text)
+                    }
+                )
+        ) {
+            Text(
+                text = text,
+                style = style,
+                color = if (isSelected) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSecondary,
+                modifier = Modifier.padding(8.dp)
+            )
+        }
+    }
+}
+
+@Composable
+fun ChipGroup(
+    modifier: Modifier = Modifier,
+    chips: List<String> = emptyList(),
+    onSelectedChanged: (String) -> Unit = {},
+) {
+    FlowRow(
+        modifier = modifier
+    ) {
+        chips.forEach { chip ->
+            Chip(
+                text = chip,
+                onSelectionChanged = onSelectedChanged
+            )
+        }
+    }
+}
+
+@Preview
+@Composable
+fun ChipPreview() {
+    Chip("Test Chip")
 }

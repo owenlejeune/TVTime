@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.owenlejeune.tvtime.extensions.listItems
+import com.owenlejeune.tvtime.utils.ComposeUtils
 
 @Composable
 fun PaletteView() {
@@ -57,8 +58,9 @@ private fun PaletteItemView(surfaceColor: Color, textColor: Color, text: String)
         shape = RoundedCornerShape(30.dp),
         backgroundColor = surfaceColor
     ) {
+        val hexString = ComposeUtils.colorToHexString(surfaceColor)
         Text(
-            text = text,
+            text = "${text}\n${hexString}",
             color = textColor,
             modifier = Modifier.padding(30.dp, 12.dp)
         )

@@ -28,11 +28,12 @@ import coil.transform.RoundedCornersTransformation
 import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.api.tmdb.DetailService
 import com.owenlejeune.tvtime.api.tmdb.MoviesService
-import com.owenlejeune.tvtime.api.tmdb.TmdbUtils
+import com.owenlejeune.tvtime.utils.TmdbUtils
 import com.owenlejeune.tvtime.api.tmdb.TvService
 import com.owenlejeune.tvtime.api.tmdb.model.*
 import com.owenlejeune.tvtime.extensions.dpToPx
 import com.owenlejeune.tvtime.ui.components.BackdropImage
+import com.owenlejeune.tvtime.ui.components.ChipGroup
 import com.owenlejeune.tvtime.ui.components.MinLinesText
 import com.owenlejeune.tvtime.ui.components.PosterItem
 import kotlinx.coroutines.CoroutineScope
@@ -46,7 +47,6 @@ fun DetailView(
     itemId: Int?,
     type: DetailViewType
 ) {
-    val context = LocalContext.current
     val service = when(type) {
         DetailViewType.MOVIE -> MoviesService()
         DetailViewType.TV -> TvService()
@@ -109,11 +109,12 @@ fun DetailView(
 
         ContentColumn(
             modifier = Modifier.constrainAs(contentColumn) {
-               top.linkTo(backdropImage.bottom, margin = 8.dp)
+               top.linkTo(backdropImage.bottom)//, margin = 8.dp)
             },
             itemId = itemId,
             mediaItem = mediaItem,
-            service = service
+            service = service,
+            mediaType = type
         )
     }
 }
@@ -176,17 +177,74 @@ private fun BackButton(modifier: Modifier, appNavController: NavController) {
 private fun ContentColumn(modifier: Modifier,
                           itemId: Int?,
                           mediaItem: MutableState<DetailedItem?>,
-                          service: DetailService
+                          service: DetailService,
+                          mediaType: DetailViewType
 ) {
     Column(
         modifier = modifier
             .fillMaxWidth()
             .wrapContentHeight()
-            .padding(horizontal = 16.dp)
+            .padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
     ) {
+        if (mediaType == DetailViewType.MOVIE) {
+            MiscMovieDetails(mediaItem = mediaItem, service as MoviesService)
+        } else {
+            MiscTvDetails(mediaItem = mediaItem)
+        }
+
         OverviewCard(mediaItem = mediaItem)
 
         CastCard(itemId = itemId, service = service)
+    }
+}
+
+@Composable
+private fun MiscTvDetails(mediaItem: MutableState<DetailedItem?>) {
+
+}
+
+@Composable
+private fun MiscMovieDetails(mediaItem: MutableState<DetailedItem?>, service: MoviesService) {
+    mediaItem.value?.let { mi ->
+        val movie = mi as DetailedMovie
+
+        val contentRating = remember { mutableStateOf("") }
+        fetchMovieContentRating(movie.id, service, contentRating)
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentHeight()
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight()
+                    .padding(start = 8.dp, end = 10.dp, bottom = 8.dp)
+            ) {
+                val releaseYear = TmdbUtils.getMovieReleaseYear(movie)
+                Text(text = releaseYear, color = MaterialTheme.colorScheme.onBackground)
+                val runtime = TmdbUtils.convertRuntimeToHoursMinutes(movie)
+                Text(
+                    text = runtime,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    modifier = Modifier.padding(start = 12.dp)
+                )
+                Text(
+                    text = contentRating.value,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    modifier = Modifier.padding(start = 12.dp)
+                )
+            }
+
+            ChipGroup(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight()
+                    .padding(bottom = 8.dp),
+                chips = movie.genres.map { it.name }
+            )
+        }
     }
 }
 
@@ -196,7 +254,7 @@ private fun OverviewCard(mediaItem: MutableState<DetailedItem?>) {
         modifier = Modifier
             .fillMaxWidth()
             .wrapContentHeight()
-            .padding(bottom = 12.dp),
+            .padding(bottom = 16.dp),
         shape = RoundedCornerShape(10.dp),
         backgroundColor = MaterialTheme.colorScheme.surfaceVariant,
         elevation = 8.dp
@@ -315,6 +373,18 @@ private fun fetchCastAndCrew(id: Int, service: DetailService, castAndCrew: Mutab
         if (response.isSuccessful) {
             withContext(Dispatchers.Main) {
                 castAndCrew.value = response.body()
+            }
+        }
+    }
+}
+
+private fun fetchMovieContentRating(id: Int, service: MoviesService, contentRating: MutableState<String>) {
+    CoroutineScope(Dispatchers.IO).launch {
+        val results = service.getReleaseDates(id)
+        if (results.isSuccessful) {
+            val cr = TmdbUtils.getMovieRating(results.body())
+            withContext(Dispatchers.Main) {
+                contentRating.value = cr
             }
         }
     }

@@ -30,12 +30,11 @@ import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
 import com.owenlejeune.tvtime.R
-import com.owenlejeune.tvtime.api.tmdb.TmdbUtils
+import com.owenlejeune.tvtime.utils.TmdbUtils
 import com.owenlejeune.tvtime.api.tmdb.model.ImageCollection
 import com.owenlejeune.tvtime.api.tmdb.model.TmdbItem
 import com.owenlejeune.tvtime.extensions.dpToPx
 import com.owenlejeune.tvtime.extensions.listItems
-import kotlinx.coroutines.*
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable

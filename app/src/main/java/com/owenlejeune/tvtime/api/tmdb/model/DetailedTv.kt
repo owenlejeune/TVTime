@@ -15,6 +15,7 @@ class DetailedTv(
     @SerializedName("vote_average") override val voteAverage: Float,
     @SerializedName("created_by") val createdBy: List<Person>,
     @SerializedName("first_air_date") val firstAirDate: String,
+    @SerializedName("last_air_date") val lastAirDate: String,
     @SerializedName("in_production") val inProduction: Boolean,
     @SerializedName("networks") val networks: List<Network>,
     @SerializedName("number_of_episodes") val numberOfEpisodes: Int,
