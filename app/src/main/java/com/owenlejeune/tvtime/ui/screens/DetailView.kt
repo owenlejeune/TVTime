@@ -32,10 +32,7 @@ import com.owenlejeune.tvtime.utils.TmdbUtils
 import com.owenlejeune.tvtime.api.tmdb.TvService
 import com.owenlejeune.tvtime.api.tmdb.model.*
 import com.owenlejeune.tvtime.extensions.dpToPx
-import com.owenlejeune.tvtime.ui.components.BackdropImage
-import com.owenlejeune.tvtime.ui.components.ChipGroup
-import com.owenlejeune.tvtime.ui.components.MinLinesText
-import com.owenlejeune.tvtime.ui.components.PosterItem
+import com.owenlejeune.tvtime.ui.components.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -186,21 +183,39 @@ private fun ContentColumn(modifier: Modifier,
             .wrapContentHeight()
             .padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
     ) {
+
         if (mediaType == DetailViewType.MOVIE) {
             MiscMovieDetails(mediaItem = mediaItem, service as MoviesService)
         } else {
-            MiscTvDetails(mediaItem = mediaItem)
+            MiscTvDetails(mediaItem = mediaItem, service as TvService)
         }
 
-        OverviewCard(mediaItem = mediaItem)
+        if (mediaItem.value?.overview?.isNotEmpty() == true) {
+            OverviewCard(mediaItem = mediaItem)
+        }
 
         CastCard(itemId = itemId, service = service)
     }
 }
 
 @Composable
-private fun MiscTvDetails(mediaItem: MutableState<DetailedItem?>) {
+private fun MiscTvDetails(mediaItem: MutableState<DetailedItem?>, service: TvService) {
+    mediaItem.value?.let { tv ->
+        val series = tv as DetailedTv
 
+        val contentRating = remember { mutableStateOf("") }
+        fetchTvContentRating(series.id, service, contentRating)
+
+        MiscDetails(
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentHeight(),
+            year = TmdbUtils.getSeriesRun(series),
+            runtime = TmdbUtils.convertRuntimeToHoursMinutes(series),
+            genres = series.genres,
+            contentRating = contentRating
+        )
+    }
 }
 
 @Composable
@@ -211,40 +226,55 @@ private fun MiscMovieDetails(mediaItem: MutableState<DetailedItem?>, service: Mo
         val contentRating = remember { mutableStateOf("") }
         fetchMovieContentRating(movie.id, service, contentRating)
 
-        Column(
+        MiscDetails(
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentHeight(),
+            year = TmdbUtils.getMovieReleaseYear(movie),
+            runtime = TmdbUtils.convertRuntimeToHoursMinutes(movie),
+            genres = movie.genres,
+            contentRating = contentRating
+        )
+    }
+}
+
+@Composable
+private fun MiscDetails(
+    modifier: Modifier = Modifier,
+    year: String,
+    runtime: String,
+    genres: List<Genre>,
+    contentRating: MutableState<String>
+) {
+    Column(
+        modifier = modifier
+    ) {
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .wrapContentHeight()
+                .padding(start = 8.dp, end = 10.dp, bottom = 8.dp)
         ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .wrapContentHeight()
-                    .padding(start = 8.dp, end = 10.dp, bottom = 8.dp)
-            ) {
-                val releaseYear = TmdbUtils.getMovieReleaseYear(movie)
-                Text(text = releaseYear, color = MaterialTheme.colorScheme.onBackground)
-                val runtime = TmdbUtils.convertRuntimeToHoursMinutes(movie)
-                Text(
-                    text = runtime,
-                    color = MaterialTheme.colorScheme.onBackground,
-                    modifier = Modifier.padding(start = 12.dp)
-                )
-                Text(
-                    text = contentRating.value,
-                    color = MaterialTheme.colorScheme.onBackground,
-                    modifier = Modifier.padding(start = 12.dp)
-                )
-            }
-
-            ChipGroup(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .wrapContentHeight()
-                    .padding(bottom = 8.dp),
-                chips = movie.genres.map { it.name }
+            Text(text = year, color = MaterialTheme.colorScheme.onBackground)
+            Text(
+                text = runtime,
+                color = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier.padding(start = 12.dp)
+            )
+            Text(
+                text = contentRating.value,
+                color = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier.padding(start = 12.dp)
             )
         }
+
+        ChipGroup(
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentHeight()
+                .padding(bottom = 8.dp),
+            chips = genres.map { it.name }
+        )
     }
 }
 
@@ -314,7 +344,7 @@ private fun CastCrewCard(person: Person) {
             modifier = Modifier
                 .size(width = 120.dp, height = 180.dp),
             painter = rememberImagePainter(
-                data = TmdbUtils.getFullPersonImagePath(person),
+                data = TmdbUtils.getFullPersonImagePath(person) ?: R.drawable.no_person_photo,
                 builder = {
                     transformations(RoundedCornersTransformation(5f.dpToPx(context)))
                     placeholder(R.drawable.placeholder)
@@ -383,6 +413,18 @@ private fun fetchMovieContentRating(id: Int, service: MoviesService, contentRati
         val results = service.getReleaseDates(id)
         if (results.isSuccessful) {
             val cr = TmdbUtils.getMovieRating(results.body())
+            withContext(Dispatchers.Main) {
+                contentRating.value = cr
+            }
+        }
+    }
+}
+
+private fun fetchTvContentRating(id: Int, service: TvService, contentRating: MutableState<String>) {
+    CoroutineScope(Dispatchers.IO).launch {
+        val results = service.getContentRatings(id)
+        if (results.isSuccessful) {
+            val cr = TmdbUtils.getTvRating(results.body())
             withContext(Dispatchers.Main) {
                 contentRating.value = cr
             }

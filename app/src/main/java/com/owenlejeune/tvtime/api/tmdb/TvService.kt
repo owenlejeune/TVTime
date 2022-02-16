@@ -3,6 +3,7 @@ package com.owenlejeune.tvtime.api.tmdb
 import com.owenlejeune.tvtime.api.tmdb.model.CastAndCrew
 import com.owenlejeune.tvtime.api.tmdb.model.ImageCollection
 import com.owenlejeune.tvtime.api.tmdb.model.DetailedItem
+import com.owenlejeune.tvtime.api.tmdb.model.TvContentRatings
 import org.koin.core.component.KoinComponent
 import retrofit2.Response
 
@@ -22,5 +23,9 @@ class TvService: KoinComponent, DetailService {
 
     override suspend fun getCastAndCrew(id: Int): Response<CastAndCrew> {
         return service.getCastAndCrew(id)
+    }
+
+    suspend fun getContentRatings(id: Int): Response<TvContentRatings> {
+        return service.getContentRatings(id)
     }
 }

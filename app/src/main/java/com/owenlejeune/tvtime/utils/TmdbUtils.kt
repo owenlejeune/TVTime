@@ -45,6 +45,16 @@ object TmdbUtils {
         return movie.releaseDate.split("-")[0]
     }
 
+    fun getSeriesRun(series: DetailedTv): String {
+        val startYear = getTvStartYear(series)
+        val endYear = if (series.status == "Active") {
+            getTvEndYear(series)
+        } else {
+            ""
+        }
+        return "${startYear}-${endYear}"
+    }
+
     fun getTvStartYear(series: DetailedTv): String {
         return series.firstAirDate.split("-")[0]
     }
@@ -55,11 +65,27 @@ object TmdbUtils {
 
     fun convertRuntimeToHoursMinutes(movie: DetailedMovie): String {
         movie.runtime?.let { runtime ->
-            val hours = runtime / 60
-            val minutes = runtime % 60
-            return "${hours}h${minutes}"
+            return convertRuntimeToHoursAndMinutes(runtime)
         }
         return ""
+    }
+
+    fun convertRuntimeToHoursMinutes(series: DetailedTv): String {
+        return convertRuntimeToHoursAndMinutes(series.episodeRuntime[0])
+    }
+
+    private fun convertRuntimeToHoursAndMinutes(runtime: Int): String {
+        val hours = runtime / 60
+        val minutes = runtime % 60
+        return if (hours > 0){
+            if (minutes > 0) {
+                "${hours}h${minutes}"
+            } else {
+                "${hours}h"
+            }
+        } else {
+            "${minutes}m"
+        }
     }
 
     fun getMovieRating(releases: MovieReleaseResults?): String {
@@ -82,6 +108,29 @@ object TmdbUtils {
             return certifications[currentRegion] ?: certifications[defRegion] ?: ""
         }
         return ""
+    }
+
+    fun getTvRating(contentRatings: TvContentRatings?): String {
+        if (contentRatings == null) {
+            return ""
+        }
+
+        val defRegion = "US"
+        val currentRegion = Locale.current.language
+        val certifications = HashMap<String, String>()
+        contentRatings.results.forEach { contentRating ->
+            if (contentRating.language == currentRegion || contentRating.language == defRegion) {
+                certifications[contentRating.language] = contentRating.rating
+            }
+        }
+        if (certifications.isNotEmpty()) {
+            return certifications[currentRegion] ?: certifications[defRegion] ?: ""
+        }
+        return ""
+    }
+
+    fun convertVoteAverageToPercentage(detailItem: DetailedItem): Float {
+        return detailItem.voteAverage / 10f
     }
 
 }

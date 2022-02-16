@@ -266,3 +266,36 @@ fun ChipGroup(
 fun ChipPreview() {
     Chip("Test Chip")
 }
+
+@Composable
+fun RatingRing(
+    modifier: Modifier = Modifier,
+    progress: Float = 0f,
+    textColor: Color = Color.White
+) {
+    Box(
+        modifier = modifier
+            .size(60.dp)
+            .padding(8.dp)
+    ) {
+        CircularProgressIndicator(
+            modifier = Modifier.fillMaxSize(),
+            progress = progress,
+            strokeWidth = 4.dp,
+            color = MaterialTheme.colorScheme.primary
+        )
+
+        Text(
+            modifier = Modifier.align(Alignment.Center),
+            text = "${(progress*100).toInt()}%",
+            color = textColor,
+            style = MaterialTheme.typography.titleSmall
+        )
+    }
+}
+
+@Preview
+@Composable
+fun RatingRingPreview() {
+    RatingRing(progress = 0.5f)
+}

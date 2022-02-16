@@ -20,5 +20,6 @@ class DetailedTv(
     @SerializedName("networks") val networks: List<Network>,
     @SerializedName("number_of_episodes") val numberOfEpisodes: Int,
     @SerializedName("number_of_seasons") val numberOfSeasons: Int,
-    @SerializedName("seasons") val seasons: List<Season>
+    @SerializedName("seasons") val seasons: List<Season>,
+    @SerializedName("episode_run_time") val episodeRuntime: List<Int>
 ): DetailedItem(id, title, posterPath, backdropPath, genres, overview, productionCompanies, status, tagline, voteAverage)
