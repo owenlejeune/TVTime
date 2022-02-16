@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
@@ -318,14 +319,21 @@ private fun CastCard(itemId: Int?, service: DetailService) {
         backgroundColor = MaterialTheme.colorScheme.primary,
         elevation = 8.dp
     ) {
-        LazyRow(modifier = Modifier
-            .fillMaxSize()
-            .padding(12.dp)
-        ) {
-            items(castAndCrew.value?.cast?.size ?: 0) { i ->
-                val castMember = castAndCrew.value!!.cast[i]
+        Column(modifier = Modifier.fillMaxSize()) {
+            Text(
+                text = stringResource(R.string.cast_label),
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.padding(start = 12.dp, top = 12.dp)
+            )
+            LazyRow(modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp)
+            ) {
+                items(castAndCrew.value?.cast?.size ?: 0) { i ->
+                    val castMember = castAndCrew.value!!.cast[i]
 
-                CastCrewCard(person = castMember)
+                    CastCrewCard(person = castMember)
+                }
             }
         }
     }

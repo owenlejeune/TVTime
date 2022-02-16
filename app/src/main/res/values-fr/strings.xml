@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">TVTime</string>
+    <string name="nav_movies_title">Films</string>
+    <string name="nav_tv_title">Télé</string>
+    <string name="nav_favourites_title">Favoris</string>
+    <string name="nav_settings_title">Réglages</string>
+    <string name="cast_label">Acteurs</string>
+</resources>

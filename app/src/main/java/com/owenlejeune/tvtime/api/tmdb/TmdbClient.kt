@@ -1,5 +1,6 @@
 package com.owenlejeune.tvtime.api.tmdb
 
+import androidx.compose.ui.text.intl.Locale
 import com.owenlejeune.tvtime.BuildConfig
 import com.owenlejeune.tvtime.api.Client
 import com.owenlejeune.tvtime.api.QueryParam
@@ -14,6 +15,8 @@ class TmdbClient: KoinComponent {
 
     companion object {
         const val BASE_URL = "https://api.themoviedb.org/3/"
+
+        private val SUPPORTED_LANGUAGES = listOf("en", "fr")
     }
 
     private val client: Client by inject { parametersOf(BASE_URL) }
@@ -34,7 +37,15 @@ class TmdbClient: KoinComponent {
         override fun intercept(chain: Interceptor.Chain): Response {
             val apiParam = QueryParam("api_key", BuildConfig.TMDB_ApiKey)
 
-            val request = chain.addQueryParams(apiParam)
+            val locale = Locale.current
+            val languageParam = if (SUPPORTED_LANGUAGES.contains(locale.language)) {
+                val languageCode = "${locale.language}-${locale.region}"
+                QueryParam("language", languageCode)
+            } else {
+                null
+            }
+
+            val request = chain.addQueryParams(apiParam, languageParam)
 
             return chain.proceed(request)
         }
