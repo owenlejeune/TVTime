@@ -33,7 +33,7 @@ fun PaletteView() {
         PaletteItem(MaterialTheme.colorScheme.surfaceVariant, MaterialTheme.colorScheme.onSurfaceVariant, "surface variant"),
         PaletteItem(MaterialTheme.colorScheme.inverseSurface, MaterialTheme.colorScheme.inverseOnSurface, "inverse surface"),
         PaletteItem(MaterialTheme.colorScheme.error, MaterialTheme.colorScheme.onError, "error"),
-        PaletteItem(MaterialTheme.colorScheme.errorContainer, MaterialTheme.colorScheme.onErrorContainer, "primary"),
+        PaletteItem(MaterialTheme.colorScheme.errorContainer, MaterialTheme.colorScheme.onErrorContainer, "error container"),
         PaletteItem(MaterialTheme.colorScheme.outline, Color.Black, "outline")
     )
 

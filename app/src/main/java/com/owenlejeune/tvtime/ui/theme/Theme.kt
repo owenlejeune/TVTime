@@ -8,24 +8,61 @@ import androidx.compose.ui.platform.LocalContext
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
 private val DarkColorPalette = darkColorScheme(
-    primary = Purple200,
-    secondary = Purple700,
-    tertiary = Teal200
+    primary = A1_200,
+    onPrimary = A1_800,
+    primaryContainer = A1_700,
+    onPrimaryContainer = A1_100,
+    inversePrimary = A1_600,
+    secondary = A2_200,
+    onSecondary = A2_800,
+    secondaryContainer = A2_700,
+    onSecondaryContainer = A2_100,
+    tertiary = A3_200,
+    onTertiary = A3_800,
+    tertiaryContainer = A3_700,
+    onTertiaryContainer = A3_100,
+    error = ErrorDark,
+    onError = OnErrorDark,
+    errorContainer = ErrorContainerDark,
+    onErrorContainer = OnErrorContainerDark,
+    outline = N2_400,
+    background = N1_900,
+    onBackground = N1_100,
+    surface = N1_900,
+    onSurface = N1_100,
+    surfaceVariant = N2_700,
+    onSurfaceVariant = N2_200,
+    inverseSurface = N1_100,
+    inverseOnSurface = N1_900
 )
 
 private val LightColorPalette = lightColorScheme(
-    primary = Purple500,
-    secondary = Purple700,
-    tertiary = Teal200
-
-    /* Other default colors to override
-    background = Color.White,
-    surface = Color.White,
-    onPrimary = Color.White,
-    onSecondary = Color.Black,
-    onBackground = Color.Black,
-    onSurface = Color.Black,
-    */
+    primary = A1_600,
+    onPrimary = A1_0,
+    primaryContainer = A1_100,
+    onPrimaryContainer = A1_900,
+    inversePrimary = A1_200,
+    secondary = A2_600,
+    onSecondary = A2_0,
+    secondaryContainer = A2_100,
+    onSecondaryContainer = A2_900,
+    tertiary = A3_600,
+    onTertiary = A3_0,
+    tertiaryContainer = A3_100,
+    onTertiaryContainer = A3_900,
+    error = ErrorLight,
+    onError = White,
+    errorContainer = ErrorContainerLight,
+    onErrorContainer = OnErrorContainerLight,
+    outline = N2_500,
+    background = N1_10,
+    onBackground = N1_900,
+    surface = N1_10,
+    onSurface = N1_900,
+    surfaceVariant = N2_100,
+    onSurfaceVariant = N2_700,
+    inverseSurface = N1_800,
+    inverseOnSurface = N1_50
 )
 
 @Composable
