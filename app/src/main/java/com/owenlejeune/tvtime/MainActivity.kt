@@ -4,22 +4,22 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Box
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.owenlejeune.tvtime.ui.navigation.MainNavigationRoutes
 import com.owenlejeune.tvtime.ui.theme.TVTimeTheme
+import com.owenlejeune.tvtime.utils.KeyBoardManager
 
 class MainActivity : ComponentActivity() {
-//    private val appNavControllerProvider: (@Composable () -> NavHostController) by inject(named(NavControllers.APP))
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
+            AppKeyboardFocusManager()
             val displayUnderStatusBar = remember { mutableStateOf(false) }
 //            WindowCompat.setDecorFitsSystemWindows(window, !displayUnderStatusBar.value)
 //            val statusBarColor = if (displayUnderStatusBar.value) {
@@ -53,4 +53,19 @@ fun MyApp(
 @Composable
 fun MyAppPreview() {
     MyApp()
+}
+
+@Composable
+private fun AppKeyboardFocusManager() {
+    val context = LocalContext.current
+    val focusManager = LocalFocusManager.current
+    DisposableEffect(key1 = context) {
+        val keyboardManager = KeyBoardManager(context)
+        keyboardManager.attachKeyboardDismissListener {
+            focusManager.clearFocus()
+        }
+        onDispose {
+            keyboardManager.release()
+        }
+    }
 }

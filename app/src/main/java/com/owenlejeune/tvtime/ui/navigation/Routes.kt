@@ -48,19 +48,24 @@ fun MainNavigationRoutes(navController: NavHostController, displayUnderStatusBar
 @Composable
 fun BottomNavigationRoutes(
     appNavController: NavHostController,
-    navController: NavHostController
+    navController: NavHostController,
+    shouldShowSearch: MutableState<Boolean>
 ) {
     NavHost(navController = navController, startDestination = BottomNavItem.Movies.route) {
         composable(BottomNavItem.Movies.route) {
+            shouldShowSearch.value = true
             MediaTab(appNavController = appNavController, mediaType = MediaViewType.MOVIE)
         }
         composable(BottomNavItem.TV.route) {
+            shouldShowSearch.value = true
             MediaTab(appNavController = appNavController, mediaType = MediaViewType.TV)
         }
         composable(BottomNavItem.Favourites.route) {
+            shouldShowSearch.value = false
             FavouritesTab()
         }
         composable(BottomNavItem.Settings.route) {
+            shouldShowSearch.value = false
             SettingsTab()
         }
     }

@@ -1,5 +1,4 @@
-import com.owenlejeune.tvtime.buildsrc.Config
-import com.owenlejeune.tvtime.buildsrc.Versions
+import com.owenlejeune.tvtime.buildsrc.*
 
 plugins {
     id 'com.android.application'
@@ -83,6 +82,8 @@ dependencies {
 
     //Coroutines
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.0'
+
+    implementation "me.onebone:toolbar-compose:2.3.1"
 
     testImplementation "junit:junit:${Versions.junit}"
     androidTestImplementation "androidx.test.ext:junit:${Versions.androidx_junit}"

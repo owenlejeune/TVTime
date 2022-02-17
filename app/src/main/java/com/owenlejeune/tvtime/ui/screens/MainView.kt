@@ -1,19 +1,22 @@
 package com.owenlejeune.tvtime.ui.screens
 
 import androidx.compose.animation.rememberSplineBasedDecay
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.Scaffold
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.pager.ExperimentalPagerApi
+import com.owenlejeune.tvtime.ui.components.RoundedTextField
 import com.owenlejeune.tvtime.ui.components.SearchFab
 import com.owenlejeune.tvtime.ui.navigation.BottomNavItem
 import com.owenlejeune.tvtime.ui.navigation.BottomNavigationRoutes
@@ -31,6 +34,8 @@ fun MainAppView(appNavController: NavHostController) {
         TopAppBarDefaults.exitUntilCollapsedScrollBehavior(decayAnimationSpec)
     }
 
+    val shouldShowSearch = remember { mutableStateOf(true) }
+
     // todo - scroll state not remember when returing from detail screen
 
     Scaffold(
@@ -45,7 +50,8 @@ fun MainAppView(appNavController: NavHostController) {
         topBar = {
             TopBar(
                 title = appBarTitle,
-                scrollBehavior = scrollBehavior
+                scrollBehavior = scrollBehavior,
+                shouldShowSearch = shouldShowSearch
             )
         },
         floatingActionButton = {
@@ -55,16 +61,53 @@ fun MainAppView(appNavController: NavHostController) {
         }
     ) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)) {
-            BottomNavigationRoutes(appNavController = appNavController, navController = navController)
+            BottomNavigationRoutes(appNavController = appNavController, navController = navController, shouldShowSearch = shouldShowSearch)
         }
     }
 }
 
 @Composable
-private fun TopBar(title: MutableState<String>, scrollBehavior: TopAppBarScrollBehavior) {
-    LargeTopAppBar(
-        title = { Text(text = title.value) },
-        scrollBehavior = scrollBehavior
+private fun TopBar(
+    title: MutableState<String>,
+    scrollBehavior: TopAppBarScrollBehavior,
+    hasSearchFocus: MutableState<Boolean> = remember { mutableStateOf(false) },
+    shouldShowSearch: MutableState<Boolean> = remember { mutableStateOf(true) }
+) {
+    SmallTopAppBar(
+        title = {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                if (!hasSearchFocus.value) {
+                    Text(text = title.value)
+                }
+                if (shouldShowSearch.value) {
+                    var textState by remember { mutableStateOf("") }
+                    val basePadding = 8.dp
+                    RoundedTextField(
+                        modifier = Modifier
+                            .padding(
+                                end = if (hasSearchFocus.value) (basePadding * 2) else basePadding,
+                                start = if (hasSearchFocus.value) 0.dp else basePadding
+                            )
+
+                            .height(35.dp)
+                            .onFocusChanged { focusState ->
+                                hasSearchFocus.value = focusState.isFocused
+                            },
+                        value = textState,
+                        onValueChange = { textState = it },
+                        placeHolder = "Search ${title.value.lowercase()}"
+                    )
+                }
+            }
+        },
+        scrollBehavior = scrollBehavior,
+        colors = TopAppBarDefaults
+            .largeTopAppBarColors(
+                scrolledContainerColor = MaterialTheme.colorScheme.background,
+                titleContentColor = MaterialTheme.colorScheme.primary
+            )
     )
 }
 

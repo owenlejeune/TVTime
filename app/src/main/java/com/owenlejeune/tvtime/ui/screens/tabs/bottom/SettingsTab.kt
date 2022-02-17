@@ -37,7 +37,11 @@ fun SettingsTab(preferences: AppPreferences = get(AppPreferences::class.java)) {
         val shouldShowPalette = remember { mutableStateOf(false) }
         Text(
             text = "Show material palette",
-            color = MaterialTheme.colorScheme.onBackground,
+            color = if (usePreferences.value) {
+                MaterialTheme.colorScheme.onBackground
+            } else {
+               MaterialTheme.colorScheme.outline
+           },
             modifier = Modifier
                 .padding(12.dp)
                 .clickable(

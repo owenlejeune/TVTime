@@ -3,12 +3,15 @@ package com.owenlejeune.tvtime.ui.components
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import android.widget.Toast
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.foundation.*
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Card
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
@@ -23,6 +26,7 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -294,8 +298,57 @@ fun RatingRing(
     }
 }
 
-@Preview
 @Composable
-fun RatingRingPreview() {
-    RatingRing(progress = 0.5f)
+fun RoundedTextField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    placeHolder: String = "",
+    placeHolderTextColor: Color = MaterialTheme.colorScheme.onSurfaceVariant,
+    textColor: Color = MaterialTheme.colorScheme.onSurfaceVariant,
+    backgroundColor: Color = MaterialTheme.colorScheme.surfaceVariant,
+    textStyle: TextStyle = MaterialTheme.typography.bodySmall,
+    cursorColor: Color = MaterialTheme.colorScheme.onSurfaceVariant,
+    singleLine: Boolean = true,
+    maxLines: Int = Int.MAX_VALUE,
+    enabled: Boolean = true,
+    readOnly: Boolean = false,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    keyboardActions: KeyboardActions = KeyboardActions.Default
+) {
+    Surface(
+        modifier = modifier,
+        shape = RoundedCornerShape(50.dp),
+        color = backgroundColor
+    ) {
+        Box(
+            modifier = Modifier.padding(horizontal = 12.dp),
+            contentAlignment = Alignment.CenterStart
+        ) {
+            if (value.isEmpty() && placeHolder.isNotEmpty()) {
+                Text(
+                    text = placeHolder,
+                    style = textStyle,
+                    color = placeHolderTextColor
+                )
+            }
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                BasicTextField(
+                    modifier = Modifier.weight(1f),
+                    value = value,
+                    onValueChange = onValueChange,
+                    singleLine = singleLine,
+                    textStyle = textStyle.copy(color = textColor),
+                    cursorBrush = SolidColor(cursorColor),
+                    maxLines = maxLines,
+                    enabled = enabled,
+                    readOnly = readOnly,
+                    keyboardOptions = keyboardOptions,
+                    keyboardActions = keyboardActions
+                )
+            }
+        }
+    }
 }
