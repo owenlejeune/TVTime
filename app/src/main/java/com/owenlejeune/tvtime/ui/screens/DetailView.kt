@@ -14,7 +14,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -29,11 +32,14 @@ import coil.transform.RoundedCornersTransformation
 import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.api.tmdb.DetailService
 import com.owenlejeune.tvtime.api.tmdb.MoviesService
-import com.owenlejeune.tvtime.utils.TmdbUtils
 import com.owenlejeune.tvtime.api.tmdb.TvService
 import com.owenlejeune.tvtime.api.tmdb.model.*
 import com.owenlejeune.tvtime.extensions.dpToPx
-import com.owenlejeune.tvtime.ui.components.*
+import com.owenlejeune.tvtime.ui.components.BackdropImage
+import com.owenlejeune.tvtime.ui.components.ChipGroup
+import com.owenlejeune.tvtime.ui.components.MinLinesText
+import com.owenlejeune.tvtime.ui.components.PosterItem
+import com.owenlejeune.tvtime.utils.TmdbUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -43,11 +49,11 @@ import kotlinx.coroutines.withContext
 fun DetailView(
     appNavController: NavController,
     itemId: Int?,
-    type: DetailViewType
+    type: MediaViewType
 ) {
     val service = when(type) {
-        DetailViewType.MOVIE -> MoviesService()
-        DetailViewType.TV -> TvService()
+        MediaViewType.MOVIE -> MoviesService()
+        MediaViewType.TV -> TvService()
     }
 
     val mediaItem = remember { mutableStateOf<DetailedItem?>(null) }
@@ -176,7 +182,7 @@ private fun ContentColumn(modifier: Modifier,
                           itemId: Int?,
                           mediaItem: MutableState<DetailedItem?>,
                           service: DetailService,
-                          mediaType: DetailViewType
+                          mediaType: MediaViewType
 ) {
     Column(
         modifier = modifier
@@ -185,7 +191,7 @@ private fun ContentColumn(modifier: Modifier,
             .padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
     ) {
 
-        if (mediaType == DetailViewType.MOVIE) {
+        if (mediaType == MediaViewType.MOVIE) {
             MiscMovieDetails(mediaItem = mediaItem, service as MoviesService)
         } else {
             MiscTvDetails(mediaItem = mediaItem, service as TvService)
@@ -438,9 +444,4 @@ private fun fetchTvContentRating(id: Int, service: TvService, contentRating: Mut
             }
         }
     }
-}
-
-enum class DetailViewType {
-    MOVIE,
-    TV
 }

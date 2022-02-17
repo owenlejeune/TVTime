@@ -3,9 +3,9 @@ package com.owenlejeune.tvtime.api.tmdb.model
 import com.google.gson.annotations.SerializedName
 
 class DetailedMovie(
-    @SerializedName("id") override val id: Int,
+    id: Int,
+    posterPath: String?,
     @SerializedName("original_title") override val title: String,
-    @SerializedName("poster_path") override val posterPath: String?,
     @SerializedName("backdrop_path") override val backdropPath: String?,
     @SerializedName("genres") override val genres: List<Genre>,
     @SerializedName("overview") override val overview: String?,

@@ -9,7 +9,16 @@ import retrofit2.http.Query
 interface TvApi {
 
     @GET("tv/popular")
-    suspend fun getPoplarTv(@Query("page") page: Int = 1): Response<PopularTvResponse>
+    suspend fun getPoplarTv(@Query("page") page: Int = 1): Response<HomePageTvResponse>
+
+    @GET("tv/top_rated")
+    suspend fun getTopRatedTv(@Query("page") page: Int = 1): Response<HomePageTvResponse>
+
+    @GET("tv/airing_today")
+    suspend fun getTvAiringToday(@Query("page") page: Int = 1): Response<HomePageTvResponse>
+
+    @GET("tv/on_the_air")
+    suspend fun getTvOnTheAir(@Query("page") page: Int = 1): Response<HomePageTvResponse>
 
     @GET("tv/{id}")
     suspend fun getTvShowById(@Path("id") id: Int): Response<out DetailedTv>

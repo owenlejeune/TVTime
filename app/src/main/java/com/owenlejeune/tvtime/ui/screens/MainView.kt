@@ -10,15 +10,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.navigation.NavController
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.google.accompanist.pager.ExperimentalPagerApi
 import com.owenlejeune.tvtime.ui.components.SearchFab
 import com.owenlejeune.tvtime.ui.navigation.BottomNavItem
 import com.owenlejeune.tvtime.ui.navigation.BottomNavigationRoutes
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalPagerApi::class)
 @Composable
-fun MainAppView(appNavController: NavController) {
+fun MainAppView(appNavController: NavHostController) {
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
@@ -83,7 +85,12 @@ private fun BottomNavBar(navController: NavController, appBarTitle: MutableState
                         appBarTitle = appBarTitle,
                         item = item
                     )
-                }
+                },
+                colors = NavigationBarItemDefaults
+                    .colors(
+                        selectedIconColor = MaterialTheme.colorScheme.onPrimary,
+                        indicatorColor = MaterialTheme.colorScheme.primary
+                    )
             )
         }
     }

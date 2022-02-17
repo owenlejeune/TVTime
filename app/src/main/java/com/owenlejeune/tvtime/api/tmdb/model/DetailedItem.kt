@@ -11,4 +11,4 @@ abstract class DetailedItem(
     @Transient open val status: String,
     @Transient open val tagline: String?,
     @Transient open val voteAverage: Float
-): TmdbItem(id, title, posterPath)
+): TmdbItem(id, posterPath, title)

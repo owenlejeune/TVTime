@@ -1,4 +1,4 @@
-package com.owenlejeune.tvtime.ui.screens.tabs
+package com.owenlejeune.tvtime.ui.screens.tabs.bottom
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column

@@ -4,12 +4,24 @@ import com.owenlejeune.tvtime.api.tmdb.model.*
 import org.koin.core.component.KoinComponent
 import retrofit2.Response
 
-class MoviesService: KoinComponent, DetailService {
+class MoviesService: KoinComponent, DetailService, HomePageService {
 
     private val service by lazy { TmdbClient().createMovieService() }
 
-    suspend fun getPopularMovies(page: Int = 1): Response<PopularMoviesResponse> {
+    override suspend fun getPopular(page: Int): Response<out HomePageResponse> {
         return service.getPopularMovies(page)
+    }
+
+    override suspend fun getNowPlaying(page: Int): Response<out HomePageResponse> {
+        return service.getNowPlayingMovies(page)
+    }
+
+    override suspend fun getTopRated(page: Int): Response<out HomePageResponse> {
+        return service.getTopRatedMovies(page)
+    }
+
+    override suspend fun getUpcoming(page: Int): Response<out HomePageResponse> {
+        return service.getUpcomingMovies(page)
     }
 
     suspend fun getReleaseDates(id: Int): Response<MovieReleaseResults> {
