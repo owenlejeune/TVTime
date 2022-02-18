@@ -1,15 +1,33 @@
 package com.owenlejeune.tvtime.utils
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.graphics.Rect
 import android.view.View
 import android.view.ViewTreeObserver
 
-class KeyBoardManager(context: Context) {
+class KeyboardManager private constructor(context: Context) {
+
+    companion object {
+        @SuppressLint("StaticFieldLeak")
+        private var INSTANCE: KeyboardManager? = null
+        private val lock = Object()
+
+        fun getInstance(context: Context): KeyboardManager {
+            if (INSTANCE == null) {
+                synchronized(lock) {
+                    if (INSTANCE == null) {
+                        INSTANCE = KeyboardManager(context)
+                    }
+                }
+            }
+            return INSTANCE!!
+        }
+    }
 
     private val activity = context as Activity
-    private var keyboardDismissListener: KeyboardDismissListener? = null
+    private var keyboardDismissListeners: MutableList<KeyboardDismissListener> = ArrayList()
 
     private abstract class KeyboardDismissListener(
         private val rootView: View,
@@ -33,17 +51,18 @@ class KeyBoardManager(context: Context) {
 
     fun attachKeyboardDismissListener(onKeyboardDismiss: () -> Unit) {
         val rootView = activity.findViewById<View>(android.R.id.content)
-        keyboardDismissListener = object : KeyboardDismissListener(rootView, onKeyboardDismiss) {}
-        keyboardDismissListener?.let {
+        keyboardDismissListeners.add(object : KeyboardDismissListener(rootView, onKeyboardDismiss) {})
+        keyboardDismissListeners.forEach {
             rootView.viewTreeObserver.addOnGlobalLayoutListener(it)
         }
     }
 
     fun release() {
         val rootView = activity.findViewById<View>(android.R.id.content)
-        keyboardDismissListener?.let {
+        keyboardDismissListeners.forEach {
             rootView.viewTreeObserver.removeOnGlobalLayoutListener(it)
         }
-        keyboardDismissListener = null
+        keyboardDismissListeners.clear()
     }
+
 }

@@ -18,13 +18,12 @@ import androidx.compose.material.Switch
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -274,10 +273,15 @@ fun TopLevelSwitchPreview() {
 }
 
 @Composable
-fun SearchFab() {
+fun SearchFab(
+    focusSearchBar: MutableState<Boolean> = mutableStateOf(false),
+    focusRequester: FocusRequester = remember { FocusRequester() }
+) {
     val context = LocalContext.current
     FloatingActionButton(onClick = {
-        Toast.makeText(context, "Search Clicked!", Toast.LENGTH_SHORT).show()
+        focusSearchBar.value = true
+//        focusRequester.requestFocus()
+//        Toast.makeText(context, "Search Clicked!", Toast.LENGTH_SHORT).show()
     }) {
         Icon(Icons.Filled.Search, "")
     }
@@ -422,6 +426,8 @@ fun RoundedTextField(
     value: String,
     onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier,
+    focusRequester: FocusRequester = remember { FocusRequester() },
+    requestFocus: Boolean = false,
     placeHolder: String = "",
     placeHolderTextColor: Color = MaterialTheme.colorScheme.onSurfaceVariant,
     textColor: Color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -455,7 +461,9 @@ fun RoundedTextField(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 BasicTextField(
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier
+                        .weight(1f)
+                        .focusRequester(focusRequester),
                     value = value,
                     onValueChange = onValueChange,
                     singleLine = singleLine,
@@ -468,6 +476,12 @@ fun RoundedTextField(
                     keyboardActions = keyboardActions
                 )
             }
+        }
+    }
+
+    if (requestFocus) {
+        LaunchedEffect(Unit) {
+            focusRequester.requestFocus()
         }
     }
 }

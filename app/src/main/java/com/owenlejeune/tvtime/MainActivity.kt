@@ -12,7 +12,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.owenlejeune.tvtime.ui.navigation.MainNavigationRoutes
 import com.owenlejeune.tvtime.ui.theme.TVTimeTheme
-import com.owenlejeune.tvtime.utils.KeyBoardManager
+import com.owenlejeune.tvtime.utils.KeyboardManager
 
 class MainActivity : ComponentActivity() {
 
@@ -60,7 +60,7 @@ private fun AppKeyboardFocusManager() {
     val context = LocalContext.current
     val focusManager = LocalFocusManager.current
     DisposableEffect(key1 = context) {
-        val keyboardManager = KeyBoardManager(context)
+        val keyboardManager = KeyboardManager.getInstance(context)
         keyboardManager.attachKeyboardDismissListener {
             focusManager.clearFocus()
         }

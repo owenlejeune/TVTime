@@ -10,8 +10,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -24,6 +26,7 @@ import com.owenlejeune.tvtime.ui.components.RoundedTextField
 import com.owenlejeune.tvtime.ui.components.SearchFab
 import com.owenlejeune.tvtime.ui.navigation.BottomNavItem
 import com.owenlejeune.tvtime.ui.navigation.BottomNavigationRoutes
+import com.owenlejeune.tvtime.utils.KeyboardManager
 import org.koin.java.KoinJavaComponent.get
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPagerApi::class)
@@ -39,7 +42,8 @@ fun MainAppView(appNavController: NavHostController, preferences: AppPreferences
         TopAppBarDefaults.exitUntilCollapsedScrollBehavior(decayAnimationSpec)
     }
 
-    val shouldShowSearch = remember { mutableStateOf(false) }
+    val focusRequester = remember { FocusRequester() }
+    val focusSearchBar = remember { mutableStateOf(false) }
     val searchableScreens = listOf(BottomNavItem.Movies.route, BottomNavItem.TV.route)
 
     // todo - scroll state not remember when returing from detail screen
@@ -58,7 +62,8 @@ fun MainAppView(appNavController: NavHostController, preferences: AppPreferences
                 SearchTopBar(
                     title = appBarTitle,
                     scrollBehavior = scrollBehavior,
-                    shouldShowSearch = shouldShowSearch
+                    requestSearchFocus = focusSearchBar,
+                    focusRequester = focusRequester
                 )
             } else {
                 TopBar(
@@ -68,8 +73,11 @@ fun MainAppView(appNavController: NavHostController, preferences: AppPreferences
             }
         },
         floatingActionButton = {
-            if (currentRoute in searchableScreens && !preferences.persistentSearch) {
-                SearchFab()
+            if (currentRoute in searchableScreens && !preferences.persistentSearch && !focusSearchBar.value) {
+                SearchFab(
+                    focusSearchBar = focusSearchBar,
+                    focusRequester = focusRequester
+                )
             }
         }
     ) { innerPadding ->
@@ -99,8 +107,8 @@ private fun TopBar(
 private fun SearchTopBar(
     title: MutableState<String>,
     scrollBehavior: TopAppBarScrollBehavior,
-    hasSearchFocus: MutableState<Boolean> = remember { mutableStateOf(false) },
-    shouldShowSearch: MutableState<Boolean> = remember { mutableStateOf(false) },
+    requestSearchFocus: MutableState<Boolean> = remember { mutableStateOf(false) },
+    focusRequester: FocusRequester = remember { FocusRequester() },
     preferences: AppPreferences = get(AppPreferences::class.java)
 ) {
     SmallTopAppBar(
@@ -108,10 +116,11 @@ private fun SearchTopBar(
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                if (!hasSearchFocus.value && !(preferences.persistentSearch && preferences.hideTitle)) {
+                val hasSearchFocus = remember { mutableStateOf(requestSearchFocus.value) }
+                if (!requestSearchFocus.value && !hasSearchFocus.value && !(preferences.persistentSearch && preferences.hideTitle)) {
                     Text(text = title.value)
                 }
-                if (shouldShowSearch.value || preferences.persistentSearch) {
+                if (requestSearchFocus.value || preferences.persistentSearch) {
                     var textState by remember { mutableStateOf("") }
                     val basePadding = 8.dp
                     RoundedTextField(
@@ -120,11 +129,12 @@ private fun SearchTopBar(
                                 end = if (hasSearchFocus.value || preferences.hideTitle) (basePadding * 3) else basePadding,
                                 start = if (hasSearchFocus.value || preferences.hideTitle) 0.dp else basePadding
                             )
-
                             .height(35.dp)
                             .onFocusChanged { focusState ->
                                 hasSearchFocus.value = focusState.isFocused
                             },
+                        requestFocus = requestSearchFocus.value,
+                        focusRequester = focusRequester,
                         value = textState,
                         onValueChange = { textState = it },
                         placeHolder = "Search ${title.value}"
@@ -139,6 +149,12 @@ private fun SearchTopBar(
                 titleContentColor = MaterialTheme.colorScheme.primary
             )
     )
+
+    val context = LocalContext.current
+    val keyboardManager = KeyboardManager.getInstance(context)
+    keyboardManager.attachKeyboardDismissListener {
+        requestSearchFocus.value = false
+    }
 }
 
 @Composable
