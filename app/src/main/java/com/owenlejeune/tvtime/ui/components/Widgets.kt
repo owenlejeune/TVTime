@@ -13,6 +13,8 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Card
+import androidx.compose.material.ContentAlpha
+import androidx.compose.material.Switch
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
@@ -27,6 +29,7 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -39,6 +42,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -82,8 +86,8 @@ fun TopLevelSwitch(
             )
             CustomSwitch(
                 modifier = Modifier.padding(40.dp, 12.dp),
-                switchState = checkedState,
-                onCheckChanged = { isChecked ->
+                checked = checkedState.value,
+                onCheckedChange = { isChecked ->
                     checkedState.value = isChecked
                     onCheckChanged(isChecked)
                 }
@@ -92,29 +96,144 @@ fun TopLevelSwitch(
     }
 }
 
+class CustomSwitchColors private constructor(
+    val lightUncheckedTrackColor: Color,
+    val darkUncheckedTrackColor: Color,
+    val lightUncheckedThumbColor: Color,
+    val darkUncheckedThumbColor: Color,
+    val lightCheckedTrackColor: Color,
+    val darkCheckedTrackColor: Color,
+    val lightCheckedThumbColor: Color,
+    val darkCheckedThumbColor: Color,
+    val lightDisabledTrackColor: Color,
+    val darkDisabledTrackColor: Color,
+    val lightDisabledThumbColor: Color,
+    val darkDisabledThumbColor: Color
+){
+    companion object {
+        @Composable
+        fun topLevelColors(
+            lightUncheckedTrackColor: Color = MaterialTheme.colorScheme.outline,
+            darkUncheckedTrackColor: Color =MaterialTheme.colorScheme.surfaceVariant,
+            lightUncheckedThumbColor: Color = MaterialTheme.colorScheme.surfaceVariant,
+            darkUncheckedThumbColor: Color = MaterialTheme.colorScheme.outline,
+            lightCheckedTrackColor: Color = MaterialTheme.colorScheme.primary,
+            darkCheckedTrackColor: Color = MaterialTheme.colorScheme.outline,
+            lightCheckedThumbColor: Color = MaterialTheme.colorScheme.primaryContainer,
+            darkCheckedThumbColor: Color = MaterialTheme.colorScheme.primary,
+            lightDisabledTrackColor: Color = lightUncheckedTrackColor
+                .copy(alpha = ContentAlpha.disabled)
+                .compositeOver(MaterialTheme.colorScheme.surface),
+            darkDisabledTrackColor: Color = darkUncheckedTrackColor
+                .copy(alpha = ContentAlpha.disabled)
+                .compositeOver(MaterialTheme.colorScheme.surface),
+            lightDisabledThumbColor: Color = lightUncheckedThumbColor
+                .copy(alpha = ContentAlpha.disabled)
+                .compositeOver(MaterialTheme.colorScheme.surface),
+            darkDisabledThumbColor: Color = darkUncheckedThumbColor
+                .copy(alpha = ContentAlpha.disabled)
+                .compositeOver(MaterialTheme.colorScheme.surface)
+        ): CustomSwitchColors {
+            return CustomSwitchColors(
+                lightUncheckedTrackColor,
+                darkUncheckedTrackColor,
+                lightUncheckedThumbColor,
+                darkUncheckedThumbColor,
+                lightCheckedTrackColor,
+                darkCheckedTrackColor,
+                lightCheckedThumbColor,
+                darkCheckedThumbColor,
+                lightDisabledTrackColor,
+                darkDisabledTrackColor,
+                lightDisabledThumbColor,
+                darkDisabledThumbColor
+            )
+        }
+
+        @Composable
+        fun standardColors(
+            lightUncheckedTrackColor: Color = MaterialTheme.colorScheme.outline,
+            darkUncheckedTrackColor: Color = MaterialTheme.colorScheme.surfaceVariant,
+            lightUncheckedThumbColor: Color = MaterialTheme.colorScheme.surfaceVariant,
+            darkUncheckedThumbColor: Color = MaterialTheme.colorScheme.outline,
+            lightCheckedTrackColor: Color = MaterialTheme.colorScheme.primary,
+            darkCheckedTrackColor: Color = MaterialTheme.colorScheme.secondaryContainer,
+            lightCheckedThumbColor: Color = MaterialTheme.colorScheme.primaryContainer,
+            darkCheckedThumbColor: Color = MaterialTheme.colorScheme.primary,
+            lightDisabledTrackColor: Color = lightUncheckedTrackColor
+                .copy(alpha = ContentAlpha.disabled)
+                .compositeOver(MaterialTheme.colorScheme.surface),
+            darkDisabledTrackColor: Color = darkUncheckedTrackColor
+                .copy(alpha = ContentAlpha.disabled)
+                .compositeOver(MaterialTheme.colorScheme.surface),
+            lightDisabledThumbColor: Color = lightUncheckedThumbColor
+                .copy(alpha = ContentAlpha.disabled)
+                .compositeOver(MaterialTheme.colorScheme.surface),
+            darkDisabledThumbColor: Color = darkUncheckedThumbColor
+                .copy(alpha = ContentAlpha.disabled)
+                .compositeOver(MaterialTheme.colorScheme.surface)
+        ): CustomSwitchColors {
+            return CustomSwitchColors(
+                lightUncheckedTrackColor,
+                darkUncheckedTrackColor,
+                lightUncheckedThumbColor,
+                darkUncheckedThumbColor,
+                lightCheckedTrackColor,
+                darkCheckedTrackColor,
+                lightCheckedThumbColor,
+                darkCheckedThumbColor,
+                lightDisabledTrackColor,
+                darkDisabledTrackColor,
+                lightDisabledThumbColor,
+                darkDisabledThumbColor
+            )
+        }
+    }
+}
+
 @Composable
-private fun CustomSwitch(
+fun CustomSwitch(
     modifier: Modifier = Modifier,
-    switchState: MutableState<Boolean> = remember { mutableStateOf(false) },
-    onCheckChanged: (Boolean) -> Unit = {}
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit = {},
+    width: Dp = 30.dp,
+    height: Dp = 15.dp,
+    colors: CustomSwitchColors = CustomSwitchColors.topLevelColors(),
+    enabled: Boolean = true
 ) {
-    val width = 30.dp
-    val height = 15.dp
+    val checkedState = remember { mutableStateOf(checked) }
+
     val gapBetweenThumbAndTrackEdge = 2.dp
 
     val thumbRadius = (height / 2) - gapBetweenThumbAndTrackEdge
     val animatePosition = animateFloatAsState(
-        targetValue = if (switchState.value) {
+        targetValue = if (checkedState.value) {
             with(LocalDensity.current) { (width - thumbRadius - gapBetweenThumbAndTrackEdge).toPx() }
         } else {
             with (LocalDensity.current) { (thumbRadius + gapBetweenThumbAndTrackEdge).toPx() }
         }
     )
 
-    val uncheckedTrackColor = if (isSystemInDarkTheme()) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.outline
-    val uncheckedThumbColor = if (isSystemInDarkTheme()) MaterialTheme.colorScheme.outline else MaterialTheme.colorScheme.surfaceVariant
-    val checkedTrackColor = if (isSystemInDarkTheme()) MaterialTheme.colorScheme.outline else MaterialTheme.colorScheme.primary
-    val checkedThumbColor = if (isSystemInDarkTheme()) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primaryContainer
+    val uncheckedTrackColor = if (enabled) {
+        if (isSystemInDarkTheme()) colors.darkUncheckedTrackColor else colors.lightUncheckedTrackColor
+    } else {
+        if (isSystemInDarkTheme()) colors.darkDisabledTrackColor else colors.lightDisabledTrackColor
+    }
+    val uncheckedThumbColor = if (enabled) {
+        if (isSystemInDarkTheme()) colors.darkUncheckedThumbColor else colors.lightUncheckedThumbColor
+    } else {
+        if (isSystemInDarkTheme()) colors.darkDisabledThumbColor else colors.lightDisabledThumbColor
+    }
+    val checkedTrackColor = if (enabled) {
+        if (isSystemInDarkTheme()) colors.darkCheckedTrackColor else colors.lightCheckedTrackColor
+    } else {
+        if (isSystemInDarkTheme()) colors.darkDisabledTrackColor else colors.lightDisabledTrackColor
+    }
+    val checkedThumbColor = if (enabled) {
+        if (isSystemInDarkTheme()) colors.darkCheckedThumbColor else colors.lightCheckedThumbColor
+    } else {
+        if (isSystemInDarkTheme()) colors.darkDisabledThumbColor else colors.lightDisabledThumbColor
+    }
 
     Canvas(
         modifier = modifier
@@ -123,18 +242,18 @@ private fun CustomSwitch(
             .pointerInput(Unit) {
                 detectTapGestures(
                     onTap = {
-                        switchState.value = !switchState.value
-                        onCheckChanged(switchState.value)
+                        checkedState.value = !checkedState.value
+                        onCheckedChange(checkedState.value)
                     }
                 )
             }
     ) {
         drawRoundRect(
-            color = if (switchState.value) checkedTrackColor else uncheckedTrackColor,
+            color = if (checkedState.value) checkedTrackColor else uncheckedTrackColor,
             cornerRadius = CornerRadius(x = 10.dp.toPx(), y = 10.dp.toPx())
         )
         drawCircle(
-            color = if (switchState.value) checkedThumbColor else uncheckedThumbColor,
+            color = if (checkedState.value) checkedThumbColor else uncheckedThumbColor,
             radius = thumbRadius.toPx(),
             center = Offset(
                 x = animatePosition.value,

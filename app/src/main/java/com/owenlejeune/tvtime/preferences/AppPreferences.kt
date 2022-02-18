@@ -8,15 +8,24 @@ class AppPreferences(context: Context) {
     companion object {
         private val PREF_FILE = "tvtime_shared_preferences"
 
-        private val USE_PREFERENCES = "use_android_12_colors"
+//        private val USE_PREFERENCES = "use_android_12_colors"
+        private val PERSISTENT_SEARCH = "persistent_search"
+        private val HIDE_TITLE = "hide_title"
     }
 
     private val preferences: SharedPreferences = context.getSharedPreferences(PREF_FILE, Context.MODE_PRIVATE)
 
+    var persistentSearch: Boolean
+        get() = preferences.getBoolean(PERSISTENT_SEARCH, true)
+        set(value) { preferences.put(PERSISTENT_SEARCH, value) }
+
+    var hideTitle: Boolean
+        get() = preferences.getBoolean(HIDE_TITLE, false)
+        set(value) { preferences.put(HIDE_TITLE, value) }
 //    val usePreferences:  MutableState<Boolean>
-    var usePreferences: Boolean
-        get() = preferences.getBoolean(USE_PREFERENCES, false)
-        set(value) { preferences.put(USE_PREFERENCES, value) }
+//    var usePreferences: Boolean
+//        get() = preferences.getBoolean(USE_PREFERENCES, false)
+//        set(value) { preferences.put(USE_PREFERENCES, value) }
 
     private fun SharedPreferences.put(key: String, value: Any?) {
         edit().apply {
