@@ -32,4 +32,7 @@ interface TvApi {
     @GET("tv/{id}/content_ratings")
     suspend fun getContentRatings(@Path("id") id: Int): Response<TvContentRatings>
 
+    @GET("tv/{id}/similar")
+    suspend fun getSimilarTvShows(@Path("id") id: Int, @Query("page") page: Int = 1): Response<HomePageTvResponse>
+
 }

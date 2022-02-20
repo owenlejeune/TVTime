@@ -40,4 +40,8 @@ class MoviesService: KoinComponent, DetailService, HomePageService {
         return service.getCastAndCrew(id)
     }
 
+    override suspend fun getSimilar(id: Int, page: Int): Response<out HomePageResponse> {
+        return service.getSimilarMovies(id, page)
+    }
+
 }

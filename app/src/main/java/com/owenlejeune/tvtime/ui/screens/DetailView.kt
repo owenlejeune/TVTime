@@ -1,13 +1,10 @@
 package com.owenlejeune.tvtime.ui.screens
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Card
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Icon
@@ -21,24 +18,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.navigation.NavController
-import coil.compose.rememberImagePainter
-import coil.transform.RoundedCornersTransformation
 import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.api.tmdb.DetailService
 import com.owenlejeune.tvtime.api.tmdb.MoviesService
 import com.owenlejeune.tvtime.api.tmdb.TvService
 import com.owenlejeune.tvtime.api.tmdb.model.*
-import com.owenlejeune.tvtime.extensions.dpToPx
-import com.owenlejeune.tvtime.ui.components.BackdropImage
-import com.owenlejeune.tvtime.ui.components.ChipGroup
-import com.owenlejeune.tvtime.ui.components.MinLinesText
-import com.owenlejeune.tvtime.ui.components.PosterItem
+import com.owenlejeune.tvtime.ui.components.*
 import com.owenlejeune.tvtime.utils.TmdbUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -160,12 +150,7 @@ private fun BackButton(modifier: Modifier, appNavController: NavController) {
         onClick = { appNavController.popBackStack() },
         modifier = modifier
             .background(
-                brush = Brush.radialGradient(
-                    colors = listOf(
-                        Color.Black,
-                        Color.Transparent
-                    )
-                )
+                brush = Brush.radialGradient(colors = listOf(Color.Black, Color.Transparent))
             )
             .wrapContentSize()
     ) {
@@ -178,11 +163,12 @@ private fun BackButton(modifier: Modifier, appNavController: NavController) {
 }
 
 @Composable
-private fun ContentColumn(modifier: Modifier,
-                          itemId: Int?,
-                          mediaItem: MutableState<DetailedItem?>,
-                          service: DetailService,
-                          mediaType: MediaViewType
+private fun ContentColumn(
+    modifier: Modifier,
+    itemId: Int?,
+    mediaItem: MutableState<DetailedItem?>,
+    service: DetailService,
+    mediaType: MediaViewType
 ) {
     Column(
         modifier = modifier
@@ -190,7 +176,6 @@ private fun ContentColumn(modifier: Modifier,
             .wrapContentHeight()
             .padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
     ) {
-
         if (mediaType == MediaViewType.MOVIE) {
             MiscMovieDetails(mediaItem = mediaItem, service as MoviesService)
         } else {
@@ -198,10 +183,12 @@ private fun ContentColumn(modifier: Modifier,
         }
 
         if (mediaItem.value?.overview?.isNotEmpty() == true) {
-            OverviewCard(mediaItem = mediaItem)
+            OverviewCard(mediaItem = mediaItem, modifier = Modifier.padding(bottom = 16.dp))
         }
 
-        CastCard(itemId = itemId, service = service)
+        CastCard(itemId = itemId, service = service, modifier = Modifier.padding(bottom = 16.dp))
+
+        SimilarContent(itemId = itemId, service = service)//, modifier = Modifier.padding(bottom = 16.dp))
     }
 }
 
@@ -286,15 +273,9 @@ private fun MiscDetails(
 }
 
 @Composable
-private fun OverviewCard(mediaItem: MutableState<DetailedItem?>) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .wrapContentHeight()
-            .padding(bottom = 16.dp),
-        shape = RoundedCornerShape(10.dp),
-        backgroundColor = MaterialTheme.colorScheme.surfaceVariant,
-        elevation = 8.dp
+private fun OverviewCard(mediaItem: MutableState<DetailedItem?>, modifier: Modifier = Modifier) {
+    ContentCard(
+        modifier = modifier
     ) {
         Text(
             modifier = Modifier
@@ -309,7 +290,7 @@ private fun OverviewCard(mediaItem: MutableState<DetailedItem?>) {
 }
 
 @Composable
-private fun CastCard(itemId: Int?, service: DetailService) {
+private fun CastCard(itemId: Int?, service: DetailService, modifier: Modifier = Modifier) {
     val castAndCrew = remember { mutableStateOf<CastAndCrew?>(null) }
     itemId?.let {
         if (castAndCrew.value == null) {
@@ -317,29 +298,19 @@ private fun CastCard(itemId: Int?, service: DetailService) {
         }
     }
 
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .wrapContentHeight(),
-        shape = RoundedCornerShape(10.dp),
+    ContentCard(
+        modifier = modifier,
+        title = stringResource(R.string.cast_label),
         backgroundColor = MaterialTheme.colorScheme.primary,
-        elevation = 8.dp
+        textColor = MaterialTheme.colorScheme.background
     ) {
-        Column(modifier = Modifier.fillMaxSize()) {
-            Text(
-                text = stringResource(R.string.cast_label),
-                style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier.padding(start = 12.dp, top = 12.dp)
-            )
-            LazyRow(modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp)
-            ) {
-                items(castAndCrew.value?.cast?.size ?: 0) { i ->
-                    val castMember = castAndCrew.value!!.cast[i]
-
-                    CastCrewCard(person = castMember)
-                }
+        LazyRow(modifier = Modifier
+            .fillMaxWidth()
+            .padding(12.dp)
+        ) {
+            items(castAndCrew.value?.cast?.size ?: 0) { i ->
+                val castMember = castAndCrew.value!!.cast[i]
+                CastCrewCard(person = castMember)
             }
         }
     }
@@ -347,45 +318,53 @@ private fun CastCard(itemId: Int?, service: DetailService) {
 
 @Composable
 private fun CastCrewCard(person: Person) {
-    val context = LocalContext.current
-    Column(
+    ImageTextCard(
+        title = person.name,
         modifier = Modifier
             .width(124.dp)
-            .wrapContentHeight()
-            .padding(end = 12.dp)
+            .wrapContentHeight(),
+        subtitle = when (person) {
+            is CastMember -> person.character
+            is CrewMember -> person.job
+            else -> null
+        },
+        imageUrl = TmdbUtils.getFullPersonImagePath(person),
+        noDataImage = R.drawable.no_person_photo,
+        titleTextColor = MaterialTheme.colorScheme.onPrimary,
+        subtitleTextColor = Color.Unspecified
+    )
+}
+
+@Composable
+fun SimilarContent(itemId: Int?, service: DetailService, modifier: Modifier = Modifier) {
+    val similarContent = remember { mutableStateOf<HomePageResponse?>(null) }
+    itemId?.let {
+        if (similarContent.value == null) {
+            fetchSimilarContent(itemId, service, similarContent)
+        }
+    }
+
+    ContentCard(
+        modifier = modifier,
+        title = "Recommended"
     ) {
-        Image(
-            modifier = Modifier
-                .size(width = 120.dp, height = 180.dp),
-            painter = rememberImagePainter(
-                data = TmdbUtils.getFullPersonImagePath(person) ?: R.drawable.no_person_photo,
-                builder = {
-                    transformations(RoundedCornersTransformation(5f.dpToPx(context)))
-                    placeholder(R.drawable.placeholder)
-                }
-            ),
-            contentDescription = ""
-        )
-        MinLinesText(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 5.dp),
-            minLines = 2,
-            text = person.name,
-            color = MaterialTheme.colorScheme.onPrimary,
-            style = MaterialTheme.typography.bodyMedium
-        )
-        MinLinesText(
-            modifier = Modifier
-                .fillMaxWidth(),
-            minLines = 2,
-            text = when (person) {
-                is CastMember -> person.character
-                is CrewMember -> person.job
-                else -> ""
-            },
-            style = MaterialTheme.typography.bodySmall
-        )
+        LazyRow(modifier = Modifier
+            .fillMaxWidth()
+            .wrapContentHeight()
+            .padding(12.dp)
+        ) {
+            items(similarContent.value?.results?.size ?: 0) { i ->
+                val content = similarContent.value!!.results[i]
+
+                ImageTextCard(
+                    title = content.title,
+                    modifier = Modifier
+                        .width(124.dp)
+                        .wrapContentHeight(),
+                    imageUrl = TmdbUtils.getFullPosterPath(content)
+                )
+            }
+        }
     }
 }
 
@@ -441,6 +420,17 @@ private fun fetchTvContentRating(id: Int, service: TvService, contentRating: Mut
             val cr = TmdbUtils.getTvRating(results.body())
             withContext(Dispatchers.Main) {
                 contentRating.value = cr
+            }
+        }
+    }
+}
+
+private fun fetchSimilarContent(id: Int, service: DetailService, similarContent: MutableState<HomePageResponse?>) {
+    CoroutineScope(Dispatchers.IO).launch {
+        val results = service.getSimilar(id, 1)
+        if (results.isSuccessful) {
+            withContext(Dispatchers.Main) {
+                similarContent.value = results.body()
             }
         }
     }

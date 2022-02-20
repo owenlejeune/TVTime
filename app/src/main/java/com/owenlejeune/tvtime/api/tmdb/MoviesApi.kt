@@ -32,4 +32,7 @@ interface MoviesApi {
     @GET("movie/{id}/release_dates")
     suspend fun getReleaseDates(@Path("id") id: Int): Response<MovieReleaseResults>
 
+    @GET("movie/{id}/recommendations")
+    suspend fun getSimilarMovies(@Path("id") id: Int, @Query("page") page: Int = 1): Response<HomePageMoviesResponse>
+
 }
