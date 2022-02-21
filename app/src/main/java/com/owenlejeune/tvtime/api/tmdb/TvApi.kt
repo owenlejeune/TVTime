@@ -35,4 +35,7 @@ interface TvApi {
     @GET("tv/{id}/similar")
     suspend fun getSimilarTvShows(@Path("id") id: Int, @Query("page") page: Int = 1): Response<HomePageTvResponse>
 
+    @GET("tv/{id}/videos")
+    suspend fun getVideos(@Path("id") id: Int): Response<VideoResponse>
+
 }

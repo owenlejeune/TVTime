@@ -188,7 +188,9 @@ private fun ContentColumn(
 
         CastCard(itemId = itemId, service = service, modifier = Modifier.padding(bottom = 16.dp))
 
-        SimilarContent(itemId = itemId, service = service)//, modifier = Modifier.padding(bottom = 16.dp))
+        SimilarContentCard(itemId = itemId, service = service, modifier = Modifier.padding(bottom = 16.dp))
+        
+        VideosCard(itemId = itemId, service = service)
     }
 }
 
@@ -336,7 +338,7 @@ private fun CastCrewCard(person: Person) {
 }
 
 @Composable
-fun SimilarContent(itemId: Int?, service: DetailService, modifier: Modifier = Modifier) {
+fun SimilarContentCard(itemId: Int?, service: DetailService, modifier: Modifier = Modifier) {
     val similarContent = remember { mutableStateOf<HomePageResponse?>(null) }
     itemId?.let {
         if (similarContent.value == null) {
@@ -363,6 +365,54 @@ fun SimilarContent(itemId: Int?, service: DetailService, modifier: Modifier = Mo
                         .wrapContentHeight(),
                     imageUrl = TmdbUtils.getFullPosterPath(content)
                 )
+            }
+        }
+    }
+}
+
+@Composable
+fun VideosCard(itemId: Int?, service: DetailService, modifier: Modifier = Modifier) {
+    val videoResponse = remember { mutableStateOf<VideoResponse?>(null) }
+    itemId?.let {
+        if (videoResponse.value == null) {
+            fetchVideos(itemId, service, videoResponse)
+        }
+    }
+
+    ContentCard(
+        modifier = modifier,
+        title = "Trailers"
+    ) {
+        LazyRow(
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentHeight()
+                .padding(vertical = 12.dp, horizontal = 8.dp)
+        ) {
+            val videos = videoResponse.value?.results?.filter { it.isOfficial && it.type.lowercase() in listOf("trailer"/*, "teaser"*/) }
+            val types = videos?.map { it.type }
+            items(videos?.size ?: 0) { i ->
+                val video = videos!![i]
+
+                Column(
+                    modifier = Modifier.wrapContentHeight().width(152.dp)
+                ) {
+                    FullScreenThumbnailVideoPlayer(
+                        key = video.key,
+                        modifier = Modifier
+                            .size(width = 152.dp, height = 108.dp)
+                            .padding(end = 4.dp)
+                    )
+                    MinLinesText(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 5.dp),
+                        minLines = 2,
+                        text = video.name,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
             }
         }
     }
@@ -431,6 +481,17 @@ private fun fetchSimilarContent(id: Int, service: DetailService, similarContent:
         if (results.isSuccessful) {
             withContext(Dispatchers.Main) {
                 similarContent.value = results.body()
+            }
+        }
+    }
+}
+
+private fun fetchVideos(id: Int, service: DetailService, videoResponse: MutableState<VideoResponse?>) {
+    CoroutineScope(Dispatchers.IO).launch {
+        val results = service.getVideos(id)
+        if (results.isSuccessful) {
+            withContext(Dispatchers.Main) {
+                videoResponse.value = results.body()
             }
         }
     }

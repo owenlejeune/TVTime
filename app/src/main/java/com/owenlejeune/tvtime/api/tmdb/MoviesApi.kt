@@ -35,4 +35,7 @@ interface MoviesApi {
     @GET("movie/{id}/recommendations")
     suspend fun getSimilarMovies(@Path("id") id: Int, @Query("page") page: Int = 1): Response<HomePageMoviesResponse>
 
+    @GET("movie/{id}/videos")
+    suspend fun getVideos(@Path("id") id: Int): Response<VideoResponse>
+
 }

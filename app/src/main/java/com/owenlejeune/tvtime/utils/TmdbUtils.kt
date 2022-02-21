@@ -1,6 +1,11 @@
 package com.owenlejeune.tvtime.utils
 
+import android.content.Context
+import android.util.SparseArray
 import androidx.compose.ui.text.intl.Locale
+import at.huber.youtubeExtractor.VideoMeta
+import at.huber.youtubeExtractor.YouTubeExtractor
+import at.huber.youtubeExtractor.YtFile
 import com.owenlejeune.tvtime.api.tmdb.model.*
 
 object TmdbUtils {
@@ -131,6 +136,22 @@ object TmdbUtils {
 
     fun convertVoteAverageToPercentage(detailItem: DetailedItem): Float {
         return detailItem.voteAverage / 10f
+    }
+
+    fun getFullVideoUrl(video: Video): String {
+//        object: YouTubeExtractor(context) {
+//            override fun onExtractionComplete(
+//                ytFiles: SparseArray<YtFile>?,
+//                videoMeta: VideoMeta?
+//            ) {
+//                if (ytFiles != null) {
+//                }
+//            }
+//        }
+        if (video.site == "YouTube") {
+            return "http://www.youtube.com/watch?v=${video.key}"
+        }
+        return ""
     }
 
 }

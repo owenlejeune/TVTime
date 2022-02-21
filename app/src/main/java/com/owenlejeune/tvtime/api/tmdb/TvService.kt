@@ -43,4 +43,8 @@ class TvService: KoinComponent, DetailService, HomePageService {
     override suspend fun getSimilar(id: Int, page: Int): Response<out HomePageResponse> {
         return service.getSimilarTvShows(id, page)
     }
+
+    override suspend fun getVideos(id: Int): Response<VideoResponse> {
+        return service.getVideos(id)
+    }
 }

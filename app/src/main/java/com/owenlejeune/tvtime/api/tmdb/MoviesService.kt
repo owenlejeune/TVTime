@@ -44,4 +44,8 @@ class MoviesService: KoinComponent, DetailService, HomePageService {
         return service.getSimilarMovies(id, page)
     }
 
+    override suspend fun getVideos(id: Int): Response<VideoResponse> {
+        return service.getVideos(id)
+    }
+
 }

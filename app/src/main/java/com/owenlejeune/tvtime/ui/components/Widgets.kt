@@ -1,9 +1,12 @@
 package com.owenlejeune.tvtime.ui.components
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
+import android.util.SparseArray
 import android.widget.Toast
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
@@ -17,8 +20,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -42,7 +48,23 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import at.huber.youtubeExtractor.VideoMeta
+import at.huber.youtubeExtractor.YouTubeExtractor
+import at.huber.youtubeExtractor.YtFile
+import coil.compose.rememberImagePainter
 import com.google.accompanist.flowlayout.FlowRow
+import com.google.android.exoplayer2.ExoPlayer
+import com.google.android.exoplayer2.MediaItem
+import com.google.android.exoplayer2.SimpleExoPlayer
+import com.google.android.exoplayer2.ui.PlayerView
+import com.owenlejeune.tvtime.R
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.YouTubePlayerFullScreenListener
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
 
 @Composable
 fun TopLevelSwitch(
@@ -386,4 +408,133 @@ fun RoundedTextField(
             focusRequester.requestFocus()
         }
     }
+}
+
+@OptIn(ExperimentalComposeUiApi::class)
+@Composable
+fun FullScreenThumbnailVideoPlayer(
+    key: String,
+    modifier: Modifier = Modifier
+) {
+    val context = LocalContext.current
+
+    val showFullscreenView = remember { mutableStateOf(false) }
+
+    Image(
+        modifier = modifier
+            .clickable(
+                onClick = {
+                    showFullscreenView.value = true
+                }
+            ),
+        painter = rememberImagePainter(
+            data = "https://img.youtube.com/vi/${key}/hqdefault.jpg",
+            builder = {
+                placeholder(R.drawable.placeholder)
+            }
+        ),
+        contentDescription = ""
+    )
+
+    if (showFullscreenView.value) {
+        Dialog(
+            onDismissRequest = { showFullscreenView.value = false },
+            properties = DialogProperties(usePlatformDefaultWidth = false)
+        ) {
+            Surface(modifier = Modifier.fillMaxWidth().wrapContentHeight()) {
+                AndroidView(
+                    modifier = Modifier.wrapContentHeight().fillMaxWidth(),
+                    factory = {
+                        YouTubePlayerView(context).apply {
+                            addYouTubePlayerListener(object : AbstractYouTubePlayerListener() {
+                                override fun onReady(youTubePlayer: YouTubePlayer) {
+                                    youTubePlayer.loadVideo(key, 0f)
+                                }
+                            })
+                        }
+                    }
+                )
+//                Text("big dialog")
+            }
+        }
+//        AndroidView(
+//            modifier = modifier,
+//            factory = {
+//                val player = YouTubePlayerView(context).apply {
+//                    var ytPlayer: YouTubePlayer? = null
+//                    addYouTubePlayerListener(object : AbstractYouTubePlayerListener() {
+//                        override fun onReady(youTubePlayer: YouTubePlayer) {
+//                            ytPlayer = youTubePlayer
+//                            youTubePlayer.loadVideo(key, 0f)
+//                        }
+//                    })
+//                    addFullScreenListener(object : YouTubePlayerFullScreenListener {
+//                        override fun onYouTubePlayerEnterFullScreen() {
+//                            ytPlayer?.play()
+//                        }
+//
+//                        override fun onYouTubePlayerExitFullScreen() {
+//                            ytPlayer?.pause()
+//                        }
+//                    })
+//                }
+//
+//                player.enterFullScreen()
+//
+//                player
+//            }
+//        )
+    }
+
+//    val lifecyclerOwner = LocalLifecycleOwner.current
+//    val showFullscreenView = remember { mutableStateOf(false) }
+//
+//    if (!showFullscreenView.value) {
+//        Image(
+//            modifier = modifier
+//                .clickable(
+//                    onClick = {
+//                        showFullscreenView.value = true
+//                    }
+//                ),
+//            painter = rememberImagePainter(
+//                data = "https://img.youtube.com/vi/${key}/hqdefault.jpg",
+//                builder = {
+//                    placeholder(R.drawable.placeholder)
+//                }
+//            ),
+//            contentDescription = ""
+//        )
+//    } else {
+//        AndroidView(
+//            modifier = modifier,
+//            factory = { context ->
+//                val p = YouTubePlayerView(context).apply {
+//                    var player: YouTubePlayer? = null
+////                lifecyclerOwner.lifecycle.addObserver(this)
+//                    addYouTubePlayerListener(object : AbstractYouTubePlayerListener() {
+//                        override fun onReady(youTubePlayer: YouTubePlayer) {
+//                            player = youTubePlayer
+//                            youTubePlayer.loadVideo(key, 0f)
+//                        }
+//                    })
+//                    addFullScreenListener(object : YouTubePlayerFullScreenListener {
+//                        override fun onYouTubePlayerEnterFullScreen() {
+//                            player?.play()
+//                        }
+//
+//                        override fun onYouTubePlayerExitFullScreen() {
+//                            showFullscreenView.value = false
+//                            player?.pause()
+//                        }
+//
+//                    })
+//                }
+//
+//                p.enterFullScreen()
+//
+//                p
+//            }
+//        )
+//    }
 }
