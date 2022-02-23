@@ -61,7 +61,7 @@ fun StaticGrid(
         is StaticGridCells.Dynamic -> {
             BoxWithConstraints(modifier = modifier) {
                 val nColumns = maxOf((maxWidth / cells.minSize).toInt(), 1)
-                val spacing = maxWidth - (cells.minSize * nColumns)
+                val spacing = (maxWidth - (cells.minSize * nColumns)) / 10
                 StaticGridInternal(
                     columns = nColumns,
                     itemCount = itemCount,

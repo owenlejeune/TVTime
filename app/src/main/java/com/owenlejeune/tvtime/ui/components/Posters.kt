@@ -30,11 +30,14 @@ import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
 import com.owenlejeune.tvtime.R
-import com.owenlejeune.tvtime.utils.TmdbUtils
 import com.owenlejeune.tvtime.api.tmdb.model.ImageCollection
 import com.owenlejeune.tvtime.api.tmdb.model.TmdbItem
 import com.owenlejeune.tvtime.extensions.dpToPx
 import com.owenlejeune.tvtime.extensions.listItems
+import com.owenlejeune.tvtime.utils.TmdbUtils
+
+private val POSTER_WIDTH = 127.dp
+private val POSTER_HEIGHT = 190.dp
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -46,7 +49,7 @@ fun PosterGrid(
     fetchMedia(mediaList)
 
     LazyVerticalGrid(
-        cells = GridCells.Fixed(count = 3),
+        cells = GridCells.Adaptive(minSize = POSTER_WIDTH),
         contentPadding = PaddingValues(8.dp)
     ) {
         listItems(mediaList.value) { item ->
@@ -61,8 +64,8 @@ fun PosterGrid(
 @Composable
 fun PosterItem(
     modifier: Modifier = Modifier,
-    width: Dp = 127.dp,
-    height: Dp = 190.dp,
+    width: Dp = POSTER_WIDTH,
+    height: Dp = POSTER_HEIGHT,
     onClick: (Int) -> Unit = {},
     mediaItem: TmdbItem?
 ) {

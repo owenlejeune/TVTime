@@ -29,6 +29,7 @@ import com.owenlejeune.tvtime.api.tmdb.DetailService
 import com.owenlejeune.tvtime.api.tmdb.MoviesService
 import com.owenlejeune.tvtime.api.tmdb.TvService
 import com.owenlejeune.tvtime.api.tmdb.model.*
+import com.owenlejeune.tvtime.extensions.listItems
 import com.owenlejeune.tvtime.ui.components.*
 import com.owenlejeune.tvtime.utils.TmdbUtils
 import kotlinx.coroutines.CoroutineScope
@@ -70,6 +71,7 @@ fun DetailView(
             modifier = Modifier.constrainAs(backdropImage) {
                 top.linkTo(parent.top)
                 start.linkTo(parent.start)
+                end.linkTo(parent.end)
             },
             mediaItem = mediaItem
         )
@@ -175,7 +177,8 @@ private fun ContentColumn(
         modifier = modifier
             .fillMaxWidth()
             .wrapContentHeight()
-            .padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
+            .padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         if (mediaType == MediaViewType.MOVIE) {
             MiscMovieDetails(mediaItem = mediaItem, service as MoviesService)
@@ -184,12 +187,12 @@ private fun ContentColumn(
         }
 
         if (mediaItem.value?.overview?.isNotEmpty() == true) {
-            OverviewCard(mediaItem = mediaItem, modifier = Modifier.padding(bottom = 16.dp))
+            OverviewCard(mediaItem = mediaItem)
         }
 
-        CastCard(itemId = itemId, service = service, modifier = Modifier.padding(bottom = 16.dp))
+        CastCard(itemId = itemId, service = service)
 
-        SimilarContentCard(itemId = itemId, service = service, modifier = Modifier.padding(bottom = 16.dp))
+        SimilarContentCard(itemId = itemId, service = service)
         
         VideosCard(itemId = itemId, service = service)
     }
@@ -381,7 +384,7 @@ fun VideosCard(itemId: Int?, service: DetailService, modifier: Modifier = Modifi
         }
     }
 
-    if (videoResponse.value != null) {
+    if (videoResponse.value != null && videoResponse.value!!.results.any { it.isOfficial }) {
         val results = videoResponse.value!!.results
         ExpandableContentCard(
             modifier = modifier,
@@ -406,7 +409,6 @@ fun VideosCard(itemId: Int?, service: DetailService, modifier: Modifier = Modifi
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun VideoGroup(results: List<Video>, type: Video.Type, title: String) {
     val videos = results.filter { it.isOfficial && it.type == type }
@@ -417,18 +419,18 @@ private fun VideoGroup(results: List<Video>, type: Video.Type, title: String) {
             modifier = Modifier.padding(start = 12.dp, top = 8.dp)
         )
 
-        StaticGrid(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 8.dp),
-            cells = StaticGridCells.Dynamic(110.dp),
-            itemCount = videos.size
-        ) { i ->
-            val video = videos[i]
-            FullScreenThumbnailVideoPlayer(
-                key = video.key,
-                modifier = Modifier.size(110.dp, 80.dp)
-            )
+        val posterWidth = 120.dp
+        LazyRow(modifier = Modifier
+            .padding(horizontal = 8.dp, vertical = 8.dp)
+        ) {
+            listItems(videos) { video ->
+                FullScreenThumbnailVideoPlayer(
+                    key = video.key,
+                    modifier = Modifier
+                        .width(posterWidth)
+                        .height(80.dp)
+                )
+            }
         }
     }
 }
