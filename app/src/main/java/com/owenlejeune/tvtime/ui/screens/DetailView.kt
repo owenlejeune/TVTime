@@ -27,10 +27,12 @@ import androidx.navigation.NavController
 import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.api.tmdb.DetailService
 import com.owenlejeune.tvtime.api.tmdb.MoviesService
+import com.owenlejeune.tvtime.api.tmdb.PeopleService
 import com.owenlejeune.tvtime.api.tmdb.TvService
 import com.owenlejeune.tvtime.api.tmdb.model.*
 import com.owenlejeune.tvtime.extensions.listItems
 import com.owenlejeune.tvtime.ui.components.*
+import com.owenlejeune.tvtime.ui.navigation.MainNavItem
 import com.owenlejeune.tvtime.utils.TmdbUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -46,6 +48,7 @@ fun DetailView(
     val service = when(type) {
         MediaViewType.MOVIE -> MoviesService()
         MediaViewType.TV -> TvService()
+        else -> throw IllegalArgumentException("Media type given: ${type}, \n     expected one of MediaViewType.MOVIE, MediaViewType.TV") // shouldn't happen
     }
 
     val mediaItem = remember { mutableStateOf<DetailedItem?>(null) }
@@ -92,7 +95,8 @@ fun DetailView(
                 start.linkTo(posterImage.end, margin = 8.dp)
                 end.linkTo(parent.end, margin = 16.dp)
             },
-            mediaItem = mediaItem
+            title = mediaItem.value?.title ?: ""
+//            mediaItem = mediaItem
         )
 
         BackButton(
@@ -111,8 +115,97 @@ fun DetailView(
             itemId = itemId,
             mediaItem = mediaItem,
             service = service,
-            mediaType = type
+            mediaType = type,
+            appNavController = appNavController
         )
+    }
+}
+
+@Composable
+fun PersonDetailView(
+    appNavController: NavController,
+    personId: Int?
+) {
+    val person = remember { mutableStateOf<DetailPerson?>(null) }
+    personId?.let {
+        if (person.value == null) {
+            fetchPerson(personId, person)
+        }
+    }
+
+    val scrollState = rememberScrollState()
+
+    ConstraintLayout(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(color = MaterialTheme.colorScheme.background)
+            .verticalScroll(state = scrollState)
+    ) {
+        val (
+            backButton, backdropImage, profileImage, nameText, contentColumn
+        ) = createRefs()
+
+        BackdropImage(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(280.dp)
+                .constrainAs(backdropImage) {
+                    top.linkTo(parent.top)
+                    start.linkTo(parent.start)
+                    end.linkTo(parent.end)
+                }
+        )
+
+        PosterItem(
+            person = person.value,
+            modifier = Modifier
+                .constrainAs(profileImage) {
+                    bottom.linkTo(backdropImage.bottom)
+                    start.linkTo(parent.start, margin = 16.dp)
+                    top.linkTo(backButton.bottom)
+                }
+        )
+
+        TitleText(
+            modifier = Modifier.constrainAs(nameText) {
+                bottom.linkTo(profileImage.bottom)
+                start.linkTo(profileImage.end, margin = 8.dp)
+                end.linkTo(parent.end, margin = 16.dp)
+            },
+            title = person.value?.name ?: ""
+        )
+
+        BackButton(
+            modifier = Modifier.constrainAs(backButton) {
+                top.linkTo(parent.top)
+                start.linkTo(parent.start, 12.dp)
+                bottom.linkTo(profileImage.top)
+            },
+            appNavController = appNavController
+        )
+
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentHeight()
+                .padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
+                .constrainAs(contentColumn) {
+                    top.linkTo(backdropImage.bottom)//, margin = 8.dp)
+                },
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            ContentCard {
+                Text(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight()
+                        .padding(vertical = 12.dp, horizontal = 16.dp),
+                    text = person.value?.biography ?: "",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
+        }
     }
 }
 
@@ -134,9 +227,9 @@ private fun Backdrop(modifier: Modifier, mediaItem: MutableState<DetailedItem?>)
 }
 
 @Composable
-private fun TitleText(modifier: Modifier, mediaItem: MutableState<DetailedItem?>) {
+private fun TitleText(modifier: Modifier, title: String/*mediaItem: MutableState<DetailedItem?>*/) {
     Text(
-        text = mediaItem.value?.title ?: "",
+        text = title,//mediaItem.value?.title ?: "",
         color = MaterialTheme.colorScheme.primary,
         modifier = modifier
             .padding(start = 16.dp, end = 16.dp)
@@ -171,7 +264,8 @@ private fun ContentColumn(
     itemId: Int?,
     mediaItem: MutableState<DetailedItem?>,
     service: DetailService,
-    mediaType: MediaViewType
+    mediaType: MediaViewType,
+    appNavController: NavController
 ) {
     Column(
         modifier = modifier
@@ -190,7 +284,7 @@ private fun ContentColumn(
             OverviewCard(mediaItem = mediaItem)
         }
 
-        CastCard(itemId = itemId, service = service)
+        CastCard(itemId = itemId, service = service, appNavController = appNavController)
 
         SimilarContentCard(itemId = itemId, service = service)
         
@@ -296,7 +390,7 @@ private fun OverviewCard(mediaItem: MutableState<DetailedItem?>, modifier: Modif
 }
 
 @Composable
-private fun CastCard(itemId: Int?, service: DetailService, modifier: Modifier = Modifier) {
+private fun CastCard(itemId: Int?, service: DetailService, appNavController: NavController, modifier: Modifier = Modifier) {
     val castAndCrew = remember { mutableStateOf<CastAndCrew?>(null) }
     itemId?.let {
         if (castAndCrew.value == null) {
@@ -311,19 +405,20 @@ private fun CastCard(itemId: Int?, service: DetailService, modifier: Modifier = 
         textColor = MaterialTheme.colorScheme.background
     ) {
         LazyRow(modifier = Modifier
-            .fillMaxWidth()
-            .padding(12.dp)
+                .fillMaxWidth()
+                .padding(12.dp),
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             items(castAndCrew.value?.cast?.size ?: 0) { i ->
                 val castMember = castAndCrew.value!!.cast[i]
-                CastCrewCard(person = castMember)
+                CastCrewCard(appNavController = appNavController, person = castMember)
             }
         }
     }
 }
 
 @Composable
-private fun CastCrewCard(person: Person) {
+private fun CastCrewCard(appNavController: NavController, person: Person) {
     ImageTextCard(
         title = person.name,
         modifier = Modifier
@@ -337,7 +432,12 @@ private fun CastCrewCard(person: Person) {
         imageUrl = TmdbUtils.getFullPersonImagePath(person),
         noDataImage = R.drawable.no_person_photo,
         titleTextColor = MaterialTheme.colorScheme.onPrimary,
-        subtitleTextColor = Color.Unspecified
+        subtitleTextColor = Color.Unspecified,
+        onItemClicked = {
+            appNavController.navigate(
+                "${MainNavItem.DetailView.route}/${MediaViewType.PERSON}/${person.id}"
+            )
+        }
     )
 }
 
@@ -509,6 +609,17 @@ private fun fetchVideos(id: Int, service: DetailService, videoResponse: MutableS
         if (results.isSuccessful) {
             withContext(Dispatchers.Main) {
                 videoResponse.value = results.body()
+            }
+        }
+    }
+}
+
+private fun fetchPerson(id: Int, person: MutableState<DetailPerson?>) {
+    CoroutineScope(Dispatchers.IO).launch {
+        val result = PeopleService().getPerson(id)
+        if (result.isSuccessful) {
+            withContext(Dispatchers.Main) {
+                person.value = result.body()
             }
         }
     }

@@ -3,7 +3,6 @@ package com.owenlejeune.tvtime.ui.components
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -13,14 +12,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.rememberImagePainter
-import coil.transform.RoundedCornersTransformation
 import com.owenlejeune.tvtime.R
-import com.owenlejeune.tvtime.extensions.dpToPx
 
 @Composable
 fun ContentCard(
@@ -106,24 +101,19 @@ fun ImageTextCard(
     noDataImage: Int = R.drawable.placeholder,
     placeholder: Int = R.drawable.placeholder,
     titleTextColor: Color = MaterialTheme.colorScheme.onSurfaceVariant,
-    subtitleTextColor: Color = MaterialTheme.colorScheme.onSurfaceVariant
+    subtitleTextColor: Color = MaterialTheme.colorScheme.onSurfaceVariant,
+    onItemClicked: () -> Unit = {}
 ) {
-    val context = LocalContext.current
-    Column(
-        modifier = modifier
-            .padding(end = 12.dp)
-    ) {
-        Image(
-            modifier = Modifier
-                .size(width = 120.dp, height = 180.dp),
-            painter = rememberImagePainter(
-                data = imageUrl ?: noDataImage,
-                builder = {
-                    transformations(RoundedCornersTransformation(5f.dpToPx(context)))
-                    placeholder(placeholder)
-                }
-            ),
-            contentDescription = ""
+    Column(modifier = modifier) {
+        PosterItem(
+            width = 120.dp,
+            height = 180.dp,
+            onClick = onItemClicked,
+            url = imageUrl,
+            noDataImage = noDataImage,
+            placeholder = placeholder,
+            contentDescription = title,
+            elevation = 0.dp
         )
         MinLinesText(
             modifier = Modifier

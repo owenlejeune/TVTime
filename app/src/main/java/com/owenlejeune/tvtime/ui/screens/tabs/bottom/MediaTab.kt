@@ -27,6 +27,7 @@ fun MediaTab(appNavController: NavHostController, mediaType: MediaViewType) {
         val tabs = when (mediaType) {
             MediaViewType.MOVIE -> MainTabNavItem.MovieItems
             MediaViewType.TV -> MainTabNavItem.TvItems
+            else -> throw IllegalArgumentException("Media type given: ${mediaType}, \n     expected one of MediaViewType.MOVIE, MediaViewType.TV") // shouldn't happen
         }
         val pagerState = rememberPagerState()
         Tabs(tabs = tabs, pagerState = pagerState)
@@ -44,6 +45,7 @@ fun MediaTabContent(appNavController: NavHostController, mediaType: MediaViewTyp
     val service: HomePageService = when(mediaType) {
         MediaViewType.MOVIE -> MoviesService()
         MediaViewType.TV -> TvService()
+        else -> throw IllegalArgumentException("Media type given: ${mediaType}, \n     expected one of MediaViewType.MOVIE, MediaViewType.TV") // shouldn't happen
     }
     PosterGrid(
         fetchMedia =  { mediaList ->

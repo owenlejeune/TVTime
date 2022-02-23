@@ -11,6 +11,7 @@ import androidx.navigation.navArgument
 import com.owenlejeune.tvtime.ui.screens.DetailView
 import com.owenlejeune.tvtime.ui.screens.MainAppView
 import com.owenlejeune.tvtime.ui.screens.MediaViewType
+import com.owenlejeune.tvtime.ui.screens.PersonDetailView
 import com.owenlejeune.tvtime.ui.screens.tabs.bottom.FavouritesTab
 import com.owenlejeune.tvtime.ui.screens.tabs.bottom.MediaTab
 import com.owenlejeune.tvtime.ui.screens.tabs.bottom.SettingsTab
@@ -36,11 +37,19 @@ fun MainNavigationRoutes(navController: NavHostController, displayUnderStatusBar
         ) { navBackStackEntry ->
             displayUnderStatusBar.value = true
             val args = navBackStackEntry.arguments
-            DetailView(
-                appNavController = navController,
-                itemId = args?.getInt(NavConstants.ID_KEY),
-                type = args?.getSerializable(NavConstants.TYPE_KEY) as MediaViewType
-            )
+            val mediaType = args?.getSerializable(NavConstants.TYPE_KEY) as MediaViewType
+            if (mediaType != MediaViewType.PERSON) {
+                DetailView(
+                    appNavController = navController,
+                    itemId = args.getInt(NavConstants.ID_KEY),
+                    type = mediaType
+                )
+            } else {
+                PersonDetailView(
+                    appNavController = navController,
+                    personId = args.getInt(NavConstants.ID_KEY)
+                )
+            }
         }
     }
 }

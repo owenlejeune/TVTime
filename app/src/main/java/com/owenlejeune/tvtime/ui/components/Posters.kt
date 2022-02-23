@@ -31,6 +31,7 @@ import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
 import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.api.tmdb.model.ImageCollection
+import com.owenlejeune.tvtime.api.tmdb.model.Person
 import com.owenlejeune.tvtime.api.tmdb.model.TmdbItem
 import com.owenlejeune.tvtime.extensions.dpToPx
 import com.owenlejeune.tvtime.extensions.listItems
@@ -54,6 +55,7 @@ fun PosterGrid(
     ) {
         listItems(mediaList.value) { item ->
             PosterItem(
+                modifier = Modifier.padding(5.dp),
                 mediaItem = item,
                 onClick = onClick
             )
@@ -66,38 +68,86 @@ fun PosterItem(
     modifier: Modifier = Modifier,
     width: Dp = POSTER_WIDTH,
     height: Dp = POSTER_HEIGHT,
-    onClick: (Int) -> Unit = {},
+    onClick: (id: Int) -> Unit = {},
+    elevation: Dp = 8.dp,
     mediaItem: TmdbItem?
 ) {
-    val context = LocalContext.current
-    val poster = mediaItem?.let { TmdbUtils.getFullPosterPath(mediaItem) }
-    Card(
+    PosterItem(
+        modifier = modifier,
+        width = width,
+        height = height,
+        onClick = {
+            mediaItem?.let {
+                onClick(mediaItem.id)
+            }
+        },
+        url = mediaItem?.let { TmdbUtils.getFullPosterPath(mediaItem) },
+        elevation = elevation,
+        contentDescription = mediaItem?.title
+    )
+}
+
+@Composable
+fun PosterItem(
+    modifier: Modifier = Modifier,
+    width: Dp = POSTER_WIDTH,
+    height: Dp = POSTER_HEIGHT,
+    onClick: (id: Int) -> Unit = {},
+    elevation: Dp = 8.dp,
+    person: Person?
+) {
+    PosterItem(
+        modifier = modifier,
+        width = width,
+        height = height,
+        onClick = {
+            person?.let {
+                onClick(person.id)
+            }
+        },
+        url = person?.let { TmdbUtils.getFullPersonImagePath(person) },
         elevation = 8.dp,
+        contentDescription = person?.name
+    )
+}
+
+@Composable
+fun PosterItem(
+    url: String?,
+    modifier: Modifier = Modifier,
+    width: Dp = POSTER_WIDTH,
+    height: Dp = POSTER_HEIGHT,
+    onClick: () -> Unit = {},
+    noDataImage: Int = R.drawable.placeholder,
+    placeholder: Int = R.drawable.placeholder,
+    elevation: Dp = 8.dp,
+    contentDescription: String?
+) {
+    val context = LocalContext.current
+    Card(
+        elevation = elevation,
         modifier = modifier
-            .size(width = width, height = height)
-            .padding(5.dp),
+            .size(width = width, height = height),
         shape = RoundedCornerShape(5.dp)
     ) {
         Image(
-            painter = if (mediaItem != null) {
+            painter = if (url != null) {
                 rememberImagePainter(
-                    data = poster,
+                    data = url ?: noDataImage,
                     builder = {
                         transformations(RoundedCornersTransformation(5f.dpToPx(context)))
-                        placeholder(R.drawable.placeholder)
+                        placeholder(placeholder)
                     }
                 )
             } else {
                 rememberImagePainter(ContextCompat.getDrawable(context, R.drawable.placeholder))
             },
-            contentDescription = mediaItem?.title,
+            contentDescription = contentDescription,
             modifier = Modifier
                 .size(width = width, height = height)
-                .clickable {
-                    mediaItem?.let {
-                        onClick(mediaItem.id)
-                    }
-                }
+                .clickable(
+                    onClick = onClick
+                )
         )
     }
 }

@@ -5,9 +5,9 @@ import com.google.gson.annotations.SerializedName
 class CastMember(
     @SerializedName("character") val character: String,
     @SerializedName("order") val order: Int,
+    @SerializedName("credit_id") val creditId: String,
     id: Int,
-    creditId: String,
     name: String,
     gender: Int,
     profilePath: String?
-): Person(id, creditId, name, gender, profilePath)
+): Person(id, name, gender, profilePath)
