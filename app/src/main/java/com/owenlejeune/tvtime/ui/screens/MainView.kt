@@ -15,12 +15,14 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.pager.ExperimentalPagerApi
+import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.preferences.AppPreferences
 import com.owenlejeune.tvtime.ui.components.RoundedTextField
 import com.owenlejeune.tvtime.ui.components.SearchFab
@@ -137,7 +139,7 @@ private fun SearchTopBar(
                         focusRequester = focusRequester,
                         value = textState,
                         onValueChange = { textState = it },
-                        placeHolder = "Search ${title.value}"
+                        placeHolder = stringResource(id = R.string.search_placeholder, title.value)
                     )
                 }
             }

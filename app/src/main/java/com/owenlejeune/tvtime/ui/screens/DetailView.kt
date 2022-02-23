@@ -21,6 +21,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.navigation.NavController
@@ -96,7 +97,6 @@ fun DetailView(
                 end.linkTo(parent.end, margin = 16.dp)
             },
             title = mediaItem.value?.title ?: ""
-//            mediaItem = mediaItem
         )
 
         BackButton(
@@ -194,16 +194,55 @@ fun PersonDetailView(
                 },
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            ContentCard {
+            ExpandableContentCard { isExpanded ->
                 Text(
                     modifier = Modifier
                         .fillMaxWidth()
                         .wrapContentHeight()
-                        .padding(vertical = 12.dp, horizontal = 16.dp),
+                        .padding(top = 12.dp, start = 16.dp, end = 16.dp),
                     text = person.value?.biography ?: "",
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    style = MaterialTheme.typography.bodyMedium
+                    style = MaterialTheme.typography.bodyMedium,
+                    maxLines = if (isExpanded) Int.MAX_VALUE else 3,
+                    overflow = TextOverflow.Ellipsis
                 )
+            }
+
+            val credits = remember { mutableStateOf<PersonCreditsResponse?>(null) }
+            personId?.let {
+                if (credits.value == null) {
+                    fetchCredits(personId, credits)
+                }
+            }
+
+            ContentCard(title = stringResource(R.string.known_for_label)) {
+                LazyRow(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight()
+                        .padding(12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    items(credits.value?.cast?.size ?: 0) { i ->
+                        val content = credits.value!!.cast[i]
+
+                        TwoLineImageTextCard(
+                            title = content.title,
+                            subtitle = content.character,
+                            modifier = Modifier
+                                .width(124.dp)
+                                .wrapContentHeight(),
+                            imageUrl = TmdbUtils.getFullPosterPath(content.posterPath),
+                            onItemClicked = {
+                                personId?.let {
+                                    appNavController.navigate(
+                                        "${MainNavItem.DetailView.route}/${content.mediaType}/${content.id}"
+                                    )
+                                }
+                            }
+                        )
+                    }
+                }
             }
         }
     }
@@ -227,9 +266,9 @@ private fun Backdrop(modifier: Modifier, mediaItem: MutableState<DetailedItem?>)
 }
 
 @Composable
-private fun TitleText(modifier: Modifier, title: String/*mediaItem: MutableState<DetailedItem?>*/) {
+private fun TitleText(modifier: Modifier, title: String) {
     Text(
-        text = title,//mediaItem.value?.title ?: "",
+        text = title,
         color = MaterialTheme.colorScheme.primary,
         modifier = modifier
             .padding(start = 16.dp, end = 16.dp)
@@ -252,7 +291,7 @@ private fun BackButton(modifier: Modifier, appNavController: NavController) {
     ) {
         Icon(
             imageVector = Icons.Filled.ArrowBack,
-            contentDescription = "Back",
+            contentDescription = stringResource(R.string.content_description_back_button),
             tint = MaterialTheme.colorScheme.primary
         )
     }
@@ -286,7 +325,7 @@ private fun ContentColumn(
 
         CastCard(itemId = itemId, service = service, appNavController = appNavController)
 
-        SimilarContentCard(itemId = itemId, service = service)
+        SimilarContentCard(itemId = itemId, service = service, mediaType = mediaType, appNavController = appNavController)
         
         VideosCard(itemId = itemId, service = service)
     }
@@ -341,13 +380,14 @@ private fun MiscDetails(
     contentRating: MutableState<String>
 ) {
     Column(
-        modifier = modifier
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .wrapContentHeight()
-                .padding(start = 8.dp, end = 10.dp, bottom = 8.dp)
+                .padding(horizontal = 8.dp)
         ) {
             Text(text = year, color = MaterialTheme.colorScheme.onBackground)
             Text(
@@ -365,8 +405,7 @@ private fun MiscDetails(
         ChipGroup(
             modifier = Modifier
                 .fillMaxWidth()
-                .wrapContentHeight()
-                .padding(bottom = 8.dp),
+                .wrapContentHeight(),
             chips = genres.map { it.name }
         )
     }
@@ -405,8 +444,8 @@ private fun CastCard(itemId: Int?, service: DetailService, appNavController: Nav
         textColor = MaterialTheme.colorScheme.background
     ) {
         LazyRow(modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
+            .fillMaxWidth()
+            .padding(12.dp),
             horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             items(castAndCrew.value?.cast?.size ?: 0) { i ->
@@ -419,7 +458,7 @@ private fun CastCard(itemId: Int?, service: DetailService, appNavController: Nav
 
 @Composable
 private fun CastCrewCard(appNavController: NavController, person: Person) {
-    ImageTextCard(
+    TwoLineImageTextCard(
         title = person.name,
         modifier = Modifier
             .width(124.dp)
@@ -442,7 +481,13 @@ private fun CastCrewCard(appNavController: NavController, person: Person) {
 }
 
 @Composable
-fun SimilarContentCard(itemId: Int?, service: DetailService, modifier: Modifier = Modifier) {
+fun SimilarContentCard(
+    itemId: Int?,
+    service: DetailService,
+    mediaType: MediaViewType,
+    appNavController: NavController,
+    modifier: Modifier = Modifier
+) {
     val similarContent = remember { mutableStateOf<HomePageResponse?>(null) }
     itemId?.let {
         if (similarContent.value == null) {
@@ -457,17 +502,23 @@ fun SimilarContentCard(itemId: Int?, service: DetailService, modifier: Modifier 
         LazyRow(modifier = Modifier
             .fillMaxWidth()
             .wrapContentHeight()
-            .padding(12.dp)
+            .padding(12.dp),
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             items(similarContent.value?.results?.size ?: 0) { i ->
                 val content = similarContent.value!!.results[i]
 
-                ImageTextCard(
+                TwoLineImageTextCard(
                     title = content.title,
                     modifier = Modifier
                         .width(124.dp)
                         .wrapContentHeight(),
-                    imageUrl = TmdbUtils.getFullPosterPath(content)
+                    imageUrl = TmdbUtils.getFullPosterPath(content),
+                    onItemClicked = {
+                        appNavController.navigate(
+                            "${MainNavItem.DetailView.route}/${mediaType}/${content.id}"
+                        )
+                    }
                 )
             }
         }
@@ -492,7 +543,7 @@ fun VideosCard(itemId: Int?, service: DetailService, modifier: Modifier = Modifi
                 Text(
                     text = stringResource(id = R.string.videos_label),
                     style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.padding(start = 12.dp, top = 8.dp),
+                    modifier = Modifier.padding(start = 16.dp, top = 8.dp),
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             },
@@ -516,19 +567,20 @@ private fun VideoGroup(results: List<Video>, type: Video.Type, title: String) {
         Text(
             text = title,
             color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.padding(start = 12.dp, top = 8.dp)
+            modifier = Modifier.padding(start = 16.dp, top = 8.dp)
         )
 
         val posterWidth = 120.dp
         LazyRow(modifier = Modifier
-            .padding(horizontal = 8.dp, vertical = 8.dp)
+                .padding(horizontal = 12.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             listItems(videos) { video ->
                 FullScreenThumbnailVideoPlayer(
                     key = video.key,
                     modifier = Modifier
                         .width(posterWidth)
-                        .height(80.dp)
+                        .height(90.dp)
                 )
             }
         }
@@ -620,6 +672,17 @@ private fun fetchPerson(id: Int, person: MutableState<DetailPerson?>) {
         if (result.isSuccessful) {
             withContext(Dispatchers.Main) {
                 person.value = result.body()
+            }
+        }
+    }
+}
+
+private fun fetchCredits(id: Int, credits: MutableState<PersonCreditsResponse?>) {
+    CoroutineScope(Dispatchers.IO).launch {
+        val result = PeopleService().getCredits(id)
+        if (result.isSuccessful) {
+            withContext(Dispatchers.Main) {
+                credits.value = result.body()
             }
         }
     }

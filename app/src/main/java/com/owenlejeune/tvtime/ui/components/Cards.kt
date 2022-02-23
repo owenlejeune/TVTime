@@ -81,7 +81,7 @@ fun ExpandableContentCard(
                 color = toggleTextColor,
                 fontSize = 12.sp,
                 modifier = Modifier
-                    .padding(horizontal = 12.dp, vertical = 8.dp)
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
                     .clickable(
                         onClick = {
                             expandedState = !expandedState
@@ -93,7 +93,7 @@ fun ExpandableContentCard(
 }
 
 @Composable
-fun ImageTextCard(
+fun TwoLineImageTextCard(
     title: String,
     modifier: Modifier = Modifier,
     subtitle: String? = null,
