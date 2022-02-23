@@ -1,16 +1,22 @@
 package com.owenlejeune.tvtime.ui.components
 
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import coil.compose.rememberImagePainter
 import coil.transform.RoundedCornersTransformation
 import com.owenlejeune.tvtime.R
@@ -42,6 +48,51 @@ fun ContentCard(
                 )
             }
             content()
+        }
+    }
+}
+
+@Composable
+fun ExpandableContentCard(
+    modifier: Modifier = Modifier,
+    backgroundColor: Color = MaterialTheme.colorScheme.surfaceVariant,
+    title: @Composable () -> Unit = {},
+    collapsedText: String = stringResource(id = R.string.expandable_see_more),
+    expandedText: String = stringResource(id = R.string.expandable_see_less),
+    toggleTextColor: Color = MaterialTheme.colorScheme.onSurfaceVariant,
+    content: @Composable (Boolean) -> Unit = {}
+) {
+    var expandedState by remember { mutableStateOf(false) }
+
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .wrapContentHeight()
+            .animateContentSize(
+                animationSpec = tween(
+                    durationMillis = 300,
+                    easing = LinearOutSlowInEasing
+                )
+            ),
+        shape = RoundedCornerShape(10.dp),
+        backgroundColor = backgroundColor,
+        elevation = 8.dp
+    ) {
+        Column(modifier = Modifier.fillMaxSize()) {
+            title()
+            content(expandedState)
+            Text(
+                text = if (expandedState) expandedText else collapsedText,
+                color = toggleTextColor,
+                fontSize = 12.sp,
+                modifier = Modifier
+                    .padding(horizontal = 12.dp, vertical = 8.dp)
+                    .clickable(
+                        onClick = {
+                            expandedState = !expandedState
+                        }
+                    )
+            )
         }
     }
 }

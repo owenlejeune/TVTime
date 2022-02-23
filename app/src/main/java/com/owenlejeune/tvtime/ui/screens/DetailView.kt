@@ -1,5 +1,6 @@
 package com.owenlejeune.tvtime.ui.screens
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
@@ -348,7 +349,7 @@ fun SimilarContentCard(itemId: Int?, service: DetailService, modifier: Modifier 
 
     ContentCard(
         modifier = modifier,
-        title = "Recommended"
+        title = stringResource(id = R.string.recommended_label)
     ) {
         LazyRow(modifier = Modifier
             .fillMaxWidth()
@@ -370,6 +371,7 @@ fun SimilarContentCard(itemId: Int?, service: DetailService, modifier: Modifier 
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun VideosCard(itemId: Int?, service: DetailService, modifier: Modifier = Modifier) {
     val videoResponse = remember { mutableStateOf<VideoResponse?>(null) }
@@ -379,41 +381,54 @@ fun VideosCard(itemId: Int?, service: DetailService, modifier: Modifier = Modifi
         }
     }
 
-    ContentCard(
-        modifier = modifier,
-        title = "Trailers"
-    ) {
-        LazyRow(
-            modifier = Modifier
-                .fillMaxWidth()
-                .wrapContentHeight()
-                .padding(vertical = 12.dp, horizontal = 8.dp)
-        ) {
-            val videos = videoResponse.value?.results?.filter { it.isOfficial && it.type.lowercase() in listOf("trailer"/*, "teaser"*/) }
-            val types = videos?.map { it.type }
-            items(videos?.size ?: 0) { i ->
-                val video = videos!![i]
+    if (videoResponse.value != null) {
+        val results = videoResponse.value!!.results
+        ExpandableContentCard(
+            modifier = modifier,
+            title = {
+                Text(
+                    text = stringResource(id = R.string.videos_label),
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier.padding(start = 12.dp, top = 8.dp),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            },
+            toggleTextColor = MaterialTheme.colorScheme.primary
+        ) { isExpanded ->
+            VideoGroup(results = results, type = Video.Type.TRAILER, title = stringResource(id = Video.Type.TRAILER.stringRes))
 
-                Column(
-                    modifier = Modifier.wrapContentHeight().width(152.dp)
-                ) {
-                    FullScreenThumbnailVideoPlayer(
-                        key = video.key,
-                        modifier = Modifier
-                            .size(width = 152.dp, height = 108.dp)
-                            .padding(end = 4.dp)
-                    )
-                    MinLinesText(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 5.dp),
-                        minLines = 2,
-                        text = video.name,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        style = MaterialTheme.typography.bodyMedium
-                    )
+            if (isExpanded) {
+                Video.Type.values().filter { it != Video.Type.TRAILER}.forEach { type ->
+                    VideoGroup(results = results, type = type, title = stringResource(id = type.stringRes))
                 }
             }
+        }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun VideoGroup(results: List<Video>, type: Video.Type, title: String) {
+    val videos = results.filter { it.isOfficial && it.type == type }
+    if (videos.isNotEmpty()) {
+        Text(
+            text = title,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.padding(start = 12.dp, top = 8.dp)
+        )
+
+        StaticGrid(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 8.dp),
+            cells = StaticGridCells.Dynamic(110.dp),
+            itemCount = videos.size
+        ) { i ->
+            val video = videos[i]
+            FullScreenThumbnailVideoPlayer(
+                key = video.key,
+                modifier = Modifier.size(110.dp, 80.dp)
+            )
         }
     }
 }
