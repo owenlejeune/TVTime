@@ -1,11 +1,8 @@
 package com.owenlejeune.tvtime.ui.screens
 
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Icon
@@ -96,7 +93,7 @@ fun DetailView(
                 start.linkTo(posterImage.end, margin = 8.dp)
                 end.linkTo(parent.end, margin = 16.dp)
             },
-            title = mediaItem.value?.title ?: ""
+            title = mediaItem.value?.title ?: "",
         )
 
         BackButton(
@@ -226,8 +223,13 @@ fun PersonDetailView(
                     items(credits.value?.cast?.size ?: 0) { i ->
                         val content = credits.value!!.cast[i]
 
+                        val title = if (content.mediaType == MediaViewType.MOVIE) {
+                            content.title ?: ""
+                        } else {
+                            content.name ?: ""
+                        }
                         TwoLineImageTextCard(
-                            title = content.title,
+                            title = title,
                             subtitle = content.character,
                             modifier = Modifier
                                 .width(124.dp)
@@ -241,6 +243,54 @@ fun PersonDetailView(
                                 }
                             }
                         )
+                    }
+                }
+            }
+
+            ContentCard(title = stringResource(R.string.also_known_for_label)) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight()
+                        .padding(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    val departments = credits.value?.crew?.map { it.department }?.toSet() ?: emptySet()
+                    if (departments.isNotEmpty()) {
+                        departments.forEach { department ->
+                            Text(text = department, color = MaterialTheme.colorScheme.onSurface)
+                            LazyRow(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .wrapContentHeight(),
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                val jobsInDepartment = credits.value!!.crew.filter { it.department == department }
+                                items(jobsInDepartment.size) { i ->
+                                    val content = jobsInDepartment[i]
+                                    val title = if (content.mediaType == MediaViewType.MOVIE) {
+                                        content.title ?: ""
+                                    } else {
+                                        content.name ?: ""
+                                    }
+                                    TwoLineImageTextCard(
+                                        title = title,
+                                        subtitle = content.job,
+                                        modifier = Modifier
+                                            .width(124.dp)
+                                            .wrapContentHeight(),
+                                        imageUrl = TmdbUtils.getFullPosterPath(content.posterPath),
+                                        onItemClicked = {
+                                            personId?.let {
+                                                appNavController.navigate(
+                                                    "${MainNavItem.DetailView.route}/${content.mediaType}/${content.id}"
+                                                )
+                                            }
+                                        }
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -275,17 +325,20 @@ private fun TitleText(modifier: Modifier, title: String) {
             .fillMaxWidth(.6f),
         style = MaterialTheme.typography.headlineMedium,
         textAlign = TextAlign.Start,
-        softWrap = true
+        softWrap = true,
+        maxLines = 3,
+        overflow = TextOverflow.Ellipsis
     )
 }
 
 @Composable
 private fun BackButton(modifier: Modifier, appNavController: NavController) {
+    val start = if (isSystemInDarkTheme()) Color.Black else Color.White
     IconButton(
         onClick = { appNavController.popBackStack() },
         modifier = modifier
             .background(
-                brush = Brush.radialGradient(colors = listOf(Color.Black, Color.Transparent))
+                brush = Brush.radialGradient(colors = listOf(start, Color.Transparent))
             )
             .wrapContentSize()
     ) {

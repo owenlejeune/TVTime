@@ -18,6 +18,7 @@
     <string name="recommended_label">Recommended</string>
     <string name="videos_label">Videos</string>
     <string name="known_for_label">Known For</string>
+    <string name="also_known_for_label">Also Known For</string>
 
     <string name="expandable_see_more">See more</string>
     <string name="expandable_see_less">See less</string>
