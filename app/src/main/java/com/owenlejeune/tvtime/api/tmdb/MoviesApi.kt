@@ -38,4 +38,7 @@ interface MoviesApi {
     @GET("movie/{id}/videos")
     suspend fun getVideos(@Path("id") id: Int): Response<VideoResponse>
 
+    @GET("movie/{id}/reviews")
+    suspend fun getReviews(@Path("id") id: Int): Response<ReviewResponse>
+
 }

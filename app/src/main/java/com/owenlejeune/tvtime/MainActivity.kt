@@ -21,6 +21,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             AppKeyboardFocusManager()
             val displayUnderStatusBar = remember { mutableStateOf(false) }
+//            WindowCompat.setDecorFitsSystemWindows(window, false)
 //            WindowCompat.setDecorFitsSystemWindows(window, !displayUnderStatusBar.value)
 //            val statusBarColor = if (displayUnderStatusBar.value) {
 //                Color.Transparent

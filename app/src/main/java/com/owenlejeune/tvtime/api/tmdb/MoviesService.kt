@@ -48,4 +48,8 @@ class MoviesService: KoinComponent, DetailService, HomePageService {
         return service.getVideos(id)
     }
 
+    override suspend fun getReviews(id: Int): Response<ReviewResponse> {
+        return service.getReviews(id)
+    }
+
 }

@@ -1,12 +1,8 @@
 package com.owenlejeune.tvtime.utils
 
-import android.content.Context
-import android.util.SparseArray
 import androidx.compose.ui.text.intl.Locale
-import at.huber.youtubeExtractor.VideoMeta
-import at.huber.youtubeExtractor.YouTubeExtractor
-import at.huber.youtubeExtractor.YtFile
 import com.owenlejeune.tvtime.api.tmdb.model.*
+import java.text.SimpleDateFormat
 
 object TmdbUtils {
 
@@ -46,6 +42,19 @@ object TmdbUtils {
 
     fun getFullPersonImagePath(person: Person): String? {
         return getFullPersonImagePath(person.profilePath)
+    }
+
+    fun getFullAvatarPath(path: String?): String? {
+        return path?.let {
+            if (path.contains("http")) {
+                return path.substring(startIndex = 1)
+            }
+            "https://www.themoviedb.org/t/p/w150_and_h150_face${path}"
+        }
+    }
+
+    fun getFullAvatarPath(author: AuthorDetails): String? {
+        return getFullAvatarPath(author.avatarPath)
     }
 
     fun getMovieReleaseYear(movie: DetailedMovie): String {
@@ -139,19 +148,18 @@ object TmdbUtils {
     }
 
     fun getFullVideoUrl(video: Video): String {
-//        object: YouTubeExtractor(context) {
-//            override fun onExtractionComplete(
-//                ytFiles: SparseArray<YtFile>?,
-//                videoMeta: VideoMeta?
-//            ) {
-//                if (ytFiles != null) {
-//                }
-//            }
-//        }
         if (video.site == "YouTube") {
             return "http://www.youtube.com/watch?v=${video.key}"
         }
         return ""
+    }
+
+    fun formatDate(inDate: String): String {
+        val orig = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", java.util.Locale.US)
+        val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm", java.util.Locale.US)
+
+        val date = orig.parse(inDate)//.replace("Z", "+0000"))
+        return formatter.format(date)
     }
 
 }

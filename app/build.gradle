@@ -64,6 +64,7 @@ dependencies {
     implementation "com.google.accompanist:accompanist-systemuicontroller:${Versions.compose_accompanist}"
     implementation "com.google.accompanist:accompanist-pager:${Versions.compose_accompanist}"
     implementation "com.google.accompanist:accompanist-flowlayout:${Versions.compose_accompanist}"
+//    implementation "com.google.accompanist:accompanist-insets:${Versions.compose_accompanist}"
     implementation "androidx.navigation:navigation-compose:${Versions.compose_navigation}"
     implementation "androidx.paging:paging-compose:${Versions.compose_paging}"
     implementation "androidx.constraintlayout:constraintlayout-compose:${Versions.compose_constraint_layout}"
@@ -85,10 +86,12 @@ dependencies {
 
     implementation "me.onebone:toolbar-compose:2.3.1"
 
-    implementation 'com.google.android.exoplayer:exoplayer:2.16.1'
-    implementation 'com.github.HaarigerHarald:android-youtubeExtractor:v2.1.0'
+//    implementation 'com.google.android.exoplayer:exoplayer:2.16.1'
+//    implementation 'com.github.HaarigerHarald:android-youtubeExtractor:v2.1.0'
     implementation 'com.pierfrancescosoffritti.androidyoutubeplayer:core:11.0.1'
     implementation 'com.pierfrancescosoffritti.androidyoutubeplayer:chromecast-sender:0.26'
+
+    implementation "org.jetbrains:markdown:0.2.1"
 
     testImplementation "junit:junit:${Versions.junit}"
     androidTestImplementation "androidx.test.ext:junit:${Versions.androidx_junit}"

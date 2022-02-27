@@ -25,6 +25,10 @@
 
     <string name="search_placeholder">Search %1$s</string>
 
+    <string name="created_at_label">Created at: %1$s</string>
+    <string name="updated_at_label">Updated at: %1$s</string>
+    <string name="no_reviews_label">No reviews</string>
+
     <!-- preferences -->
     <string name="preference_heading_search">Search</string>
     <string name="preferences_persistent_search_title">Persistent search bar</string>
@@ -40,4 +44,5 @@
     <string name="video_type_behind_the_scenes">Behind the Scenes</string>
     <string name="video_type_featureette">Featurettes</string>
     <string name="content_description_back_button">Back</string>
+    <string name="search_icon_content_descriptor">Search Icon</string>
 </resources>

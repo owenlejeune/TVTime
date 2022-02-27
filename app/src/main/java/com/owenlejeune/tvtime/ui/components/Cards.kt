@@ -5,6 +5,9 @@ import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material3.MaterialTheme
@@ -88,6 +91,40 @@ fun ExpandableContentCard(
                         }
                     )
             )
+        }
+    }
+}
+
+@Composable
+fun LazyListContentCard(
+    modifier: Modifier = Modifier,
+    header: @Composable (() -> Unit)? = null,
+    footer: @Composable (() -> Unit)? = null,
+    backgroundColor: Color = MaterialTheme.colorScheme.surfaceVariant,
+    content: LazyListScope.() -> Unit
+) {
+    Card(
+        modifier = modifier,
+        shape = RoundedCornerShape(10.dp),
+        backgroundColor = backgroundColor,
+        elevation = 8.dp
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            header?.invoke()
+            val listState = rememberLazyListState()
+            LazyColumn(
+                content = content,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+                state = listState
+            )
+            footer?.invoke()
         }
     }
 }

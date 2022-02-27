@@ -1,6 +1,7 @@
 package com.owenlejeune.tvtime.ui.screens
 
 import androidx.compose.animation.rememberSplineBasedDecay
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
@@ -12,6 +13,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -139,7 +141,14 @@ private fun SearchTopBar(
                         focusRequester = focusRequester,
                         value = textState,
                         onValueChange = { textState = it },
-                        placeHolder = stringResource(id = R.string.search_placeholder, title.value)
+                        placeHolder = stringResource(id = R.string.search_placeholder, title.value),
+                        trailingIcon = {
+                            Image(
+                                painter = painterResource(id = R.drawable.ic_search),
+                                contentDescription = stringResource(R.string.search_icon_content_descriptor),
+                                colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.primary)
+                            )
+                        }
                     )
                 }
             }
@@ -164,7 +173,9 @@ private fun BottomNavBar(navController: NavController, appBarTitle: MutableState
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
-    NavigationBar {
+    NavigationBar(
+        containerColor = MaterialTheme.colorScheme.primaryContainer
+    ) {
         BottomNavItem.Items.forEach { item ->
             NavigationBarItem(
                 icon = { Icon(painter = painterResource(id = item.icon), contentDescription = null) },
@@ -179,8 +190,8 @@ private fun BottomNavBar(navController: NavController, appBarTitle: MutableState
                 },
                 colors = NavigationBarItemDefaults
                     .colors(
-                        selectedIconColor = MaterialTheme.colorScheme.onPrimary,
-                        indicatorColor = MaterialTheme.colorScheme.primary
+                        selectedIconColor = MaterialTheme.colorScheme.secondary,
+                        indicatorColor = MaterialTheme.colorScheme.onSecondary
                     )
             )
         }

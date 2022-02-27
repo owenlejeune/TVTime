@@ -5,21 +5,21 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Send
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.navigation.NavController
 import com.owenlejeune.tvtime.R
@@ -381,6 +381,8 @@ private fun ContentColumn(
         SimilarContentCard(itemId = itemId, service = service, mediaType = mediaType, appNavController = appNavController)
         
         VideosCard(itemId = itemId, service = service)
+        
+        ReviewsCard(itemId = itemId, service = service)
     }
 }
 
@@ -640,6 +642,152 @@ private fun VideoGroup(results: List<Video>, type: Video.Type, title: String) {
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun ReviewsCard(
+    itemId: Int?,
+    service: DetailService,
+    modifier: Modifier = Modifier
+) {
+    val reviewsResponse = remember { mutableStateOf<ReviewResponse?>(null) }
+    itemId?.let {
+        if (reviewsResponse.value == null) {
+            fetchReviews(itemId, service, reviewsResponse)
+        }
+    }
+    // > 0
+    val hasReviews = reviewsResponse.value?.results?.size?.let { it > 0 }
+    val m = if (hasReviews == true) {
+        modifier.height(400.dp)
+    } else {
+        modifier.height(200.dp)
+    }
+
+    LazyListContentCard(
+        modifier = m
+            .fillMaxWidth(),
+        header = {
+            Text(
+                text = "Reviews",
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        },
+        footer = {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp)
+                    .padding(top = 4.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                var reviewTextState by remember { mutableStateOf("") }
+
+                RoundedTextField(
+                    modifier = Modifier
+                        .height(50.dp)
+                        .padding(top = 4.dp)
+                        .weight(1f),
+                    value = reviewTextState,
+                    onValueChange = { reviewTextState = it },
+                    placeHolder = "Add a review",
+                    backgroundColor = MaterialTheme.colorScheme.secondary,
+                    placeHolderTextColor = MaterialTheme.colorScheme.background,
+                    textColor = MaterialTheme.colorScheme.onSecondary
+                )
+
+                CircleBackgroundColorImage(
+                    size = 40.dp,
+                    backgroundColor = MaterialTheme.colorScheme.tertiary,
+                    image = Icons.Filled.Send,
+                    colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.surfaceVariant),
+                    contentDescription = ""
+                )
+            }
+
+        }
+    ) {
+        val reviews = reviewsResponse.value?.results ?: emptyList()
+        if (reviews.isNotEmpty()) {
+            items(reviews.size) { i ->
+                val review = reviews[i]
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(end = 16.dp),
+                    verticalAlignment = Alignment.Top,
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        AvatarImage(
+                            size = 50.dp,
+                            author = review.authorDetails
+                        )
+
+                        // todo - only show this for user's review
+                        CircleBackgroundColorImage(
+                            image = Icons.Filled.Delete,
+                            size = 30.dp,
+                            backgroundColor = MaterialTheme.colorScheme.error,
+                            contentDescription = "",
+                            imageHeight = 15.dp,
+                            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.surfaceVariant)
+                        )
+                    }
+
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Text(
+                            text = review.author,
+                            color = MaterialTheme.colorScheme.secondary,
+                            fontWeight = FontWeight.Bold
+                        )
+
+                        HtmlText(
+                            text = review.content,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+
+                        val createdAt = TmdbUtils.formatDate(review.createdAt)
+                        val updatedAt = TmdbUtils.formatDate(review.updatedAt)
+                        var timestamp = stringResource(id = R.string.created_at_label, createdAt)
+                        if (updatedAt != createdAt) {
+                            timestamp += "\n${stringResource(id = R.string.updated_at_label, updatedAt)}"
+                        }
+                        Text(
+                            text = timestamp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            fontSize = 12.sp
+                        )
+                    }
+                }
+                Divider(
+                    color = MaterialTheme.colorScheme.secondary,
+                    modifier = Modifier.padding(horizontal = 50.dp, vertical = 6.dp)
+                )
+            }
+        } else {
+            item {
+                Text(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight()
+                        .padding(horizontal = 24.dp, vertical = 22.dp),
+                    text = stringResource(R.string.no_reviews_label),
+                    color = MaterialTheme.colorScheme.tertiary,
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.headlineMedium
+                )
+            }
+        }
+    }
+}
+
 private fun fetchMediaItem(id: Int, service: DetailService, mediaItem: MutableState<DetailedItem?>) {
     CoroutineScope(Dispatchers.IO).launch {
         val response = service.getById(id)
@@ -736,6 +884,17 @@ private fun fetchCredits(id: Int, credits: MutableState<PersonCreditsResponse?>)
         if (result.isSuccessful) {
             withContext(Dispatchers.Main) {
                 credits.value = result.body()
+            }
+        }
+    }
+}
+
+private fun fetchReviews(id: Int, service: DetailService, reviewResponse: MutableState<ReviewResponse?>) {
+    CoroutineScope(Dispatchers.IO).launch {
+        val result = service.getReviews(id)
+        if (result.isSuccessful) {
+            withContext(Dispatchers.Main) {
+                reviewResponse.value = result.body()
             }
         }
     }

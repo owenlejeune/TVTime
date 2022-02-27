@@ -1,15 +1,16 @@
 package com.owenlejeune.tvtime.ui.components
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
+import android.widget.TextView
 import android.widget.Toast
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.selection.toggleable
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
@@ -22,16 +23,22 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusEvent
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
@@ -48,12 +55,21 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.core.text.HtmlCompat
 import coil.compose.rememberImagePainter
+import coil.transform.CircleCropTransformation
 import com.google.accompanist.flowlayout.FlowRow
 import com.owenlejeune.tvtime.R
+import com.owenlejeune.tvtime.api.tmdb.model.AuthorDetails
+import com.owenlejeune.tvtime.utils.TmdbUtils
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import org.intellij.markdown.flavours.commonmark.CommonMarkFlavourDescriptor
+import org.intellij.markdown.html.HtmlGenerator
+import org.intellij.markdown.parser.MarkdownParser
 
 @Composable
 fun TopLevelSwitch(
@@ -334,6 +350,7 @@ fun RatingRing(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun RoundedTextField(
     value: String,
@@ -352,31 +369,49 @@ fun RoundedTextField(
     enabled: Boolean = true,
     readOnly: Boolean = false,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
-    keyboardActions: KeyboardActions = KeyboardActions.Default
+    keyboardActions: KeyboardActions = KeyboardActions.Default,
+    leadingIcon: @Composable (() -> Unit)? = null,
+    trailingIcon: @Composable (() -> Unit)? = null,
 ) {
     Surface(
         modifier = modifier,
         shape = RoundedCornerShape(50.dp),
         color = backgroundColor
     ) {
-        Box(
-            modifier = Modifier.padding(horizontal = 12.dp),
-            contentAlignment = Alignment.CenterStart
+        Row(Modifier.padding(horizontal = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            if (value.isEmpty() && placeHolder.isNotEmpty()) {
-                Text(
-                    text = placeHolder,
-                    style = textStyle,
-                    color = placeHolderTextColor
-                )
+            if (leadingIcon != null) {
+                leadingIcon()
             }
-            Row(
-                verticalAlignment = Alignment.CenterVertically
+            Box(modifier = Modifier
+                .fillMaxHeight()
+                .weight(1f),
+                contentAlignment = Alignment.CenterStart
             ) {
+                if (value.isEmpty() && placeHolder.isNotEmpty()) {
+                    Text(
+                        text = placeHolder,
+                        style = textStyle,
+                        color = placeHolderTextColor
+                    )
+                }
+                val bringIntoViewRequester = remember { BringIntoViewRequester() }
+                val coroutineScope = rememberCoroutineScope()
                 BasicTextField(
                     modifier = Modifier
-                        .weight(1f)
-                        .focusRequester(focusRequester),
+                        .focusRequester(focusRequester)
+                        .fillMaxWidth()
+                        .bringIntoViewRequester(bringIntoViewRequester)
+                        .onFocusEvent {
+                            if (it.isFocused) {
+                                coroutineScope.launch {
+                                    delay(200)
+                                    bringIntoViewRequester.bringIntoView()
+                                }
+                            }
+                        },
                     value = value,
                     onValueChange = onValueChange,
                     singleLine = singleLine,
@@ -386,8 +421,11 @@ fun RoundedTextField(
                     enabled = enabled,
                     readOnly = readOnly,
                     keyboardOptions = keyboardOptions,
-                    keyboardActions = keyboardActions
+                    keyboardActions = keyboardActions,
                 )
+            }
+            if (trailingIcon != null) {
+                trailingIcon()
             }
         }
     }
@@ -397,6 +435,28 @@ fun RoundedTextField(
             focusRequester.requestFocus()
         }
     }
+}
+
+@Preview(widthDp = 300, heightDp = 40)
+@Composable
+private fun RoundedEditTextPreview() {
+    RoundedTextField(
+        value = "this is my value",
+        onValueChange = {},
+        placeHolder = "this is my placeholder",
+        trailingIcon = {
+            Image(
+                painter = painterResource(id = R.drawable.ic_search),
+                contentDescription = ""
+            )
+       },
+        leadingIcon = {
+            Image(
+                painter = painterResource(id = R.drawable.ic_search),
+                contentDescription = ""
+            )
+        }
+    )
 }
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -448,6 +508,92 @@ fun FullScreenThumbnailVideoPlayer(
                     }
                 )
             }
+        }
+    }
+}
+
+@Composable
+fun HtmlText(text: String, modifier: Modifier = Modifier, color: Color = Color.Unspecified, parseMarkdownFirst: Boolean = true) {
+    val htmlString = if (parseMarkdownFirst) {
+        val flavour = CommonMarkFlavourDescriptor()
+        val parsedTree = MarkdownParser(flavour).buildMarkdownTreeFromString(text)
+        HtmlGenerator(text, parsedTree, flavour).generateHtml()
+    } else {
+        text
+    }
+    AndroidView(
+        modifier = modifier,
+        factory = { context -> TextView(context) },
+        update = { textView ->
+            textView.textSize = 14f
+            textView.text = HtmlCompat.fromHtml(htmlString, HtmlCompat.FROM_HTML_MODE_COMPACT)
+            textView.setTextColor(color.toArgb())
+        }
+    )
+}
+
+@Composable
+fun CircleBackgroundColorImage(
+    size: Dp,
+    backgroundColor: Color,
+    image: ImageVector,
+    modifier: Modifier = Modifier,
+    imageHeight: Dp? = null,
+    imageAlignment: Alignment = Alignment.Center,
+    contentDescription: String? = null,
+    colorFilter: ColorFilter? = null
+) {
+    Box(
+        modifier = modifier
+            .clip(CircleShape)
+            .size(size)
+            .background(color = backgroundColor)
+    ) {
+        val mod = if (imageHeight != null) {
+            Modifier.align(imageAlignment).height(height = imageHeight)
+        } else {
+            Modifier.align(imageAlignment)
+        }
+        Image(
+            imageVector = image,
+            contentDescription = contentDescription,
+            modifier = mod,
+            colorFilter = colorFilter
+        )
+    }
+}
+
+@Composable
+fun AvatarImage(
+    size: Dp,
+    author: AuthorDetails,
+    modifier: Modifier = Modifier
+) {
+    if (author.avatarPath != null) {
+        Image(
+            modifier = modifier.size(size),
+            painter = rememberImagePainter(
+                data = TmdbUtils.getFullAvatarPath(author),
+                builder = {
+                    transformations(CircleCropTransformation())
+                }
+            ),
+            contentDescription = ""
+        )
+    } else {
+        Box(
+            modifier = Modifier
+                .clip(CircleShape)
+                .size(size)
+                .background(color = MaterialTheme.colorScheme.tertiary)
+        ) {
+            Text(
+                modifier = Modifier.fillMaxSize().padding(top = size/5),
+                text = author.name[0].uppercase(),
+                color = MaterialTheme.colorScheme.onTertiary,
+                textAlign = TextAlign.Center,
+                style = MaterialTheme.typography.titleLarge
+            )
         }
     }
 }

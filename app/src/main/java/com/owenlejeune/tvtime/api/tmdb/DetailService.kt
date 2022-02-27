@@ -15,4 +15,6 @@ interface DetailService {
 
     suspend fun getVideos(id: Int): Response<VideoResponse>
 
+    suspend fun getReviews(id: Int): Response<ReviewResponse>
+
 }

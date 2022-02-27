@@ -5,10 +5,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.GridCells
 import androidx.compose.foundation.lazy.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -37,7 +34,7 @@ import com.owenlejeune.tvtime.extensions.dpToPx
 import com.owenlejeune.tvtime.extensions.listItems
 import com.owenlejeune.tvtime.utils.TmdbUtils
 
-private val POSTER_WIDTH = 127.dp
+private val POSTER_WIDTH = 120.dp
 private val POSTER_HEIGHT = 190.dp
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -51,7 +48,8 @@ fun PosterGrid(
 
     LazyVerticalGrid(
         cells = GridCells.Adaptive(minSize = POSTER_WIDTH),
-        contentPadding = PaddingValues(8.dp)
+        contentPadding = PaddingValues(8.dp),
+        horizontalArrangement = Arrangement.SpaceBetween
     ) {
         listItems(mediaList.value) { item ->
             PosterItem(

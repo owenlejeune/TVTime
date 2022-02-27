@@ -47,4 +47,9 @@ class TvService: KoinComponent, DetailService, HomePageService {
     override suspend fun getVideos(id: Int): Response<VideoResponse> {
         return service.getVideos(id)
     }
+
+    override suspend fun getReviews(id: Int): Response<ReviewResponse> {
+        return service.getReviews(id)
+    }
+
 }
