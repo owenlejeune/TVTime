@@ -809,37 +809,38 @@ private fun ReviewsCard(
             )
         },
         footer = {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp)
-                    .padding(top = 4.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                var reviewTextState by remember { mutableStateOf("") }
-
-                RoundedTextField(
+            if (!SessionManager.currentSession.isGuest) {
+                Row(
                     modifier = Modifier
+                        .fillMaxWidth()
                         .height(50.dp)
-                        .padding(top = 4.dp)
-                        .weight(1f),
-                    value = reviewTextState,
-                    onValueChange = { reviewTextState = it },
-                    placeHolder = "Add a review",
-                    backgroundColor = MaterialTheme.colorScheme.secondary,
-                    placeHolderTextColor = MaterialTheme.colorScheme.background,
-                    textColor = MaterialTheme.colorScheme.onSecondary
-                )
+                        .padding(top = 4.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    var reviewTextState by remember { mutableStateOf("") }
 
-                CircleBackgroundColorImage(
-                    size = 40.dp,
-                    backgroundColor = MaterialTheme.colorScheme.tertiary,
-                    image = Icons.Filled.Send,
-                    colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.surfaceVariant),
-                    contentDescription = ""
-                )
+                    RoundedTextField(
+                        modifier = Modifier
+                            .height(50.dp)
+                            .padding(top = 4.dp)
+                            .weight(1f),
+                        value = reviewTextState,
+                        onValueChange = { reviewTextState = it },
+                        placeHolder = "Add a review",
+                        backgroundColor = MaterialTheme.colorScheme.secondary,
+                        placeHolderTextColor = MaterialTheme.colorScheme.background,
+                        textColor = MaterialTheme.colorScheme.onSecondary
+                    )
+
+                    CircleBackgroundColorImage(
+                        size = 40.dp,
+                        backgroundColor = MaterialTheme.colorScheme.tertiary,
+                        image = Icons.Filled.Send,
+                        colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.surfaceVariant),
+                        contentDescription = ""
+                    )
+                }
             }
-
         }
     ) {
         val reviews = reviewsResponse.value?.results ?: emptyList()
