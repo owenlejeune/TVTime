@@ -1,55 +1,79 @@
 package com.owenlejeune.tvtime.api.tmdb
 
 import com.owenlejeune.tvtime.api.tmdb.model.*
+import com.owenlejeune.tvtime.preferences.AppPreferences
+import com.owenlejeune.tvtime.utils.SessionManager
 import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import retrofit2.Response
 
 class MoviesService: KoinComponent, DetailService, HomePageService {
 
-    private val service by lazy { TmdbClient().createMovieService() }
+    private val preferences: AppPreferences by inject()
+
+    private val movieService by lazy { TmdbClient().createMovieService() }
+    private val authService by lazy { TmdbClient().createAuthenticationService() }
 
     override suspend fun getPopular(page: Int): Response<out HomePageResponse> {
-        return service.getPopularMovies(page)
+        return movieService.getPopularMovies(page)
     }
 
     override suspend fun getNowPlaying(page: Int): Response<out HomePageResponse> {
-        return service.getNowPlayingMovies(page)
+        return movieService.getNowPlayingMovies(page)
     }
 
     override suspend fun getTopRated(page: Int): Response<out HomePageResponse> {
-        return service.getTopRatedMovies(page)
+        return movieService.getTopRatedMovies(page)
     }
 
     override suspend fun getUpcoming(page: Int): Response<out HomePageResponse> {
-        return service.getUpcomingMovies(page)
+        return movieService.getUpcomingMovies(page)
     }
 
     suspend fun getReleaseDates(id: Int): Response<MovieReleaseResults> {
-        return service.getReleaseDates(id)
+        return movieService.getReleaseDates(id)
     }
 
     override suspend fun getById(id: Int): Response<out DetailedItem> {
-        return service.getMovieById(id)
+        return movieService.getMovieById(id)
     }
 
     override suspend fun getImages(id: Int): Response<ImageCollection> {
-        return service.getMovieImages(id)
+        return movieService.getMovieImages(id)
     }
 
     override suspend fun getCastAndCrew(id: Int): Response<CastAndCrew> {
-        return service.getCastAndCrew(id)
+        return movieService.getCastAndCrew(id)
     }
 
     override suspend fun getSimilar(id: Int, page: Int): Response<out HomePageResponse> {
-        return service.getSimilarMovies(id, page)
+        return movieService.getSimilarMovies(id, page)
     }
 
     override suspend fun getVideos(id: Int): Response<VideoResponse> {
-        return service.getVideos(id)
+        return movieService.getVideos(id)
     }
 
     override suspend fun getReviews(id: Int): Response<ReviewResponse> {
-        return service.getReviews(id)
+        return movieService.getReviews(id)
+    }
+
+    suspend fun postRating(id: Int, rating: RatingBody): Response<RatingResponse> {
+        val session = SessionManager.currentSession
+        return if (session.isGuest) {
+            movieService.postMovieRatingAsGuest(id, session.sessionId, rating)
+        } else {
+            movieService.postMovieRatingAsUser(id, session.sessionId, rating)
+        }
+    }
+
+    suspend fun deleteRating(id: Int, rating: RatingBody): Response<RatingResponse> {
+        val session = SessionManager.currentSession
+        return if (session.isGuest) {
+            movieService.deleteMovieReviewAsGuest(id, session.sessionId)
+        } else {
+            movieService.deleteMovieReviewAsUser(id, session.sessionId)
+        }
     }
 
 }

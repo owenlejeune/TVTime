@@ -323,29 +323,37 @@ fun ChipPreview() {
     Chip("Test Chip")
 }
 
+/**
+ * @param progress The progress of the ring as a value between 0 and 1
+ */
 @Composable
 fun RatingRing(
     modifier: Modifier = Modifier,
     progress: Float = 0f,
-    textColor: Color = Color.White
+    size: Dp = 60.dp,
+    ringStrokeWidth: Dp = 4.dp,
+    ringColor: Color = MaterialTheme.colorScheme.primary,
+    textColor: Color = Color.White,
+    textSize: TextUnit = 14.sp
 ) {
     Box(
         modifier = modifier
-            .size(60.dp)
-            .padding(8.dp)
+            .size(size)
+//            .size(60.dp)
+//            .padding(8.dp)
     ) {
         CircularProgressIndicator(
             modifier = Modifier.fillMaxSize(),
             progress = progress,
-            strokeWidth = 4.dp,
-            color = MaterialTheme.colorScheme.primary
+            strokeWidth = ringStrokeWidth,
+            color = ringColor
         )
 
         Text(
             modifier = Modifier.align(Alignment.Center),
             text = "${(progress*100).toInt()}%",
             color = textColor,
-            style = MaterialTheme.typography.titleSmall
+            fontSize = textSize
         )
     }
 }

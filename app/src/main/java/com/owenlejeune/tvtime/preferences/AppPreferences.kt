@@ -11,6 +11,7 @@ class AppPreferences(context: Context) {
 //        private val USE_PREFERENCES = "use_android_12_colors"
         private val PERSISTENT_SEARCH = "persistent_search"
         private val HIDE_TITLE = "hide_title"
+        private val GUEST_SESSION = "guest_session_id"
     }
 
     private val preferences: SharedPreferences = context.getSharedPreferences(PREF_FILE, Context.MODE_PRIVATE)
@@ -22,6 +23,10 @@ class AppPreferences(context: Context) {
     var hideTitle: Boolean
         get() = preferences.getBoolean(HIDE_TITLE, false)
         set(value) { preferences.put(HIDE_TITLE, value) }
+
+    var guestSessionId: String
+        get() = preferences.getString(GUEST_SESSION, "") ?: ""
+        set(value) { preferences.put(GUEST_SESSION, value) }
 //    val usePreferences:  MutableState<Boolean>
 //    var usePreferences: Boolean
 //        get() = preferences.getBoolean(USE_PREFERENCES, false)

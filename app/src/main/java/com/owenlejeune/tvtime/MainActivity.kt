@@ -13,11 +13,20 @@ import androidx.navigation.compose.rememberNavController
 import com.owenlejeune.tvtime.ui.navigation.MainNavigationRoutes
 import com.owenlejeune.tvtime.ui.theme.TVTimeTheme
 import com.owenlejeune.tvtime.utils.KeyboardManager
+import com.owenlejeune.tvtime.utils.SessionManager
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        CoroutineScope(Dispatchers.IO).launch {
+            SessionManager.initialize()
+        }
+
         setContent {
             AppKeyboardFocusManager()
             val displayUnderStatusBar = remember { mutableStateOf(false) }

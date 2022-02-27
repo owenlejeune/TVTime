@@ -12,6 +12,7 @@ import com.owenlejeune.tvtime.ui.screens.DetailView
 import com.owenlejeune.tvtime.ui.screens.MainAppView
 import com.owenlejeune.tvtime.ui.screens.MediaViewType
 import com.owenlejeune.tvtime.ui.screens.PersonDetailView
+import com.owenlejeune.tvtime.ui.screens.tabs.bottom.AccountTab
 import com.owenlejeune.tvtime.ui.screens.tabs.bottom.FavouritesTab
 import com.owenlejeune.tvtime.ui.screens.tabs.bottom.MediaTab
 import com.owenlejeune.tvtime.ui.screens.tabs.bottom.SettingsTab
@@ -65,6 +66,9 @@ fun BottomNavigationRoutes(
         }
         composable(BottomNavItem.TV.route) {
             MediaTab(appNavController = appNavController, mediaType = MediaViewType.TV)
+        }
+        composable(BottomNavItem.Account.route) {
+            AccountTab()
         }
         composable(BottomNavItem.Favourites.route) {
             FavouritesTab()

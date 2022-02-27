@@ -37,6 +37,14 @@ class TmdbClient: KoinComponent {
         return client.create(PeopleApi::class.java)
     }
 
+    fun createAuthenticationService(): AuthenticationApi {
+        return client.create(AuthenticationApi::class.java)
+    }
+
+    fun createGuestSessionService(): GuestSessionApi {
+        return client.create(GuestSessionApi::class.java)
+    }
+
     private inner class TmdbInterceptor: Interceptor {
         override fun intercept(chain: Interceptor.Chain): Response {
             val apiParam = QueryParam("api_key", BuildConfig.TMDB_ApiKey)

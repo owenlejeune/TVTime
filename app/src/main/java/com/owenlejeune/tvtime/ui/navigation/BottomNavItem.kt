@@ -12,12 +12,13 @@ sealed class BottomNavItem(stringRes: Int, val icon: Int, val route: String): Ko
     val name = resourceUtils.getString(stringRes)
 
     companion object {
-        val Items = listOf(Movies, TV, Favourites, Settings)
+        val Items = listOf(Movies, TV, Account, Settings)
 
         fun getByRoute(route: String?): BottomNavItem? {
             return when (route) {
                 Movies.route -> Movies
                 TV.route -> TV
+                Account.route -> Account
                 Favourites.route -> Favourites
                 Settings.route -> Settings
                 else -> null
@@ -27,6 +28,7 @@ sealed class BottomNavItem(stringRes: Int, val icon: Int, val route: String): Ko
 
     object Movies: BottomNavItem(R.string.nav_movies_title, R.drawable.ic_movie, "movies_route")
     object TV: BottomNavItem(R.string.nav_tv_title, R.drawable.ic_tv, "tv_route")
+    object Account: BottomNavItem(R.string.nav_account_title, R.drawable.ic_person, "account_route")
     object Favourites: BottomNavItem(R.string.nav_favourites_title, R.drawable.ic_favorite, "favourites_route")
     object Settings: BottomNavItem(R.string.nav_settings_title, R.drawable.ic_settings, "settings_route")
 

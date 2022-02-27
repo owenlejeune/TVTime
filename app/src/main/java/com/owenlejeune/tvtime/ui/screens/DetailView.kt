@@ -1,8 +1,11 @@
 package com.owenlejeune.tvtime.ui.screens
 
+import android.widget.Toast
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
@@ -11,9 +14,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -31,11 +36,13 @@ import com.owenlejeune.tvtime.api.tmdb.model.*
 import com.owenlejeune.tvtime.extensions.listItems
 import com.owenlejeune.tvtime.ui.components.*
 import com.owenlejeune.tvtime.ui.navigation.MainNavItem
+import com.owenlejeune.tvtime.utils.SessionManager
 import com.owenlejeune.tvtime.utils.TmdbUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.text.DecimalFormat
 
 @Composable
 fun DetailView(
@@ -65,7 +72,7 @@ fun DetailView(
             .verticalScroll(state = scrollState)
     ) {
         val (
-            backButton, backdropImage, posterImage, titleText, contentColumn
+            backButton, backdropImage, posterImage, titleText, contentColumn, ratingsView
         ) = createRefs()
 
         Backdrop(
@@ -95,6 +102,27 @@ fun DetailView(
             },
             title = mediaItem.value?.title ?: "",
         )
+
+        Box(
+            Modifier
+                .clip(CircleShape)
+                .size(60.dp)
+                .background(color = MaterialTheme.colorScheme.surfaceVariant)
+                .constrainAs(ratingsView) {
+                    bottom.linkTo(titleText.top)
+                    start.linkTo(posterImage.end, margin = 20.dp)
+                }
+        ) {
+            RatingRing(
+                modifier = Modifier.padding(5.dp),
+                textColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                progress = mediaItem.value?.voteAverage?.let { it / 10 } ?: 0f,
+                textSize = 14.sp,
+                ringColor = MaterialTheme.colorScheme.primary,
+                ringStrokeWidth = 4.dp,
+                size = 50.dp
+            )
+        }
 
         BackButton(
             modifier = Modifier.constrainAs(backButton) {
@@ -372,6 +400,8 @@ private fun ContentColumn(
             MiscTvDetails(mediaItem = mediaItem, service as TvService)
         }
 
+        ActionsView(itemId = itemId, type = mediaType)
+
         if (mediaItem.value?.overview?.isNotEmpty() == true) {
             OverviewCard(mediaItem = mediaItem)
         }
@@ -462,6 +492,111 @@ private fun MiscDetails(
                 .fillMaxWidth()
                 .wrapContentHeight(),
             chips = genres.map { it.name }
+        )
+    }
+}
+
+@Composable
+private fun ActionsView(
+    itemId: Int?,
+    type: MediaViewType,
+    modifier: Modifier = Modifier
+) {
+    val context = LocalContext.current
+    itemId?.let {
+        val session = SessionManager.currentSession
+        Row(
+            modifier = modifier
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            val itemIsRated = if (type == MediaViewType.MOVIE) {
+                session.hasRatedMovie(itemId)
+            } else {
+                session.hasRatedTvShow(itemId)
+            }
+            val showRatingDialog = remember { mutableStateOf(false) }
+            ActionButton(
+                modifier = Modifier.weight(1f),
+                text = if (itemIsRated) stringResource(R.string.delete_rating_action_label) else stringResource(R.string.rate_action_label),
+                onClick = {
+                    showRatingDialog.value = true
+                }
+            )
+            RatingDialog(showDialog = showRatingDialog, onValueConfirmed = { rating ->
+                // todo post rating
+                Toast.makeText(context, "Rating :${rating}", Toast.LENGTH_SHORT).show()
+            })
+            if (!session.isGuest) {
+                ActionButton(
+                    modifier = Modifier.weight(1f),
+                    text = stringResource(R.string.add_to_list_action_label),
+                    onClick = { /*TODO*/ }
+                )
+                ActionButton(
+                    modifier = Modifier.weight(1f),
+                    text = stringResource(R.string.favourite_label),
+                    onClick = { /*TODO*/ }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ActionButton(modifier: Modifier, text: String, onClick: () -> Unit) {
+    Button(
+        modifier = modifier,
+        shape = RoundedCornerShape(10.dp),
+        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary),
+        onClick = onClick
+    ) {
+        Text(text = text)
+    }
+}
+
+@Composable
+private fun RatingDialog(showDialog: MutableState<Boolean>, onValueConfirmed: (Float) -> Unit) {
+
+    fun formatPosition(position: Float): String {
+        return DecimalFormat("#.#").format(position/10f)
+    }
+
+    if (showDialog.value) {
+        var sliderPosition by remember { mutableStateOf(0f) }
+        AlertDialog(
+            modifier = Modifier.wrapContentHeight(),
+            onDismissRequest = { showDialog.value = false },
+            title = { Text(text = stringResource(R.string.rating_dialog_title)) },
+            confirmButton = {
+                Button(
+                    modifier = Modifier.height(40.dp),
+                    onClick = {
+                        onValueConfirmed.invoke(formatPosition(sliderPosition).toFloat())
+                        showDialog.value = false
+                    }
+                ) {
+                    Text(stringResource(R.string.rating_dialog_confirm))
+                }
+            },
+            dismissButton = {
+                Button(
+                    modifier = Modifier.height(40.dp),
+                    onClick = {
+                        showDialog.value = false
+                    }
+                ) {
+                    Text(stringResource(R.string.action_cancel))
+                }
+            },
+            text = {
+                SliderWithLabel(
+                    value = sliderPosition,
+                    valueRange = 0f..100f,
+                    onValueChanged = { sliderPosition = it },
+                    sliderLabel = formatPosition(sliderPosition)
+                )
+            }
         )
     }
 }

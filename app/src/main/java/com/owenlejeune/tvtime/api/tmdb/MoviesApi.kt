@@ -2,9 +2,7 @@ package com.owenlejeune.tvtime.api.tmdb
 
 import com.owenlejeune.tvtime.api.tmdb.model.*
 import retrofit2.Response
-import retrofit2.http.GET
-import retrofit2.http.Path
-import retrofit2.http.Query
+import retrofit2.http.*
 
 interface MoviesApi {
 
@@ -40,5 +38,31 @@ interface MoviesApi {
 
     @GET("movie/{id}/reviews")
     suspend fun getReviews(@Path("id") id: Int): Response<ReviewResponse>
+
+    @POST("movie/{id}/rating")
+    suspend fun postMovieRatingAsGuest(
+        @Path("id") id: Int,
+        @Query("guest_session_id") guestSessionId: String,
+        @Body ratingBody: RatingBody
+    ): Response<RatingResponse>
+
+    @POST("movie/{id}/rating")
+    suspend fun postMovieRatingAsUser(
+        @Path("id") id: Int,
+        @Query("session_id") sessionId: String,
+        @Body ratingBody: RatingBody
+    ): Response<RatingResponse>
+
+    @DELETE("movie/{id}/rating")
+    suspend fun deleteMovieReviewAsGuest(
+        @Path("id") id: Int,
+        @Query("guest_session_id") guestSessionId: String
+    ): Response<RatingResponse>
+
+    @DELETE("movie/{id}/rating")
+    suspend fun deleteMovieReviewAsUser(
+        @Path("id") id: Int,
+        @Query("session_id") sessionId: String
+    ): Response<RatingResponse>
 
 }
