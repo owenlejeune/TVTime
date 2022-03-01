@@ -54,4 +54,7 @@
     <string name="rating_dialog_confirm">Submit rating</string>
     <string name="action_cancel">Cancel</string>
     <string name="nav_account_title">Account</string>
+    <string name="nav_rated_movies_title">Rated Movies</string>
+    <string name="nav_rated_shows_title">Rated TV Shows</string>
+    <string name="nav_rated_episodes_title">Rated TV Episodes</string>
 </resources>

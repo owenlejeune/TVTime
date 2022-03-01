@@ -597,7 +597,7 @@ fun AvatarImage(
         ) {
             Text(
                 modifier = Modifier.fillMaxSize().padding(top = size/5),
-                text = author.name[0].uppercase(),
+                text = if (author.name.isNotEmpty()) author.name[0].uppercase() else author.username[0].toString(),
                 color = MaterialTheme.colorScheme.onTertiary,
                 textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.titleLarge

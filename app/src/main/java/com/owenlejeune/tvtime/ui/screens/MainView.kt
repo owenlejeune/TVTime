@@ -86,7 +86,7 @@ fun MainAppView(appNavController: NavHostController, preferences: AppPreferences
         }
     ) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)) {
-            BottomNavigationRoutes(appNavController = appNavController, navController = navController)
+            BottomNavigationRoutes(appNavController = appNavController, navController = navController, appBarTitle = appBarTitle)
         }
     }
 }
@@ -173,9 +173,7 @@ private fun BottomNavBar(navController: NavController, appBarTitle: MutableState
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
-    NavigationBar(
-        containerColor = MaterialTheme.colorScheme.primaryContainer
-    ) {
+    NavigationBar {
         BottomNavItem.Items.forEach { item ->
             NavigationBarItem(
                 icon = { Icon(painter = painterResource(id = item.icon), contentDescription = null) },
@@ -187,17 +185,10 @@ private fun BottomNavBar(navController: NavController, appBarTitle: MutableState
                         appBarTitle = appBarTitle,
                         item = item
                     )
-                },
-                colors = NavigationBarItemDefaults
-                    .colors(
-                        selectedIconColor = MaterialTheme.colorScheme.secondary,
-                        indicatorColor = MaterialTheme.colorScheme.onSecondary
-                    )
+                }
             )
         }
     }
-
-    appBarTitle.value = BottomNavItem.getByRoute(currentRoute)?.name ?: ""
 }
 
 private fun onBottomAppBarItemClicked(

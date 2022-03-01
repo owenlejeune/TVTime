@@ -42,6 +42,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.json.JSONObject
 import java.text.DecimalFormat
 
 @Composable
@@ -400,7 +401,7 @@ private fun ContentColumn(
             MiscTvDetails(mediaItem = mediaItem, service as TvService)
         }
 
-        ActionsView(itemId = itemId, type = mediaType)
+        ActionsView(itemId = itemId, type = mediaType, service = service)
 
         if (mediaItem.value?.overview?.isNotEmpty() == true) {
             OverviewCard(mediaItem = mediaItem)
@@ -500,9 +501,9 @@ private fun MiscDetails(
 private fun ActionsView(
     itemId: Int?,
     type: MediaViewType,
+    service: DetailService,
     modifier: Modifier = Modifier
 ) {
-    val context = LocalContext.current
     itemId?.let {
         val session = SessionManager.currentSession
         Row(
@@ -510,23 +511,13 @@ private fun ActionsView(
                 .fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            val itemIsRated = if (type == MediaViewType.MOVIE) {
-                session.hasRatedMovie(itemId)
-            } else {
-                session.hasRatedTvShow(itemId)
-            }
-            val showRatingDialog = remember { mutableStateOf(false) }
-            ActionButton(
+            RateButton(
                 modifier = Modifier.weight(1f),
-                text = if (itemIsRated) stringResource(R.string.delete_rating_action_label) else stringResource(R.string.rate_action_label),
-                onClick = {
-                    showRatingDialog.value = true
-                }
+                itemId = itemId,
+                type = type,
+                service = service
             )
-            RatingDialog(showDialog = showRatingDialog, onValueConfirmed = { rating ->
-                // todo post rating
-                Toast.makeText(context, "Rating :${rating}", Toast.LENGTH_SHORT).show()
-            })
+
             if (!session.isGuest) {
                 ActionButton(
                     modifier = Modifier.weight(1f),
@@ -556,10 +547,68 @@ private fun ActionButton(modifier: Modifier, text: String, onClick: () -> Unit) 
 }
 
 @Composable
+private fun RateButton(
+    itemId: Int,
+    type: MediaViewType,
+    service: DetailService,
+    modifier: Modifier = Modifier
+) {
+    val session = SessionManager.currentSession
+    val context = LocalContext.current
+
+    var itemIsRated by remember {
+        mutableStateOf(
+            if (type == MediaViewType.MOVIE) {
+                session.hasRatedMovie(itemId)
+            } else {
+                session.hasRatedTvShow(itemId)
+            }
+        )
+    }
+
+    val showRatingDialog = remember { mutableStateOf(false) }
+    ActionButton(
+        modifier = modifier,
+        text = if (itemIsRated) stringResource(R.string.delete_rating_action_label) else stringResource(R.string.rate_action_label),
+        onClick = {
+            if (!itemIsRated) {
+                showRatingDialog.value = true
+            } else {
+                CoroutineScope(Dispatchers.IO).launch {
+                    val response = service.deleteRating(itemId)
+                    if (response.isSuccessful) {
+                        withContext(Dispatchers.Main) {
+                            itemIsRated = false
+                        }
+                    }
+                    SessionManager.currentSession.refresh()
+                }
+            }
+        }
+    )
+    RatingDialog(showDialog = showRatingDialog, onValueConfirmed = { rating ->
+        CoroutineScope(Dispatchers.IO).launch {
+            val response = service.postRating(itemId, RatingBody(rating = rating))
+            if (response.isSuccessful) {
+                SessionManager.currentSession.refresh()
+                withContext(Dispatchers.Main) {
+                    itemIsRated = true
+                }
+            } else {
+                withContext(Dispatchers.Main) {
+                    val errorObj = JSONObject(response.errorBody().toString())
+                    Toast.makeText(context, "Error: ${errorObj.getString("status_message")}", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    })
+}
+
+@Composable
 private fun RatingDialog(showDialog: MutableState<Boolean>, onValueConfirmed: (Float) -> Unit) {
 
     fun formatPosition(position: Float): String {
-        return DecimalFormat("#.#").format(position/10f)
+        return DecimalFormat("#.#").format(position.toInt()*5/10f)
     }
 
     if (showDialog.value) {
@@ -592,9 +641,11 @@ private fun RatingDialog(showDialog: MutableState<Boolean>, onValueConfirmed: (F
             text = {
                 SliderWithLabel(
                     value = sliderPosition,
-                    valueRange = 0f..100f,
-                    onValueChanged = { sliderPosition = it },
-                    sliderLabel = formatPosition(sliderPosition)
+                    valueRange = 0f..20f,
+                    onValueChanged = {
+                        sliderPosition = it
+                     },
+                    sliderLabel = "${sliderPosition.toInt() * 5}%",
                 )
             }
         )

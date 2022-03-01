@@ -19,8 +19,8 @@ fun SliderWithLabel(
     valueRange: ClosedFloatingPointRange<Float>,
     onValueChanged: (Float) -> Unit,
     sliderLabel: String,
-    step: Int = 0,
-    labelMinWidth: Dp = 24.dp
+    steps: Int = 0,
+    labelMinWidth: Dp = 36.dp
 ) {
     Column {
         BoxWithConstraints(
@@ -32,15 +32,13 @@ fun SliderWithLabel(
                 value = value,
                 valueRange = valueRange,
                 boxWidth = maxWidth,
-                labelWidth = labelMinWidth + 8.dp // Since we use a padding of 4.dp on either sides of the SliderLabel, we need to account for this in our calculation
+                labelWidth = labelMinWidth + 8.dp
             )
 
-//            if (value > valueRange.start) {
-                SliderLabel(
-                    label = sliderLabel, minWidth = labelMinWidth, modifier = Modifier
-                        .padding(start = offset)
-                )
-//            }
+            SliderLabel(
+                label = sliderLabel, minWidth = labelMinWidth, modifier = Modifier
+                    .padding(start = offset)
+            )
         }
 
         Slider(
@@ -48,7 +46,7 @@ fun SliderWithLabel(
             onValueChange = onValueChanged,
             valueRange = valueRange,
             modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
-            steps = step,
+            steps = steps,
             colors = SliderDefaults.colors(
                 thumbColor = MaterialTheme.colorScheme.primary,
                 activeTrackColor = MaterialTheme.colorScheme.primary

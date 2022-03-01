@@ -1,6 +1,7 @@
 package com.owenlejeune.tvtime.api.tmdb
 
 import com.owenlejeune.tvtime.api.tmdb.model.*
+import com.owenlejeune.tvtime.utils.SessionManager
 import org.koin.core.component.KoinComponent
 import retrofit2.Response
 
@@ -50,6 +51,24 @@ class TvService: KoinComponent, DetailService, HomePageService {
 
     override suspend fun getReviews(id: Int): Response<ReviewResponse> {
         return service.getReviews(id)
+    }
+
+    override suspend fun postRating(id: Int, rating: RatingBody): Response<RatingResponse> {
+        val session = SessionManager.currentSession
+        return if (session.isGuest) {
+            service.postTvRatingAsGuest(id, session.sessionId, rating)
+        } else {
+            service.postTvRatingAsUser(id, session.sessionId, rating)
+        }
+    }
+
+    override suspend fun deleteRating(id: Int): Response<RatingResponse> {
+        val session = SessionManager.currentSession
+        return if (session.isGuest) {
+            service.deleteTvReviewAsGuest(id, session.sessionId)
+        } else {
+            service.deleteTvReviewAsUser(id, session.sessionId)
+        }
     }
 
 }

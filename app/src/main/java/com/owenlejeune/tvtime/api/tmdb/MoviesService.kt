@@ -1,18 +1,13 @@
 package com.owenlejeune.tvtime.api.tmdb
 
 import com.owenlejeune.tvtime.api.tmdb.model.*
-import com.owenlejeune.tvtime.preferences.AppPreferences
 import com.owenlejeune.tvtime.utils.SessionManager
 import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
 import retrofit2.Response
 
 class MoviesService: KoinComponent, DetailService, HomePageService {
 
-    private val preferences: AppPreferences by inject()
-
     private val movieService by lazy { TmdbClient().createMovieService() }
-    private val authService by lazy { TmdbClient().createAuthenticationService() }
 
     override suspend fun getPopular(page: Int): Response<out HomePageResponse> {
         return movieService.getPopularMovies(page)
@@ -58,7 +53,7 @@ class MoviesService: KoinComponent, DetailService, HomePageService {
         return movieService.getReviews(id)
     }
 
-    suspend fun postRating(id: Int, rating: RatingBody): Response<RatingResponse> {
+    override suspend fun postRating(id: Int, rating: RatingBody): Response<RatingResponse> {
         val session = SessionManager.currentSession
         return if (session.isGuest) {
             movieService.postMovieRatingAsGuest(id, session.sessionId, rating)
@@ -67,7 +62,7 @@ class MoviesService: KoinComponent, DetailService, HomePageService {
         }
     }
 
-    suspend fun deleteRating(id: Int, rating: RatingBody): Response<RatingResponse> {
+    override suspend fun deleteRating(id: Int): Response<RatingResponse> {
         val session = SessionManager.currentSession
         return if (session.isGuest) {
             movieService.deleteMovieReviewAsGuest(id, session.sessionId)

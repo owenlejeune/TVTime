@@ -58,7 +58,8 @@ fun MainNavigationRoutes(navController: NavHostController, displayUnderStatusBar
 @Composable
 fun BottomNavigationRoutes(
     appNavController: NavHostController,
-    navController: NavHostController
+    navController: NavHostController,
+    appBarTitle: MutableState<String>
 ) {
     NavHost(navController = navController, startDestination = BottomNavItem.Movies.route) {
         composable(BottomNavItem.Movies.route) {
@@ -68,7 +69,7 @@ fun BottomNavigationRoutes(
             MediaTab(appNavController = appNavController, mediaType = MediaViewType.TV)
         }
         composable(BottomNavItem.Account.route) {
-            AccountTab()
+            AccountTab(appBarTitle = appBarTitle, appNavController = appNavController)
         }
         composable(BottomNavItem.Favourites.route) {
             FavouritesTab()

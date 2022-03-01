@@ -2,9 +2,7 @@ package com.owenlejeune.tvtime.api.tmdb
 
 import com.owenlejeune.tvtime.api.tmdb.model.*
 import retrofit2.Response
-import retrofit2.http.GET
-import retrofit2.http.Path
-import retrofit2.http.Query
+import retrofit2.http.*
 
 interface TvApi {
 
@@ -38,7 +36,33 @@ interface TvApi {
     @GET("tv/{id}/videos")
     suspend fun getVideos(@Path("id") id: Int): Response<VideoResponse>
 
-    @GET("movie/{id}/reviews")
+    @GET("tv/{id}/reviews")
     suspend fun getReviews(@Path("id") id: Int): Response<ReviewResponse>
+
+    @POST("tv/{id}/rating")
+    suspend fun postTvRatingAsGuest(
+        @Path("id") id: Int,
+        @Query("guest_session_id") guestSessionId: String,
+        @Body ratingBody: RatingBody
+    ): Response<RatingResponse>
+
+    @POST("tv/{id}/rating")
+    suspend fun postTvRatingAsUser(
+        @Path("id") id: Int,
+        @Query("session_id") sessionId: String,
+        @Body ratingBody: RatingBody
+    ): Response<RatingResponse>
+
+    @DELETE("tv/{id}/rating")
+    suspend fun deleteTvReviewAsGuest(
+        @Path("id") id: Int,
+        @Query("guest_session_id") guestSessionId: String
+    ): Response<RatingResponse>
+
+    @DELETE("tv/{id}/rating")
+    suspend fun deleteTvReviewAsUser(
+        @Path("id") id: Int,
+        @Query("session_id") sessionId: String
+    ): Response<RatingResponse>
 
 }

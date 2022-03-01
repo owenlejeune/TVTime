@@ -1,8 +1,11 @@
 package com.owenlejeune.tvtime.utils
 
+import com.owenlejeune.tvtime.api.tmdb.GuestSessionApi
 import com.owenlejeune.tvtime.api.tmdb.TmdbClient
 import com.owenlejeune.tvtime.api.tmdb.model.RatedMedia
 import com.owenlejeune.tvtime.preferences.AppPreferences
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
@@ -61,6 +64,8 @@ object SessionManager: KoinComponent {
         }
 
         abstract suspend fun initialize()
+
+        abstract suspend fun refresh()
     }
 
     private class GuestSession: Session(preferences.guestSessionId, true) {
@@ -68,21 +73,33 @@ object SessionManager: KoinComponent {
         override var _ratedTvEpisodes: List<RatedMedia> = emptyList()
         override var _ratedTvShows: List<RatedMedia> = emptyList()
 
+        private lateinit var service: GuestSessionApi
+
         override suspend fun initialize() {
-            val service = TmdbClient().createGuestSessionService()
+            service = TmdbClient().createGuestSessionService()
+            refresh()
+        }
+
+        override suspend fun refresh() {
             service.getRatedMovies(sessionId).apply {
                 if (isSuccessful) {
-                    _ratedMovies = body()?.results ?: emptyList()
+                    withContext(Dispatchers.Main) {
+                        _ratedMovies = body()?.results ?: _ratedMovies
+                    }
                 }
             }
             service.getRatedTvShows(sessionId).apply {
                 if (isSuccessful) {
-                    _ratedTvShows = body()?.results ?: emptyList()
+                    withContext(Dispatchers.Main) {
+                        _ratedTvShows = body()?.results ?: _ratedTvShows
+                    }
                 }
             }
             service.getRatedTvEpisodes(sessionId).apply {
                 if (isSuccessful) {
-                    _ratedTvEpisodes = body()?.results ?: emptyList()
+                    withContext(Dispatchers.Main) {
+                        _ratedTvEpisodes = body()?.results ?: _ratedTvEpisodes
+                    }
                 }
             }
         }

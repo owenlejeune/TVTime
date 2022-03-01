@@ -5,8 +5,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.ScrollableTabRow
 import androidx.compose.material.Tab
+import androidx.compose.material.TabRow
 import androidx.compose.material.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -17,15 +17,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.pager.ExperimentalPagerApi
-import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.rememberPagerState
-import com.owenlejeune.tvtime.ui.navigation.MainTabNavItem
+import com.owenlejeune.tvtime.ui.navigation.MediaTabNavItem
 import com.owenlejeune.tvtime.ui.navigation.TabNavItem
-import com.owenlejeune.tvtime.ui.screens.MediaViewType
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalPagerApi::class)
@@ -43,12 +39,11 @@ fun Tabs(
 ) {
     val scope = rememberCoroutineScope()
     
-    ScrollableTabRow(
+    TabRow(
         modifier = modifier,
         selectedTabIndex = pagerState.currentPage,
         backgroundColor = backgroundColor,
         contentColor = contentColor,
-        edgePadding = 8.dp,
         indicator = { tabPositions ->
             SmallTabIndicator(
                 modifier = Modifier.tabIndicatorOffset(tabPositions[pagerState.currentPage]),
@@ -93,30 +88,8 @@ private fun SmallTabIndicator(
 @Preview(showBackground = true)
 @Composable
 fun TabsPreview() {
-    val tabs = MainTabNavItem.MovieItems
+    val tabs = MediaTabNavItem.MovieItems
     val pagerState = rememberPagerState()
     Tabs(tabs = tabs, pagerState = pagerState)
-}
-
-@OptIn(ExperimentalPagerApi::class)
-@Composable
-fun TabsContent(
-    tabs: List<TabNavItem>,
-    pagerState: PagerState,
-    mediaViewType: MediaViewType,
-    appNavController: NavHostController = rememberNavController()
-) {
-    HorizontalPager(count = tabs.size, state = pagerState) { page ->
-        tabs[page].screen(appNavController, mediaViewType, tabs[page].mediaFetchFun)
-    }
-}
-
-@OptIn(ExperimentalPagerApi::class)
-@Preview(showBackground = true)
-@Composable
-fun TabsContentPreview() {
-    val tabs = MainTabNavItem.MovieItems
-    val pagerState = rememberPagerState()
-    TabsContent(tabs = tabs, pagerState = pagerState, MediaViewType.MOVIE)
 }
 
