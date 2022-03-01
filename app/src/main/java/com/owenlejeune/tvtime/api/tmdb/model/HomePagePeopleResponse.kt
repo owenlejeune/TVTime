@@ -2,9 +2,9 @@ package com.owenlejeune.tvtime.api.tmdb.model
 
 import com.google.gson.annotations.SerializedName
 
-abstract class HomePageResponse(
+class HomePagePeopleResponse(
     @SerializedName("total_results") val totalResults: Int,
     @SerializedName("total_pages") val totalPages: Int,
     @SerializedName("page") val page: Int,
-    @Transient open val results: List<TmdbItem>
+    @SerializedName("results") val results: List<HomePagePerson>
 )

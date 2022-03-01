@@ -31,5 +31,6 @@ sealed class BottomNavItem(stringRes: Int, val icon: Int, val route: String): Ko
     object Account: BottomNavItem(R.string.nav_account_title, R.drawable.ic_person, "account_route")
     object Favourites: BottomNavItem(R.string.nav_favourites_title, R.drawable.ic_favorite, "favourites_route")
     object Settings: BottomNavItem(R.string.nav_settings_title, R.drawable.ic_settings, "settings_route")
+    object People: BottomNavItem(R.string.nav_people_title, R.drawable.ic_person, "people_route")
 
 }

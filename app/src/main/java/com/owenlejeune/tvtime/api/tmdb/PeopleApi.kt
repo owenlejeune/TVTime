@@ -1,11 +1,13 @@
 package com.owenlejeune.tvtime.api.tmdb
 
 import com.owenlejeune.tvtime.api.tmdb.model.DetailPerson
+import com.owenlejeune.tvtime.api.tmdb.model.HomePagePeopleResponse
 import com.owenlejeune.tvtime.api.tmdb.model.PersonCreditsResponse
 import com.owenlejeune.tvtime.api.tmdb.model.PersonImageCollection
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 interface PeopleApi {
 
@@ -23,6 +25,9 @@ interface PeopleApi {
 
     @GET("person/{id}/images")
     suspend fun getImages(@Path("id") id: Int): Response<PersonImageCollection>
+
+    @GET("person/popular")
+    suspend fun getPopular(@Query("page") page: Int = 1): Response<HomePagePeopleResponse>
 
 //    @GET("persons/{id}/tagged_images")
 //    suspend fun getTaggedImages(@Path("id") id: Int, @Query("page") page: Int = 1): Response<PersonImageCollection>
