@@ -71,4 +71,8 @@ class MoviesService: KoinComponent, DetailService, HomePageService {
         }
     }
 
+    override suspend fun getKeywords(id: Int): Response<KeywordsResponse> {
+        return movieService.getKeywords(id)
+    }
+
 }

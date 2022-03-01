@@ -33,6 +33,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.painter.BrushPainter
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
@@ -267,15 +268,21 @@ fun MinLinesText(
     )
 }
 
+sealed class ChipStyle(val mainAxisSpacing: Dp, val crossAxisSpacing: Dp) {
+    object Boxy: ChipStyle(8.dp, 4.dp)
+    object Rounded: ChipStyle(4.dp, 4.dp)
+    class Mixed(val predicate: (String) -> ChipStyle): ChipStyle(8.dp, 4.dp)
+}
+
 @Composable
-fun Chip(
+fun BoxyChip(
     text: String,
     style: TextStyle = MaterialTheme.typography.bodySmall,
     isSelected: Boolean = true,
     onSelectionChanged: (String) -> Unit = {}
 ) {
     Surface(
-        modifier = Modifier.padding(4.dp),
+//        modifier = Modifier.padding(4.dp),
         shadowElevation = 8.dp,
         shape = RoundedCornerShape(5.dp),
         color = if (isSelected) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.secondary
@@ -300,19 +307,74 @@ fun Chip(
 }
 
 @Composable
+fun RoundedChip(
+    text: String,
+    style: TextStyle = MaterialTheme.typography.bodySmall,
+    isSelected: Boolean = false,
+    onSelectionChanged: (String) -> Unit = {}
+) {
+    val borderColor = if (isSelected) MaterialTheme.colorScheme.inverseSurface else MaterialTheme.colorScheme.onSurfaceVariant
+    val radius = style.fontSize.value.dp * 2
+    Surface(
+        border = BorderStroke(width = 1.dp, borderColor),
+        shape = RoundedCornerShape(radius),
+        color = MaterialTheme.colorScheme.surfaceVariant
+    ) {
+        Row(
+            modifier = Modifier
+                .toggleable(
+                    value = isSelected,
+                    onValueChange = {
+                        onSelectionChanged(text)
+                    }
+                )
+                .padding(8.dp)
+        ) {
+            Text(
+                text = text,
+                style = style,
+                color = if (isSelected) MaterialTheme.colorScheme.inverseSurface else MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
+
+@Composable
 fun ChipGroup(
     modifier: Modifier = Modifier,
     chips: List<String> = emptyList(),
     onSelectedChanged: (String) -> Unit = {},
+    chipStyle: ChipStyle = ChipStyle.Boxy
 ) {
+
+    @Composable
+    fun DrawChip(chipStyle: ChipStyle, chip: String) {
+        when (chipStyle) {
+            ChipStyle.Boxy -> {
+                BoxyChip(
+                    text = chip,
+                    onSelectionChanged = onSelectedChanged
+                )
+            }
+            ChipStyle.Rounded -> {
+                RoundedChip(
+                    text = chip,
+                    onSelectionChanged = onSelectedChanged
+                )
+            }
+            is ChipStyle.Mixed -> {
+                DrawChip(chipStyle = chipStyle.predicate(chip), chip = chip)
+            }
+        }
+    }
+
     FlowRow(
-        modifier = modifier
+        modifier = modifier,
+        crossAxisSpacing = 4.dp,
+        mainAxisSpacing = chipStyle.mainAxisSpacing
     ) {
         chips.forEach { chip ->
-            Chip(
-                text = chip,
-                onSelectionChanged = onSelectedChanged
-            )
+            DrawChip(chipStyle = chipStyle, chip = chip)
         }
     }
 }
@@ -320,7 +382,7 @@ fun ChipGroup(
 @Preview
 @Composable
 fun ChipPreview() {
-    Chip("Test Chip")
+    BoxyChip("Test Chip")
 }
 
 /**
@@ -558,7 +620,9 @@ fun CircleBackgroundColorImage(
             .background(color = backgroundColor)
     ) {
         val mod = if (imageHeight != null) {
-            Modifier.align(imageAlignment).height(height = imageHeight)
+            Modifier
+                .align(imageAlignment)
+                .height(height = imageHeight)
         } else {
             Modifier.align(imageAlignment)
         }
@@ -596,7 +660,9 @@ fun AvatarImage(
                 .background(color = MaterialTheme.colorScheme.tertiary)
         ) {
             Text(
-                modifier = Modifier.fillMaxSize().padding(top = size/5),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(top = size / 5),
                 text = if (author.name.isNotEmpty()) author.name[0].uppercase() else author.username[0].toString(),
                 color = MaterialTheme.colorScheme.onTertiary,
                 textAlign = TextAlign.Center,

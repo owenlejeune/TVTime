@@ -39,6 +39,9 @@ interface TvApi {
     @GET("tv/{id}/reviews")
     suspend fun getReviews(@Path("id") id: Int): Response<ReviewResponse>
 
+    @GET("tv/{id}/keywords")
+    suspend fun getKeywords(@Path("id") id: Int): Response<KeywordsResponse>
+
     @POST("tv/{id}/rating")
     suspend fun postTvRatingAsGuest(
         @Path("id") id: Int,

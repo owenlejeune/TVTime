@@ -401,10 +401,8 @@ private fun ContentColumn(
             MiscTvDetails(mediaItem = mediaItem, service as TvService)
         }
 
-        ActionsView(itemId = itemId, type = mediaType, service = service)
-
         if (mediaItem.value?.overview?.isNotEmpty() == true) {
-            OverviewCard(mediaItem = mediaItem)
+            OverviewCard(itemId = itemId!!, mediaItem.value!!.overview!!, service)
         }
 
         CastCard(itemId = itemId, service = service, appNavController = appNavController)
@@ -412,6 +410,8 @@ private fun ContentColumn(
         SimilarContentCard(itemId = itemId, service = service, mediaType = mediaType, appNavController = appNavController)
         
         VideosCard(itemId = itemId, service = service)
+
+        ActionsView(itemId = itemId, type = mediaType, service = service)
         
         ReviewsCard(itemId = itemId, service = service)
     }
@@ -653,19 +653,43 @@ private fun RatingDialog(showDialog: MutableState<Boolean>, onValueConfirmed: (F
 }
 
 @Composable
-private fun OverviewCard(mediaItem: MutableState<DetailedItem?>, modifier: Modifier = Modifier) {
+private fun OverviewCard(itemId: Int, overview: String, service: DetailService, modifier: Modifier = Modifier) {
+    val keywordResponse = remember { mutableStateOf<KeywordsResponse?>(null) }
+    if (keywordResponse.value == null) {
+        fetchKeywords(itemId, service, keywordResponse)
+    }
+    val context = LocalContext.current
+
     ContentCard(
         modifier = modifier
     ) {
-        Text(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .wrapContentHeight()
                 .padding(vertical = 12.dp, horizontal = 16.dp),
-            text = mediaItem.value?.overview ?: "",
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            style = MaterialTheme.typography.bodyMedium
-        )
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                text = overview,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.bodyMedium
+            )
+
+
+            keywordResponse.value?.keywords?.let { keywords ->
+                val names = keywords.map { it.name }
+                ChipGroup(
+                    chips = names,
+                    chipStyle = ChipStyle.Rounded,
+                    onSelectedChanged = { chip ->
+                        if (service is MoviesService) {
+//                            Toast.makeText(context, chip, Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                )
+            }
+        }
     }
 }
 
@@ -1082,6 +1106,17 @@ private fun fetchReviews(id: Int, service: DetailService, reviewResponse: Mutabl
         if (result.isSuccessful) {
             withContext(Dispatchers.Main) {
                 reviewResponse.value = result.body()
+            }
+        }
+    }
+}
+
+private fun fetchKeywords(id: Int, service: DetailService, keywordsResponse: MutableState<KeywordsResponse?>) {
+    CoroutineScope(Dispatchers.IO).launch {
+        val result = service.getKeywords(id)
+        if (result.isSuccessful) {
+            withContext(Dispatchers.Main) {
+                keywordsResponse.value = result.body()
             }
         }
     }

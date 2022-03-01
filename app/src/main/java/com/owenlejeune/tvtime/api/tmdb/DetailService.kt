@@ -21,4 +21,6 @@ interface DetailService {
 
     suspend fun deleteRating(id: Int): Response<RatingResponse>
 
+    suspend fun getKeywords(id: Int): Response<KeywordsResponse>
+
 }

@@ -71,4 +71,8 @@ class TvService: KoinComponent, DetailService, HomePageService {
         }
     }
 
+    override suspend fun getKeywords(id: Int): Response<KeywordsResponse> {
+        return service.getKeywords(id)
+    }
+
 }

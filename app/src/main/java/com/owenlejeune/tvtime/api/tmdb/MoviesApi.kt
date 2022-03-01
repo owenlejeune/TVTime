@@ -39,6 +39,9 @@ interface MoviesApi {
     @GET("movie/{id}/reviews")
     suspend fun getReviews(@Path("id") id: Int): Response<ReviewResponse>
 
+    @GET("movie/{id}/keywords")
+    suspend fun getKeywords(@Path("id") id: Int): Response<KeywordsResponse>
+
     @POST("movie/{id}/rating")
     suspend fun postMovieRatingAsGuest(
         @Path("id") id: Int,
