@@ -5,14 +5,20 @@ import com.google.gson.annotations.SerializedName
 class DetailedTv(
     id: Int,
     posterPath: String?,
-    @SerializedName("name") override val title: String,
-    @SerializedName("backdrop_path") override val backdropPath: String?,
-    @SerializedName("genres") override val genres: List<Genre>,
-    @SerializedName("overview") override val overview: String?,
-    @SerializedName("production_companies") override val productionCompanies: List<ProductionCompany>,
-    @SerializedName("status") override val status: Status,
-    @SerializedName("tagline") override val tagline: String?,
-    @SerializedName("vote_average") override val voteAverage: Float,
+    title: String,
+    backdropPath: String?,
+    genres: List<Genre>,
+    overview: String?,
+    productionCompanies: List<ProductionCompany>,
+    productionCountries: List<ProductionCountry>,
+    status: Status,
+    tagline: String?,
+    voteAverage: Float,
+    voteCount: Int,
+    originalLanguage: String,
+    originalName: String,
+    popularity: Float,
+    spokenLanguages: List<SpokenLanguage>,
     @SerializedName("created_by") val createdBy: List<Person>,
     @SerializedName("first_air_date") val firstAirDate: String,
     @SerializedName("last_air_date") val lastAirDate: String,
@@ -20,6 +26,14 @@ class DetailedTv(
     @SerializedName("networks") val networks: List<Network>,
     @SerializedName("number_of_episodes") val numberOfEpisodes: Int,
     @SerializedName("number_of_seasons") val numberOfSeasons: Int,
-    @SerializedName("seasons") val seasons: List<Season>,
-    @SerializedName("episode_run_time") val episodeRuntime: List<Int>
-): DetailedItem(id, title, posterPath, backdropPath, genres, overview, productionCompanies, status, tagline, voteAverage)
+    @SerializedName("seasons") val seasons: List<BaseSeason>,
+    @SerializedName("episode_run_time") val episodeRuntime: List<Int>,
+    @SerializedName("languages") val languages: List<String>,
+    @SerializedName("last_episode_to_air") val lastEpisodeToAir: BaseEpisode,
+    @SerializedName("origin_country") val originCountry: List<String>,
+    @SerializedName("type") val type: String
+): DetailedItem(
+    id, title, posterPath, backdropPath, genres, overview,
+    productionCompanies, productionCountries, status, tagline, voteAverage,
+    voteCount, originalLanguage, originalName, popularity, spokenLanguages
+)

@@ -5,5 +5,5 @@ import com.google.gson.annotations.SerializedName
 class HomePageMovie(
     id: Int,
     posterPath: String?,
-    @SerializedName("title") override val title: String
+    title: String
 ): TmdbItem(id, posterPath, title)

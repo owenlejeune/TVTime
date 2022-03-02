@@ -2,7 +2,7 @@ package com.owenlejeune.tvtime.api.tmdb.model
 
 import com.google.gson.annotations.SerializedName
 
-data class Season(
+data class BaseSeason(
     @SerializedName("id") val id: Int,
     @SerializedName("air_date") val airDate: String,
     @SerializedName("episode_count") val episodeCount: Int,
