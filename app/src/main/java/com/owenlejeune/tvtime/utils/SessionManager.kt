@@ -2,7 +2,10 @@ package com.owenlejeune.tvtime.utils
 
 import com.owenlejeune.tvtime.api.tmdb.GuestSessionApi
 import com.owenlejeune.tvtime.api.tmdb.TmdbClient
+import com.owenlejeune.tvtime.api.tmdb.model.RatedEpisode
 import com.owenlejeune.tvtime.api.tmdb.model.RatedMedia
+import com.owenlejeune.tvtime.api.tmdb.model.RatedMovie
+import com.owenlejeune.tvtime.api.tmdb.model.RatedTv
 import com.owenlejeune.tvtime.preferences.AppPreferences
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -39,16 +42,16 @@ object SessionManager: KoinComponent {
     }
 
     abstract class Session(val sessionId: String, val isGuest: Boolean) {
-        protected abstract var _ratedMovies: List<RatedMedia>
-        val ratedMovies: List<RatedMedia>
+        protected abstract var _ratedMovies: List<RatedMovie>
+        val ratedMovies: List<RatedMovie>
             get() = _ratedMovies
 
-        protected abstract var _ratedTvShows: List<RatedMedia>
-        val ratedTvShows: List<RatedMedia>
+        protected abstract var _ratedTvShows: List<RatedTv>
+        val ratedTvShows: List<RatedTv>
             get() = _ratedTvShows
 
-        protected abstract var _ratedTvEpisodes: List<RatedMedia>
-        val ratedTvEpisodes: List<RatedMedia>
+        protected abstract var _ratedTvEpisodes: List<RatedEpisode>
+        val ratedTvEpisodes: List<RatedEpisode>
             get() = _ratedTvEpisodes
 
         fun hasRatedMovie(id: Int): Boolean {
@@ -69,9 +72,9 @@ object SessionManager: KoinComponent {
     }
 
     private class GuestSession: Session(preferences.guestSessionId, true) {
-        override var _ratedMovies: List<RatedMedia> = emptyList()
-        override var _ratedTvEpisodes: List<RatedMedia> = emptyList()
-        override var _ratedTvShows: List<RatedMedia> = emptyList()
+        override var _ratedMovies: List<RatedMovie> = emptyList()
+        override var _ratedTvShows: List<RatedTv> = emptyList()
+        override var _ratedTvEpisodes: List<RatedEpisode> = emptyList()
 
         private lateinit var service: GuestSessionApi
 
