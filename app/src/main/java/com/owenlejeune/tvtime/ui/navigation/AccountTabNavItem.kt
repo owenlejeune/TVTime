@@ -1,7 +1,6 @@
 package com.owenlejeune.tvtime.ui.navigation
 
 import androidx.compose.runtime.Composable
-import androidx.navigation.NavHost
 import androidx.navigation.NavHostController
 import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.api.tmdb.model.RatedMedia

@@ -104,26 +104,14 @@ fun DetailView(
             title = mediaItem.value?.title ?: "",
         )
 
-        Box(
-            Modifier
-                .clip(CircleShape)
-                .size(60.dp)
-                .background(color = MaterialTheme.colorScheme.surfaceVariant)
+        RatingView(
+            modifier = Modifier
                 .constrainAs(ratingsView) {
                     bottom.linkTo(titleText.top)
                     start.linkTo(posterImage.end, margin = 20.dp)
-                }
-        ) {
-            RatingRing(
-                modifier = Modifier.padding(5.dp),
-                textColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                progress = mediaItem.value?.voteAverage?.let { it / 10 } ?: 0f,
-                textSize = 14.sp,
-                ringColor = MaterialTheme.colorScheme.primary,
-                ringStrokeWidth = 4.dp,
-                size = 50.dp
-            )
-        }
+                },
+            progress = mediaItem.value?.voteAverage?.let { it / 10 } ?: 0f
+        )
 
         BackButton(
             modifier = Modifier.constrainAs(backButton) {
@@ -375,6 +363,29 @@ private fun BackButton(modifier: Modifier, appNavController: NavController) {
             imageVector = Icons.Filled.ArrowBack,
             contentDescription = stringResource(R.string.content_description_back_button),
             tint = MaterialTheme.colorScheme.primary
+        )
+    }
+}
+
+@Composable
+private fun RatingView(
+    progress: Float,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .clip(CircleShape)
+            .size(60.dp)
+            .background(color = MaterialTheme.colorScheme.surfaceVariant)
+    ) {
+        RatingRing(
+            modifier = Modifier.padding(5.dp),
+            textColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            progress = progress,
+            textSize = 14.sp,
+            ringColor = MaterialTheme.colorScheme.primary,
+            ringStrokeWidth = 4.dp,
+            size = 50.dp
         )
     }
 }

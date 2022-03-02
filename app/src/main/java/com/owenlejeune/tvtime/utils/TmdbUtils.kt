@@ -63,7 +63,7 @@ object TmdbUtils {
 
     fun getSeriesRun(series: DetailedTv): String {
         val startYear = getTvStartYear(series)
-        val endYear = if (series.status == "Active") {
+        val endYear = if (series.status == Status.ACTIVE) {
             getTvEndYear(series)
         } else {
             ""

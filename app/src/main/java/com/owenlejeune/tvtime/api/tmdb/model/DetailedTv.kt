@@ -10,7 +10,7 @@ class DetailedTv(
     @SerializedName("genres") override val genres: List<Genre>,
     @SerializedName("overview") override val overview: String?,
     @SerializedName("production_companies") override val productionCompanies: List<ProductionCompany>,
-    @SerializedName("status") override val status: String,
+    @SerializedName("status") override val status: Status,
     @SerializedName("tagline") override val tagline: String?,
     @SerializedName("vote_average") override val voteAverage: Float,
     @SerializedName("created_by") val createdBy: List<Person>,
