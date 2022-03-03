@@ -25,6 +25,7 @@ class DetailedMovie(
     @SerializedName("revenue") val revenue: Int,
     @SerializedName("runtime") val runtime: Int?,
     @SerializedName("imdb_id") val imdbId: String?,
+    @SerializedName("belongs_to_collection") val collection: Collection?
 ): DetailedItem(
     id, title, posterPath, backdropPath, genres, overview,
     productionCompanies, productionCountries, status, tagline, voteAverage,
