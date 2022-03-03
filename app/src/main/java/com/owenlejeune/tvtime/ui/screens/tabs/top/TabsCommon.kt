@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.ScrollableTabRow
 import androidx.compose.material.Tab
 import androidx.compose.material.TabRow
 import androidx.compose.material.TabRowDefaults.tabIndicatorOffset
@@ -60,6 +61,54 @@ fun Tabs(
                         color = if (pagerState.currentPage == index) selectedTabTextColor else unselectedTabTextColor
                     )
                },
+                selected = pagerState.currentPage == index,
+                onClick = {
+                    scope.launch {
+                        pagerState.animateScrollToPage(index)
+                    }
+                }
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalPagerApi::class)
+@Composable
+fun ScrollableTabs(
+    tabs: List<TabNavItem>,
+    pagerState: PagerState,
+    modifier: Modifier = Modifier,
+    backgroundColor: Color = MaterialTheme.colorScheme.background,
+    contentColor: Color = MaterialTheme.colorScheme.primary,
+    selectedTabTextColor: Color = MaterialTheme.colorScheme.primary,
+    unselectedTabTextColor: Color = MaterialTheme.colorScheme.onBackground,
+    tabTextStyle: TextStyle = MaterialTheme.typography.bodySmall,
+    tabIndicatorColor: Color = MaterialTheme.colorScheme.primary
+) {
+    val scope = rememberCoroutineScope()
+
+    ScrollableTabRow(
+        modifier = modifier,
+        selectedTabIndex = pagerState.currentPage,
+        backgroundColor = backgroundColor,
+        contentColor = contentColor,
+        edgePadding = 8.dp,
+        indicator = { tabPositions ->
+            SmallTabIndicator(
+                modifier = Modifier.tabIndicatorOffset(tabPositions[pagerState.currentPage]),
+                color = tabIndicatorColor
+            )
+        }
+    ) {
+        tabs.forEachIndexed { index, tab ->
+            Tab(
+                text = {
+                    Text(
+                        text = tab.name,
+                        style = tabTextStyle,
+                        color = if (pagerState.currentPage == index) selectedTabTextColor else unselectedTabTextColor
+                    )
+                },
                 selected = pagerState.currentPage == index,
                 onClick = {
                     scope.launch {

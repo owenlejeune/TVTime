@@ -17,6 +17,7 @@ import com.owenlejeune.tvtime.ui.navigation.MainNavItem
 import com.owenlejeune.tvtime.ui.navigation.MediaFetchFun
 import com.owenlejeune.tvtime.ui.navigation.MediaTabNavItem
 import com.owenlejeune.tvtime.ui.screens.MediaViewType
+import com.owenlejeune.tvtime.ui.screens.tabs.top.ScrollableTabs
 import com.owenlejeune.tvtime.ui.screens.tabs.top.Tabs
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -33,7 +34,7 @@ fun MediaTab(appNavController: NavHostController, mediaType: MediaViewType) {
             else -> throw IllegalArgumentException("Media type given: ${mediaType}, \n     expected one of MediaViewType.MOVIE, MediaViewType.TV") // shouldn't happen
         }
         val pagerState = rememberPagerState()
-        Tabs(tabs = tabs, pagerState = pagerState)
+        ScrollableTabs(tabs = tabs, pagerState = pagerState)
         MediaTabs(
             tabs = tabs,
             pagerState = pagerState,

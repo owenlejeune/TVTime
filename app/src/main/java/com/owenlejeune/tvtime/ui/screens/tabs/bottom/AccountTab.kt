@@ -17,6 +17,9 @@ import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.rememberPagerState
+import com.owenlejeune.tvtime.api.tmdb.model.RatedMovie
+import com.owenlejeune.tvtime.api.tmdb.model.RatedTopLevelMedia
+import com.owenlejeune.tvtime.api.tmdb.model.RatedTv
 import com.owenlejeune.tvtime.ui.navigation.AccountTabNavItem
 import com.owenlejeune.tvtime.ui.navigation.ListFetchFun
 import com.owenlejeune.tvtime.ui.navigation.MainNavItem
@@ -57,39 +60,56 @@ fun AccountTabContent(
 ) {
     val contentItems = listFetchFun()
 
-    LazyColumn(modifier = Modifier.fillMaxWidth().padding(12.dp)) {
-        items(contentItems.size) { i ->
-            val ratedItem = contentItems[i]
+    if (contentItems.isNotEmpty() && contentItems[0] is RatedTopLevelMedia) {
+        LazyColumn(modifier = Modifier.fillMaxWidth().padding(12.dp)) {
+            items(contentItems.size) { i ->
+                val ratedItem = contentItems[i] as RatedTopLevelMedia
 
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.clickable(
-                    onClick = {
-                        appNavController.navigate(
-                            "${MainNavItem.DetailView.route}/${mediaViewType}/${ratedItem.id}"
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.clickable(
+                        onClick = {
+                            appNavController.navigate(
+                                "${MainNavItem.DetailView.route}/${mediaViewType}/${ratedItem.id}"
+                            )
+                        }
+                    )
+                ) {
+                    Image(
+                        modifier = Modifier
+                            .width(60.dp)
+                            .height(80.dp),
+                        painter = rememberImagePainter(
+                            data = TmdbUtils.getFullPosterPath(ratedItem.posterPath)
+                        ),
+                        contentDescription = ""
+                    )
+
+                    Column(
+                        modifier = Modifier.height(80.dp),
+                        verticalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = ratedItem.name,
+                            color = MaterialTheme.colorScheme.onBackground,
+                            fontSize = 18.sp
+                        )
+
+                        val date = when (ratedItem) {
+                            is RatedMovie -> ratedItem.releaseDate
+                            is RatedTv -> ratedItem.firstAirDate
+                            else -> ""
+                        }
+                        Text(
+                            text = date,
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
+
+                        Text(
+                            text = "Rating: ${(ratedItem.rating * 10).toInt()}%",
+                            color = MaterialTheme.colorScheme.onBackground
                         )
                     }
-                )
-            ) {
-                Image(
-                    modifier = Modifier
-                        .width(60.dp)
-                        .height(80.dp),
-                    painter = rememberImagePainter(
-                        data = TmdbUtils.getFullPosterPath(ratedItem.posterPath)
-                    ),
-                    contentDescription = ""
-                )
-
-                Column(
-                    modifier = Modifier.height(80.dp),
-                    verticalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(text = ratedItem.title, color = MaterialTheme.colorScheme.onBackground, fontSize = 18.sp)
-
-                    Text(text = ratedItem.releaseDate, color = MaterialTheme.colorScheme.onBackground)
-
-                    Text(text = "Rating: ${(ratedItem.rating*10).toInt()}%", color = MaterialTheme.colorScheme.onBackground)
                 }
             }
         }
