@@ -8,7 +8,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.owenlejeune.tvtime.ui.screens.DetailView
+import com.owenlejeune.tvtime.ui.screens.MediaDetailView
 import com.owenlejeune.tvtime.ui.screens.MainAppView
 import com.owenlejeune.tvtime.ui.screens.MediaViewType
 import com.owenlejeune.tvtime.ui.screens.PersonDetailView
@@ -40,7 +40,7 @@ fun MainNavigationRoutes(navController: NavHostController, displayUnderStatusBar
             val args = navBackStackEntry.arguments
             val mediaType = args?.getSerializable(NavConstants.TYPE_KEY) as MediaViewType
             if (mediaType != MediaViewType.PERSON) {
-                DetailView(
+                MediaDetailView(
                     appNavController = navController,
                     itemId = args.getInt(NavConstants.ID_KEY),
                     type = mediaType

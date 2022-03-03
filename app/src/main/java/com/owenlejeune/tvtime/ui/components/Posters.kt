@@ -156,7 +156,8 @@ fun PosterItem(
 fun BackdropImage(
     modifier: Modifier = Modifier,
     imageUrl: String? = null,
-    collection: ImageCollection? = null
+    collection: ImageCollection? = null,
+    contentDescription: String? = null
 ) {
     val context = LocalContext.current
 
@@ -200,7 +201,7 @@ fun BackdropImage(
                 } else {
                     rememberImagePainter(ContextCompat.getDrawable(context, R.drawable.placeholder))
                 },
-                contentDescription = "",
+                contentDescription = contentDescription,
                 modifier = Modifier.onGloballyPositioned {
                     sizeImage = it.size
                 }

@@ -1,21 +1,17 @@
 package com.owenlejeune.tvtime.ui.screens
 
 import android.widget.Toast
-import androidx.compose.foundation.*
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
@@ -23,15 +19,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.navigation.NavController
 import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.api.tmdb.DetailService
 import com.owenlejeune.tvtime.api.tmdb.MoviesService
-import com.owenlejeune.tvtime.api.tmdb.PeopleService
 import com.owenlejeune.tvtime.api.tmdb.TvService
 import com.owenlejeune.tvtime.api.tmdb.model.*
 import com.owenlejeune.tvtime.extensions.listItems
@@ -47,7 +40,7 @@ import org.json.JSONObject
 import java.text.DecimalFormat
 
 @Composable
-fun DetailView(
+fun MediaDetailView(
     appNavController: NavController,
     itemId: Int?,
     type: MediaViewType
@@ -65,367 +58,44 @@ fun DetailView(
         }
     }
 
-    val scrollState = rememberScrollState()
-
-    ConstraintLayout(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(color = MaterialTheme.colorScheme.background)
-            .verticalScroll(state = scrollState)
+    DetailContent(
+        modifier = Modifier.fillMaxSize()
     ) {
-        val (
-            backButton, backdropImage, posterImage, titleText, contentColumn, ratingsView
-        ) = createRefs()
+       Column(
+           modifier = Modifier
+               .fillMaxSize()
+               .padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
+           verticalArrangement = Arrangement.spacedBy(16.dp)
+       ) {
+           DetailHeader(
+               appNavController = appNavController,
+               title = mediaItem.value?.title ?: "",
+               posterUrl = TmdbUtils.getFullPosterPath(mediaItem.value?.posterPath),
+               posterContentDescription = mediaItem.value?.title,
+               backdropUrl = TmdbUtils.getFullBackdropPath(mediaItem.value?.backdropPath),
+               rating = mediaItem.value?.voteAverage?.let { it / 10 }
+           )
 
-        Backdrop(
-            modifier = Modifier.constrainAs(backdropImage) {
-                top.linkTo(parent.top)
-                start.linkTo(parent.start)
-                end.linkTo(parent.end)
-            },
-            mediaItem = mediaItem
-        )
+           if (type == MediaViewType.MOVIE) {
+               MiscMovieDetails(mediaItem = mediaItem, service as MoviesService)
+           } else {
+               MiscTvDetails(mediaItem = mediaItem, service as TvService)
+           }
 
-        PosterItem(
-            mediaItem = mediaItem.value,
-            modifier = Modifier
-                .constrainAs(posterImage) {
-                    bottom.linkTo(backdropImage.bottom)
-                    start.linkTo(parent.start, margin = 16.dp)
-                    top.linkTo(backButton.bottom)
-                }
-        )
+           if (itemId != null && mediaItem.value != null) {
+               OverviewCard(itemId = itemId, mediaItem.value!!, service)
+           }
 
-        TitleText(
-            modifier = Modifier.constrainAs(titleText) {
-                bottom.linkTo(posterImage.bottom)
-                start.linkTo(posterImage.end, margin = 8.dp)
-                end.linkTo(parent.end, margin = 16.dp)
-            },
-            title = mediaItem.value?.title ?: "",
-        )
+           CastCard(itemId = itemId, service = service, appNavController = appNavController)
 
-        RatingView(
-            modifier = Modifier
-                .constrainAs(ratingsView) {
-                    bottom.linkTo(titleText.top)
-                    start.linkTo(posterImage.end, margin = 20.dp)
-                },
-            progress = mediaItem.value?.voteAverage?.let { it / 10 } ?: 0f
-        )
+           SimilarContentCard(itemId = itemId, service = service, mediaType = type, appNavController = appNavController)
 
-        BackButton(
-            modifier = Modifier.constrainAs(backButton) {
-                top.linkTo(parent.top)//, 8.dp)
-                start.linkTo(parent.start, 12.dp)
-                bottom.linkTo(posterImage.top)
-            },
-            appNavController = appNavController
-        )
+           VideosCard(itemId = itemId, service = service)
 
-        ContentColumn(
-            modifier = Modifier.constrainAs(contentColumn) {
-               top.linkTo(backdropImage.bottom)//, margin = 8.dp)
-            },
-            itemId = itemId,
-            mediaItem = mediaItem,
-            service = service,
-            mediaType = type,
-            appNavController = appNavController
-        )
-    }
-}
+           ActionsView(itemId = itemId, type = type, service = service)
 
-@Composable
-fun PersonDetailView(
-    appNavController: NavController,
-    personId: Int?
-) {
-    val person = remember { mutableStateOf<DetailPerson?>(null) }
-    personId?.let {
-        if (person.value == null) {
-            fetchPerson(personId, person)
-        }
-    }
-
-    val scrollState = rememberScrollState()
-
-    ConstraintLayout(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(color = MaterialTheme.colorScheme.background)
-            .verticalScroll(state = scrollState)
-    ) {
-        val (
-            backButton, backdropImage, profileImage, nameText, contentColumn
-        ) = createRefs()
-
-        BackdropImage(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(280.dp)
-                .constrainAs(backdropImage) {
-                    top.linkTo(parent.top)
-                    start.linkTo(parent.start)
-                    end.linkTo(parent.end)
-                }
-        )
-
-        PosterItem(
-            person = person.value,
-            modifier = Modifier
-                .constrainAs(profileImage) {
-                    bottom.linkTo(backdropImage.bottom)
-                    start.linkTo(parent.start, margin = 16.dp)
-                    top.linkTo(backButton.bottom)
-                }
-        )
-
-        TitleText(
-            modifier = Modifier.constrainAs(nameText) {
-                bottom.linkTo(profileImage.bottom)
-                start.linkTo(profileImage.end, margin = 8.dp)
-                end.linkTo(parent.end, margin = 16.dp)
-            },
-            title = person.value?.name ?: ""
-        )
-
-        BackButton(
-            modifier = Modifier.constrainAs(backButton) {
-                top.linkTo(parent.top)
-                start.linkTo(parent.start, 12.dp)
-                bottom.linkTo(profileImage.top)
-            },
-            appNavController = appNavController
-        )
-
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .wrapContentHeight()
-                .padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
-                .constrainAs(contentColumn) {
-                    top.linkTo(backdropImage.bottom)//, margin = 8.dp)
-                },
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            ExpandableContentCard { isExpanded ->
-                Text(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .wrapContentHeight()
-                        .padding(top = 12.dp, start = 16.dp, end = 16.dp),
-                    text = person.value?.biography ?: "",
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    style = MaterialTheme.typography.bodyMedium,
-                    maxLines = if (isExpanded) Int.MAX_VALUE else 3,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
-
-            val credits = remember { mutableStateOf<PersonCreditsResponse?>(null) }
-            personId?.let {
-                if (credits.value == null) {
-                    fetchCredits(personId, credits)
-                }
-            }
-
-            ContentCard(title = stringResource(R.string.known_for_label)) {
-                LazyRow(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .wrapContentHeight()
-                        .padding(12.dp),
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    items(credits.value?.cast?.size ?: 0) { i ->
-                        val content = credits.value!!.cast[i]
-
-                        val title = if (content.mediaType == MediaViewType.MOVIE) {
-                            content.title ?: ""
-                        } else {
-                            content.name ?: ""
-                        }
-                        TwoLineImageTextCard(
-                            title = title,
-                            subtitle = content.character,
-                            modifier = Modifier
-                                .width(124.dp)
-                                .wrapContentHeight(),
-                            imageUrl = TmdbUtils.getFullPosterPath(content.posterPath),
-                            onItemClicked = {
-                                personId?.let {
-                                    appNavController.navigate(
-                                        "${MainNavItem.DetailView.route}/${content.mediaType}/${content.id}"
-                                    )
-                                }
-                            }
-                        )
-                    }
-                }
-            }
-
-            ContentCard(title = stringResource(R.string.also_known_for_label)) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .wrapContentHeight()
-                        .padding(12.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    val departments = credits.value?.crew?.map { it.department }?.toSet() ?: emptySet()
-                    if (departments.isNotEmpty()) {
-                        departments.forEach { department ->
-                            Text(text = department, color = MaterialTheme.colorScheme.onSurface)
-                            LazyRow(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .wrapContentHeight(),
-                                horizontalArrangement = Arrangement.spacedBy(4.dp)
-                            ) {
-                                val jobsInDepartment = credits.value!!.crew.filter { it.department == department }
-                                items(jobsInDepartment.size) { i ->
-                                    val content = jobsInDepartment[i]
-                                    val title = if (content.mediaType == MediaViewType.MOVIE) {
-                                        content.title ?: ""
-                                    } else {
-                                        content.name ?: ""
-                                    }
-                                    TwoLineImageTextCard(
-                                        title = title,
-                                        subtitle = content.job,
-                                        modifier = Modifier
-                                            .width(124.dp)
-                                            .wrapContentHeight(),
-                                        imageUrl = TmdbUtils.getFullPosterPath(content.posterPath),
-                                        onItemClicked = {
-                                            personId?.let {
-                                                appNavController.navigate(
-                                                    "${MainNavItem.DetailView.route}/${content.mediaType}/${content.id}"
-                                                )
-                                            }
-                                        }
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun Backdrop(modifier: Modifier, mediaItem: MutableState<DetailedItem?>) {
-//        val images = remember { mutableStateOf<ImageCollection?>(null) }
-//        itemId?.let {
-//            if (images.value == null) {
-//                fetchImages(itemId, service, images)
-//            }
-//        }
-    BackdropImage(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(280.dp),
-        imageUrl = TmdbUtils.getFullBackdropPath(mediaItem.value),
-//            collection = images.value
-    )
-}
-
-@Composable
-private fun TitleText(modifier: Modifier, title: String) {
-    Text(
-        text = title,
-        color = MaterialTheme.colorScheme.primary,
-        modifier = modifier
-            .padding(start = 16.dp, end = 16.dp)
-            .fillMaxWidth(.6f),
-        style = MaterialTheme.typography.headlineMedium,
-        textAlign = TextAlign.Start,
-        softWrap = true,
-        maxLines = 3,
-        overflow = TextOverflow.Ellipsis
-    )
-}
-
-@Composable
-private fun BackButton(modifier: Modifier, appNavController: NavController) {
-    val start = if (isSystemInDarkTheme()) Color.Black else Color.White
-    IconButton(
-        onClick = { appNavController.popBackStack() },
-        modifier = modifier
-            .background(
-                brush = Brush.radialGradient(colors = listOf(start, Color.Transparent))
-            )
-            .wrapContentSize()
-    ) {
-        Icon(
-            imageVector = Icons.Filled.ArrowBack,
-            contentDescription = stringResource(R.string.content_description_back_button),
-            tint = MaterialTheme.colorScheme.primary
-        )
-    }
-}
-
-@Composable
-private fun RatingView(
-    progress: Float,
-    modifier: Modifier = Modifier
-) {
-    Box(
-        modifier = modifier
-            .clip(CircleShape)
-            .size(60.dp)
-            .background(color = MaterialTheme.colorScheme.surfaceVariant)
-    ) {
-        RatingRing(
-            modifier = Modifier.padding(5.dp),
-            textColor = MaterialTheme.colorScheme.onSurfaceVariant,
-            progress = progress,
-            textSize = 14.sp,
-            ringColor = MaterialTheme.colorScheme.primary,
-            ringStrokeWidth = 4.dp,
-            size = 50.dp
-        )
-    }
-}
-
-@Composable
-private fun ContentColumn(
-    modifier: Modifier,
-    itemId: Int?,
-    mediaItem: MutableState<DetailedItem?>,
-    service: DetailService,
-    mediaType: MediaViewType,
-    appNavController: NavController
-) {
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .wrapContentHeight()
-            .padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        if (mediaType == MediaViewType.MOVIE) {
-            MiscMovieDetails(mediaItem = mediaItem, service as MoviesService)
-        } else {
-            MiscTvDetails(mediaItem = mediaItem, service as TvService)
-        }
-
-        if (itemId != null && mediaItem.value != null) {
-            OverviewCard(itemId = itemId, mediaItem.value!!, service)
-        }
-
-        CastCard(itemId = itemId, service = service, appNavController = appNavController)
-
-        SimilarContentCard(itemId = itemId, service = service, mediaType = mediaType, appNavController = appNavController)
-        
-        VideosCard(itemId = itemId, service = service)
-
-        ActionsView(itemId = itemId, type = mediaType, service = service)
-        
-        ReviewsCard(itemId = itemId, service = service)
+           ReviewsCard(itemId = itemId, service = service)
+       }
     }
 }
 
@@ -1095,28 +765,6 @@ private fun fetchVideos(id: Int, service: DetailService, videoResponse: MutableS
         if (results.isSuccessful) {
             withContext(Dispatchers.Main) {
                 videoResponse.value = results.body()
-            }
-        }
-    }
-}
-
-private fun fetchPerson(id: Int, person: MutableState<DetailPerson?>) {
-    CoroutineScope(Dispatchers.IO).launch {
-        val result = PeopleService().getPerson(id)
-        if (result.isSuccessful) {
-            withContext(Dispatchers.Main) {
-                person.value = result.body()
-            }
-        }
-    }
-}
-
-private fun fetchCredits(id: Int, credits: MutableState<PersonCreditsResponse?>) {
-    CoroutineScope(Dispatchers.IO).launch {
-        val result = PeopleService().getCredits(id)
-        if (result.isSuccessful) {
-            withContext(Dispatchers.Main) {
-                credits.value = result.body()
             }
         }
     }

@@ -83,7 +83,7 @@ fun TVTimeTheme(
     }
 
     val systemUiController = rememberSystemUiController()
-    systemUiController.setStatusBarColor(colorScheme.background, !isDarkTheme)
+    systemUiController.setSystemBarsColor(colorScheme.background, !isDarkTheme)
 
     MaterialTheme(
         colorScheme = colorScheme,
