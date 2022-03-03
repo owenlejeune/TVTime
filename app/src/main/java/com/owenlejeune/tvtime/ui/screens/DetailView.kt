@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -412,8 +413,8 @@ private fun ContentColumn(
             MiscTvDetails(mediaItem = mediaItem, service as TvService)
         }
 
-        if (mediaItem.value?.overview?.isNotEmpty() == true) {
-            OverviewCard(itemId = itemId!!, mediaItem.value!!.overview!!, service)
+        if (itemId != null && mediaItem.value != null) {
+            OverviewCard(itemId = itemId, mediaItem.value!!, service)
         }
 
         CastCard(itemId = itemId, service = service, appNavController = appNavController)
@@ -664,41 +665,51 @@ private fun RatingDialog(showDialog: MutableState<Boolean>, onValueConfirmed: (F
 }
 
 @Composable
-private fun OverviewCard(itemId: Int, overview: String, service: DetailService, modifier: Modifier = Modifier) {
+private fun OverviewCard(itemId: Int, mediaItem: DetailedItem, service: DetailService, modifier: Modifier = Modifier) {
     val keywordResponse = remember { mutableStateOf<KeywordsResponse?>(null) }
     if (keywordResponse.value == null) {
         fetchKeywords(itemId, service, keywordResponse)
     }
     val context = LocalContext.current
 
-    ContentCard(
-        modifier = modifier
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .wrapContentHeight()
-                .padding(vertical = 12.dp, horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+    mediaItem.overview?.let { overview ->
+        ContentCard(
+            modifier = modifier
         ) {
-            Text(
-                text = overview,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                style = MaterialTheme.typography.bodyMedium
-            )
-
-
-            keywordResponse.value?.keywords?.let { keywords ->
-                val names = keywords.map { it.name }
-                ChipGroup(
-                    chips = names,
-                    chipStyle = ChipStyle.Rounded,
-                    onSelectedChanged = { chip ->
-                        if (service is MoviesService) {
-//                            Toast.makeText(context, chip, Toast.LENGTH_SHORT).show()
-                        }
-                    }
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight()
+                    .padding(vertical = 12.dp, horizontal = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                mediaItem.tagline?.let { tagline ->
+                    Text(
+                        text = tagline,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontStyle = FontStyle.Italic
+                    )
+                }
+                Text(
+                    text = overview,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodyMedium
                 )
+
+
+                keywordResponse.value?.keywords?.let { keywords ->
+                    val names = keywords.map { it.name }
+                    ChipGroup(
+                        chips = names,
+                        chipStyle = ChipStyle.Rounded,
+                        onSelectedChanged = { chip ->
+                            if (service is MoviesService) {
+//                            Toast.makeText(context, chip, Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    )
+                }
             }
         }
     }

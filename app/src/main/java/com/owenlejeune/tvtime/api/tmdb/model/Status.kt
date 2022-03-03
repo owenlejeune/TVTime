@@ -1,26 +1,27 @@
 package com.owenlejeune.tvtime.api.tmdb.model
 
 import com.google.gson.annotations.SerializedName
+import com.owenlejeune.tvtime.R
 
-enum class Status {
+enum class Status(val stringRes: Int) {
     @SerializedName("Rumoured")
-    RUMOURED,
+    RUMOURED(R.string.status_rumoured),
     @SerializedName("Planned")
-    PLANNED,
+    PLANNED(R.string.status_planned),
     @SerializedName("In Production")
-    IN_PRODUCTION,
+    IN_PRODUCTION(R.string.status_in_production),
     @SerializedName("Post Production")
-    POST_PRODUCTION,
+    POST_PRODUCTION(R.string.status_post_production),
     @SerializedName("Released")
-    RELEASED,
+    RELEASED(R.string.status_released),
     @SerializedName("Canceled")
-    CANCELED,
+    CANCELED(R.string.status_canceled),
     @SerializedName("Returning Series")
-    RETURNING_SERIES,
+    RETURNING_SERIES(R.string.status_returning_series),
     @SerializedName("Ended")
-    ENDED,
+    ENDED(R.string.status_ended),
     @SerializedName("Pilot")
-    PILOT,
+    PILOT(R.string.status_pilot),
     @SerializedName("Active")
-    ACTIVE
+    ACTIVE(R.string.status_active)
 }
