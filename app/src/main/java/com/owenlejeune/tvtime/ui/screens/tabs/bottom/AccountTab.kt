@@ -60,8 +60,8 @@ fun AccountTabContent(
 ) {
     val contentItems = listFetchFun()
 
-    if (contentItems.isNotEmpty() && contentItems[0] is RatedTopLevelMedia) {
-        LazyColumn(modifier = Modifier.fillMaxWidth().padding(12.dp)) {
+//    if (contentItems.isNotEmpty() && contentItems[0] is RatedTopLevelMedia) {
+        LazyColumn(modifier = Modifier.fillMaxSize().padding(12.dp)) {
             items(contentItems.size) { i ->
                 val ratedItem = contentItems[i] as RatedTopLevelMedia
 
@@ -112,7 +112,7 @@ fun AccountTabContent(
                     }
                 }
             }
-        }
+//        }
     }
 }
 

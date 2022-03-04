@@ -2,9 +2,12 @@ package com.owenlejeune.tvtime.ui.screens
 
 import android.widget.Toast
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Send
@@ -58,33 +61,34 @@ fun MediaDetailView(
         }
     }
 
-    DetailContent(
-        modifier = Modifier.fillMaxSize()
-    ) {
+   Column(
+       modifier = Modifier
+           .background(color = MaterialTheme.colorScheme.background)
+           .verticalScroll(rememberScrollState())
+           .fillMaxSize()
+           .padding(bottom = 16.dp),
+       verticalArrangement = Arrangement.spacedBy(16.dp)
+   ) {
+       DetailHeader(
+           appNavController = appNavController,
+           title = mediaItem.value?.title ?: "",
+           posterUrl = TmdbUtils.getFullPosterPath(mediaItem.value?.posterPath),
+           posterContentDescription = mediaItem.value?.title,
+           backdropUrl = TmdbUtils.getFullBackdropPath(mediaItem.value?.backdropPath),
+           rating = mediaItem.value?.voteAverage?.let { it / 10 }
+       )
+
        Column(
-           modifier = Modifier
-               .fillMaxSize()
-               .padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
+           modifier = Modifier.padding(horizontal = 16.dp),
            verticalArrangement = Arrangement.spacedBy(16.dp)
        ) {
-           DetailHeader(
-               appNavController = appNavController,
-               title = mediaItem.value?.title ?: "",
-               posterUrl = TmdbUtils.getFullPosterPath(mediaItem.value?.posterPath),
-               posterContentDescription = mediaItem.value?.title,
-               backdropUrl = TmdbUtils.getFullBackdropPath(mediaItem.value?.backdropPath),
-               rating = mediaItem.value?.voteAverage?.let { it / 10 }
-           )
-
            if (type == MediaViewType.MOVIE) {
                MiscMovieDetails(mediaItem = mediaItem, service as MoviesService)
            } else {
                MiscTvDetails(mediaItem = mediaItem, service as TvService)
            }
 
-           if (itemId != null && mediaItem.value != null) {
-               OverviewCard(itemId = itemId, mediaItem.value!!, service)
-           }
+           OverviewCard(itemId = itemId, mediaItem = mediaItem, service = service)
 
            CastCard(itemId = itemId, service = service, appNavController = appNavController)
 
@@ -96,7 +100,8 @@ fun MediaDetailView(
 
            ReviewsCard(itemId = itemId, service = service)
        }
-    }
+
+   }
 }
 
 @Composable
@@ -335,14 +340,15 @@ private fun RatingDialog(showDialog: MutableState<Boolean>, onValueConfirmed: (F
 }
 
 @Composable
-private fun OverviewCard(itemId: Int, mediaItem: DetailedItem, service: DetailService, modifier: Modifier = Modifier) {
+private fun OverviewCard(itemId: Int?, mediaItem: MutableState<DetailedItem?>, service: DetailService, modifier: Modifier = Modifier) {
     val keywordResponse = remember { mutableStateOf<KeywordsResponse?>(null) }
-    if (keywordResponse.value == null) {
-        fetchKeywords(itemId, service, keywordResponse)
+    if (itemId != null) {
+        if (keywordResponse.value == null) {
+            fetchKeywords(itemId, service, keywordResponse)
+        }
     }
-    val context = LocalContext.current
 
-    mediaItem.overview?.let { overview ->
+    mediaItem.value?.let { mi ->
         ContentCard(
             modifier = modifier
         ) {
@@ -353,7 +359,7 @@ private fun OverviewCard(itemId: Int, mediaItem: DetailedItem, service: DetailSe
                     .padding(vertical = 12.dp, horizontal = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                mediaItem.tagline?.let { tagline ->
+                mi.tagline?.let { tagline ->
                     Text(
                         text = tagline,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -362,7 +368,7 @@ private fun OverviewCard(itemId: Int, mediaItem: DetailedItem, service: DetailSe
                     )
                 }
                 Text(
-                    text = overview,
+                    text = mi.overview ?: "",
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     style = MaterialTheme.typography.bodyMedium
                 )

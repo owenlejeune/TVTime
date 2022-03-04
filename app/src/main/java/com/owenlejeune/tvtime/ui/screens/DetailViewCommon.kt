@@ -77,7 +77,7 @@ fun DetailHeader(
             modifier = Modifier
                 .constrainAs(posterImage) {
                     bottom.linkTo(backdropImage.bottom)
-                    start.linkTo(parent.start)
+                    start.linkTo(parent.start, margin = 16.dp)
                     top.linkTo(backButton.bottom)
                 },
             url = posterUrl,
@@ -89,7 +89,7 @@ fun DetailHeader(
                 .constrainAs(titleText) {
                     bottom.linkTo(posterImage.bottom)
                     start.linkTo(posterImage.end, margin = 8.dp)
-                    end.linkTo(parent.end)
+                    end.linkTo(parent.end, margin = 16.dp)
                 },
             title = title
         )
@@ -108,7 +108,7 @@ fun DetailHeader(
         BackButton(
             modifier = Modifier.constrainAs(backButton) {
                 top.linkTo(parent.top)//, 8.dp)
-                start.linkTo(parent.start)//, 12.dp)
+                start.linkTo(parent.start, 8.dp)
                 bottom.linkTo(posterImage.top)
             },
             appNavController = appNavController

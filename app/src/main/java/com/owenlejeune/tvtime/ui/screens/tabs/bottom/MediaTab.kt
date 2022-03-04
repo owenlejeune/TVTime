@@ -34,7 +34,7 @@ fun MediaTab(appNavController: NavHostController, mediaType: MediaViewType) {
             else -> throw IllegalArgumentException("Media type given: ${mediaType}, \n     expected one of MediaViewType.MOVIE, MediaViewType.TV") // shouldn't happen
         }
         val pagerState = rememberPagerState()
-        ScrollableTabs(tabs = tabs, pagerState = pagerState)
+        Tabs(tabs = tabs, pagerState = pagerState)
         MediaTabs(
             tabs = tabs,
             pagerState = pagerState,

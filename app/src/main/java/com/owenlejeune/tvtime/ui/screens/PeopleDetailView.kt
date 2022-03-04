@@ -1,7 +1,10 @@
 package com.owenlejeune.tvtime.ui.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -39,21 +42,25 @@ fun PersonDetailView(
         }
     }
 
-    DetailContent(
-        modifier = Modifier.fillMaxSize()
+    Column(
+        modifier = Modifier
+            .background(color = MaterialTheme.colorScheme.background)
+            .verticalScroll(rememberScrollState())
+            .fillMaxSize()
+            .padding(bottom = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        DetailHeader(
+            appNavController = appNavController,
+            title = person.value?.name ?: "",
+            posterUrl = TmdbUtils.getFullPersonImagePath(person.value?.profilePath),
+            posterContentDescription = person.value?.name
+        )
+
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
+            modifier = Modifier.padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            DetailHeader(
-                appNavController = appNavController,
-                title = person.value?.name ?: "",
-                posterUrl = TmdbUtils.getFullPersonImagePath(person.value?.profilePath),
-                posterContentDescription = person.value?.name
-            )
 
             BiographyCard(person = person.value)
 
