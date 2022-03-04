@@ -19,9 +19,9 @@ sealed class AccountTabNavItem(stringRes: Int, route: String, val mediaType: Med
         val GuestItems = listOf(RatedMovies, RatedTvShows)//, RatedTvEpisodes)
     }
 
-    object RatedMovies: AccountTabNavItem(R.string.nav_rated_movies_title, "rated_movies_route", MediaViewType.MOVIE, screenContent, { SessionManager.currentSession.ratedMovies } )
-    object RatedTvShows: AccountTabNavItem(R.string.nav_rated_shows_title, "rated_shows_route", MediaViewType.TV, screenContent, { SessionManager.currentSession.ratedTvShows } )
-    object RatedTvEpisodes: AccountTabNavItem(R.string.nav_rated_episodes_title, "rated_episodes_route", MediaViewType.EPISODE, screenContent, { SessionManager.currentSession.ratedTvEpisodes } )
+    object RatedMovies: AccountTabNavItem(R.string.nav_rated_movies_title, "rated_movies_route", MediaViewType.MOVIE, screenContent, { SessionManager.currentSession?.ratedMovies ?: emptyList() } )
+    object RatedTvShows: AccountTabNavItem(R.string.nav_rated_shows_title, "rated_shows_route", MediaViewType.TV, screenContent, { SessionManager.currentSession?.ratedTvShows ?: emptyList() } )
+    object RatedTvEpisodes: AccountTabNavItem(R.string.nav_rated_episodes_title, "rated_episodes_route", MediaViewType.EPISODE, screenContent, { SessionManager.currentSession?.ratedTvEpisodes ?: emptyList() } )
 }
 
 private val screenContent: AccountNavComposableFun = { appNavController, mediaViewType, listFetchFun ->

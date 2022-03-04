@@ -31,24 +31,28 @@ import com.owenlejeune.tvtime.utils.TmdbUtils
 @OptIn(ExperimentalPagerApi::class)
 @Composable
 fun AccountTab(appNavController: NavHostController, appBarTitle: MutableState<String>) {
-    if (SessionManager.currentSession.isGuest) {
+    if (SessionManager.currentSession?.isGuest == true) {
         appBarTitle.value = "Hello, Guest"
-    }
-
-    val tabs = if (SessionManager.currentSession.isGuest) {
-        AccountTabNavItem.GuestItems
     } else {
-        AccountTabNavItem.GuestItems
+        appBarTitle.value = "Not logged in"
     }
 
-    Column {
-        val pagerState = rememberPagerState()
-        Tabs(tabs = tabs, pagerState = pagerState)
-        AccountTabs(
-            appNavController = appNavController,
-            tabs = tabs,
-            pagerState = pagerState
-        )
+    SessionManager.currentSession?.let { session ->
+        val tabs = if (session.isGuest) {
+            AccountTabNavItem.GuestItems
+        } else {
+            AccountTabNavItem.GuestItems
+        }
+
+        Column {
+            val pagerState = rememberPagerState()
+            Tabs(tabs = tabs, pagerState = pagerState)
+            AccountTabs(
+                appNavController = appNavController,
+                tabs = tabs,
+                pagerState = pagerState
+            )
+        }
     }
 }
 

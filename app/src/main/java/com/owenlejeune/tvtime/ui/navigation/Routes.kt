@@ -12,10 +12,7 @@ import com.owenlejeune.tvtime.ui.screens.MediaDetailView
 import com.owenlejeune.tvtime.ui.screens.MainAppView
 import com.owenlejeune.tvtime.ui.screens.MediaViewType
 import com.owenlejeune.tvtime.ui.screens.PersonDetailView
-import com.owenlejeune.tvtime.ui.screens.tabs.bottom.AccountTab
-import com.owenlejeune.tvtime.ui.screens.tabs.bottom.FavouritesTab
-import com.owenlejeune.tvtime.ui.screens.tabs.bottom.MediaTab
-import com.owenlejeune.tvtime.ui.screens.tabs.bottom.SettingsTab
+import com.owenlejeune.tvtime.ui.screens.tabs.bottom.*
 
 object NavConstants {
     const val ID_KEY = "id_key"
@@ -70,6 +67,9 @@ fun BottomNavigationRoutes(
         }
         composable(BottomNavItem.Account.route) {
             AccountTab(appBarTitle = appBarTitle, appNavController = appNavController)
+        }
+        composable(BottomNavItem.People.route) {
+            PeopleTab(appBarTitle, appNavController = appNavController)
         }
         composable(BottomNavItem.Favourites.route) {
             FavouritesTab()

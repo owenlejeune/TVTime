@@ -54,7 +54,7 @@ class MoviesService: KoinComponent, DetailService, HomePageService {
     }
 
     override suspend fun postRating(id: Int, rating: RatingBody): Response<RatingResponse> {
-        val session = SessionManager.currentSession
+        val session = SessionManager.currentSession ?: throw Exception("Session must not be null")
         return if (session.isGuest) {
             movieService.postMovieRatingAsGuest(id, session.sessionId, rating)
         } else {
@@ -63,7 +63,7 @@ class MoviesService: KoinComponent, DetailService, HomePageService {
     }
 
     override suspend fun deleteRating(id: Int): Response<RatingResponse> {
-        val session = SessionManager.currentSession
+        val session = SessionManager.currentSession ?: throw Exception("Session must not be null")
         return if (session.isGuest) {
             movieService.deleteMovieReviewAsGuest(id, session.sessionId)
         } else {

@@ -17,6 +17,7 @@
     <string name="nav_rated_shows_title">Rated TV Shows</string>
     <string name="nav_rated_episodes_title">Rated TV Episodes</string>
     <string name="nav_people_title">People</string>
+    <string name="nav_popular_people_title">Popular People</string>
 
     <!-- Headings -->
     <string name="cast_label">Cast</string>

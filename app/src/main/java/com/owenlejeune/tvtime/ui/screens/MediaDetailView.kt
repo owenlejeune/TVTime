@@ -205,7 +205,7 @@ private fun ActionsView(
                 service = service
             )
 
-            if (!session.isGuest) {
+            if (session?.isGuest == false) {
                 ActionButton(
                     modifier = Modifier.weight(1f),
                     text = stringResource(R.string.add_to_list_action_label),
@@ -246,20 +246,25 @@ private fun RateButton(
     var itemIsRated by remember {
         mutableStateOf(
             if (type == MediaViewType.MOVIE) {
-                session.hasRatedMovie(itemId)
+                session?.hasRatedMovie(itemId) == true
             } else {
-                session.hasRatedTvShow(itemId)
+                session?.hasRatedTvShow(itemId) == true
             }
         )
     }
 
     val showRatingDialog = remember { mutableStateOf(false) }
+    val showSessionDialog = remember { mutableStateOf(false) }
     ActionButton(
         modifier = modifier,
         text = if (itemIsRated) stringResource(R.string.delete_rating_action_label) else stringResource(R.string.rate_action_label),
         onClick = {
             if (!itemIsRated) {
-                showRatingDialog.value = true
+                if (SessionManager.currentSession != null) {
+                    showRatingDialog.value = true
+                } else {
+                    showSessionDialog.value = true
+                }
             } else {
                 CoroutineScope(Dispatchers.IO).launch {
                     val response = service.deleteRating(itemId)
@@ -268,7 +273,7 @@ private fun RateButton(
                             itemIsRated = false
                         }
                     }
-                    SessionManager.currentSession.refresh()
+                    SessionManager.currentSession?.refresh()
                 }
             }
         }
@@ -277,7 +282,7 @@ private fun RateButton(
         CoroutineScope(Dispatchers.IO).launch {
             val response = service.postRating(itemId, RatingBody(rating = rating))
             if (response.isSuccessful) {
-                SessionManager.currentSession.refresh()
+                SessionManager.currentSession?.refresh()
                 withContext(Dispatchers.Main) {
                     itemIsRated = true
                 }
@@ -289,6 +294,33 @@ private fun RateButton(
             }
         }
     })
+
+    CreateSessionDialog(showDialog = showSessionDialog, onSessionReturned = {
+
+    })
+}
+
+@Composable
+private fun CreateSessionDialog(showDialog: MutableState<Boolean>, onSessionReturned: (Boolean) -> Unit) {
+    if (showDialog.value) {
+        AlertDialog(
+            modifier = Modifier.wrapContentHeight(),
+            onDismissRequest = { showDialog.value = false },
+            title = { Text(text = "Sign In") },
+            confirmButton = {},
+            dismissButton = {
+                Button(
+                    modifier = Modifier.height(40.dp),
+                    onClick = {
+                        showDialog.value = false
+                    }
+                ) {
+                    Text(stringResource(R.string.action_cancel))
+                }
+            },
+            text = {}
+        )
+    }
 }
 
 @Composable
@@ -582,7 +614,7 @@ private fun ReviewsCard(
             )
         },
         footer = {
-            if (!SessionManager.currentSession.isGuest) {
+            if (SessionManager.currentSession?.isGuest == false) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()

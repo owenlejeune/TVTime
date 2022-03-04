@@ -22,8 +22,10 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import com.owenlejeune.tvtime.BuildConfig
 import com.owenlejeune.tvtime.R
+import com.owenlejeune.tvtime.di.modules.preferencesModule
 import com.owenlejeune.tvtime.preferences.AppPreferences
 import com.owenlejeune.tvtime.ui.components.*
+import com.owenlejeune.tvtime.utils.SessionManager
 import org.koin.java.KoinJavaComponent.get
 
 @Composable
@@ -90,7 +92,7 @@ fun SettingsTab(preferences: AppPreferences = get(AppPreferences::class.java)) {
 }
 
 @Composable
-private fun DebugOptions() {
+private fun DebugOptions(preferences: AppPreferences = get(AppPreferences::class.java)) {
     val shouldShowPalette = remember { mutableStateOf(false) }
     Text(
         text = "Show material palette",
@@ -106,6 +108,19 @@ private fun DebugOptions() {
     if (shouldShowPalette.value) {
         PaletteDialog(shouldShowPalette)
     }
+
+    Text(
+        text = "Clear session",
+        color = MaterialTheme.colorScheme.onBackground,
+        modifier = Modifier
+            .padding(horizontal = 8.dp, vertical = 12.dp)
+            .clickable(
+                onClick = {
+                    preferences.guestSessionId = ""
+                    SessionManager.clearSession()
+                }
+            )
+    )
 }
 
 @Composable

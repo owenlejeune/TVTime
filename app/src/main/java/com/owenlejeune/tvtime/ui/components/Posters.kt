@@ -27,6 +27,7 @@ import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
 import com.owenlejeune.tvtime.R
+import com.owenlejeune.tvtime.api.tmdb.model.HomePagePerson
 import com.owenlejeune.tvtime.api.tmdb.model.ImageCollection
 import com.owenlejeune.tvtime.api.tmdb.model.Person
 import com.owenlejeune.tvtime.api.tmdb.model.TmdbItem
@@ -56,6 +57,34 @@ fun PosterGrid(
                 modifier = Modifier.padding(5.dp),
                 mediaItem = item,
                 onClick = onClick
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun PeoplePosterGrid(
+    fetchPeople: (MutableState<List<HomePagePerson>>) -> Unit = {},
+    onClick: (Int) -> Unit = {}
+) {
+    val peopleList = remember { mutableStateOf(emptyList<HomePagePerson>()) }
+    fetchPeople(peopleList)
+
+    LazyVerticalGrid(
+        cells = GridCells.Adaptive(minSize = POSTER_WIDTH),
+        contentPadding = PaddingValues(8.dp),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        listItems(peopleList.value) { person ->
+            PosterItem(
+                url = TmdbUtils.getFullPersonImagePath(person.profilePath),
+                noDataImage = R.drawable.no_person_photo,
+                modifier = Modifier.padding(5.dp),
+                onClick = {
+                    onClick(person.id)
+                },
+                contentDescription = person.name
             )
         }
     }

@@ -102,16 +102,16 @@ fun PersonDetailView(
                 }
             }
 
-            ContentCard(title = stringResource(R.string.also_known_for_label)) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .wrapContentHeight()
-                        .padding(12.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    val departments = credits.value?.crew?.map { it.department }?.toSet() ?: emptySet()
-                    if (departments.isNotEmpty()) {
+            val departments = credits.value?.crew?.map { it.department }?.toSet() ?: emptySet()
+            if (departments.isNotEmpty()) {
+                ContentCard(title = stringResource(R.string.also_known_for_label)) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .wrapContentHeight()
+                            .padding(12.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
                         departments.forEach { department ->
                             Text(text = department, color = MaterialTheme.colorScheme.primary)
                             LazyRow(
@@ -120,7 +120,8 @@ fun PersonDetailView(
                                     .wrapContentHeight(),
                                 horizontalArrangement = Arrangement.spacedBy(4.dp)
                             ) {
-                                val jobsInDepartment = credits.value!!.crew.filter { it.department == department }
+                                val jobsInDepartment =
+                                    credits.value!!.crew.filter { it.department == department }
                                 items(jobsInDepartment.size) { i ->
                                     val content = jobsInDepartment[i]
                                     val title = if (content.mediaType == MediaViewType.MOVIE) {

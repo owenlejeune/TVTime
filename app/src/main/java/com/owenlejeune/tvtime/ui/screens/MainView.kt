@@ -48,7 +48,7 @@ fun MainAppView(appNavController: NavHostController, preferences: AppPreferences
 
     val focusRequester = remember { FocusRequester() }
     val focusSearchBar = remember { mutableStateOf(false) }
-    val searchableScreens = listOf(BottomNavItem.Movies.route, BottomNavItem.TV.route)
+    val searchableScreens = listOf(BottomNavItem.Movies.route, BottomNavItem.TV.route, BottomNavItem.People.route)
 
     // todo - scroll state not remember when returing from detail screen
 

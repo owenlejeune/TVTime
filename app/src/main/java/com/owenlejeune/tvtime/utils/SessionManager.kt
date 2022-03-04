@@ -17,18 +17,20 @@ object SessionManager: KoinComponent {
     private val preferences: AppPreferences by inject()
 
     private var _currentSession: Session? = null
-    val currentSession: Session
-        get() = _currentSession!!
+    val currentSession: Session?
+        get() = _currentSession
 
     private val authenticationService by lazy { TmdbClient().createAuthenticationService() }
 
+    fun clearSession() {
+        _currentSession = null
+    }
+
     suspend fun initialize() {
-        _currentSession = if (preferences.guestSessionId.isNotEmpty()) {
+        if (preferences.guestSessionId.isNotEmpty()) {
             val session = GuestSession()
             session.initialize()
-            session
-        } else {
-            requestNewGuestSession()
+            _currentSession = session
         }
     }
 
