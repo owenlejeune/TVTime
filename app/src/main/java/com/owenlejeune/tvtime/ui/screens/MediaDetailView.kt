@@ -296,7 +296,7 @@ private fun RateButton(
     })
 
     CreateSessionDialog(showDialog = showSessionDialog, onSessionReturned = {
-
+        showRatingDialog.value = it
     })
 }
 
@@ -306,19 +306,46 @@ private fun CreateSessionDialog(showDialog: MutableState<Boolean>, onSessionRetu
         AlertDialog(
             modifier = Modifier.wrapContentHeight(),
             onDismissRequest = { showDialog.value = false },
-            title = { Text(text = "Sign In") },
+            title = { Text(text = stringResource(R.string.sign_in_dialog_title)) },
             confirmButton = {},
             dismissButton = {
-                Button(
+                TextButton(
                     modifier = Modifier.height(40.dp),
                     onClick = {
                         showDialog.value = false
                     }
                 ) {
-                    Text(stringResource(R.string.action_cancel))
+                    Text(text = stringResource(R.string.action_cancel))
                 }
             },
-            text = {}
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Button(
+                        modifier = Modifier.fillMaxWidth(),
+                        onClick = {
+                            CoroutineScope(Dispatchers.IO).launch {
+                                SessionManager.requestNewGuestSession()?.let {
+                                    withContext(Dispatchers.Main) {
+                                        showDialog.value = false
+                                        onSessionReturned(true)
+                                    }
+                                }
+                            }
+                        }
+                    ) {
+                        Text(text = stringResource(R.string.action_continue_as_guest))
+                    }
+
+                    Button(
+                        modifier = Modifier.fillMaxWidth(),
+                        onClick = {
+                            showDialog.value = false
+                        }
+                    ) {
+                        Text(text = stringResource(R.string.action_sign_in))
+                    }
+                }
+            }
         )
     }
 }

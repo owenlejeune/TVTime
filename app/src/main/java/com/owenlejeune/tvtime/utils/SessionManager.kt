@@ -1,13 +1,14 @@
 package com.owenlejeune.tvtime.utils
 
-import com.owenlejeune.tvtime.api.tmdb.GuestSessionApi
 import com.owenlejeune.tvtime.api.tmdb.TmdbClient
+import com.owenlejeune.tvtime.api.tmdb.model.DeleteSessionBody
 import com.owenlejeune.tvtime.api.tmdb.model.RatedEpisode
-import com.owenlejeune.tvtime.api.tmdb.model.RatedMedia
 import com.owenlejeune.tvtime.api.tmdb.model.RatedMovie
 import com.owenlejeune.tvtime.api.tmdb.model.RatedTv
 import com.owenlejeune.tvtime.preferences.AppPreferences
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -22,8 +23,22 @@ object SessionManager: KoinComponent {
 
     private val authenticationService by lazy { TmdbClient().createAuthenticationService() }
 
-    fun clearSession() {
-        _currentSession = null
+    fun clearSession(onResponse: (isSuccessful: Boolean) -> Unit) {
+        currentSession?.let { session ->
+            CoroutineScope(Dispatchers.IO).launch {
+                val deleteResponse = authenticationService.deleteSession(
+                    DeleteSessionBody(
+                        session.sessionId
+                    )
+                )
+                withContext(Dispatchers.Main) {
+                    if (deleteResponse.isSuccessful) {
+                        _currentSession = null
+                    }
+                    onResponse(deleteResponse.isSuccessful)
+                }
+            }
+        }
     }
 
     suspend fun initialize() {
@@ -34,7 +49,7 @@ object SessionManager: KoinComponent {
         }
     }
 
-    private suspend fun requestNewGuestSession(): Session? {
+    suspend fun requestNewGuestSession(): Session? {
         val response = authenticationService.getNewGuestSession()
         if (response.isSuccessful) {
             preferences.guestSessionId = response.body()?.guestSessionId ?: ""
@@ -78,10 +93,9 @@ object SessionManager: KoinComponent {
         override var _ratedTvShows: List<RatedTv> = emptyList()
         override var _ratedTvEpisodes: List<RatedEpisode> = emptyList()
 
-        private lateinit var service: GuestSessionApi
+        private val service by lazy { TmdbClient().createGuestSessionService() }
 
         override suspend fun initialize() {
-            service = TmdbClient().createGuestSessionService()
             refresh()
         }
 

@@ -7,13 +7,15 @@ import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
+import retrofit2.http.HTTP
 
 interface AuthenticationApi {
 
     @GET("authentication/guest_session/new")
     suspend fun getNewGuestSession(): Response<GuestSessionResponse>
 
-    @DELETE("authentication/session")
+//    @DELETE("authentication/session")
+    @HTTP(method = "DELETE", path = "authentication/session", hasBody = true)
     suspend fun deleteSession(@Body body: DeleteSessionBody): Response<DeleteSessionResponse>
 
 }

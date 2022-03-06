@@ -35,6 +35,9 @@
     <string name="updated_at_label">Updated at: %1$s</string>
     <string name="no_reviews_label">No reviews</string>
 
+    <string name="sign_in_dialog_title">Sign In to Rate</string>
+    <string name="action_continue_as_guest">Continue as Guest</string>
+    <string name="action_sign_in">Sign In</string>
     <string name="rate_action_label">Rate</string>
     <string name="delete_rating_action_label">Delete Rating</string>
     <string name="add_to_list_action_label">Add to List</string>

@@ -1,5 +1,6 @@
 package com.owenlejeune.tvtime.ui.screens.tabs.bottom
 
+import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -17,6 +18,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
@@ -93,6 +95,7 @@ fun SettingsTab(preferences: AppPreferences = get(AppPreferences::class.java)) {
 
 @Composable
 private fun DebugOptions(preferences: AppPreferences = get(AppPreferences::class.java)) {
+    val context = LocalContext.current
     val shouldShowPalette = remember { mutableStateOf(false) }
     Text(
         text = "Show material palette",
@@ -117,7 +120,9 @@ private fun DebugOptions(preferences: AppPreferences = get(AppPreferences::class
             .clickable(
                 onClick = {
                     preferences.guestSessionId = ""
-                    SessionManager.clearSession()
+                    SessionManager.clearSession {
+                        Toast.makeText(context, "Cleared session: $it", Toast.LENGTH_SHORT).show()
+                    }
                 }
             )
     )
