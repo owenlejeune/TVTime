@@ -77,4 +77,22 @@
     <string name="status_ended">Ended</string>
     <string name="status_pilot">Pilot</string>
     <string name="status_active">Active</string>
+
+    <!-- account -->
+    <string name="account_header_title_formatted">Hello, %1$s!</string>
+    <string name="account_name_guest">Guest</string>
+    <string name="account_not_logged_in">Not logged in</string>
+
+    <string name="no_rated_content_message">No rated content</string>
+    <string name="rating_test">Rating: $1%d</string>
+    <string name="action_sign_in_as_guest">Sign In as Guest</string>
+    <string name="account_menu_content_description">Account Menu</string>
+    <string name="action_sign_out">Sign Out</string>
+    <string name="email_not_empty_error">Email must not be empty</string>
+    <string name="email_invalid_error">Invalid email</string>
+    <string name="password_empty_error">Must enter a password</string>
+    <string name="sign_in_dialog_message">Sign in using your TMDB credentials</string>
+    <string name="email_label">Email</string>
+    <string name="password_label">Password</string>
+    <string name="no_account_message">Don\'t have an account?</string>
 </resources>

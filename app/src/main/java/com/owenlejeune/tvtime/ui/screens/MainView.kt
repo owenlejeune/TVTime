@@ -2,13 +2,11 @@ package com.owenlejeune.tvtime.ui.screens
 
 import androidx.compose.animation.rememberSplineBasedDecay
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.Scaffold
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -40,7 +38,7 @@ fun MainAppView(appNavController: NavHostController, preferences: AppPreferences
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
-    val appBarTitle = remember { mutableStateOf(BottomNavItem.Items[0].name) }
+    val appBarTitle = rememberSaveable { mutableStateOf(BottomNavItem.getByRoute(currentRoute)?.name ?: BottomNavItem.Items[0].name) }
     val decayAnimationSpec = rememberSplineBasedDecay<Float>()
     val scrollBehavior = remember(decayAnimationSpec) {
         TopAppBarDefaults.exitUntilCollapsedScrollBehavior(decayAnimationSpec)
@@ -49,6 +47,8 @@ fun MainAppView(appNavController: NavHostController, preferences: AppPreferences
     val focusRequester = remember { FocusRequester() }
     val focusSearchBar = remember { mutableStateOf(false) }
     val searchableScreens = listOf(BottomNavItem.Movies.route, BottomNavItem.TV.route, BottomNavItem.People.route)
+
+    val appBarActions = remember { mutableStateOf<@Composable RowScope.() -> Unit>( {} ) }
 
     // todo - scroll state not remember when returing from detail screen
 
@@ -72,7 +72,8 @@ fun MainAppView(appNavController: NavHostController, preferences: AppPreferences
             } else {
                 TopBar(
                     title = appBarTitle,
-                    scrollBehavior = scrollBehavior
+                    scrollBehavior = scrollBehavior,
+                    appBarActions = appBarActions
                 )
             }
         },
@@ -86,7 +87,7 @@ fun MainAppView(appNavController: NavHostController, preferences: AppPreferences
         }
     ) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)) {
-            BottomNavigationRoutes(appNavController = appNavController, navController = navController, appBarTitle = appBarTitle)
+            BottomNavigationRoutes(appNavController = appNavController, navController = navController, appBarTitle = appBarTitle, appBarActions = appBarActions)
         }
     }
 }
@@ -94,7 +95,8 @@ fun MainAppView(appNavController: NavHostController, preferences: AppPreferences
 @Composable
 private fun TopBar(
     title: MutableState<String>,
-    scrollBehavior: TopAppBarScrollBehavior
+    scrollBehavior: TopAppBarScrollBehavior,
+    appBarActions: MutableState<@Composable (RowScope.() -> Unit)> = mutableStateOf({})
 ) {
     LargeTopAppBar(
         title = { Text(text = title.value) },
@@ -103,7 +105,8 @@ private fun TopBar(
             .largeTopAppBarColors(
                 scrolledContainerColor = MaterialTheme.colorScheme.background,
                 titleContentColor = MaterialTheme.colorScheme.primary
-            )
+            ),
+        actions = appBarActions.value
     )
 }
 

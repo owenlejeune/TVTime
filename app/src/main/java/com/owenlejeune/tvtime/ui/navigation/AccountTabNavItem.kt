@@ -16,7 +16,7 @@ sealed class AccountTabNavItem(stringRes: Int, route: String, val mediaType: Med
     override val name = resourceUtils.getString(stringRes)
 
     companion object {
-        val GuestItems = listOf(RatedMovies, RatedTvShows)//, RatedTvEpisodes)
+        val GuestItems = listOf(RatedMovies, RatedTvShows, RatedTvEpisodes)
     }
 
     object RatedMovies: AccountTabNavItem(R.string.nav_rated_movies_title, "rated_movies_route", MediaViewType.MOVIE, screenContent, { SessionManager.currentSession?.ratedMovies ?: emptyList() } )

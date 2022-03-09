@@ -1,5 +1,6 @@
 package com.owenlejeune.tvtime.ui.navigation
 
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
@@ -20,8 +21,12 @@ object NavConstants {
 }
 
 @Composable
-fun MainNavigationRoutes(navController: NavHostController, displayUnderStatusBar: MutableState<Boolean> = mutableStateOf(false)) {
-    NavHost(navController = navController, startDestination = MainNavItem.MainView.route) {
+fun MainNavigationRoutes(
+    navController: NavHostController,
+    displayUnderStatusBar: MutableState<Boolean> = mutableStateOf(false),
+    startDestination: String = MainNavItem.MainView.route
+) {
+    NavHost(navController = navController, startDestination = startDestination) {
         composable(MainNavItem.MainView.route) {
             displayUnderStatusBar.value = false
             MainAppView(appNavController = navController)
@@ -56,25 +61,31 @@ fun MainNavigationRoutes(navController: NavHostController, displayUnderStatusBar
 fun BottomNavigationRoutes(
     appNavController: NavHostController,
     navController: NavHostController,
-    appBarTitle: MutableState<String>
+    appBarTitle: MutableState<String>,
+    appBarActions: MutableState<@Composable (RowScope.() -> Unit)> = mutableStateOf({})
 ) {
     NavHost(navController = navController, startDestination = BottomNavItem.Movies.route) {
         composable(BottomNavItem.Movies.route) {
+            appBarActions.value = {}
             MediaTab(appNavController = appNavController, mediaType = MediaViewType.MOVIE)
         }
         composable(BottomNavItem.TV.route) {
+            appBarActions.value = {}
             MediaTab(appNavController = appNavController, mediaType = MediaViewType.TV)
         }
         composable(BottomNavItem.Account.route) {
-            AccountTab(appBarTitle = appBarTitle, appNavController = appNavController)
+            AccountTab(appBarTitle = appBarTitle, appNavController = appNavController, appBarActions = appBarActions)
         }
         composable(BottomNavItem.People.route) {
+            appBarActions.value = {}
             PeopleTab(appBarTitle, appNavController = appNavController)
         }
         composable(BottomNavItem.Favourites.route) {
+            appBarActions.value = {}
             FavouritesTab()
         }
         composable(BottomNavItem.Settings.route) {
+            appBarActions.value = {}
             SettingsTab()
         }
     }

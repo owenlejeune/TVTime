@@ -12,6 +12,7 @@ class AppPreferences(context: Context) {
         private val PERSISTENT_SEARCH = "persistent_search"
         private val HIDE_TITLE = "hide_title"
         private val GUEST_SESSION = "guest_session_id"
+        private val AUTHORIZED_SESSION = "authorized_session_id"
     }
 
     private val preferences: SharedPreferences = context.getSharedPreferences(PREF_FILE, Context.MODE_PRIVATE)
@@ -27,6 +28,10 @@ class AppPreferences(context: Context) {
     var guestSessionId: String
         get() = preferences.getString(GUEST_SESSION, "") ?: ""
         set(value) { preferences.put(GUEST_SESSION, value) }
+
+    var authorizedSessionId: String
+        get() = preferences.getString(AUTHORIZED_SESSION, "") ?: ""
+        set(value) { preferences.put(AUTHORIZED_SESSION, value) }
 //    val usePreferences:  MutableState<Boolean>
 //    var usePreferences: Boolean
 //        get() = preferences.getBoolean(USE_PREFERENCES, false)

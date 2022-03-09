@@ -205,7 +205,7 @@ private fun ActionsView(
                 service = service
             )
 
-            if (session?.isGuest == false) {
+            if (session?.isAuthorized == true) {
                 ActionButton(
                     modifier = Modifier.weight(1f),
                     text = stringResource(R.string.add_to_list_action_label),
@@ -641,7 +641,7 @@ private fun ReviewsCard(
             )
         },
         footer = {
-            if (SessionManager.currentSession?.isGuest == false) {
+            if (SessionManager.currentSession?.isAuthorized == true) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()

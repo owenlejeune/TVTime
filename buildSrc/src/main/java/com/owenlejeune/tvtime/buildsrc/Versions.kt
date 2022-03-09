@@ -3,7 +3,7 @@ package com.owenlejeune.tvtime.buildsrc
 object Versions {
 
     const val compose = "1.1.0-rc03"
-    const val compose_material3 = "1.0.0-alpha04"
+    const val compose_material3 = "1.0.0-alpha06"
     const val compose_accompanist = "0.22.1-rc"
     const val compose_navigation = "2.4.0"
     const val compose_paging = "1.0.0-alpha14"
