@@ -695,7 +695,7 @@ fun RoundedLetterImage(
     topPadding: Dp = size / 5
 ) {
     Box(
-        modifier = Modifier
+        modifier = modifier
             .clip(CircleShape)
             .size(size)
             .background(color = MaterialTheme.colorScheme.tertiary)

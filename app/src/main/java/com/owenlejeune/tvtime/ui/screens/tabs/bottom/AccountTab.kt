@@ -25,21 +25,20 @@ import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.rememberPagerState
 import com.owenlejeune.tvtime.R
-import com.owenlejeune.tvtime.api.tmdb.model.RatedMovie
-import com.owenlejeune.tvtime.api.tmdb.model.RatedTopLevelMedia
-import com.owenlejeune.tvtime.api.tmdb.model.RatedTv
+import com.owenlejeune.tvtime.api.tmdb.model.*
 import com.owenlejeune.tvtime.ui.components.*
 import com.owenlejeune.tvtime.ui.navigation.AccountTabNavItem
 import com.owenlejeune.tvtime.ui.navigation.ListFetchFun
 import com.owenlejeune.tvtime.ui.navigation.MainNavItem
 import com.owenlejeune.tvtime.ui.screens.MediaViewType
-import com.owenlejeune.tvtime.ui.screens.tabs.top.Tabs
+import com.owenlejeune.tvtime.ui.screens.tabs.top.ScrollableTabs
 import com.owenlejeune.tvtime.utils.SessionManager
 import com.owenlejeune.tvtime.utils.TmdbUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlin.reflect.KClass
 
 private const val GUEST_SIGN_IN = "guest_sign_in"
 private const val SIGN_OUT = "sign_out"
@@ -69,14 +68,14 @@ fun AccountTab(
     if (lastSelectedOption.value.isNotBlank() || lastSelectedOption.value.isBlank()) {
         SessionManager.currentSession?.let { session ->
             val tabs = if (session.isAuthorized) {
-                AccountTabNavItem.GuestItems
+                AccountTabNavItem.AuthorizedItems
             } else {
                 AccountTabNavItem.GuestItems
             }
 
             Column {
                 val pagerState = rememberPagerState()
-                Tabs(tabs = tabs, pagerState = pagerState)
+                ScrollableTabs(tabs = tabs, pagerState = pagerState)
                 AccountTabs(
                     appNavController = appNavController,
                     tabs = tabs,
@@ -88,10 +87,11 @@ fun AccountTab(
 }
 
 @Composable
-fun AccountTabContent(
+fun <T: Any> AccountTabContent(
     appNavController: NavHostController,
     mediaViewType: MediaViewType,
-    listFetchFun: ListFetchFun
+    listFetchFun: ListFetchFun,
+    clazz: KClass<T>
 ) {
     val contentItems = listFetchFun()
 
@@ -112,54 +112,143 @@ fun AccountTabContent(
             }
         } else {
             items(contentItems.size) { i ->
-                val ratedItem = contentItems[i] as RatedTopLevelMedia
-
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.clickable(
-                        onClick = {
-                            appNavController.navigate(
-                                "${MainNavItem.DetailView.route}/${mediaViewType}/${ratedItem.id}"
-                            )
-                        }
-                    )
-                ) {
-                    Image(
-                        modifier = Modifier
-                            .width(60.dp)
-                            .height(80.dp),
-                        painter = rememberImagePainter(
-                            data = TmdbUtils.getFullPosterPath(ratedItem.posterPath)
-                        ),
-                        contentDescription = ""
-                    )
-
-                    Column(
-                        modifier = Modifier.height(80.dp),
-                        verticalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(
-                            text = ratedItem.name,
-                            color = MaterialTheme.colorScheme.onBackground,
-                            fontSize = 18.sp
+                when (clazz) {
+                    RatedMovie::class -> {
+                        val item = contentItems[i] as RatedMovie
+                        MediaItemRow(
+                            appNavController = appNavController,
+                            mediaViewType = mediaViewType,
+                            id = item.id,
+                            posterPath = TmdbUtils.getFullPosterPath(item.posterPath),
+                            name = item.name,
+                            date = item.releaseDate,
+                            rating = item.rating
                         )
-
-                        val date = when (ratedItem) {
-                            is RatedMovie -> ratedItem.releaseDate
-                            is RatedTv -> ratedItem.firstAirDate
-                            else -> ""
-                        }
-                        Text(
-                            text = date,
-                            color = MaterialTheme.colorScheme.onBackground
+                    }
+                    RatedTv::class -> {
+                        val item = contentItems[i] as RatedTv
+                        MediaItemRow(
+                            appNavController = appNavController,
+                            mediaViewType = mediaViewType,
+                            id = item.id,
+                            posterPath = TmdbUtils.getFullPosterPath(item.posterPath),
+                            name = item.name,
+                            date = item.firstAirDate,
+                            rating = item.rating
                         )
-
-                        Text(
-                            text = stringResource(id = R.string.rating_test, (ratedItem.rating * 10).toInt()),
-                            color = MaterialTheme.colorScheme.onBackground
+                    }
+                    RatedEpisode::class -> {
+                        val item = contentItems[i] as RatedEpisode
+                        MediaItemRow(
+                            appNavController = appNavController,
+                            mediaViewType = mediaViewType,
+                            id = item.id,
+                            posterPath = null,
+                            name = item.name,
+                            date = item.airDate,
+                            rating = item.rating
+                        )
+                    }
+                    FavoriteMovie::class -> {
+                        val item = contentItems[i] as FavoriteMovie
+                        MediaItemRow(
+                            appNavController = appNavController,
+                            mediaViewType = mediaViewType,
+                            id = item.id,
+                            posterPath = TmdbUtils.getFullPosterPath(item.posterPath),
+                            name = item.title,
+                            date = item.releaseDate
+                        )
+                    }
+                    FavoriteTvSeries::class -> {
+                        val item = contentItems[i] as FavoriteTvSeries
+                        MediaItemRow(
+                            appNavController = appNavController,
+                            mediaViewType = mediaViewType,
+                            id = item.id,
+                            posterPath = TmdbUtils.getFullPosterPath(item.posterPath),
+                            name = item.title,
+                            date = item.releaseDate
+                        )
+                    }
+                    WatchlistMovie::class -> {
+                        val item = contentItems[i] as WatchlistMovie
+                        MediaItemRow(
+                            appNavController = appNavController,
+                            mediaViewType = mediaViewType,
+                            id = item.id,
+                            posterPath = TmdbUtils.getFullPosterPath(item.posterPath),
+                            name = item.title,
+                            date = item.releaseDate
+                        )
+                    }
+                    WatchlistTvSeries::class -> {
+                        val item = contentItems[i] as WatchlistTvSeries
+                        MediaItemRow(
+                            appNavController = appNavController,
+                            mediaViewType = mediaViewType,
+                            id = item.id,
+                            posterPath = TmdbUtils.getFullPosterPath(item.posterPath),
+                            name = item.title,
+                            date = item.releaseDate
                         )
                     }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun MediaItemRow(
+    appNavController: NavHostController,
+    mediaViewType: MediaViewType,
+    id: Int,
+    posterPath: String?,
+    name: String,
+    date: String,
+    rating: Float? = null
+) {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = Modifier.clickable(
+            onClick = {
+                appNavController.navigate(
+                    "${MainNavItem.DetailView.route}/${mediaViewType}/${id}"
+                )
+            }
+        )
+    ) {
+        Image(
+            modifier = Modifier
+                .width(60.dp)
+                .height(80.dp),
+            painter = rememberImagePainter(
+                data = posterPath
+            ),
+            contentDescription = ""
+        )
+
+        Column(
+            modifier = Modifier.height(80.dp),
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = name,
+                color = MaterialTheme.colorScheme.onBackground,
+                fontSize = 18.sp
+            )
+
+            Text(
+                text = date,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+
+            if (rating != null) {
+                Text(
+                    text = stringResource(id = R.string.rating_test, (rating * 10).toInt()),
+                    color = MaterialTheme.colorScheme.onBackground
+                )
             }
         }
     }
@@ -266,7 +355,7 @@ private fun GuestSessionMenuItems(
 @Composable
 private fun GuestSessionIcon() {
     val guestName = stringResource(id = R.string.account_name_guest)
-    RoundedLetterImage(size = 40.dp, character = guestName[0], modifier = Modifier.padding(end = 8.dp), topPadding = 40.dp / 8)
+    RoundedLetterImage(size = 40.dp, character = guestName[0], topPadding = 40.dp / 8)
 }
 
 @Composable
@@ -311,6 +400,6 @@ fun AccountTabs(
     appNavController: NavHostController
 ) {
     HorizontalPager(count = tabs.size, state = pagerState) { page ->
-        tabs[page].screen(appNavController, tabs[page].mediaType, tabs[page].listFetchFun)
+        tabs[page].screen(appNavController, tabs[page].mediaType, tabs[page].listFetchFun, tabs[page].listType)
     }
 }

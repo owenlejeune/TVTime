@@ -18,6 +18,10 @@
     <string name="nav_rated_episodes_title">Rated TV Episodes</string>
     <string name="nav_people_title">People</string>
     <string name="nav_popular_people_title">Popular People</string>
+    <string name="nav_favorite_movies_title">Favorite Movies</string>
+    <string name="nav_favorite_tv_show_title">Favorite TV Shows</string>
+    <string name="nav_movie_watchlist_title">Movie Watchlist</string>
+    <string name="nav_tv_watchlist_title">TV Watchlist</string>
 
     <!-- Headings -->
     <string name="cast_label">Cast</string>
@@ -84,7 +88,7 @@
     <string name="account_not_logged_in">Not logged in</string>
 
     <string name="no_rated_content_message">No rated content</string>
-    <string name="rating_test">Rating: $1%d</string>
+    <string name="rating_test">Rating: %1$d</string>
     <string name="action_sign_in_as_guest">Sign In as Guest</string>
     <string name="account_menu_content_description">Account Menu</string>
     <string name="action_sign_out">Sign Out</string>
