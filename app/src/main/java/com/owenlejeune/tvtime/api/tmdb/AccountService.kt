@@ -11,6 +11,10 @@ class AccountService {
         return accountService.getAccountDetails()
     }
 
+    suspend fun getLists(accountId: Int, page: Int = 1): Response<AccountListResponse> {
+        return accountService.getLists(accountId, page)
+    }
+
     suspend fun getFavoriteMovies(accountId: Int, page: Int = 1): Response<FavoriteMediaResponse<FavoriteMovie>> {
         return accountService.getFavoriteMovies(accountId, page)
     }
