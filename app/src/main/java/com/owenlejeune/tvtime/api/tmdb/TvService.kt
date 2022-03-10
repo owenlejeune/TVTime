@@ -53,7 +53,7 @@ class TvService: KoinComponent, DetailService, HomePageService {
         return service.getReviews(id)
     }
 
-    override suspend fun postRating(id: Int, rating: RatingBody): Response<RatingResponse> {
+    override suspend fun postRating(id: Int, rating: RatingBody): Response<StatusResponse> {
         val session = SessionManager.currentSession ?: throw Exception("Session must not be null")
         return if (!session.isAuthorized) {
             service.postTvRatingAsGuest(id, session.sessionId, rating)
@@ -62,7 +62,7 @@ class TvService: KoinComponent, DetailService, HomePageService {
         }
     }
 
-    override suspend fun deleteRating(id: Int): Response<RatingResponse> {
+    override suspend fun deleteRating(id: Int): Response<StatusResponse> {
         val session = SessionManager.currentSession ?: throw Exception("Session must not be null")
         return if (!session.isAuthorized) {
             service.deleteTvReviewAsGuest(id, session.sessionId)

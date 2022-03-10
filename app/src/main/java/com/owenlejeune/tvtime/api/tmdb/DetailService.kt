@@ -17,9 +17,9 @@ interface DetailService {
 
     suspend fun getReviews(id: Int): Response<ReviewResponse>
 
-    suspend fun postRating(id: Int, ratingBody: RatingBody): Response<RatingResponse>
+    suspend fun postRating(id: Int, ratingBody: RatingBody): Response<StatusResponse>
 
-    suspend fun deleteRating(id: Int): Response<RatingResponse>
+    suspend fun deleteRating(id: Int): Response<StatusResponse>
 
     suspend fun getKeywords(id: Int): Response<KeywordsResponse>
 

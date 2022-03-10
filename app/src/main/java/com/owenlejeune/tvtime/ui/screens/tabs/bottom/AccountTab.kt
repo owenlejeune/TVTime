@@ -1,14 +1,11 @@
 package com.owenlejeune.tvtime.ui.screens.tabs.bottom
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -31,9 +28,7 @@ import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.api.tmdb.model.RatedMovie
 import com.owenlejeune.tvtime.api.tmdb.model.RatedTopLevelMedia
 import com.owenlejeune.tvtime.api.tmdb.model.RatedTv
-import com.owenlejeune.tvtime.ui.components.RoundedLetterImage
-import com.owenlejeune.tvtime.ui.components.SignInDialog
-import com.owenlejeune.tvtime.ui.components.TopAppBarDropdownMenu
+import com.owenlejeune.tvtime.ui.components.*
 import com.owenlejeune.tvtime.ui.navigation.AccountTabNavItem
 import com.owenlejeune.tvtime.ui.navigation.ListFetchFun
 import com.owenlejeune.tvtime.ui.navigation.MainNavItem
@@ -175,7 +170,7 @@ private fun AccountDropdownMenu(
     session: SessionManager.Session?,
     lastSelectedOption: MutableState<String>
 ) {
-    TopAppBarDropdownMenu(
+    CustomTopAppBarDropdownMenu(
         icon = {
             when(session?.isAuthorized) {
                 true -> {  }
@@ -198,14 +193,14 @@ private fun NoSessionMenuItems(
     lastSelectedOption: MutableState<String>
 ) {
     val showSignInDialog = remember { mutableStateOf(false) }
-    DropdownMenuItem(
+    CustomMenuItem(
+        text = stringResource(id = R.string.action_sign_in),
         onClick = {
             showSignInDialog.value = true
-        },
-        modifier = Modifier.background(color = MaterialTheme.colorScheme.surfaceVariant)
-    ) {
-        Text(text = stringResource(R.string.action_sign_in), color = MaterialTheme.colorScheme.onSurfaceVariant)
-    }
+        }
+    )
+
+    CustomMenuDivider()
 
     if (showSignInDialog.value) {
         SignInDialog(showDialog = showSignInDialog) { success ->
@@ -216,16 +211,13 @@ private fun NoSessionMenuItems(
         }
     }
 
-    Divider(color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(horizontal = 12.dp))
-
-    DropdownMenuItem(
+    CustomMenuItem(
+        text = stringResource(R.string.action_sign_in_as_guest),
         onClick = {
             createGuestSession(lastSelectedOption)
             expanded.value = false
         }
-    ) {
-        Text(text = stringResource(R.string.action_sign_in_as_guest), color = MaterialTheme.colorScheme.onSurfaceVariant)
-    }
+    )
 }
 
 @Composable
@@ -246,14 +238,10 @@ private fun GuestSessionMenuItems(
     lastSelectedOption: MutableState<String>
 ) {
     val showSignInDialog = remember { mutableStateOf(false) }
-    DropdownMenuItem(
-        onClick = {
-            showSignInDialog.value = true
-        },
-        modifier = Modifier.background(color = MaterialTheme.colorScheme.surfaceVariant)
-    ) {
-        Text(text = stringResource(id = R.string.action_sign_in), color = MaterialTheme.colorScheme.onSurfaceVariant)
-    }
+    CustomMenuItem(
+        text = stringResource(id = R.string.action_sign_in),
+        onClick = { showSignInDialog.value = true }
+    )
 
     if (showSignInDialog.value) {
         SignInDialog(showDialog = showSignInDialog) { success ->
@@ -264,16 +252,15 @@ private fun GuestSessionMenuItems(
         }
     }
 
-    Divider(color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(horizontal = 12.dp))
+    CustomMenuDivider()
 
-    DropdownMenuItem(
+    CustomMenuItem(
+        text = stringResource(id = R.string.action_sign_out),
         onClick = {
             signOut(lastSelectedOption)
             expanded.value = false
         }
-    ) {
-        Text(text = stringResource(id = R.string.action_sign_out), color = MaterialTheme.colorScheme.onSurfaceVariant)
-    }
+    )
 }
 
 @Composable
@@ -287,14 +274,13 @@ private fun AuthorizedSessionMenuItems(
     expanded: MutableState<Boolean>,
     lastSelectedOption: MutableState<String>
 ) {
-    DropdownMenuItem(
+    CustomMenuItem(
+        text = stringResource(id = R.string.action_sign_out),
         onClick = {
             lastSelectedOption.value = ACCOUNT_SIGN_OUT
             expanded.value = false
         }
-    ) {
-        Text(text = stringResource(id = R.string.action_sign_out), color = MaterialTheme.colorScheme.onSurfaceVariant)
-    }
+    )
 }
 
 private fun createGuestSession(lastSelectedOption: MutableState<String>) {

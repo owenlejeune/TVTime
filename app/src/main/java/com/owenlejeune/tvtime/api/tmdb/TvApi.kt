@@ -47,25 +47,25 @@ interface TvApi {
         @Path("id") id: Int,
         @Query("guest_session_id") guestSessionId: String,
         @Body ratingBody: RatingBody
-    ): Response<RatingResponse>
+    ): Response<StatusResponse>
 
     @POST("tv/{id}/rating")
     suspend fun postTvRatingAsUser(
         @Path("id") id: Int,
         @Query("session_id") sessionId: String,
         @Body ratingBody: RatingBody
-    ): Response<RatingResponse>
+    ): Response<StatusResponse>
 
     @DELETE("tv/{id}/rating")
     suspend fun deleteTvReviewAsGuest(
         @Path("id") id: Int,
         @Query("guest_session_id") guestSessionId: String
-    ): Response<RatingResponse>
+    ): Response<StatusResponse>
 
     @DELETE("tv/{id}/rating")
     suspend fun deleteTvReviewAsUser(
         @Path("id") id: Int,
         @Query("session_id") sessionId: String
-    ): Response<RatingResponse>
+    ): Response<StatusResponse>
 
 }

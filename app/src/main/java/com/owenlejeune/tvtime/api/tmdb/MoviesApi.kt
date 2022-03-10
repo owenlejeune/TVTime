@@ -47,25 +47,25 @@ interface MoviesApi {
         @Path("id") id: Int,
         @Query("guest_session_id") guestSessionId: String,
         @Body ratingBody: RatingBody
-    ): Response<RatingResponse>
+    ): Response<StatusResponse>
 
     @POST("movie/{id}/rating")
     suspend fun postMovieRatingAsUser(
         @Path("id") id: Int,
         @Query("session_id") sessionId: String,
         @Body ratingBody: RatingBody
-    ): Response<RatingResponse>
+    ): Response<StatusResponse>
 
     @DELETE("movie/{id}/rating")
     suspend fun deleteMovieReviewAsGuest(
         @Path("id") id: Int,
         @Query("guest_session_id") guestSessionId: String
-    ): Response<RatingResponse>
+    ): Response<StatusResponse>
 
     @DELETE("movie/{id}/rating")
     suspend fun deleteMovieReviewAsUser(
         @Path("id") id: Int,
         @Query("session_id") sessionId: String
-    ): Response<RatingResponse>
+    ): Response<StatusResponse>
 
 }

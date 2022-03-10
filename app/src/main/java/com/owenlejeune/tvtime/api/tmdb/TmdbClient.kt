@@ -5,6 +5,7 @@ import com.owenlejeune.tvtime.BuildConfig
 import com.owenlejeune.tvtime.api.Client
 import com.owenlejeune.tvtime.api.QueryParam
 import com.owenlejeune.tvtime.extensions.addQueryParams
+import com.owenlejeune.tvtime.utils.SessionManager
 import okhttp3.Interceptor
 import okhttp3.Response
 import org.koin.core.component.KoinComponent
@@ -43,6 +44,10 @@ class TmdbClient: KoinComponent {
         return client.create(GuestSessionApi::class.java)
     }
 
+    fun createAccountService(): AccountApi {
+        return client.create(AccountApi::class.java)
+    }
+
     private inner class TmdbInterceptor: Interceptor {
         override fun intercept(chain: Interceptor.Chain): Response {
             val apiParam = QueryParam("api_key", BuildConfig.TMDB_ApiKey)
@@ -51,7 +56,13 @@ class TmdbClient: KoinComponent {
             val languageCode = "${locale.language}-${locale.region}"
             val languageParam = QueryParam("language", languageCode)
 
-            val request = chain.addQueryParams(apiParam, languageParam)
+            var sessionIdParam: QueryParam? = null
+            val segments = chain.request().url().encodedPathSegments()
+            if (segments.size > 1 && segments[1].equals("account") && SessionManager.currentSession?.isAuthorized == true) {
+                sessionIdParam = QueryParam("session_id", SessionManager.currentSession!!.sessionId)
+            }
+
+            val request = chain.addQueryParams(apiParam, languageParam, sessionIdParam)
 
             return chain.proceed(request)
         }
