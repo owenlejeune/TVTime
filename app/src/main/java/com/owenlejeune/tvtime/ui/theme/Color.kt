@@ -49,3 +49,11 @@ val ErrorContainerLight = Color(0xfff9dedc)
 val ErrorContainerDark = Color(0xff8c1d18)
 val OnErrorContainerLight = Color(0xff410e0b)
 val OnErrorContainerDark = Color(0xfff2b8b5)
+
+val ActionUnselected = Color(0xFFFFFFFF)
+val WatchlistSelected = Color(0xFFBF3F39)
+val RatingSelected = Color(0xFFE7C343)
+val FavoriteSelected = Color(0xFFDD57B2)
+
+val LightActionButton = Color(0xFF48C9B0)
+val DarkActionButton = Color(0xFF17A589)

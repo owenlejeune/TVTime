@@ -67,6 +67,7 @@
 
     <string name="rating_dialog_title">Add a Rating</string>
     <string name="rating_dialog_confirm">Submit rating</string>
+    <string name="rating_dialog_delete">Delete rating</string>
 
     <string name="action_cancel">Cancel</string>
 

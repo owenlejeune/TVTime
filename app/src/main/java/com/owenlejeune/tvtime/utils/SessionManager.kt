@@ -158,7 +158,23 @@ object SessionManager: KoinComponent {
 
         abstract suspend fun initialize()
 
-        abstract suspend fun refresh()
+        abstract suspend fun refresh(changed: Array<Changed> = Changed.All)
+
+        enum class Changed {
+            AccountDetails,
+            Lists,
+            RatedMovies,
+            RatedTv,
+            RatedEpisodes,
+            FavoriteMovies,
+            FavoriteTv,
+            WatchlistMovies,
+            WatchlistTv;
+
+            companion object {
+                val All get() = values()
+            }
+        }
     }
 
     private class AuthorizedSession: Session(preferences.authorizedSessionId, true) {
@@ -168,75 +184,95 @@ object SessionManager: KoinComponent {
             refresh()
         }
 
-        override suspend fun refresh() {
-            service.getAccountDetails().apply {
-                if (isSuccessful) {
-                    withContext(Dispatchers.Main) {
-                        _accountDetails = body() ?: _accountDetails
-                        accountDetails?.let {
-                            CoroutineScope(Dispatchers.IO).launch {
-                                refreshWithAccountId(it.id)
+        override suspend fun refresh(changed: Array<Changed>) {
+            if (changed.contains(Changed.AccountDetails)) {
+                service.getAccountDetails().apply {
+                    if (isSuccessful) {
+                        withContext(Dispatchers.Main) {
+                            _accountDetails = body() ?: _accountDetails
+                            accountDetails?.let {
+                                CoroutineScope(Dispatchers.IO).launch {
+                                    refreshWithAccountId(it.id, changed)
+                                }
                             }
                         }
                     }
                 }
+            } else if (accountDetails != null) {
+                refreshWithAccountId(accountDetails!!.id, changed)
             }
         }
 
-        private suspend fun refreshWithAccountId(accountId: Int) {
-            service.getLists(accountId).apply {
-                if (isSuccessful) {
-                    withContext(Dispatchers.Main) {
-                        _accountLists = body()?.results ?: _accountLists
+        private suspend fun refreshWithAccountId(accountId: Int, changed: Array<Changed> = Changed.All) {
+            if (changed.contains(Changed.Lists)) {
+                service.getLists(accountId).apply {
+                    if (isSuccessful) {
+                        withContext(Dispatchers.Main) {
+                            _accountLists = body()?.results ?: _accountLists
+                        }
                     }
                 }
             }
-            service.getFavoriteMovies(accountId).apply {
-                if (isSuccessful) {
-                    withContext(Dispatchers.Main) {
-                        _favoriteMovies = body()?.results ?: _favoriteMovies
+            if (changed.contains(Changed.FavoriteMovies)) {
+                service.getFavoriteMovies(accountId).apply {
+                    if (isSuccessful) {
+                        withContext(Dispatchers.Main) {
+                            _favoriteMovies = body()?.results ?: _favoriteMovies
+                        }
                     }
                 }
             }
-            service.getFavoriteTvShows(accountId).apply {
-                if (isSuccessful) {
-                    withContext(Dispatchers.Main) {
-                        _favoriteTvShows = body()?.results ?: _favoriteTvShows
+            if (changed.contains(Changed.FavoriteTv)) {
+                service.getFavoriteTvShows(accountId).apply {
+                    if (isSuccessful) {
+                        withContext(Dispatchers.Main) {
+                            _favoriteTvShows = body()?.results ?: _favoriteTvShows
+                        }
                     }
                 }
             }
-            service.getRatedMovies(accountId).apply {
-                if (isSuccessful) {
-                    withContext(Dispatchers.Main) {
-                        _ratedMovies = body()?.results ?: _ratedMovies
+            if (changed.contains(Changed.RatedMovies)) {
+                service.getRatedMovies(accountId).apply {
+                    if (isSuccessful) {
+                        withContext(Dispatchers.Main) {
+                            _ratedMovies = body()?.results ?: _ratedMovies
+                        }
                     }
                 }
             }
-            service.getRatedTvShows(accountId).apply {
-                if (isSuccessful) {
-                    withContext(Dispatchers.Main) {
-                        _ratedTvShows = body()?.results ?: _ratedTvShows
+            if (changed.contains(Changed.RatedTv)) {
+                service.getRatedTvShows(accountId).apply {
+                    if (isSuccessful) {
+                        withContext(Dispatchers.Main) {
+                            _ratedTvShows = body()?.results ?: _ratedTvShows
+                        }
                     }
                 }
             }
-            service.getRatedTvEpisodes(accountId).apply {
-                if (isSuccessful) {
-                    withContext(Dispatchers.Main) {
-                        _ratedTvEpisodes = body()?.results ?: _ratedTvEpisodes
+            if (changed.contains(Changed.RatedEpisodes)) {
+                service.getRatedTvEpisodes(accountId).apply {
+                    if (isSuccessful) {
+                        withContext(Dispatchers.Main) {
+                            _ratedTvEpisodes = body()?.results ?: _ratedTvEpisodes
+                        }
                     }
                 }
             }
-            service.getMovieWatchlist(accountId).apply {
-                if (isSuccessful) {
-                    withContext(Dispatchers.Main) {
-                        _movieWatchlist = body()?.results ?: _movieWatchlist
+            if (changed.contains(Changed.WatchlistMovies)) {
+                service.getMovieWatchlist(accountId).apply {
+                    if (isSuccessful) {
+                        withContext(Dispatchers.Main) {
+                            _movieWatchlist = body()?.results ?: _movieWatchlist
+                        }
                     }
                 }
             }
-            service.getTvWatchlist(accountId).apply {
-                if (isSuccessful) {
-                    withContext(Dispatchers.Main) {
-                        _tvWatchlist = body()?.results ?: _tvWatchlist
+            if (changed.contains(Changed.WatchlistTv)) {
+                service.getTvWatchlist(accountId).apply {
+                    if (isSuccessful) {
+                        withContext(Dispatchers.Main) {
+                            _tvWatchlist = body()?.results ?: _tvWatchlist
+                        }
                     }
                 }
             }
@@ -250,25 +286,31 @@ object SessionManager: KoinComponent {
             refresh()
         }
 
-        override suspend fun refresh() {
-            service.getRatedMovies(sessionId).apply {
-                if (isSuccessful) {
-                    withContext(Dispatchers.Main) {
-                        _ratedMovies = body()?.results ?: _ratedMovies
+        override suspend fun refresh(changed: Array<Changed>) {
+            if (changed.contains(Changed.RatedMovies)) {
+                service.getRatedMovies(sessionId).apply {
+                    if (isSuccessful) {
+                        withContext(Dispatchers.Main) {
+                            _ratedMovies = body()?.results ?: _ratedMovies
+                        }
                     }
                 }
             }
-            service.getRatedTvShows(sessionId).apply {
-                if (isSuccessful) {
-                    withContext(Dispatchers.Main) {
-                        _ratedTvShows = body()?.results ?: _ratedTvShows
+            if (changed.contains(Changed.RatedTv)) {
+                service.getRatedTvShows(sessionId).apply {
+                    if (isSuccessful) {
+                        withContext(Dispatchers.Main) {
+                            _ratedTvShows = body()?.results ?: _ratedTvShows
+                        }
                     }
                 }
             }
-            service.getRatedTvEpisodes(sessionId).apply {
-                if (isSuccessful) {
-                    withContext(Dispatchers.Main) {
-                        _ratedTvEpisodes = body()?.results ?: _ratedTvEpisodes
+            if (changed.contains(Changed.RatedEpisodes)) {
+                service.getRatedTvEpisodes(sessionId).apply {
+                    if (isSuccessful) {
+                        withContext(Dispatchers.Main) {
+                            _ratedTvEpisodes = body()?.results ?: _ratedTvEpisodes
+                        }
                     }
                 }
             }

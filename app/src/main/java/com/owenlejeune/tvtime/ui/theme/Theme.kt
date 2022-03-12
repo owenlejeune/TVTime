@@ -33,7 +33,7 @@ private val DarkColorPalette = darkColorScheme(
     surfaceVariant = N2_700,
     onSurfaceVariant = N2_200,
     inverseSurface = N1_100,
-    inverseOnSurface = N1_900
+    inverseOnSurface = N1_900,
 )
 
 private val LightColorPalette = lightColorScheme(

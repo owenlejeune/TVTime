@@ -1,13 +1,11 @@
 package com.owenlejeune.tvtime.ui.screens
 
+import android.content.Context
 import android.widget.Toast
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Send
@@ -18,10 +16,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -33,6 +33,8 @@ import com.owenlejeune.tvtime.api.tmdb.model.*
 import com.owenlejeune.tvtime.extensions.listItems
 import com.owenlejeune.tvtime.ui.components.*
 import com.owenlejeune.tvtime.ui.navigation.MainNavItem
+import com.owenlejeune.tvtime.ui.theme.RatingSelected
+import com.owenlejeune.tvtime.ui.theme.actionButtonColor
 import com.owenlejeune.tvtime.utils.SessionManager
 import com.owenlejeune.tvtime.utils.TmdbUtils
 import kotlinx.coroutines.CoroutineScope
@@ -243,7 +245,7 @@ private fun RateButton(
     val session = SessionManager.currentSession
     val context = LocalContext.current
 
-    var itemIsRated by remember {
+    val itemIsRated = remember {
         mutableStateOf(
             if (type == MediaViewType.MOVIE) {
                 session?.hasRatedMovie(itemId) == true
@@ -255,49 +257,69 @@ private fun RateButton(
 
     val showRatingDialog = remember { mutableStateOf(false) }
     val showSessionDialog = remember { mutableStateOf(false) }
-    ActionButton(
-        modifier = modifier,
-        text = if (itemIsRated) stringResource(R.string.delete_rating_action_label) else stringResource(R.string.rate_action_label),
-        onClick = {
-            if (!itemIsRated) {
+
+    CircleBackgroundColorImage(
+        modifier = Modifier.clickable(
+            onClick = {
                 if (SessionManager.currentSession != null) {
                     showRatingDialog.value = true
                 } else {
                     showSessionDialog.value = true
                 }
-            } else {
-                CoroutineScope(Dispatchers.IO).launch {
-                    val response = service.deleteRating(itemId)
-                    if (response.isSuccessful) {
-                        withContext(Dispatchers.Main) {
-                            itemIsRated = false
-                        }
-                    }
-                    SessionManager.currentSession?.refresh()
-                }
             }
-        }
+        ),
+        size = 40.dp,
+        backgroundColor = MaterialTheme.colorScheme.actionButtonColor,
+        painter = painterResource(id = R.drawable.ic_rating_star),
+        colorFilter = ColorFilter.tint(color = if (itemIsRated.value) RatingSelected else MaterialTheme.colorScheme.background),
+        contentDescription = ""
     )
+
     RatingDialog(showDialog = showRatingDialog, onValueConfirmed = { rating ->
-        CoroutineScope(Dispatchers.IO).launch {
-            val response = service.postRating(itemId, RatingBody(rating = rating))
-            if (response.isSuccessful) {
-                SessionManager.currentSession?.refresh()
-                withContext(Dispatchers.Main) {
-                    itemIsRated = true
-                }
-            } else {
-                withContext(Dispatchers.Main) {
-                    val errorObj = JSONObject(response.errorBody().toString())
-                    Toast.makeText(context, "Error: ${errorObj.getString("status_message")}", Toast.LENGTH_SHORT).show()
-                }
-            }
+        if (rating > 0f) {
+            postRating(context, rating, itemId, service, itemIsRated)
+        } else {
+            deleteRating(context, itemId, service, itemIsRated)
         }
     })
 
     CreateSessionDialog(showDialog = showSessionDialog, onSessionReturned = {
         showRatingDialog.value = it
     })
+}
+
+fun postRating(context: Context, rating: Float, itemId: Int, service: DetailService, itemIsRated: MutableState<Boolean>) {
+    CoroutineScope(Dispatchers.IO).launch {
+        val response = service.postRating(itemId, RatingBody(rating = rating))
+        if (response.isSuccessful) {
+            SessionManager.currentSession?.refresh(changed = arrayOf(SessionManager.Session.Changed.RatedMovies, SessionManager.Session.Changed.RatedTv))
+            withContext(Dispatchers.Main) {
+                itemIsRated.value = true
+            }
+        } else {
+            withContext(Dispatchers.Main) {
+                val errorObj = JSONObject(response.errorBody().toString())
+                Toast.makeText(context, "Error: ${errorObj.getString("status_message")}", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+}
+
+fun deleteRating(context: Context, itemId: Int, service: DetailService, itemIsRated: MutableState<Boolean>) {
+    CoroutineScope(Dispatchers.IO).launch {
+        val response = service.deleteRating(itemId)
+        if (response.isSuccessful) {
+            SessionManager.currentSession?.refresh(changed = arrayOf(SessionManager.Session.Changed.RatedMovies, SessionManager.Session.Changed.RatedTv))
+            withContext(Dispatchers.Main) {
+                itemIsRated.value = false
+            }
+        } else {
+            withContext(Dispatchers.Main) {
+                val errorObj = JSONObject(response.errorBody().toString())
+                Toast.makeText(context, "Error: ${errorObj.getString("status_message")}", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
 }
 
 @Composable
@@ -359,6 +381,7 @@ private fun RatingDialog(showDialog: MutableState<Boolean>, onValueConfirmed: (F
 
     if (showDialog.value) {
         var sliderPosition by remember { mutableStateOf(0f) }
+        val formatted = formatPosition(sliderPosition).toFloat()
         AlertDialog(
             modifier = Modifier.wrapContentHeight(),
             onDismissRequest = { showDialog.value = false },
@@ -367,11 +390,17 @@ private fun RatingDialog(showDialog: MutableState<Boolean>, onValueConfirmed: (F
                 Button(
                     modifier = Modifier.height(40.dp),
                     onClick = {
-                        onValueConfirmed.invoke(formatPosition(sliderPosition).toFloat())
+                        onValueConfirmed.invoke(formatted)
                         showDialog.value = false
                     }
                 ) {
-                    Text(stringResource(R.string.rating_dialog_confirm))
+                    Text(
+                        text = if (formatted > 0f) {
+                            stringResource(id = R.string.rating_dialog_confirm)
+                        } else {
+                            stringResource(id = R.string.rating_dialog_delete)
+                        }
+                    )
                 }
             },
             dismissButton = {
@@ -702,7 +731,7 @@ private fun ReviewsCard(
                             size = 30.dp,
                             backgroundColor = MaterialTheme.colorScheme.error,
                             contentDescription = "",
-                            imageHeight = 15.dp,
+                            imageSize = DpSize(width = 20.dp, height = 15.dp),
                             colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.surfaceVariant)
                         )
                     }

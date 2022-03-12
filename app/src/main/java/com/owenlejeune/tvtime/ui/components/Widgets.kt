@@ -40,8 +40,10 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.painter.BrushPainter
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
@@ -59,10 +61,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.TextUnit
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.*
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
@@ -72,6 +71,7 @@ import coil.transform.CircleCropTransformation
 import com.google.accompanist.flowlayout.FlowRow
 import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.api.tmdb.model.AuthorDetails
+import com.owenlejeune.tvtime.ui.theme.RatingSelected
 import com.owenlejeune.tvtime.utils.TmdbUtils
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
@@ -616,9 +616,9 @@ fun HtmlText(text: String, modifier: Modifier = Modifier, color: Color = Color.U
 fun CircleBackgroundColorImage(
     size: Dp,
     backgroundColor: Color,
-    image: ImageVector,
+    painter: Painter,
     modifier: Modifier = Modifier,
-    imageHeight: Dp? = null,
+    imageSize: DpSize? = null,
     imageAlignment: Alignment = Alignment.Center,
     contentDescription: String? = null,
     colorFilter: ColorFilter? = null
@@ -629,10 +629,56 @@ fun CircleBackgroundColorImage(
             .size(size)
             .background(color = backgroundColor)
     ) {
-        val mod = if (imageHeight != null) {
+        val mod = if (imageSize != null) {
             Modifier
                 .align(imageAlignment)
-                .height(height = imageHeight)
+                .size(size = imageSize)
+        } else {
+            Modifier.align(imageAlignment)
+        }
+        Image(
+            contentDescription = contentDescription,
+            modifier = mod,
+            colorFilter = colorFilter,
+            painter = painter,
+            contentScale = ContentScale.FillBounds
+        )
+    }
+}
+
+@Composable
+@Preview
+private fun CircleBackgroundColorImagePreview() {
+    CircleBackgroundColorImage(
+        size = 100.dp,
+        backgroundColor = MaterialTheme.colorScheme.inverseSurface, 
+        painter = painterResource(id = R.drawable.ic_rating_star),
+        colorFilter = ColorFilter.tint(color = RatingSelected),
+        imageSize = DpSize(width = 70.dp, height = 70.dp)
+    )
+}
+
+@Composable
+fun CircleBackgroundColorImage(
+    size: Dp,
+    backgroundColor: Color,
+    image: ImageVector,
+    modifier: Modifier = Modifier,
+    imageSize: DpSize? = null,
+    imageAlignment: Alignment = Alignment.Center,
+    contentDescription: String? = null,
+    colorFilter: ColorFilter? = null
+) {
+    Box(
+        modifier = modifier
+            .clip(CircleShape)
+            .size(size)
+            .background(color = backgroundColor)
+    ) {
+        val mod = if (imageSize != null) {
+            Modifier
+                .align(imageAlignment)
+                .size(size = imageSize)
         } else {
             Modifier.align(imageAlignment)
         }

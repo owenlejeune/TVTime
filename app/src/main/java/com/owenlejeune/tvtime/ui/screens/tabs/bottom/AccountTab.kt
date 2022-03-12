@@ -122,7 +122,9 @@ fun <T: Any> AccountTabContent(
 
     LazyColumn(modifier = Modifier
         .fillMaxSize()
-        .padding(12.dp)) {
+        .padding(12.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
         if (contentItems.isEmpty()) {
             item {
                 Text(
