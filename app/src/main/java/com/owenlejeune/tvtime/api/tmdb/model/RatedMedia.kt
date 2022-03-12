@@ -9,7 +9,8 @@ abstract class RatedMedia(
     @SerializedName("name", alternate = ["title"]) val name: String,
     @SerializedName("vote_average") val voteAverage: Float,
     @SerializedName("vote_count") val voteCount: Int,
-    @SerializedName("rating") val rating: Float
+    @SerializedName("rating") val rating: Float,
+    @SerializedName("release_date", alternate = ["first_air_date", "air_date"]) val releaseDate: String
 ) {
     enum class RatedType {
         MOVIE,

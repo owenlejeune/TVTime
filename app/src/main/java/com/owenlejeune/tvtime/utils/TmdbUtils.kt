@@ -9,11 +9,13 @@ object TmdbUtils {
     private const val POSTER_BASE = "https://image.tmdb.org/t/p/original"
     private const val BACKDROP_BASE = "https://www.themoviedb.org/t/p/original"
     private const val PERSON_BASE = "https://www.themoviedb.org/t/p/w600_and_h900_bestv2"
+    private const val GRAVATAR_BASE = "https://www.gravatar.com/avatar/"
+    private const val AVATAR_BASE = "https://www.themoviedb.org/t/p/w150_and_h150_face"
 
     private const val DEF_REGION = "US"
 
     fun getFullPosterPath(posterPath: String?): String? {
-        return posterPath?.let { "https://image.tmdb.org/t/p/original${posterPath}" }
+        return posterPath?.let { "${POSTER_BASE}${posterPath}" }
     }
 
     fun getFullPosterPath(tmdbItem: TmdbItem?): String? {
@@ -25,7 +27,7 @@ object TmdbUtils {
     }
 
     fun getFullBackdropPath(backdropPath: String?): String? {
-        return backdropPath?.let { "https://www.themoviedb.org/t/p/original${backdropPath}" }
+        return backdropPath?.let { "${BACKDROP_BASE}${backdropPath}" }
     }
 
     fun getFullBackdropPath(detailItem: DetailedItem?): String? {
@@ -37,7 +39,7 @@ object TmdbUtils {
     }
 
     fun getFullPersonImagePath(path: String?): String? {
-        return path?.let { "https://www.themoviedb.org/t/p/w600_and_h900_bestv2${path}" }
+        return path?.let { "${PERSON_BASE}${path}" }
     }
 
     fun getFullPersonImagePath(person: Person): String? {
@@ -49,7 +51,7 @@ object TmdbUtils {
             if (path.contains("http")) {
                 return path.substring(startIndex = 1)
             }
-            "https://www.themoviedb.org/t/p/w150_and_h150_face${path}"
+            "${AVATAR_BASE}${path}"
         }
     }
 
@@ -160,6 +162,16 @@ object TmdbUtils {
 
         val date = orig.parse(inDate)//.replace("Z", "+0000"))
         return formatter.format(date)
+    }
+
+    fun getAccountGravatarUrl(accountDetails: AccountDetails): String {
+        val hash = accountDetails.avatar.gravatar?.hash
+        return "${GRAVATAR_BASE}${hash}"
+    }
+
+    fun getAccountAvatarUrl(accountDetails: AccountDetails): String {
+        val path = accountDetails.avatar.tmdb?.avatarPath
+        return "${AVATAR_BASE}${path}"
     }
 
 }

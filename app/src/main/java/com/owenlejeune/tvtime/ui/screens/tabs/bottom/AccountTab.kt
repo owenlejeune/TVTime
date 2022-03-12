@@ -4,6 +4,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material3.Icon
@@ -14,12 +15,18 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import coil.compose.AsyncImage
 import coil.compose.rememberImagePainter
+import coil.request.ImageRequest
+import coil.request.ImageResult
+import coil.transform.CircleCropTransformation
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.PagerState
@@ -42,7 +49,6 @@ import kotlin.reflect.KClass
 
 private const val GUEST_SIGN_IN = "guest_sign_in"
 private const val SIGN_OUT = "sign_out"
-private const val ACCOUNT_SIGN_OUT = "account_sign_out"
 private const val NO_SESSION_SIGN_IN = "no_session_sign_in"
 private const val NO_SESSION_SIGN_IN_GUEST = "no_session_sign_in_guest"
 
@@ -53,10 +59,18 @@ fun AccountTab(
     appBarTitle: MutableState<String>,
     appBarActions: MutableState<@Composable (RowScope.() -> Unit)> = mutableStateOf({})
 ) {
-    if (SessionManager.currentSession?.isAuthorized == false) {
-        appBarTitle.value = stringResource(id = R.string.account_header_title_formatted).replace("%1\$s", stringResource(id = R.string.account_name_guest))
-    } else {
-        appBarTitle.value = stringResource(id = R.string.account_not_logged_in)
+    when (SessionManager.currentSession?.isAuthorized) {
+        false -> {
+            appBarTitle.value =
+                stringResource(id = R.string.account_header_title_formatted, stringResource(id = R.string.account_name_guest))
+        }
+        true -> {
+            appBarTitle.value =
+                stringResource(id = R.string.account_header_title_formatted, getAccountName(SessionManager.currentSession?.accountDetails))
+        }
+        else -> {
+            appBarTitle.value = stringResource(id = R.string.account_not_logged_in)
+        }
     }
 
     val lastSelectedOption = remember { mutableStateOf("") }
@@ -86,6 +100,17 @@ fun AccountTab(
     }
 }
 
+private fun getAccountName(accountDetails: AccountDetails?): String {
+    if (accountDetails != null) {
+        if (accountDetails.name.isNotEmpty()) {
+            return accountDetails.name
+        } else if (accountDetails.username.isNotEmpty()) {
+            return accountDetails.username
+        }
+    }
+    return ""
+}
+
 @Composable
 fun <T: Any> AccountTabContent(
     appNavController: NavHostController,
@@ -113,8 +138,8 @@ fun <T: Any> AccountTabContent(
         } else {
             items(contentItems.size) { i ->
                 when (clazz) {
-                    RatedMovie::class -> {
-                        val item = contentItems[i] as RatedMovie
+                    RatedTv::class, RatedMovie::class -> {
+                        val item = contentItems[i] as RatedTopLevelMedia
                         MediaItemRow(
                             appNavController = appNavController,
                             mediaViewType = mediaViewType,
@@ -125,32 +150,19 @@ fun <T: Any> AccountTabContent(
                             rating = item.rating
                         )
                     }
-                    RatedTv::class -> {
-                        val item = contentItems[i] as RatedTv
-                        MediaItemRow(
-                            appNavController = appNavController,
-                            mediaViewType = mediaViewType,
-                            id = item.id,
-                            posterPath = TmdbUtils.getFullPosterPath(item.posterPath),
-                            name = item.name,
-                            date = item.firstAirDate,
-                            rating = item.rating
-                        )
-                    }
                     RatedEpisode::class -> {
-                        val item = contentItems[i] as RatedEpisode
+                        val item = contentItems[i] as RatedMedia
                         MediaItemRow(
                             appNavController = appNavController,
                             mediaViewType = mediaViewType,
                             id = item.id,
-                            posterPath = null,
                             name = item.name,
-                            date = item.airDate,
+                            date = item.releaseDate,
                             rating = item.rating
                         )
                     }
-                    FavoriteMovie::class -> {
-                        val item = contentItems[i] as FavoriteMovie
+                    FavoriteMovie::class, FavoriteTvSeries::class -> {
+                        val item = contentItems[i] as FavoriteMedia
                         MediaItemRow(
                             appNavController = appNavController,
                             mediaViewType = mediaViewType,
@@ -160,30 +172,8 @@ fun <T: Any> AccountTabContent(
                             date = item.releaseDate
                         )
                     }
-                    FavoriteTvSeries::class -> {
-                        val item = contentItems[i] as FavoriteTvSeries
-                        MediaItemRow(
-                            appNavController = appNavController,
-                            mediaViewType = mediaViewType,
-                            id = item.id,
-                            posterPath = TmdbUtils.getFullPosterPath(item.posterPath),
-                            name = item.title,
-                            date = item.releaseDate
-                        )
-                    }
-                    WatchlistMovie::class -> {
-                        val item = contentItems[i] as WatchlistMovie
-                        MediaItemRow(
-                            appNavController = appNavController,
-                            mediaViewType = mediaViewType,
-                            id = item.id,
-                            posterPath = TmdbUtils.getFullPosterPath(item.posterPath),
-                            name = item.title,
-                            date = item.releaseDate
-                        )
-                    }
-                    WatchlistTvSeries::class -> {
-                        val item = contentItems[i] as WatchlistTvSeries
+                    WatchlistMovie::class, WatchlistTvSeries::class -> {
+                        val item = contentItems[i] as WatchlistMedia
                         MediaItemRow(
                             appNavController = appNavController,
                             mediaViewType = mediaViewType,
@@ -204,9 +194,9 @@ private fun MediaItemRow(
     appNavController: NavHostController,
     mediaViewType: MediaViewType,
     id: Int,
-    posterPath: String?,
     name: String,
     date: String,
+    posterPath: String? = null,
     rating: Float? = null
 ) {
     Row(
@@ -262,7 +252,7 @@ private fun AccountDropdownMenu(
     CustomTopAppBarDropdownMenu(
         icon = {
             when(session?.isAuthorized) {
-                true -> {  }
+                true -> { AuthorizedSessionIcon() }
                 false -> { GuestSessionIcon() }
                 null -> { NoSessionAccountIcon() }
             }
@@ -312,9 +302,7 @@ private fun NoSessionMenuItems(
 @Composable
 private fun NoSessionAccountIcon() {
     Icon(
-        modifier = Modifier
-            .size(50.dp)
-            .padding(end = 8.dp),
+        modifier = Modifier.size(45.dp),
         imageVector = Icons.Filled.AccountCircle,
         contentDescription = stringResource(R.string.account_menu_content_description),
         tint = MaterialTheme.colorScheme.primary
@@ -366,10 +354,41 @@ private fun AuthorizedSessionMenuItems(
     CustomMenuItem(
         text = stringResource(id = R.string.action_sign_out),
         onClick = {
-            lastSelectedOption.value = ACCOUNT_SIGN_OUT
+            signOut(lastSelectedOption)
             expanded.value = false
         }
     )
+}
+
+@Composable
+private fun AuthorizedSessionIcon() {
+    val accountDetails = SessionManager.currentSession?.accountDetails
+    val avatarUrl = accountDetails?.let {
+        when {
+            accountDetails.avatar.tmdb?.avatarPath?.isNotEmpty() == true -> {
+                TmdbUtils.getAccountAvatarUrl(accountDetails)
+            }
+            accountDetails.avatar.gravatar?.isDefault() == false -> {
+                TmdbUtils.getAccountGravatarUrl(accountDetails)
+            }
+            else -> null
+        }
+    }
+    if (accountDetails == null || avatarUrl == null) {
+        val accLetter = (accountDetails?.name?.ifEmpty { accountDetails.username } ?: " ")[0]
+        RoundedLetterImage(size = 40.dp, character = accLetter, topPadding = 40.dp / 8)
+    } else {
+        Box(modifier = Modifier.size(50.dp)) {
+            AsyncImage(
+                model = avatarUrl,
+                contentDescription = "",
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape),
+                contentScale = ContentScale.Fit
+            )
+        }
+    }
 }
 
 private fun createGuestSession(lastSelectedOption: MutableState<String>) {

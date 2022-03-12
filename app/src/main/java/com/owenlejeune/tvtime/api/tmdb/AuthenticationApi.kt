@@ -19,7 +19,7 @@ interface AuthenticationApi {
     suspend fun createRequestToken(): Response<CreateTokenResponse>
 
     @POST("authentication/session/new")
-    suspend fun createSession(@Body body: SessionBody): Response<CreateSessionResponse>
+    suspend fun createSession(@Body body: TokenSessionBody): Response<CreateSessionResponse>
 
     @POST("authentication/token/validate_with_login")
     suspend fun validateTokenWithLogin(@Body body: TokenValidationBody): Response<CreateTokenResponse>

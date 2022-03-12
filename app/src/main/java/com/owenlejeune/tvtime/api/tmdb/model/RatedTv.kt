@@ -15,9 +15,9 @@ class RatedTv(
     originalName: String,
     posterPath: String?,
     popularity: Float,
-    @SerializedName("first_air_date") val firstAirDate: String,
+    releaseDate: String,
     @SerializedName("origin_country") val originCountry: List<String>,
 ): RatedTopLevelMedia(
-    RatedType.SERIES, id, overview, name, voteAverage, voteCount, rating,
+    RatedType.SERIES, id, overview, name, voteAverage, voteCount, rating, releaseDate,
     backdropPath, genreIds, originalLanguage, originalName, posterPath, popularity
 )

@@ -10,10 +10,11 @@ abstract class RatedTopLevelMedia(
     voteAverage: Float,
     voteCount: Int,
     rating: Float,
+    releaseDate: String,
     @SerializedName("backdrop_path") val backdropPath: String?,
     @SerializedName("genre_ids") val genreIds: List<Int>,
     @SerializedName("original_language") val originalLanguage: String,
     @SerializedName("original_name", alternate = ["original_title"]) val originalName: String,
     @SerializedName("poster_path") val posterPath: String?,
     @SerializedName("popularity") val popularity: Float,
-): RatedMedia(type, id, overview, name, voteAverage, voteCount, rating)
+): RatedMedia(type, id, overview, name, voteAverage, voteCount, rating, releaseDate)

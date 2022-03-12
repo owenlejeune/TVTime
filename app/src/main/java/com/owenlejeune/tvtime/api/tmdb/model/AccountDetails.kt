@@ -13,9 +13,19 @@ class AccountDetails(
 )
 
 class Avatar(
-    @SerializedName("gravatar") val gravatar: Gravatar
+    @SerializedName("gravatar") val gravatar: Gravatar?,
+    @SerializedName("tmdb") val tmdb: TmdbAvatar?
 )
 
 class Gravatar(
-    @SerializedName("hash") val hash: String
+    @SerializedName("hash") val hash: String?
+) {
+    companion object {
+        private const val DEF_HASH = "88c8a9052642ec51d85d4f7beb178a97"
+    }
+    fun isDefault() = hash?.equals(DEF_HASH)
+}
+
+class TmdbAvatar(
+    @SerializedName("avatar_path") val avatarPath: String?
 )

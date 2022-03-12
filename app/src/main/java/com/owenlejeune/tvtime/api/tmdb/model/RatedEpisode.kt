@@ -10,10 +10,10 @@ class RatedEpisode(
     voteAverage: Float,
     voteCount: Int,
     rating: Float,
-    @SerializedName("air_date") val airDate: String,
+    releaseDate: String,
     @SerializedName("episode_number") val episodeNumber: Int,
     @SerializedName("production_code") val productionCode: String?,
     @SerializedName("season_number") val seasonNumber: Int,
     @SerializedName("show_id") val showId: Int,
     @SerializedName("still_path") val stillPath: String?,
-): RatedMedia(RatedType.EPISODE, id, overview, name, voteAverage, voteCount, rating)
+): RatedMedia(RatedType.EPISODE, id, overview, name, voteAverage, voteCount, rating, releaseDate)

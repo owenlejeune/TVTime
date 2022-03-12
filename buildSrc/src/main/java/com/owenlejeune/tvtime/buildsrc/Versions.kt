@@ -22,6 +22,6 @@ object Versions {
     const val gson = "2.8.7"
     const val koin = "3.1.4"
     const val paging = "3.1.0"
-    const val coil = "1.4.0"
+    const val coil = "2.0.0-rc01"
 
 }

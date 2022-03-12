@@ -1,6 +1,7 @@
 package com.owenlejeune.tvtime.utils
 
 import com.owenlejeune.tvtime.api.tmdb.AccountService
+import com.owenlejeune.tvtime.api.tmdb.AuthenticationService
 import com.owenlejeune.tvtime.api.tmdb.GuestSessionService
 import com.owenlejeune.tvtime.api.tmdb.TmdbClient
 import com.owenlejeune.tvtime.api.tmdb.model.*
@@ -25,11 +26,7 @@ object SessionManager: KoinComponent {
     fun clearSession(onResponse: (isSuccessful: Boolean) -> Unit) {
         currentSession?.let { session ->
             CoroutineScope(Dispatchers.IO).launch {
-                val deleteResponse = authenticationService.deleteSession(
-                    SessionBody(
-                        session.sessionId
-                    )
-                )
+                val deleteResponse = authenticationService.deleteSession(SessionBody(session.sessionId))
                 withContext(Dispatchers.Main) {
                     if (deleteResponse.isSuccessful) {
                         _currentSession = null
@@ -48,7 +45,9 @@ object SessionManager: KoinComponent {
             session.initialize()
             _currentSession = session
         } else if (preferences.authorizedSessionId.isNotEmpty()) {
-
+            val session = AuthorizedSession()
+            session.initialize()
+            _currentSession = session
         }
     }
 
@@ -61,20 +60,29 @@ object SessionManager: KoinComponent {
         return _currentSession
     }
 
-    suspend fun signInWithLogin(email: String, password: String): Boolean {
-        val service = TmdbClient().createAuthenticationService()
+    suspend fun signInWithLogin(username: String, password: String): Boolean {
+        val service = AuthenticationService()
         val createTokenResponse = service.createRequestToken()
         if (createTokenResponse.isSuccessful) {
             createTokenResponse.body()?.let { ctr ->
-                val body = TokenValidationBody(email, password, ctr.requestToken)
+                val body = TokenValidationBody(username, password, ctr.requestToken)
                 val loginResponse = service.validateTokenWithLogin(body)
                 if (loginResponse.isSuccessful) {
                     loginResponse.body()?.let { lr ->
                         if (lr.success) {
-                            preferences.authorizedSessionId = lr.requestToken
-                            _currentSession = AuthorizedSession()
-                            _currentSession?.initialize()
-                            return true
+                            val sessionBody = TokenSessionBody(lr.requestToken)
+                            val sessionResponse = service.createSession(sessionBody)
+                            if (sessionResponse.isSuccessful) {
+                                sessionResponse.body()?.let { sr ->
+                                    if (sr.isSuccess) {
+                                        preferences.authorizedSessionId = sr.sessionId
+                                        preferences.guestSessionId = ""
+                                        _currentSession = AuthorizedSession()
+                                        _currentSession?.initialize()
+                                        return true
+                                    }
+                                }
+                            }
                         }
                     }
                 }

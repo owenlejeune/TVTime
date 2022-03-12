@@ -15,10 +15,10 @@ class RatedMovie(
     originalName: String,
     posterPath: String?,
     popularity: Float,
+    releaseDate: String,
     @SerializedName("adult") val isAdult: Boolean,
-    @SerializedName("release_date") val releaseDate: String,
     @SerializedName("video") val video: Boolean,
 ): RatedTopLevelMedia(
-    RatedType.MOVIE, id, overview, name, voteAverage, voteCount, rating,
+    RatedType.MOVIE, id, overview, name, voteAverage, voteCount, rating, releaseDate,
     backdropPath, genreIds, originalLanguage, originalName, posterPath, popularity
 )

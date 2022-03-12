@@ -6,7 +6,7 @@ import okhttp3.Request
 
 fun Interceptor.Chain.addQueryParams(vararg queryParams: QueryParam?): Request {
     val original = request()
-    val originalHttpUrl = original.url()
+    val originalHttpUrl = original.url
 
     val urlBuilder = originalHttpUrl.newBuilder()
     queryParams.forEach { param ->

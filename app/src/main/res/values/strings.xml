@@ -92,11 +92,11 @@
     <string name="action_sign_in_as_guest">Sign In as Guest</string>
     <string name="account_menu_content_description">Account Menu</string>
     <string name="action_sign_out">Sign Out</string>
-    <string name="email_not_empty_error">Email must not be empty</string>
+    <string name="username_not_empty_error">Username must not be empty</string>
     <string name="email_invalid_error">Invalid email</string>
     <string name="password_empty_error">Must enter a password</string>
     <string name="sign_in_dialog_message">Sign in using your TMDB credentials</string>
-    <string name="email_label">Email</string>
+    <string name="username_label">Username</string>
     <string name="password_label">Password</string>
     <string name="no_account_message">Don\'t have an account?</string>
 </resources>

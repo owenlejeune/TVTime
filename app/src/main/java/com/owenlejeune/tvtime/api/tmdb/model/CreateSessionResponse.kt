@@ -4,5 +4,5 @@ import com.google.gson.annotations.SerializedName
 
 class CreateSessionResponse(
     @SerializedName("success") val isSuccess: Boolean,
-    @SerializedName("session_idd") val sessionId: String
+    @SerializedName("session_id") val sessionId: String
 )

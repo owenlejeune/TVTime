@@ -622,7 +622,7 @@ private fun ReviewsCard(
             fetchReviews(itemId, service, reviewsResponse)
         }
     }
-    // > 0
+
     val hasReviews = reviewsResponse.value?.results?.size?.let { it > 0 }
     val m = if (hasReviews == true) {
         modifier.height(400.dp)

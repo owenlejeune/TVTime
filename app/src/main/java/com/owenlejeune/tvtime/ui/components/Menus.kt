@@ -58,7 +58,7 @@ fun CustomTopAppBarDropdownMenu(
 ) {
     val expanded = remember { mutableStateOf(false) }
 
-    Box(modifier = Modifier.wrapContentSize(Alignment.TopEnd)) {
+    Box(modifier = Modifier.wrapContentSize(Alignment.TopEnd).padding(end = 12.dp)) {
         IconButton(onClick = { expanded.value = true }) {
             icon()
         }

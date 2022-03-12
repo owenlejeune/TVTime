@@ -5,6 +5,7 @@ import com.owenlejeune.tvtime.BuildConfig
 import com.owenlejeune.tvtime.api.Client
 import com.owenlejeune.tvtime.api.QueryParam
 import com.owenlejeune.tvtime.extensions.addQueryParams
+import com.owenlejeune.tvtime.preferences.AppPreferences
 import com.owenlejeune.tvtime.utils.SessionManager
 import okhttp3.Interceptor
 import okhttp3.Response
@@ -19,6 +20,7 @@ class TmdbClient: KoinComponent {
     }
 
     private val client: Client by inject { parametersOf(BASE_URL) }
+    private val preferences: AppPreferences by inject()
 
     init {
         client.addInterceptor(TmdbInterceptor())
@@ -56,16 +58,25 @@ class TmdbClient: KoinComponent {
             val languageCode = "${locale.language}-${locale.region}"
             val languageParam = QueryParam("language", languageCode)
 
-            var sessionIdParam: QueryParam? = null
-            val segments = chain.request().url().encodedPathSegments()
-            if (segments.size > 1 && segments[1].equals("account") && SessionManager.currentSession?.isAuthorized == true) {
-                sessionIdParam = QueryParam("session_id", SessionManager.currentSession!!.sessionId)
-            }
+            val segments = chain.request().url.encodedPathSegments
+            val sessionIdParam: QueryParam? = sessionIdParam(segments)
 
             val request = chain.addQueryParams(apiParam, languageParam, sessionIdParam)
 
             return chain.proceed(request)
         }
+    }
+
+    private fun sessionIdParam(urlSegments: List<String>): QueryParam? {
+        var sessionIdParam: QueryParam? = null
+        if (urlSegments.size > 1 && urlSegments[1] == "account") {
+            if (SessionManager.currentSession?.isAuthorized == true) {
+                sessionIdParam = QueryParam("session_id", SessionManager.currentSession!!.sessionId)
+            } else if (preferences.authorizedSessionId.isNotEmpty()) {
+                sessionIdParam = QueryParam("session_id", preferences.authorizedSessionId)
+            }
+        }
+        return sessionIdParam
     }
 
 }

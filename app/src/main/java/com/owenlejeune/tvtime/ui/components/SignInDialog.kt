@@ -9,17 +9,31 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.owenlejeune.tvtime.R
-import com.owenlejeune.tvtime.extensions.isEmailValid
+import com.owenlejeune.tvtime.utils.SessionManager
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun SignInDialog(
     showDialog: MutableState<Boolean>,
@@ -27,32 +41,33 @@ fun SignInDialog(
 ) {
     val context = LocalContext.current
 
-    var emailState by rememberSaveable { mutableStateOf("") }
-    var emailHasErrors by rememberSaveable { mutableStateOf(false) }
-    var emailError = ""
+    var usernameState by rememberSaveable { mutableStateOf("") }
+    var usernameHasErrors by rememberSaveable { mutableStateOf(false) }
+    var usernameError = ""
 
     var passwordState by rememberSaveable { mutableStateOf("") }
     var passwordHasErrors by rememberSaveable { mutableStateOf(false) }
     var passwordError = ""
 
     fun validate(): Boolean {
-        emailError = ""
+        usernameError = ""
         passwordError = ""
 
-        if (TextUtils.isEmpty(emailState)) {
-            emailError = context.getString(R.string.email_not_empty_error)
-        } else if (!emailState.isEmailValid()) {
-            emailError = context.getString(R.string.email_invalid_error)
+        if (TextUtils.isEmpty(usernameState)) {
+            usernameError = context.getString(R.string.username_not_empty_error)
         }
+
         if (TextUtils.isEmpty(passwordState)) {
             passwordError = context.getString(R.string.password_empty_error)
         }
 
-        emailHasErrors = emailError.isNotEmpty()
+        usernameHasErrors = usernameError.isNotEmpty()
         passwordHasErrors = passwordError.isNotEmpty()
 
-        return !emailHasErrors && !passwordHasErrors
+        return !usernameHasErrors && !passwordHasErrors
     }
+
+    val focusManager = LocalFocusManager.current
 
     AlertDialog(
         title = { Text(text = stringResource(R.string.action_sign_in)) },
@@ -66,14 +81,15 @@ fun SignInDialog(
                     text = stringResource(R.string.sign_in_dialog_message)
                 )
                 ThemedOutlineTextField(
-                    value = emailState,
+                    value = usernameState,
                     onValueChange = {
-                        emailHasErrors = false
-                        emailState = it
+                        usernameHasErrors = false
+                        usernameState = it
                     },
-                    label = { Text(text = stringResource(R.string.email_label)) },
-                    isError = emailHasErrors,
-                    errorMessage = emailError
+                    label = { Text(text = stringResource(R.string.username_label)) },
+                    isError = usernameHasErrors,
+                    errorMessage = usernameError,
+                    singleLine = true
                 )
                 PasswordOutlineTextField(
                     value = passwordState,
@@ -83,9 +99,10 @@ fun SignInDialog(
                     },
                     label = { Text(text = stringResource(R.string.password_label)) },
                     isError = passwordHasErrors,
-                    errorMessage = passwordError
+                    errorMessage = passwordError,
+                    singleLine = true
                 )
-                SignInButton(validate = ::validate) { success ->
+                SignInButton(username = usernameState, password = passwordState, validate = ::validate) { success ->
                     if (success) {
                         showDialog.value = false
                     } else {
@@ -107,7 +124,7 @@ private fun CancelButton(showDialog: MutableState<Boolean>) {
 }
 
 @Composable
-private fun SignInButton(validate: () -> Boolean, onSuccess: (success: Boolean) -> Unit) {
+private fun SignInButton(username: String, password: String, validate: () -> Boolean, onSuccess: (success: Boolean) -> Unit) {
     var signInInProgress by remember { mutableStateOf(false) }
     Button(
         modifier = Modifier.fillMaxWidth(),
@@ -115,13 +132,13 @@ private fun SignInButton(validate: () -> Boolean, onSuccess: (success: Boolean) 
             if (!signInInProgress) {
                 if (validate()) {
                     signInInProgress = true
-//                                signIn(context, emailState, passwordState) { success ->
-//                                    signInInProgress = false
-//                                    if (success) {
-//                                        showDialog.value = false
-//                                    }
-//                                }
-                    onSuccess(false)
+                    CoroutineScope(Dispatchers.IO).launch {
+                        val success = SessionManager.signInWithLogin(username, password)
+                        withContext(Dispatchers.Main) {
+                            signInInProgress = false
+                            onSuccess(success)
+                        }
+                    }
                 }
             }
         }
@@ -133,7 +150,7 @@ private fun SignInButton(validate: () -> Boolean, onSuccess: (success: Boolean) 
                 strokeWidth = 2.dp
             )
         } else {
-            Text(text = stringResource(id = R.string.action_sign_in))
+            Text(text = stringResource(id = R.string.action_sign_in), color = MaterialTheme.colorScheme.background)
         }
     }
 

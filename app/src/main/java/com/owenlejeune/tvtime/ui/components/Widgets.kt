@@ -794,6 +794,7 @@ fun PasswordOutlineTextField(
     isError: Boolean = false,
     errorMessage: String = "",
     keyboardActions: KeyboardActions = KeyboardActions.Default,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     singleLine: Boolean = false,
     maxLines: Int = Int.MAX_VALUE,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
@@ -818,7 +819,7 @@ fun PasswordOutlineTextField(
         interactionSource = interactionSource,
         shape = shape,
         visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+        keyboardOptions = keyboardOptions.copy(keyboardType = KeyboardType.Password),
         trailingIcon = {
             val image = if (passwordVisible) {
                 Icons.Filled.Visibility
