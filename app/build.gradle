@@ -22,6 +22,7 @@ android {
         }
 
         buildConfigField("String", "TMDB_ApiKey", TMDB_ApiKey)
+        buildConfigField("String", "TMDB_Api_v4Key", TMDB_Api_v4Key)
     }
 
     buildTypes {

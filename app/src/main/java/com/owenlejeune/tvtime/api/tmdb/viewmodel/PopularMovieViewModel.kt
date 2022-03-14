@@ -6,7 +6,7 @@
 //import androidx.paging.PagingConfig
 //import androidx.paging.PagingData
 //import androidx.paging.cachedIn
-//import com.owenlejeune.tvtime.api.tmdb.model.PopularMovie
+//import com.owenlejeune.tvtime.api.tmdb.api.v3.model.PopularMovie
 //import com.owenlejeune.tvtime.api.tmdb.paging.PopularMovieSource
 //import kotlinx.coroutines.flow.Flow
 //

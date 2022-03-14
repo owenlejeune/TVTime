@@ -27,10 +27,10 @@ import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
 import com.owenlejeune.tvtime.R
-import com.owenlejeune.tvtime.api.tmdb.model.HomePagePerson
-import com.owenlejeune.tvtime.api.tmdb.model.ImageCollection
-import com.owenlejeune.tvtime.api.tmdb.model.Person
-import com.owenlejeune.tvtime.api.tmdb.model.TmdbItem
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.HomePagePerson
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.ImageCollection
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.Person
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.TmdbItem
 import com.owenlejeune.tvtime.extensions.dpToPx
 import com.owenlejeune.tvtime.extensions.listItems
 import com.owenlejeune.tvtime.utils.TmdbUtils

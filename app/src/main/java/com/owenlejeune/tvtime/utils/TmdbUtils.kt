@@ -1,7 +1,7 @@
 package com.owenlejeune.tvtime.utils
 
 import androidx.compose.ui.text.intl.Locale
-import com.owenlejeune.tvtime.api.tmdb.model.*
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.*
 import java.text.SimpleDateFormat
 
 object TmdbUtils {

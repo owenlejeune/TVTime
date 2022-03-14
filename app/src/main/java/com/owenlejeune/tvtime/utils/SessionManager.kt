@@ -1,10 +1,10 @@
 package com.owenlejeune.tvtime.utils
 
-import com.owenlejeune.tvtime.api.tmdb.AccountService
-import com.owenlejeune.tvtime.api.tmdb.AuthenticationService
-import com.owenlejeune.tvtime.api.tmdb.GuestSessionService
+import com.owenlejeune.tvtime.api.tmdb.api.v3.AccountService
+import com.owenlejeune.tvtime.api.tmdb.api.v3.AuthenticationService
+import com.owenlejeune.tvtime.api.tmdb.api.v3.GuestSessionService
 import com.owenlejeune.tvtime.api.tmdb.TmdbClient
-import com.owenlejeune.tvtime.api.tmdb.model.*
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.*
 import com.owenlejeune.tvtime.preferences.AppPreferences
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

@@ -3,8 +3,8 @@ package com.owenlejeune.tvtime.ui.navigation
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import com.owenlejeune.tvtime.R
-import com.owenlejeune.tvtime.api.tmdb.HomePageService
-import com.owenlejeune.tvtime.api.tmdb.model.HomePageResponse
+import com.owenlejeune.tvtime.api.tmdb.api.v3.HomePageService
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.HomePageResponse
 import com.owenlejeune.tvtime.ui.screens.MediaViewType
 import com.owenlejeune.tvtime.ui.screens.tabs.bottom.MediaTabContent
 import com.owenlejeune.tvtime.utils.ResourceUtils

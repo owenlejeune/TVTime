@@ -17,9 +17,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.owenlejeune.tvtime.R
-import com.owenlejeune.tvtime.api.tmdb.PeopleService
-import com.owenlejeune.tvtime.api.tmdb.model.DetailPerson
-import com.owenlejeune.tvtime.api.tmdb.model.PersonCreditsResponse
+import com.owenlejeune.tvtime.api.tmdb.api.v3.PeopleService
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.DetailPerson
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.PersonCreditsResponse
 import com.owenlejeune.tvtime.ui.components.ContentCard
 import com.owenlejeune.tvtime.ui.components.ExpandableContentCard
 import com.owenlejeune.tvtime.ui.components.TwoLineImageTextCard

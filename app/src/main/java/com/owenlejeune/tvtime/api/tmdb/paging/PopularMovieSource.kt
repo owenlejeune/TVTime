@@ -3,7 +3,7 @@
 //import androidx.paging.PagingSource
 //import androidx.paging.PagingState
 //import com.owenlejeune.tvtime.api.tmdb.TmdbClient
-//import com.owenlejeune.tvtime.api.tmdb.model.PopularMovie
+//import com.owenlejeune.tvtime.api.tmdb.api.v3.model.PopularMovie
 //import retrofit2.HttpException
 //import java.io.IOException
 //

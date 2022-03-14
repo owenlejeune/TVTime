@@ -26,10 +26,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.owenlejeune.tvtime.R
-import com.owenlejeune.tvtime.api.tmdb.DetailService
-import com.owenlejeune.tvtime.api.tmdb.MoviesService
-import com.owenlejeune.tvtime.api.tmdb.TvService
-import com.owenlejeune.tvtime.api.tmdb.model.*
+import com.owenlejeune.tvtime.api.tmdb.api.v3.DetailService
+import com.owenlejeune.tvtime.api.tmdb.api.v3.MoviesService
+import com.owenlejeune.tvtime.api.tmdb.api.v3.TvService
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.*
 import com.owenlejeune.tvtime.extensions.listItems
 import com.owenlejeune.tvtime.ui.components.*
 import com.owenlejeune.tvtime.ui.navigation.MainNavItem
@@ -259,7 +259,7 @@ private fun RateButton(
     val showSessionDialog = remember { mutableStateOf(false) }
 
     CircleBackgroundColorImage(
-        modifier = Modifier.clickable(
+        modifier = modifier.clickable(
             onClick = {
                 if (SessionManager.currentSession != null) {
                     showRatingDialog.value = true
