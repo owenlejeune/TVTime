@@ -62,8 +62,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.core.text.HtmlCompat
-import coil.compose.rememberImagePainter
-import coil.transform.CircleCropTransformation
+import coil.compose.AsyncImage
 import com.google.accompanist.flowlayout.FlowRow
 import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.AuthorDetails
@@ -545,20 +544,14 @@ fun FullScreenThumbnailVideoPlayer(
 
     val showFullscreenView = remember { mutableStateOf(false) }
 
-    Image(
+    AsyncImage(
         modifier = modifier
             .clickable(
-                onClick = {
-                    showFullscreenView.value = true
-                }
+                onClick = { showFullscreenView.value = true }
             ),
-        painter = rememberImagePainter(
-            data = "https://img.youtube.com/vi/${key}/hqdefault.jpg",
-            builder = {
-                placeholder(R.drawable.placeholder)
-            }
-        ),
-        contentDescription = ""
+        model = "https://img.youtube.com/vi/${key}/hqdefault.jpg",
+        contentDescription = "",
+        placeholder = painterResource(id = R.drawable.placeholder)
     )
 
     if (showFullscreenView.value) {
@@ -694,14 +687,9 @@ fun AvatarImage(
     modifier: Modifier = Modifier
 ) {
     if (author.avatarPath != null) {
-        Image(
-            modifier = modifier.size(size),
-            painter = rememberImagePainter(
-                data = TmdbUtils.getFullAvatarPath(author),
-                builder = {
-                    transformations(CircleCropTransformation())
-                }
-            ),
+        AsyncImage(
+            modifier = modifier.size(size).clip(CircleShape),
+            model = TmdbUtils.getFullAvatarPath(author),
             contentDescription = ""
         )
     } else {

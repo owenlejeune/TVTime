@@ -13,16 +13,16 @@ import androidx.compose.material.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat
-import coil.compose.rememberImagePainter
-import coil.transform.RoundedCornersTransformation
+import coil.compose.AsyncImage
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
@@ -157,25 +157,30 @@ fun PosterItem(
             .size(width = width, height = height),
         shape = RoundedCornerShape(5.dp)
     ) {
-        Image(
-            painter = if (url != null) {
-                rememberImagePainter(
-                    data = url ?: noDataImage,
-                    builder = {
-                        transformations(RoundedCornersTransformation(5f.dpToPx(context)))
-                        placeholder(placeholder)
-                    }
-                )
-            } else {
-                rememberImagePainter(ContextCompat.getDrawable(context, R.drawable.placeholder))
-            },
-            contentDescription = contentDescription,
-            modifier = Modifier
-                .size(width = width, height = height)
-                .clickable(
-                    onClick = onClick
-                )
-        )
+        if (url != null) {
+            AsyncImage(
+                modifier = Modifier
+                    .size(width = width, height = height)
+                    .clip(RoundedCornerShape(5f.dpToPx(context)))
+                    .clickable(
+                        onClick = onClick
+                    ),
+                model = url,
+                placeholder = painterResource(id = placeholder),
+                contentDescription = contentDescription
+            )
+        } else {
+            Image(
+                modifier = Modifier
+                    .size(width = width, height = height)
+                    .clip(RoundedCornerShape(5f.dpToPx(context)))
+                    .clickable(
+                        onClick = onClick
+                    ),
+                painter = painterResource(id = noDataImage),
+                contentDescription = contentDescription
+            )
+        }
     }
 }
 
@@ -205,36 +210,28 @@ fun BackdropImage(
             val pagerState = rememberPagerState()
             HorizontalPager(count = collection.backdrops.size, state = pagerState) { page ->
                 val backdrop = collection.backdrops[page]
-                Image(
-                    painter = rememberImagePainter(
-                        data = TmdbUtils.getFullBackdropPath(backdrop),
-                        builder = {
-                            placeholder(R.drawable.placeholder)
-                        }
-                    ),
+                AsyncImage(
+                    model = TmdbUtils.getFullBackdropPath(backdrop),
+                    placeholder = painterResource(id = R.drawable.placeholder),
                     contentDescription = "",
-                    modifier = Modifier.onGloballyPositioned {
-                        sizeImage = it.size
-                    }
+                    modifier = Modifier.onGloballyPositioned { sizeImage = it.size }
                 )
             }
         } else {
-            Image(
-                painter = if (imageUrl != null) {
-                    rememberImagePainter(
-                        data = imageUrl,
-                        builder = {
-                            placeholder(R.drawable.placeholder)
-                        }
-                    )
-                } else {
-                    rememberImagePainter(ContextCompat.getDrawable(context, R.drawable.placeholder))
-                },
-                contentDescription = contentDescription,
-                modifier = Modifier.onGloballyPositioned {
-                    sizeImage = it.size
-                }
-            )
+            if (imageUrl != null) {
+                AsyncImage(
+                    model = imageUrl,
+                    placeholder = painterResource(id = R.drawable.placeholder),
+                    contentDescription = contentDescription,
+                    modifier = Modifier.onGloballyPositioned { sizeImage = it.size }
+                )
+            } else {
+                Image(
+                    painter = painterResource(id = R.drawable.placeholder),
+                    contentDescription = contentDescription,
+                    modifier = Modifier.onGloballyPositioned { sizeImage = it.size }
+                )
+            }
         }
         Box(
             modifier = Modifier
