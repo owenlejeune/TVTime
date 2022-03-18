@@ -14,7 +14,7 @@ import kotlin.reflect.KClass
 val networkModule = module {
     single { if (BuildConfig.DEBUG) DebugHttpClient() else ProdHttpClient() }
     single<Converter> { GsonConverter() }
-    single { (baseUrl: String) -> Client(baseUrl) }
+    factory { (baseUrl: String) -> Client(baseUrl) }
 
     single<Map<Class<*>, JsonDeserializer<*>>> { mapOf(ListItem::class.java to ListItemDeserializer()) }
 }

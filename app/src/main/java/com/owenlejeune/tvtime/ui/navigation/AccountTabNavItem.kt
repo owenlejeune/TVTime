@@ -26,7 +26,7 @@ sealed class AccountTabNavItem(stringRes: Int, route: String, val mediaType: Med
     object RatedTvEpisodes: AccountTabNavItem(R.string.nav_rated_episodes_title, "rated_episodes_route", MediaViewType.EPISODE, screenContent, { SessionManager.currentSession?.ratedTvEpisodes ?: emptyList() }, RatedEpisode::class)
 //    object Lists
     object FavoriteMovies: AccountTabNavItem(R.string.nav_favorite_movies_title, "favorite_movies_route", MediaViewType.MOVIE, screenContent, { SessionManager.currentSession?.favoriteMovies ?: emptyList() }, FavoriteMovie::class)
-    object FavoriteTvShows: AccountTabNavItem(R.string.nav_favorite_tv_show_title, "favorite_shows_route", MediaViewType.TV, screenContent, { SessionManager.currentSession?.favoriteMovies ?: emptyList() }, FavoriteTvSeries::class)
+    object FavoriteTvShows: AccountTabNavItem(R.string.nav_favorite_tv_show_title, "favorite_shows_route", MediaViewType.TV, screenContent, { SessionManager.currentSession?.favoriteTvShows ?: emptyList() }, FavoriteTvSeries::class)
     object MovieWatchlist: AccountTabNavItem(R.string.nav_movie_watchlist_title, "movie_watchlist_route", MediaViewType.MOVIE, screenContent, { SessionManager.currentSession?.movieWatchlist ?: emptyList() }, WatchlistMovie::class)
     object TvWatchlist: AccountTabNavItem(R.string.nav_tv_watchlist_title, "tv_watchlist_route", MediaViewType.TV, screenContent, { SessionManager.currentSession?.tvWatchlist ?: emptyList() }, WatchlistTvSeries::class)
 }

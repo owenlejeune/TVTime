@@ -69,7 +69,8 @@ private val LightColorPalette = lightColorScheme(
 fun TVTimeTheme(
     isDarkTheme: Boolean = isSystemInDarkTheme(),
     isDynamicColor: Boolean = true,
-    content: @Composable () -> Unit) {
+    content: @Composable () -> Unit
+) {
     val dynamicColor = isDynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
     val colorScheme = when {
         dynamicColor && isDarkTheme -> {

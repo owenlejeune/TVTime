@@ -63,6 +63,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.core.text.HtmlCompat
 import coil.compose.AsyncImage
+import coil.compose.rememberAsyncImagePainter
 import com.google.accompanist.flowlayout.FlowRow
 import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.AuthorDetails
@@ -551,7 +552,7 @@ fun FullScreenThumbnailVideoPlayer(
             ),
         model = "https://img.youtube.com/vi/${key}/hqdefault.jpg",
         contentDescription = "",
-        placeholder = painterResource(id = R.drawable.placeholder)
+        placeholder = rememberAsyncImagePainter(model = R.drawable.placeholder)
     )
 
     if (showFullscreenView.value) {
@@ -899,4 +900,28 @@ fun LinkableText(
         onTextLayout = onTextLayout,
         style = style
     )
+}
+
+@Composable
+fun TimeoutSnackbar(
+    modifier: Modifier = Modifier,
+    text: String,
+    timeoutMillis: Long = 400,
+    onDismiss: () -> Unit = {}
+) {
+    var snackbarVisible by remember { mutableStateOf(true) }
+
+    if (snackbarVisible) {
+        Snackbar(
+            modifier = modifier
+        ) {
+            Text(text = text)
+        }
+
+        LaunchedEffect(Unit) {
+            delay(timeoutMillis)
+            snackbarVisible = false
+            onDismiss()
+        }
+    }
 }

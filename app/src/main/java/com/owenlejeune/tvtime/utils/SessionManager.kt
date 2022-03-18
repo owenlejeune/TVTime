@@ -140,6 +140,13 @@ object SessionManager: KoinComponent {
             return ratedTvEpisodes.map { it.id }.contains(id)
         }
 
+        fun getRatingForId(id: Int): Float {
+            return ratedMovies.firstOrNull { it.id == id }?.rating
+                ?: ratedTvShows.firstOrNull { it.id == id }?.rating
+                ?: ratedTvEpisodes.firstOrNull { it.id == id }?.rating
+                ?: 0f
+        }
+
         fun hasFavoritedMovie(id: Int): Boolean {
             return favoriteMovies.map { it.id }.contains(id)
         }
@@ -173,6 +180,9 @@ object SessionManager: KoinComponent {
 
             companion object {
                 val All get() = values()
+                val Rated get() = arrayOf(RatedMovies, RatedTv, RatedEpisodes)
+                val Favorites get() = arrayOf(FavoriteMovies, FavoriteTv)
+                val Watchlist get() = arrayOf(WatchlistMovies, WatchlistTv)
             }
         }
     }

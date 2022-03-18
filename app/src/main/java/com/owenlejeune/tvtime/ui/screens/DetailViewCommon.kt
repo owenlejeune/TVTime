@@ -127,7 +127,7 @@ private fun Backdrop(modifier: Modifier, imageUrl: String?, contentDescription: 
     BackdropImage(
         modifier = modifier
             .fillMaxWidth()
-            .height(280.dp),
+            .height(230.dp),
         imageUrl = TmdbUtils.getFullBackdropPath(imageUrl),
         contentDescription = contentDescription
 //            collection = images.value

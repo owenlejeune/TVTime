@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -23,6 +24,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import coil.compose.rememberAsyncImagePainter
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
@@ -150,7 +152,6 @@ fun PosterItem(
     elevation: Dp = 8.dp,
     contentDescription: String?
 ) {
-    val context = LocalContext.current
     Card(
         elevation = elevation,
         modifier = modifier
@@ -161,24 +162,26 @@ fun PosterItem(
             AsyncImage(
                 modifier = Modifier
                     .size(width = width, height = height)
-                    .clip(RoundedCornerShape(5f.dpToPx(context)))
+                    .clip(RoundedCornerShape(5.dp))
                     .clickable(
                         onClick = onClick
                     ),
                 model = url,
-                placeholder = painterResource(id = placeholder),
-                contentDescription = contentDescription
+                placeholder = rememberAsyncImagePainter(model = placeholder),
+                contentDescription = contentDescription,
+                contentScale = ContentScale.FillBounds
             )
         } else {
             Image(
                 modifier = Modifier
                     .size(width = width, height = height)
-                    .clip(RoundedCornerShape(5f.dpToPx(context)))
+                    .clip(RoundedCornerShape(5.dp))
                     .clickable(
                         onClick = onClick
                     ),
-                painter = painterResource(id = noDataImage),
-                contentDescription = contentDescription
+                painter = rememberAsyncImagePainter(model = noDataImage),
+                contentDescription = contentDescription,
+                contentScale = ContentScale.FillBounds
             )
         }
     }
@@ -212,7 +215,7 @@ fun BackdropImage(
                 val backdrop = collection.backdrops[page]
                 AsyncImage(
                     model = TmdbUtils.getFullBackdropPath(backdrop),
-                    placeholder = painterResource(id = R.drawable.placeholder),
+                    placeholder = rememberAsyncImagePainter(model = R.drawable.placeholder),
                     contentDescription = "",
                     modifier = Modifier.onGloballyPositioned { sizeImage = it.size }
                 )
@@ -221,15 +224,17 @@ fun BackdropImage(
             if (imageUrl != null) {
                 AsyncImage(
                     model = imageUrl,
-                    placeholder = painterResource(id = R.drawable.placeholder),
+                    placeholder = rememberAsyncImagePainter(model = R.drawable.placeholder),
                     contentDescription = contentDescription,
-                    modifier = Modifier.onGloballyPositioned { sizeImage = it.size }
+                    modifier = Modifier.onGloballyPositioned { sizeImage = it.size },
+                    contentScale = ContentScale.FillWidth
                 )
             } else {
                 Image(
-                    painter = painterResource(id = R.drawable.placeholder),
+                    painter = rememberAsyncImagePainter(model = R.drawable.placeholder),
                     contentDescription = contentDescription,
-                    modifier = Modifier.onGloballyPositioned { sizeImage = it.size }
+                    modifier = Modifier.onGloballyPositioned { sizeImage = it.size },
+                    contentScale = ContentScale.FillWidth
                 )
             }
         }

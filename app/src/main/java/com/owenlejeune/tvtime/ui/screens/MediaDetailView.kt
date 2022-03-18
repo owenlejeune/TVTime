@@ -2,9 +2,15 @@ package com.owenlejeune.tvtime.ui.screens
 
 import android.content.Context
 import android.widget.Toast
+import androidx.compose.animation.*
+import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.keyframes
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
@@ -13,6 +19,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
@@ -22,10 +29,12 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.DpSize
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.owenlejeune.tvtime.R
+import com.owenlejeune.tvtime.api.tmdb.api.v3.AccountService
 import com.owenlejeune.tvtime.api.tmdb.api.v3.DetailService
 import com.owenlejeune.tvtime.api.tmdb.api.v3.MoviesService
 import com.owenlejeune.tvtime.api.tmdb.api.v3.TvService
@@ -33,14 +42,13 @@ import com.owenlejeune.tvtime.api.tmdb.api.v3.model.*
 import com.owenlejeune.tvtime.extensions.listItems
 import com.owenlejeune.tvtime.ui.components.*
 import com.owenlejeune.tvtime.ui.navigation.MainNavItem
+import com.owenlejeune.tvtime.ui.theme.FavoriteSelected
 import com.owenlejeune.tvtime.ui.theme.RatingSelected
+import com.owenlejeune.tvtime.ui.theme.WatchlistSelected
 import com.owenlejeune.tvtime.ui.theme.actionButtonColor
 import com.owenlejeune.tvtime.utils.SessionManager
 import com.owenlejeune.tvtime.utils.TmdbUtils
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 import org.json.JSONObject
 import java.text.DecimalFormat
 
@@ -82,13 +90,16 @@ fun MediaDetailView(
 
        Column(
            modifier = Modifier.padding(horizontal = 16.dp),
-           verticalArrangement = Arrangement.spacedBy(16.dp)
+           verticalArrangement = Arrangement.spacedBy(16.dp),
+//           horizontalAlignment = Alignment.CenterHorizontally
        ) {
            if (type == MediaViewType.MOVIE) {
                MiscMovieDetails(mediaItem = mediaItem, service as MoviesService)
            } else {
                MiscTvDetails(mediaItem = mediaItem, service as TvService)
            }
+
+           ActionsView(itemId = itemId, type = type, service = service)
 
            OverviewCard(itemId = itemId, mediaItem = mediaItem, service = service)
 
@@ -97,8 +108,6 @@ fun MediaDetailView(
            SimilarContentCard(itemId = itemId, service = service, mediaType = type, appNavController = appNavController)
 
            VideosCard(itemId = itemId, service = service)
-
-           ActionsView(itemId = itemId, type = type, service = service)
 
            ReviewsCard(itemId = itemId, service = service)
        }
@@ -162,7 +171,6 @@ private fun MiscDetails(
             modifier = Modifier
                 .fillMaxWidth()
                 .wrapContentHeight()
-                .padding(horizontal = 8.dp)
         ) {
             Text(text = year, color = MaterialTheme.colorScheme.onBackground)
             Text(
@@ -197,26 +205,29 @@ private fun ActionsView(
         val session = SessionManager.currentSession
         Row(
             modifier = modifier
-                .fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                .wrapContentSize(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             RateButton(
-                modifier = Modifier.weight(1f),
                 itemId = itemId,
                 type = type,
                 service = service
             )
 
             if (session?.isAuthorized == true) {
-                ActionButton(
-                    modifier = Modifier.weight(1f),
-                    text = stringResource(R.string.add_to_list_action_label),
-                    onClick = { /*TODO*/ }
+                val accountService = AccountService()
+                WatchlistButton(
+                    itemId = itemId,
+                    type = type
                 )
-                ActionButton(
-                    modifier = Modifier.weight(1f),
-                    text = stringResource(R.string.favourite_label),
-                    onClick = { /*TODO*/ }
+                ListButton(
+                    itemId = itemId,
+                    type = type,
+                    service = accountService
+                )
+                FavoriteButton(
+                    itemId = itemId,
+                    type = type
                 )
             }
         }
@@ -224,15 +235,17 @@ private fun ActionsView(
 }
 
 @Composable
-private fun ActionButton(modifier: Modifier, text: String, onClick: () -> Unit) {
-    Button(
-        modifier = modifier,
-        shape = RoundedCornerShape(10.dp),
-        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary),
-        onClick = onClick
-    ) {
-        Text(text = text)
-    }
+private fun ActionButton(
+    iconRes: Int,
+    contentDescription: String,
+    isSelected: Boolean,
+    filledIconColor: Color,
+    modifier: Modifier = Modifier,
+    unfilledIconColor: Color = MaterialTheme.colorScheme.background,
+    backgroundColor: Color = MaterialTheme.colorScheme.actionButtonColor,
+    onClick: () -> Unit = {}
+) {
+    // TODO - refactor buttons here
 }
 
 @Composable
@@ -255,70 +268,217 @@ private fun RateButton(
         )
     }
 
+    val showSessionDialog = remember { mutableStateOf(false) }
     val showRatingDialog = remember { mutableStateOf(false) }
+
+    val bgColor = MaterialTheme.colorScheme.background
+    val filledColor = RatingSelected
+    val tintColor = remember { Animatable(if (itemIsRated.value) filledColor else bgColor) }
+
+    val coroutineScope = rememberCoroutineScope()
+
+    Box(
+        modifier = modifier
+            .animateContentSize(tween(durationMillis = 300))
+            .clip(CircleShape)
+            .height(40.dp)
+            .requiredWidthIn(min = 40.dp)
+            .background(color = MaterialTheme.colorScheme.actionButtonColor)
+            .clickable(
+                onClick = {
+                    if (session == null) {
+                        showSessionDialog.value = true
+                    } else {
+                        showRatingDialog.value = true
+                    }
+                }
+            ),
+    ) {
+        Icon(
+            modifier = Modifier
+                .clip(CircleShape)
+                .align(Alignment.Center),
+            painter = painterResource(id = R.drawable.ic_rating_star),
+            contentDescription = "",
+            tint = tintColor.value
+        )
+    }
+
+    CreateSessionDialog(showDialog = showSessionDialog, onSessionReturned = {})
+
+    val userRating = session?.getRatingForId(itemId) ?: 0f
+    RatingDialog(showDialog = showRatingDialog, rating = userRating, onValueConfirmed = { rating ->
+        if (rating > 0f) {
+            postRating(context, rating, itemId, service, itemIsRated)
+            coroutineScope.launch {
+                tintColor.animateTo(targetValue = filledColor, animationSpec = tween(300))
+            }
+        } else {
+            deleteRating(context, itemId, service, itemIsRated)
+            coroutineScope.launch {
+                tintColor.animateTo(targetValue = bgColor, animationSpec = tween(300))
+            }
+        }
+    })
+}
+
+@Composable
+fun WatchlistButton(
+    itemId: Int,
+    type: MediaViewType,
+    modifier: Modifier = Modifier
+) {
+    val context = LocalContext.current
+    val session = SessionManager.currentSession
+
+    val hasWatchlistedItem = remember {
+        mutableStateOf(
+            if (type == MediaViewType.MOVIE) {
+                session?.hasWatchlistedMovie(itemId) == true
+            } else {
+                session?.hasWatchlistedTvShow(itemId) == true
+            }
+        )
+    }
+
+    val showSessionDialog = remember { mutableStateOf(false) }
+
+    val bgColor = MaterialTheme.colorScheme.background
+    val filledColor = WatchlistSelected
+    val tintColor = remember { Animatable(if (hasWatchlistedItem.value) filledColor else bgColor) }
+
+    val coroutineScope = rememberCoroutineScope()
+
+    Box(
+        modifier = modifier
+            .animateContentSize(tween(durationMillis = 300))
+            .clip(CircleShape)
+            .height(40.dp)
+            .requiredWidthIn(min = 40.dp)
+            .background(color = MaterialTheme.colorScheme.actionButtonColor)
+            .clickable(
+                onClick = {
+                    if (session == null) {
+                        showSessionDialog.value = true
+                    } else {
+                        addToWatchlist(context, itemId, type, hasWatchlistedItem) { added ->
+                            coroutineScope.launch {
+                                tintColor.animateTo(
+                                    targetValue = if (added) filledColor else bgColor,
+                                    animationSpec = tween(300)
+                                )
+                            }
+                        }
+                    }
+                }
+            ),
+    ) {
+        Icon(
+            modifier = Modifier
+                .clip(CircleShape)
+                .align(Alignment.Center),
+            painter = painterResource(id = R.drawable.ic_watchlist),
+            contentDescription = "",
+            tint = tintColor.value
+        )
+    }
+
+    CreateSessionDialog(showDialog = showSessionDialog, onSessionReturned = {})
+}
+
+@Composable
+fun ListButton(
+    itemId: Int,
+    type: MediaViewType,
+    modifier: Modifier = Modifier,
+    service: AccountService
+) {
+    val session = SessionManager.currentSession
+
+//    val hasListedItem
+
     val showSessionDialog = remember { mutableStateOf(false) }
 
     CircleBackgroundColorImage(
         modifier = modifier.clickable(
             onClick = {
-                if (SessionManager.currentSession != null) {
-                    showRatingDialog.value = true
-                } else {
+                if (session == null) {
                     showSessionDialog.value = true
+                } else {
+                    // add to watchlsit
                 }
             }
         ),
         size = 40.dp,
         backgroundColor = MaterialTheme.colorScheme.actionButtonColor,
-        painter = painterResource(id = R.drawable.ic_rating_star),
-        colorFilter = ColorFilter.tint(color = if (itemIsRated.value) RatingSelected else MaterialTheme.colorScheme.background),
+        painter = painterResource(id = R.drawable.ic_add_to_list),
+        colorFilter = ColorFilter.tint(color = /*if (hasWatchlistedItem.value) WatchlistSelected else*/ MaterialTheme.colorScheme.background),
         contentDescription = ""
     )
 
-    RatingDialog(showDialog = showRatingDialog, onValueConfirmed = { rating ->
-        if (rating > 0f) {
-            postRating(context, rating, itemId, service, itemIsRated)
-        } else {
-            deleteRating(context, itemId, service, itemIsRated)
-        }
-    })
-
-    CreateSessionDialog(showDialog = showSessionDialog, onSessionReturned = {
-        showRatingDialog.value = it
-    })
+    CreateSessionDialog(showDialog = showSessionDialog, onSessionReturned = {})
 }
 
-fun postRating(context: Context, rating: Float, itemId: Int, service: DetailService, itemIsRated: MutableState<Boolean>) {
-    CoroutineScope(Dispatchers.IO).launch {
-        val response = service.postRating(itemId, RatingBody(rating = rating))
-        if (response.isSuccessful) {
-            SessionManager.currentSession?.refresh(changed = arrayOf(SessionManager.Session.Changed.RatedMovies, SessionManager.Session.Changed.RatedTv))
-            withContext(Dispatchers.Main) {
-                itemIsRated.value = true
+@OptIn(ExperimentalAnimationApi::class)
+@Composable
+fun FavoriteButton(
+    itemId: Int,
+    type: MediaViewType,
+    modifier: Modifier = Modifier
+) {
+    val context = LocalContext.current
+    val session = SessionManager.currentSession
+
+    val hasFavorited = remember {
+        mutableStateOf(
+            if (type == MediaViewType.MOVIE) {
+                session?.hasFavoritedMovie(itemId) == true
+            } else {
+                session?.hasFavoritedTvShow(itemId) == true
             }
-        } else {
-            withContext(Dispatchers.Main) {
-                val errorObj = JSONObject(response.errorBody().toString())
-                Toast.makeText(context, "Error: ${errorObj.getString("status_message")}", Toast.LENGTH_SHORT).show()
-            }
-        }
+        )
     }
-}
 
-fun deleteRating(context: Context, itemId: Int, service: DetailService, itemIsRated: MutableState<Boolean>) {
-    CoroutineScope(Dispatchers.IO).launch {
-        val response = service.deleteRating(itemId)
-        if (response.isSuccessful) {
-            SessionManager.currentSession?.refresh(changed = arrayOf(SessionManager.Session.Changed.RatedMovies, SessionManager.Session.Changed.RatedTv))
-            withContext(Dispatchers.Main) {
-                itemIsRated.value = false
-            }
-        } else {
-            withContext(Dispatchers.Main) {
-                val errorObj = JSONObject(response.errorBody().toString())
-                Toast.makeText(context, "Error: ${errorObj.getString("status_message")}", Toast.LENGTH_SHORT).show()
-            }
-        }
+    val showSessionDialog = remember { mutableStateOf(false) }
+
+    val bgColor = MaterialTheme.colorScheme.background
+    val filledColor = FavoriteSelected
+    val tintColor = remember { Animatable(if (hasFavorited.value) filledColor else bgColor) }
+
+    val coroutineScope = rememberCoroutineScope()
+
+    Box(
+        modifier = modifier
+            .animateContentSize(tween(durationMillis = 300))
+            .clip(CircleShape)
+            .height(40.dp)
+            .requiredWidthIn(min = 40.dp)
+            .background(color = MaterialTheme.colorScheme.actionButtonColor)
+            .clickable(
+                onClick = {
+                    if (session == null) {
+                        showSessionDialog.value = true
+                    } else {
+                        addToFavorite(context, itemId, type, hasFavorited) { added ->
+                            coroutineScope.launch {
+                                tintColor.animateTo(
+                                    targetValue = if (added) filledColor else bgColor,
+                                    animationSpec = tween(300)
+                                )
+                            }
+                        }
+                    }
+                }
+            ),
+    ) {
+        Icon(
+            modifier = Modifier
+                .clip(CircleShape)
+                .align(Alignment.Center),
+            painter = painterResource(id = R.drawable.ic_favorite),
+            contentDescription = "",
+            tint = tintColor.value
+        )
     }
 }
 
@@ -373,14 +533,14 @@ private fun CreateSessionDialog(showDialog: MutableState<Boolean>, onSessionRetu
 }
 
 @Composable
-private fun RatingDialog(showDialog: MutableState<Boolean>, onValueConfirmed: (Float) -> Unit) {
+private fun RatingDialog(showDialog: MutableState<Boolean>, rating: Float, onValueConfirmed: (Float) -> Unit) {
 
     fun formatPosition(position: Float): String {
         return DecimalFormat("#.#").format(position.toInt()*5/10f)
     }
 
     if (showDialog.value) {
-        var sliderPosition by remember { mutableStateOf(0f) }
+        var sliderPosition by remember { mutableStateOf(rating) }
         val formatted = formatPosition(sliderPosition).toFloat()
         AlertDialog(
             modifier = Modifier.wrapContentHeight(),
@@ -882,6 +1042,100 @@ private fun fetchKeywords(id: Int, service: DetailService, keywordsResponse: Mut
             withContext(Dispatchers.Main) {
                 keywordsResponse.value = result.body()
             }
+        }
+    }
+}
+
+private fun postRating(context: Context, rating: Float, itemId: Int, service: DetailService, itemIsRated: MutableState<Boolean>) {
+    CoroutineScope(Dispatchers.IO).launch {
+        val response = service.postRating(itemId, RatingBody(rating = rating))
+        if (response.isSuccessful) {
+            SessionManager.currentSession?.refresh(changed = arrayOf(SessionManager.Session.Changed.RatedMovies, SessionManager.Session.Changed.RatedTv))
+            withContext(Dispatchers.Main) {
+                itemIsRated.value = true
+            }
+        } else {
+            withContext(Dispatchers.Main) {
+                val errorObj = JSONObject(response.errorBody().toString())
+                Toast.makeText(context, "Error: ${errorObj.getString("status_message")}", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+}
+
+private fun deleteRating(context: Context, itemId: Int, service: DetailService, itemIsRated: MutableState<Boolean>) {
+    CoroutineScope(Dispatchers.IO).launch {
+        val response = service.deleteRating(itemId)
+        if (response.isSuccessful) {
+            SessionManager.currentSession?.refresh(changed = SessionManager.Session.Changed.Rated)
+            withContext(Dispatchers.Main) {
+                itemIsRated.value = false
+            }
+        } else {
+            withContext(Dispatchers.Main) {
+                val errorObj = JSONObject(response.errorBody().toString())
+                Toast.makeText(context, "Error: ${errorObj.getString("status_message")}", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+}
+
+private fun addToWatchlist(
+    context: Context,
+    itemId: Int,
+    type: MediaViewType,
+    itemIsWatchlisted: MutableState<Boolean>,
+    onWatchlistChanged: (Boolean) -> Unit
+) {
+    val accountId = SessionManager.currentSession!!.accountDetails!!.id
+    CoroutineScope(Dispatchers.IO).launch {
+        val response = AccountService().addToWatchlist(accountId, WatchlistBody(type, itemId, !itemIsWatchlisted.value))
+        if (response.isSuccessful) {
+            SessionManager.currentSession?.refresh(changed = SessionManager.Session.Changed.Watchlist)
+            withContext(Dispatchers.Main) {
+                itemIsWatchlisted.value = !itemIsWatchlisted.value
+                onWatchlistChanged(itemIsWatchlisted.value)
+            }
+        } else {
+            withContext(Dispatchers.Main) {
+                Toast.makeText(context, "An error occurred", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+}
+
+private fun addToFavorite(
+    context: Context,
+    itemId: Int,
+    type: MediaViewType,
+    itemIsFavorited: MutableState<Boolean>,
+    onFavoriteChanged: (Boolean) -> Unit
+) {
+    val accountId = SessionManager.currentSession!!.accountDetails!!.id
+    CoroutineScope(Dispatchers.IO).launch {
+        val response = AccountService().markAsFavorite(accountId, MarkAsFavoriteBody(type, itemId, !itemIsFavorited.value))
+        if (response.isSuccessful) {
+            SessionManager.currentSession?.refresh(changed = SessionManager.Session.Changed.Favorites)
+            withContext(Dispatchers.Main) {
+                itemIsFavorited.value = !itemIsFavorited.value
+                onFavoriteChanged(itemIsFavorited.value)
+            }
+        }
+    }
+}
+
+@Composable
+private fun ActionSnackBar(
+    message: String
+) {
+    val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    SnackbarHost(hostState = snackbarHostState)
+    
+    LaunchedEffect(Unit) {
+        scope.launch {
+            snackbarHostState.showSnackbar(message)
         }
     }
 }
