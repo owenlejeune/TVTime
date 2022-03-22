@@ -45,7 +45,7 @@ fun MainAppView(appNavController: NavHostController, preferences: AppPreferences
     }
 
     val focusRequester = remember { FocusRequester() }
-    val focusSearchBar = remember { mutableStateOf(false) }
+    val focusSearchBar = rememberSaveable { mutableStateOf(false) }
     val searchableScreens = listOf(BottomNavItem.Movies.route, BottomNavItem.TV.route, BottomNavItem.People.route)
 
     val appBarActions = remember { mutableStateOf<@Composable RowScope.() -> Unit>( {} ) }
@@ -123,7 +123,7 @@ private fun SearchTopBar(
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                val hasSearchFocus = remember { mutableStateOf(requestSearchFocus.value) }
+                val hasSearchFocus = rememberSaveable { mutableStateOf(requestSearchFocus.value) }
                 if (!requestSearchFocus.value && !hasSearchFocus.value && !(preferences.persistentSearch && preferences.hideTitle)) {
                     Text(text = title.value)
                 }

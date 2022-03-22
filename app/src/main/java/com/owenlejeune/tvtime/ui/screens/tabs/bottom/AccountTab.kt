@@ -54,17 +54,25 @@ fun AccountTab(
     appBarTitle: MutableState<String>,
     appBarActions: MutableState<@Composable (RowScope.() -> Unit)> = mutableStateOf({})
 ) {
-    when (SessionManager.currentSession?.isAuthorized) {
-        false -> {
-            appBarTitle.value =
-                stringResource(id = R.string.account_header_title_formatted, stringResource(id = R.string.account_name_guest))
-        }
-        true -> {
-            appBarTitle.value =
-                stringResource(id = R.string.account_header_title_formatted, getAccountName(SessionManager.currentSession?.accountDetails))
-        }
-        else -> {
-            appBarTitle.value = stringResource(id = R.string.account_not_logged_in)
+    if (appBarTitle.value.equals(stringResource(id = R.string.nav_account_title))) {
+        when (SessionManager.currentSession?.isAuthorized) {
+            false -> {
+                appBarTitle.value =
+                    stringResource(
+                        id = R.string.account_header_title_formatted,
+                        stringResource(id = R.string.account_name_guest)
+                    )
+            }
+            true -> {
+                appBarTitle.value =
+                    stringResource(
+                        id = R.string.account_header_title_formatted,
+                        getAccountName(SessionManager.currentSession?.accountDetails)
+                    )
+            }
+            else -> {
+                appBarTitle.value = stringResource(id = R.string.account_not_logged_in)
+            }
         }
     }
 
