@@ -59,6 +59,10 @@ class TmdbClient: KoinComponent {
         return client.create(AccountApi::class.java)
     }
 
+    fun createSearchService(): SearchApi {
+        return client.create(SearchApi::class.java)
+    }
+
     private inner class TmdbInterceptor: Interceptor {
         override fun intercept(chain: Interceptor.Chain): Response {
             val apiParam = QueryParam("api_key", BuildConfig.TMDB_ApiKey)

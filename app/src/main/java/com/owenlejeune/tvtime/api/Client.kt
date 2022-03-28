@@ -7,7 +7,7 @@ import retrofit2.Retrofit
 
 class Client(baseUrl: String): KoinComponent {
 
-    private val converter: Converter by inject()
+    private val converter: ConverterFactoryFactory by inject()
     private val client: HttpClient by inject()
 
     private var retrofit: Retrofit = Retrofit.Builder()
