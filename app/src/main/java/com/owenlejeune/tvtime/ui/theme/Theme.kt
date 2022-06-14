@@ -1,11 +1,12 @@
 package com.owenlejeune.tvtime.ui.theme
 
-import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material3.*
+import androidx.compose.material.Colors
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
+import com.kieronquinn.monetcompat.core.MonetCompat
 
 private val DarkColorPalette = darkColorScheme(
     primary = A1_200,
@@ -65,30 +66,68 @@ private val LightColorPalette = lightColorScheme(
     inverseOnSurface = N1_50
 )
 
+//@Composable
+//fun TVTimeTheme(
+//    isDarkTheme: Boolean = isSystemInDarkTheme(),
+//    isDynamicColor: Boolean = true,
+//    content: @Composable () -> Unit
+//) {
+//    val dynamicColor = isDynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+//    val colorScheme = when {
+//        dynamicColor && isDarkTheme -> {
+//            dynamicDarkColorScheme(LocalContext.current)
+//        }
+//        dynamicColor && !isDarkTheme -> {
+//            dynamicLightColorScheme(LocalContext.current)
+//        }
+//        isDarkTheme -> DarkColorPalette
+//        else -> LightColorPalette
+//    }
+//
+//    val systemUiController = rememberSystemUiController()
+//    systemUiController.setSystemBarsColor(colorScheme.background, !isDarkTheme)
+//
+//    MaterialTheme(
+//        colorScheme = colorScheme,
+//        typography = Typography,
+//        content = content
+//    )
+//}
+
 @Composable
 fun TVTimeTheme(
     isDarkTheme: Boolean = isSystemInDarkTheme(),
-    isDynamicColor: Boolean = true,
+    monetCompat: MonetCompat,
     content: @Composable () -> Unit
 ) {
-    val dynamicColor = isDynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
-    val colorScheme = when {
-        dynamicColor && isDarkTheme -> {
-            dynamicDarkColorScheme(LocalContext.current)
-        }
-        dynamicColor && !isDarkTheme -> {
-            dynamicLightColorScheme(LocalContext.current)
-        }
-        isDarkTheme -> DarkColorPalette
-        else -> LightColorPalette
+    val colors = if(isDarkTheme) {
+        monetCompat.darkMonetCompatScheme()
+    } else {
+        monetCompat.lightMonetCompatScheme()
     }
 
-    val systemUiController = rememberSystemUiController()
-    systemUiController.setSystemBarsColor(colorScheme.background, !isDarkTheme)
-
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography = Typography,
-        content = content
-    )
+    androidx.compose.material3.MaterialTheme(
+        colorScheme = colors,
+        typography = Typography
+    ) {
+        MaterialTheme(
+            colors = Colors(
+                primary = colors.primary,
+                primaryVariant = colors.inversePrimary,
+                secondary = colors.secondary,
+                onSecondary = colors.onSecondary,
+                secondaryVariant = colors.secondaryContainer,
+                background = colors.background,
+                onBackground = colors.onBackground,
+                surface = colors.surface,
+                error = colors.error,
+                onPrimary = colors.onPrimary,
+                onSurface = colors.onSurface,
+                onError = colors.onError,
+                isLight = !isDarkTheme
+            ),
+            shapes = Shapes,
+            content = content
+        )
+    }
 }

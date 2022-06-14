@@ -4,7 +4,7 @@ plugins {
     id 'kotlin-android'
 }
 
-def composeVersion = "1.1.0-rc03"
+def composeVersion = "1.2.0-beta03"
 
 android {
     compileSdkVersion 32
@@ -54,21 +54,22 @@ android {
 
 dependencies {
     // ktx
-    def ktx_core = "1.7.0"
+    def ktx_core = "1.8.0"
     def ktx_paging = "3.1.1"
     implementation "androidx.core:core-ktx:$ktx_core"
     implementation "androidx.paging:paging-common-ktx:$ktx_paging"
 
     // android x
-    implementation "androidx.window:window:1.0.0"
+    def androidx = "1.0.0"
+    implementation "androidx.window:window:$androidx"
 
     // compose
     def compose = composeVersion
-    def compose_material3 = "1.0.0-alpha07"
-    def compose_accompanist = "0.22.1-rc"
-    def compose_navigation = "2.4.1"
-    def compose_paging = "1.0.0-alpha14"
-    def compose_constraint_layout = "1.0.0"
+    def compose_material3 = "1.0.0-alpha13"
+    def compose_accompanist = "0.24.10-beta"
+    def compose_navigation = "2.4.2"
+    def compose_paging = "1.0.0-alpha15"
+    def compose_constraint_layout = "1.0.1"
     def compose_activity = "1.4.0"
     implementation "androidx.compose.ui:ui:$compose"
     implementation "androidx.compose.material3:material3:$compose_material3"
@@ -85,6 +86,10 @@ dependencies {
     implementation "androidx.paging:paging-compose:$compose_paging"
     implementation "androidx.constraintlayout:constraintlayout-compose:$compose_constraint_layout"
 
+    // material you
+    def monet_compat = "0.4.1"
+    implementation "com.github.KieronQuinn:MonetCompat:$monet_compat"
+
     // lifecycle
     def lifecycle_runtime = "2.4.1"
     implementation "androidx.lifecycle:lifecycle-runtime-ktx:$lifecycle_runtime"
@@ -92,7 +97,7 @@ dependencies {
     // retrofit
     def retrofit = "2.9.0"
     def stetho = "1.6.0"
-    def gson = "2.8.7"
+    def gson = "2.9.0"
     implementation "com.squareup.retrofit2:retrofit:$retrofit"
     implementation "com.squareup.retrofit2:converter-gson:$retrofit"
     implementation "com.google.code.gson:gson:$gson"
@@ -108,7 +113,7 @@ dependencies {
     implementation "io.coil-kt:coil-compose:$coil"
 
     //Coroutines
-    def coroutines = "1.6.0"
+    def coroutines = "1.6.1"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutines"
 
     // youtube player

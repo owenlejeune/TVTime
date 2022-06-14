@@ -8,8 +8,10 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.kieronquinn.monetcompat.app.MonetCompatActivity
 import com.owenlejeune.tvtime.ui.navigation.MainNavigationRoutes
 import com.owenlejeune.tvtime.ui.theme.TVTimeTheme
 import com.owenlejeune.tvtime.utils.KeyboardManager
@@ -18,7 +20,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class MainActivity : ComponentActivity() {
+class MainActivity : MonetCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -27,11 +29,16 @@ class MainActivity : ComponentActivity() {
             SessionManager.initialize()
         }
 
-        setContent {
-            AppKeyboardFocusManager()
-            MyApp(
-                appNavController = rememberNavController()
-            )
+        lifecycleScope.launchWhenCreated {
+            monet.awaitMonetReady()
+            setContent {
+                AppKeyboardFocusManager()
+                TVTimeTheme(monetCompat = monet) {
+                    MyApp(
+                        appNavController = rememberNavController()
+                    )
+                }
+            }
         }
     }
 }
@@ -40,10 +47,8 @@ class MainActivity : ComponentActivity() {
 fun MyApp(
     appNavController: NavHostController = rememberNavController()
 ) {
-    TVTimeTheme {
-        Box {
-            MainNavigationRoutes(navController = appNavController)
-        }
+    Box {
+        MainNavigationRoutes(navController = appNavController)
     }
 }
 

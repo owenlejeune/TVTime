@@ -1,6 +1,6 @@
 buildscript {
     def gradle = "7.1.2"
-    def kotlin = "1.6.10"
+    def kotlin = "1.6.21"
     repositories {
         google()
         mavenCentral()

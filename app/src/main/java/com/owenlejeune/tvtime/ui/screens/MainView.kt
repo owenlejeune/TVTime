@@ -40,8 +40,9 @@ fun MainAppView(appNavController: NavHostController, preferences: AppPreferences
 
     val appBarTitle = rememberSaveable { mutableStateOf(BottomNavItem.getByRoute(currentRoute)?.name ?: BottomNavItem.Items[0].name) }
     val decayAnimationSpec = rememberSplineBasedDecay<Float>()
+    val topAppBarScrollState = rememberTopAppBarScrollState()
     val scrollBehavior = remember(decayAnimationSpec) {
-        TopAppBarDefaults.exitUntilCollapsedScrollBehavior(decayAnimationSpec)
+        TopAppBarDefaults.exitUntilCollapsedScrollBehavior(decayAnimationSpec, topAppBarScrollState)
     }
 
     val focusRequester = remember { FocusRequester() }

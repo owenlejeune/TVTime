@@ -2,9 +2,9 @@ package com.owenlejeune.tvtime.extensions
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.lazy.LazyGridScope
-import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.grid.LazyGridItemScope
+import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.paging.compose.LazyPagingItems
@@ -12,7 +12,7 @@ import androidx.paging.compose.LazyPagingItems
 @OptIn(ExperimentalFoundationApi::class)
 fun <T: Any> LazyGridScope.lazyPagingItems(
     lazyPagingItems: LazyPagingItems<T>,
-    itemContent: @Composable LazyItemScope.(value: T?) -> Unit
+    itemContent: @Composable LazyGridItemScope.(value: T?) -> Unit
 ) {
     items(lazyPagingItems.itemCount) { index ->
         itemContent(lazyPagingItems[index])

@@ -6,8 +6,8 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.GridCells
-import androidx.compose.foundation.lazy.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material3.MaterialTheme
@@ -19,7 +19,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
@@ -50,7 +49,7 @@ fun PosterGrid(
     fetchMedia(mediaList)
 
     LazyVerticalGrid(
-        cells = GridCells.Adaptive(minSize = POSTER_WIDTH),
+        columns = GridCells.Adaptive(minSize = POSTER_WIDTH),
         contentPadding = PaddingValues(8.dp),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
@@ -74,7 +73,7 @@ fun PeoplePosterGrid(
     fetchPeople(peopleList)
 
     LazyVerticalGrid(
-        cells = GridCells.Adaptive(minSize = POSTER_WIDTH),
+        columns = GridCells.Adaptive(minSize = POSTER_WIDTH),
         contentPadding = PaddingValues(8.dp),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
