@@ -59,6 +59,9 @@ dependencies {
     implementation "androidx.core:core-ktx:$ktx_core"
     implementation "androidx.paging:paging-common-ktx:$ktx_paging"
 
+    // android x
+    implementation "androidx.window:window:1.0.0"
+
     // compose
     def compose = composeVersion
     def compose_material3 = "1.0.0-alpha07"

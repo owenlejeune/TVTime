@@ -5,7 +5,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.tooling.preview.Preview
@@ -30,19 +29,8 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             AppKeyboardFocusManager()
-            val displayUnderStatusBar = rememberSaveable { mutableStateOf(false) }
-//            WindowCompat.setDecorFitsSystemWindows(window, false)
-//            WindowCompat.setDecorFitsSystemWindows(window, !displayUnderStatusBar.value)
-//            val statusBarColor = if (displayUnderStatusBar.value) {
-//                Color.Transparent
-//            } else {
-//                MaterialTheme.colorScheme.background
-//            }
-//            val systemUiController = rememberSystemUiController()
-//            systemUiController.setStatusBarColor(statusBarColor, !isSystemInDarkTheme())
             MyApp(
-                appNavController = rememberNavController(),
-                displayUnderStatusBar = displayUnderStatusBar
+                appNavController = rememberNavController()
             )
         }
     }
@@ -50,12 +38,11 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun MyApp(
-    appNavController: NavHostController = rememberNavController(),
-    displayUnderStatusBar: MutableState<Boolean> = mutableStateOf(false)
+    appNavController: NavHostController = rememberNavController()
 ) {
     TVTimeTheme {
         Box {
-            MainNavigationRoutes(navController = appNavController, displayUnderStatusBar = displayUnderStatusBar)
+            MainNavigationRoutes(navController = appNavController)
         }
     }
 }

@@ -23,12 +23,10 @@ object NavConstants {
 @Composable
 fun MainNavigationRoutes(
     navController: NavHostController,
-    displayUnderStatusBar: MutableState<Boolean> = mutableStateOf(false),
     startDestination: String = MainNavItem.MainView.route
 ) {
     NavHost(navController = navController, startDestination = startDestination) {
         composable(MainNavItem.MainView.route) {
-            displayUnderStatusBar.value = false
             MainAppView(appNavController = navController)
         }
         composable(
@@ -38,7 +36,6 @@ fun MainNavigationRoutes(
                 navArgument(NavConstants.TYPE_KEY) { type = NavType.EnumType(MediaViewType::class.java) }
             )
         ) { navBackStackEntry ->
-            displayUnderStatusBar.value = true
             val args = navBackStackEntry.arguments
             val mediaType = args?.getSerializable(NavConstants.TYPE_KEY) as MediaViewType
             if (mediaType != MediaViewType.PERSON) {
