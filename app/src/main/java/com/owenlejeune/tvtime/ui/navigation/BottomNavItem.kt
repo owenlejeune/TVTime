@@ -12,7 +12,8 @@ sealed class BottomNavItem(stringRes: Int, val icon: Int, val route: String): Ko
     val name = resourceUtils.getString(stringRes)
 
     companion object {
-        val Items = listOf(Movies, TV, People, Account, Settings)
+        val Items by lazy { listOf(Movies, TV, People, Account, Settings) }
+        val SearchableRoutes by lazy { listOf(Movies.route, TV.route, People.route) }
 
         fun getByRoute(route: String?): BottomNavItem? {
             return when (route) {

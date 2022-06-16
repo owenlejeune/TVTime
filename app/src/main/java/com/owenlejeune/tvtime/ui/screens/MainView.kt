@@ -27,7 +27,7 @@ import com.owenlejeune.tvtime.preferences.AppPreferences
 import com.owenlejeune.tvtime.ui.components.RoundedTextField
 import com.owenlejeune.tvtime.ui.components.SearchFab
 import com.owenlejeune.tvtime.ui.navigation.BottomNavItem
-import com.owenlejeune.tvtime.ui.navigation.BottomNavigationRoutes
+import com.owenlejeune.tvtime.ui.navigation.MainNavGraph
 import com.owenlejeune.tvtime.utils.KeyboardManager
 import org.koin.java.KoinJavaComponent.get
 
@@ -88,7 +88,7 @@ fun MainAppView(appNavController: NavHostController, preferences: AppPreferences
         }
     ) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)) {
-            BottomNavigationRoutes(appNavController = appNavController, navController = navController, appBarTitle = appBarTitle, appBarActions = appBarActions)
+            MainNavGraph(appNavController = appNavController, navController = navController, appBarTitle = appBarTitle, appBarActions = appBarActions)
         }
     }
 }

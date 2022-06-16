@@ -39,7 +39,6 @@ import com.owenlejeune.tvtime.utils.TmdbUtils
 private val POSTER_WIDTH = 120.dp
 private val POSTER_HEIGHT = 190.dp
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun PosterGrid(
     fetchMedia: (MutableState<List<TmdbItem>>) -> Unit = {},

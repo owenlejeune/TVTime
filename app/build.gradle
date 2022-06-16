@@ -63,6 +63,10 @@ dependencies {
     def androidx = "1.0.0"
     implementation "androidx.window:window:$androidx"
 
+    // material
+    def material = "1.6.1"
+    implementation "com.google.android.material:material:$material"
+
     // compose
     def compose = composeVersion
     def compose_material3 = "1.0.0-alpha13"

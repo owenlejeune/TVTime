@@ -55,7 +55,7 @@ fun MainNavigationRoutes(
 }
 
 @Composable
-fun BottomNavigationRoutes(
+fun MainNavGraph(
     appNavController: NavHostController,
     navController: NavHostController,
     appBarTitle: MutableState<String>,
