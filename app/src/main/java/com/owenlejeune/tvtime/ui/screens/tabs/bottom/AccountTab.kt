@@ -5,10 +5,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
@@ -91,6 +89,11 @@ fun AccountTab(
             }
 
             Column {
+                when(session.isAuthorized) {
+                    true -> { AuthorizedSessionIcon() }
+                    false -> { GuestSessionIcon() }
+                }
+
                 val pagerState = rememberPagerState()
                 ScrollableTabs(tabs = tabs, pagerState = pagerState)
                 AccountTabs(
@@ -251,15 +254,18 @@ private fun AccountDropdownMenu(
     session: SessionManager.Session?,
     lastSelectedOption: MutableState<String>
 ) {
-    CustomTopAppBarDropdownMenu(
-        icon = {
-            when(session?.isAuthorized) {
-                true -> { AuthorizedSessionIcon() }
-                false -> { GuestSessionIcon() }
-                null -> { NoSessionAccountIcon() }
-            }
-        }
-    ) { expanded ->
+    val expanded = remember { mutableStateOf(false) }
+    
+    IconButton(
+        onClick = { expanded.value = true }
+    ) {
+        Icon(imageVector = Icons.Filled.MoreVert, contentDescription = null)
+    }
+    
+    DropdownMenu(
+        expanded = expanded.value, 
+        onDismissRequest = { expanded.value = false }
+    ) {
         when(session?.isAuthorized) {
             true -> { AuthorizedSessionMenuItems(expanded = expanded, lastSelectedOption = lastSelectedOption) }
             false -> { GuestSessionMenuItems(expanded = expanded, lastSelectedOption = lastSelectedOption) }
@@ -269,45 +275,16 @@ private fun AccountDropdownMenu(
 }
 
 @Composable
-private fun NoSessionMenuItems(
+private fun AuthorizedSessionMenuItems(
     expanded: MutableState<Boolean>,
     lastSelectedOption: MutableState<String>
 ) {
-    val showSignInDialog = remember { mutableStateOf(false) }
-    CustomMenuItem(
-        text = stringResource(id = R.string.action_sign_in),
+    DropdownMenuItem(
+        text = { Text(text = stringResource(id = R.string.action_sign_out)) },
         onClick = {
-            showSignInDialog.value = true
-        }
-    )
-
-    CustomMenuDivider()
-
-    if (showSignInDialog.value) {
-        SignInDialog(showDialog = showSignInDialog) { success ->
-            if (success) {
-                lastSelectedOption.value = NO_SESSION_SIGN_IN
-                expanded.value = false
-            }
-        }
-    }
-
-    CustomMenuItem(
-        text = stringResource(R.string.action_sign_in_as_guest),
-        onClick = {
-            createGuestSession(lastSelectedOption)
+            signOut(lastSelectedOption)
             expanded.value = false
         }
-    )
-}
-
-@Composable
-private fun NoSessionAccountIcon() {
-    Icon(
-        modifier = Modifier.size(45.dp),
-        imageVector = Icons.Filled.AccountCircle,
-        contentDescription = stringResource(R.string.account_menu_content_description),
-        tint = MaterialTheme.colorScheme.primary
     )
 }
 
@@ -317,10 +294,6 @@ private fun GuestSessionMenuItems(
     lastSelectedOption: MutableState<String>
 ) {
     val showSignInDialog = remember { mutableStateOf(false) }
-    CustomMenuItem(
-        text = stringResource(id = R.string.action_sign_in),
-        onClick = { showSignInDialog.value = true }
-    )
 
     if (showSignInDialog.value) {
         SignInDialog(showDialog = showSignInDialog) { success ->
@@ -331,12 +304,45 @@ private fun GuestSessionMenuItems(
         }
     }
 
-    CustomMenuDivider()
+    DropdownMenuItem(
+        text = { Text(text = stringResource(id = R.string.action_sign_in)) },
+        onClick = { showSignInDialog.value = true }
+    )
 
-    CustomMenuItem(
-        text = stringResource(id = R.string.action_sign_out),
+    DropdownMenuItem(
+        text = { Text(text = stringResource(id = R.string.action_sign_out)) },
         onClick = {
             signOut(lastSelectedOption)
+            expanded.value = false
+        }
+    )
+}
+
+@Composable
+private fun NoSessionMenuItems(
+    expanded: MutableState<Boolean>,
+    lastSelectedOption: MutableState<String>
+) {
+    val showSignInDialog = remember { mutableStateOf(false) }
+
+    if (showSignInDialog.value) {
+        SignInDialog(showDialog = showSignInDialog) { success ->
+            if (success) {
+                lastSelectedOption.value = NO_SESSION_SIGN_IN
+                expanded.value = false
+            }
+        }
+    }
+
+    DropdownMenuItem(
+        text = { Text(text = stringResource(id = R.string.action_sign_in)) },
+        onClick = { showSignInDialog.value = true }
+    )
+
+    DropdownMenuItem(
+        text = { Text(text = stringResource(id = R.string.action_sign_in_as_guest)) },
+        onClick = {
+            createGuestSession(lastSelectedOption)
             expanded.value = false
         }
     )
@@ -345,21 +351,7 @@ private fun GuestSessionMenuItems(
 @Composable
 private fun GuestSessionIcon() {
     val guestName = stringResource(id = R.string.account_name_guest)
-    RoundedLetterImage(size = 40.dp, character = guestName[0], topPadding = 40.dp / 8)
-}
-
-@Composable
-private fun AuthorizedSessionMenuItems(
-    expanded: MutableState<Boolean>,
-    lastSelectedOption: MutableState<String>
-) {
-    CustomMenuItem(
-        text = stringResource(id = R.string.action_sign_out),
-        onClick = {
-            signOut(lastSelectedOption)
-            expanded.value = false
-        }
-    )
+    RoundedLetterImage(size = 60.dp, character = guestName[0], topPadding = 60.dp / 4)
 }
 
 @Composable
@@ -376,19 +368,22 @@ private fun AuthorizedSessionIcon() {
             else -> null
         }
     }
-    if (accountDetails == null || avatarUrl == null) {
-        val accLetter = (accountDetails?.name?.ifEmpty { accountDetails.username } ?: " ")[0]
-        RoundedLetterImage(size = 40.dp, character = accLetter, topPadding = 40.dp / 8)
-    } else {
-        Box(modifier = Modifier.size(50.dp)) {
-            AsyncImage(
-                model = avatarUrl,
-                contentDescription = "",
-                modifier = Modifier
-                    .size(40.dp)
-                    .clip(CircleShape),
-                contentScale = ContentScale.Fit
-            )
+
+    Box(modifier = Modifier.padding(start = 12.dp)) {
+        if (accountDetails == null || avatarUrl == null) {
+            val accLetter = (accountDetails?.name?.ifEmpty { accountDetails.username } ?: " ")[0]
+            RoundedLetterImage(size = 60.dp, character = accLetter, topPadding = 60.dp / 4)
+        } else {
+            Box(modifier = Modifier.size(60.dp)) {
+                AsyncImage(
+                    model = avatarUrl,
+                    contentDescription = "",
+                    modifier = Modifier
+                        .size(60.dp)
+                        .clip(CircleShape),
+                    contentScale = ContentScale.Fit
+                )
+            }
         }
     }
 }
