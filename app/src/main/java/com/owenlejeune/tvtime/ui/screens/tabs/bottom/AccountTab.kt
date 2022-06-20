@@ -1,5 +1,6 @@
 package com.owenlejeune.tvtime.ui.screens.tabs.bottom
 
+import android.content.Context
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -7,13 +8,11 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -52,7 +51,13 @@ fun AccountTab(
     appBarTitle: MutableState<String>,
     appBarActions: MutableState<@Composable (RowScope.() -> Unit)> = mutableStateOf({})
 ) {
-    if (appBarTitle.value.equals(stringResource(id = R.string.nav_account_title))) {
+    val lastSelectedOption = remember { mutableStateOf("") }
+
+    if (SessionManager.isV4SignInInProgress) {
+        v4SignInPart2(lastSelectedOption)
+    }
+
+    if (appBarTitle.value == stringResource(id = R.string.nav_account_title)) {
         when (SessionManager.currentSession?.isAuthorized) {
             false -> {
                 appBarTitle.value =
@@ -74,34 +79,30 @@ fun AccountTab(
         }
     }
 
-    val lastSelectedOption = remember { mutableStateOf("") }
-
     appBarActions.value = {
         AccountDropdownMenu(session = SessionManager.currentSession, lastSelectedOption = lastSelectedOption)
     }
 
-    if (lastSelectedOption.value.isNotBlank() || lastSelectedOption.value.isBlank()) {
-        SessionManager.currentSession?.let { session ->
-            val tabs = if (session.isAuthorized) {
-                AccountTabNavItem.AuthorizedItems
-            } else {
-                AccountTabNavItem.GuestItems
+    SessionManager.currentSession?.let { session ->
+        val tabs = if (session.isAuthorized) {
+            AccountTabNavItem.AuthorizedItems
+        } else {
+            AccountTabNavItem.GuestItems
+        }
+
+        Column {
+            when(session.isAuthorized) {
+                true -> { AuthorizedSessionIcon() }
+                false -> { GuestSessionIcon() }
             }
 
-            Column {
-                when(session.isAuthorized) {
-                    true -> { AuthorizedSessionIcon() }
-                    false -> { GuestSessionIcon() }
-                }
-
-                val pagerState = rememberPagerState()
-                ScrollableTabs(tabs = tabs, pagerState = pagerState)
-                AccountTabs(
-                    appNavController = appNavController,
-                    tabs = tabs,
-                    pagerState = pagerState
-                )
-            }
+            val pagerState = rememberPagerState()
+            ScrollableTabs(tabs = tabs, pagerState = pagerState)
+            AccountTabs(
+                appNavController = appNavController,
+                tabs = tabs,
+                pagerState = pagerState
+            )
         }
     }
 }
@@ -338,6 +339,11 @@ private fun NoSessionMenuItems(
         text = { Text(text = stringResource(id = R.string.action_sign_in)) },
         onClick = { showSignInDialog.value = true }
     )
+//    val context = LocalContext.current
+//    DropdownMenuItem(
+//        text = { Text(text = stringResource(id = R.string.action_sign_in)) },
+//        onClick = { v4SignInPart1(context) }
+//    )
 
     DropdownMenuItem(
         text = { Text(text = stringResource(id = R.string.action_sign_in_as_guest)) },
@@ -346,6 +352,21 @@ private fun NoSessionMenuItems(
             expanded.value = false
         }
     )
+}
+
+private fun v4SignInPart1(context: Context) {
+    CoroutineScope(Dispatchers.IO).launch {
+        SessionManager.signInWithV4Part1(context)
+    }
+}
+
+private fun v4SignInPart2(lastSelectedOption: MutableState<String>) {
+    CoroutineScope(Dispatchers.IO).launch {
+        val signIn = SessionManager.signInWithV4Part2()
+        if (signIn)  {
+            lastSelectedOption.value = NO_SESSION_SIGN_IN
+        }
+    }
 }
 
 @Composable

@@ -59,9 +59,10 @@ fun MainNavGraph(
     appNavController: NavHostController,
     navController: NavHostController,
     appBarTitle: MutableState<String>,
-    appBarActions: MutableState<@Composable (RowScope.() -> Unit)> = mutableStateOf({})
+    appBarActions: MutableState<@Composable (RowScope.() -> Unit)> = mutableStateOf({}),
+    startDestination: String = BottomNavItem.Items[0].route
 ) {
-    NavHost(navController = navController, startDestination = BottomNavItem.Movies.route) {
+    NavHost(navController = navController, startDestination = startDestination) {
         composable(BottomNavItem.Movies.route) {
             appBarActions.value = {}
             MediaTab(appNavController = appNavController, mediaType = MediaViewType.MOVIE)

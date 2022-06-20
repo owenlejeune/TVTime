@@ -2,6 +2,7 @@ package com.owenlejeune.tvtime
 
 import android.app.Application
 import com.facebook.stetho.Stetho
+import com.kieronquinn.monetcompat.core.MonetCompat
 import com.owenlejeune.tvtime.di.modules.appModule
 import com.owenlejeune.tvtime.di.modules.networkModule
 import com.owenlejeune.tvtime.di.modules.preferencesModule
@@ -27,6 +28,8 @@ class TvTimeApplication: Application() {
                 appModule
             )
         }
+
+        MonetCompat.enablePaletteCompat()
 
         if (BuildConfig.DEBUG) {
             Stetho.initializeWithDefaults(this)

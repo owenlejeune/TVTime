@@ -98,7 +98,13 @@ class TmdbClient: KoinComponent {
     private inner class V4Interceptor: Interceptor {
         override fun intercept(chain: Interceptor.Chain): Response {
             val builder = chain.request().newBuilder()
-            builder.header("Authorization", "Bearer ${BuildConfig.TMDB_Api_v4Key}")
+            with(chain.request()) {
+                if (url.encodedPathSegments.contains("auth")) {
+                    builder.header("Authorization", "Bearer ${BuildConfig.TMDB_Api_v4Key}")
+                } else {
+                    builder.header("Authorization", "Bearer ${SessionManager.currentSession!!.accessToken}")
+                }
+            }
 
             val locale = Locale.current
             val languageCode = "${locale.language}-${locale.region}"

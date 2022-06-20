@@ -27,4 +27,8 @@ class AuthenticationService {
     suspend fun validateTokenWithLogin(body: TokenValidationBody): Response<CreateTokenResponse> {
         return service.validateTokenWithLogin(body)
     }
+
+    suspend fun createSessionFromV4Token(body: V4TokenBody): Response<CreateSessionResponse> {
+        return service.createSessionFromV4Token(body)
+    }
 }

@@ -100,4 +100,8 @@
     <string name="username_label">Username</string>
     <string name="password_label">Password</string>
     <string name="no_account_message">Don\'t have an account?</string>
+    <string name="tmdb_auth_url">"https://www.themoviedb.org/auth/access?request_token=%1$s"</string>
+
+    <!-- intent routes -->
+    <string name="intent_route_auth_return">tvtime.auth.return</string>
 </resources>

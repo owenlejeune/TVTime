@@ -1,6 +1,7 @@
 package com.owenlejeune.tvtime
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.compose.setContent
 import androidx.compose.animation.rememberSplineBasedDecay
 import androidx.compose.foundation.Image
@@ -59,6 +60,13 @@ class MainActivity : MonetCompatActivity() {
             SessionManager.initialize()
         }
 
+        var mainNavStartRoute = BottomNavItem.Items[0].route
+        intent.data?.let {
+            when (it.host) {
+                getString(R.string.intent_route_auth_return) -> mainNavStartRoute = BottomNavItem.Account.route
+            }
+        }
+
         lifecycleScope.launchWhenCreated {
             monet.awaitMonetReady()
             setContent {
@@ -66,7 +74,7 @@ class MainActivity : MonetCompatActivity() {
                 TVTimeTheme(monetCompat = monet) {
                     val appNavController = rememberNavController()
                     Box {
-                       MainNavigationRoutes(appNavController = appNavController)
+                       MainNavigationRoutes(appNavController = appNavController, mainNavStartRoute = mainNavStartRoute)
                     }
                 }
             }
@@ -74,7 +82,11 @@ class MainActivity : MonetCompatActivity() {
     }
 
     @Composable
-    private fun AppScaffold(appNavController: NavHostController, preferences: AppPreferences = get(AppPreferences::class.java)) {
+    private fun AppScaffold(
+        appNavController: NavHostController,
+        mainNavStartRoute: String = BottomNavItem.Items[0].route,
+        preferences: AppPreferences = get(AppPreferences::class.java)
+    ) {
         val windowSize = rememberWindowSizeClass()
 
         val navController = rememberNavController()
@@ -127,7 +139,8 @@ class MainActivity : MonetCompatActivity() {
                     navController = navController,
                     appBarTitle = appBarTitle,
                     appBarActions = appBarActions,
-                    topBarScrollBehaviour = scrollBehavior
+                    topBarScrollBehaviour = scrollBehavior,
+                    mainNavStartRoute = mainNavStartRoute
                 )
             }
         }
@@ -180,7 +193,11 @@ class MainActivity : MonetCompatActivity() {
         item: BottomNavItem
     ) {
         appBarTitle.value = item.name
-        navController.navigate(item.route) {
+        navigateToRoute(navController, item.route)
+    }
+
+    private fun navigateToRoute(navController: NavController, route: String) {
+        navController.navigate(route) {
             navController.graph.startDestinationRoute?.let { screenRoute ->
                 popUpTo(screenRoute) {
                     saveState = true
@@ -220,7 +237,8 @@ class MainActivity : MonetCompatActivity() {
         navController: NavHostController,
         topBarScrollBehaviour: TopAppBarScrollBehavior,
         appBarTitle: MutableState<String>,
-        appBarActions: MutableState<@Composable (RowScope.() -> Unit)> = mutableStateOf({})
+        appBarActions: MutableState<@Composable (RowScope.() -> Unit)> = mutableStateOf({}),
+        mainNavStartRoute: String = BottomNavItem.Items[0].route
     ) {
         if (windowSize == WindowSizeClass.Expanded) {
             DualColumnMainContent(
@@ -228,14 +246,16 @@ class MainActivity : MonetCompatActivity() {
                 navController = navController,
                 appBarTitle = appBarTitle,
                 appBarActions = appBarActions,
-                topBarScrollBehaviour = topBarScrollBehaviour
+                topBarScrollBehaviour = topBarScrollBehaviour,
+                mainNavStartRoute = mainNavStartRoute
             )
         } else {
             SingleColumnMainContent(
                 appNavController = appNavController,
                 navController = navController,
                 appBarTitle = appBarTitle,
-                appBarActions = appBarActions
+                appBarActions = appBarActions,
+                mainNavStartRoute = mainNavStartRoute
             )
         }
     }
@@ -245,13 +265,15 @@ class MainActivity : MonetCompatActivity() {
         appNavController: NavHostController,
         navController: NavHostController,
         appBarTitle: MutableState<String>,
-        appBarActions: MutableState<@Composable (RowScope.() -> Unit)> = mutableStateOf({})
+        appBarActions: MutableState<@Composable (RowScope.() -> Unit)> = mutableStateOf({}),
+        mainNavStartRoute: String = BottomNavItem.Items[0].route
     ) {
         MainMediaView(
             appNavController = appNavController,
             navController = navController,
             appBarTitle = appBarTitle,
-            appBarActions = appBarActions
+            appBarActions = appBarActions,
+            mainNavStartRoute = mainNavStartRoute
         )
     }
 
@@ -261,7 +283,8 @@ class MainActivity : MonetCompatActivity() {
         navController: NavHostController,
         topBarScrollBehaviour: TopAppBarScrollBehavior,
         appBarTitle: MutableState<String>,
-        appBarActions: MutableState<@Composable (RowScope.() -> Unit)> = mutableStateOf({})
+        appBarActions: MutableState<@Composable (RowScope.() -> Unit)> = mutableStateOf({}),
+        mainNavStartRoute: String = BottomNavItem.Items[0].route
     ) {
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentRoute = navBackStackEntry?.destination?.route
@@ -295,7 +318,8 @@ class MainActivity : MonetCompatActivity() {
                     appNavController = appNavController,
                     navController = navController,
                     appBarTitle = appBarTitle,
-                    appBarActions = appBarActions
+                    appBarActions = appBarActions,
+                    mainNavStartRoute = mainNavStartRoute
                 )
             }
         }
@@ -306,7 +330,8 @@ class MainActivity : MonetCompatActivity() {
         appNavController: NavHostController,
         navController: NavHostController,
         appBarTitle: MutableState<String>,
-        appBarActions: MutableState<RowScope.() -> Unit> = mutableStateOf({})
+        appBarActions: MutableState<RowScope.() -> Unit> = mutableStateOf({}),
+        mainNavStartRoute: String = BottomNavItem.Items[0].route
     ) {
         Column {
             val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -324,7 +349,8 @@ class MainActivity : MonetCompatActivity() {
                 appNavController = appNavController,
                 navController = navController,
                 appBarTitle = appBarTitle,
-                appBarActions = appBarActions
+                appBarActions = appBarActions,
+                startDestination = mainNavStartRoute
             )
         }
     }
@@ -337,11 +363,12 @@ class MainActivity : MonetCompatActivity() {
     @Composable
     private fun MainNavigationRoutes(
         startDestination: String = MainNavItem.MainView.route,
+        mainNavStartRoute: String = BottomNavItem.Items[0].route,
         appNavController: NavHostController,
     ) {
         NavHost(navController = appNavController, startDestination = startDestination) {
             composable(MainNavItem.MainView.route) {
-                AppScaffold(appNavController = appNavController)
+                AppScaffold(appNavController = appNavController, mainNavStartRoute = mainNavStartRoute)
             }
             composable(
                 MainNavItem.DetailView.route.plus("/{${NavConstants.TYPE_KEY}}/{${NavConstants.ID_KEY}}"),

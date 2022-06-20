@@ -1,10 +1,18 @@
 package com.owenlejeune.tvtime.utils
 
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.api.tmdb.api.v3.AccountService
 import com.owenlejeune.tvtime.api.tmdb.api.v3.AuthenticationService
 import com.owenlejeune.tvtime.api.tmdb.api.v3.GuestSessionService
 import com.owenlejeune.tvtime.api.tmdb.TmdbClient
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.*
+import com.owenlejeune.tvtime.api.tmdb.api.v4.AuthenticationV4Service
+import com.owenlejeune.tvtime.api.tmdb.api.v4.model.AuthAccessBody
+import com.owenlejeune.tvtime.api.tmdb.api.v4.model.AuthDeleteBody
+import com.owenlejeune.tvtime.api.tmdb.api.v4.model.AuthRequestBody
 import com.owenlejeune.tvtime.preferences.AppPreferences
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -21,12 +29,31 @@ object SessionManager: KoinComponent {
     val currentSession: Session?
         get() = _currentSession
 
+    var isV4SignInInProgress: Boolean = false
+
     private val authenticationService by lazy { TmdbClient().createAuthenticationService() }
+    private val authenticationV4Service by lazy { TmdbClient().createV4AuthenticationService() }
 
     fun clearSession(onResponse: (isSuccessful: Boolean) -> Unit) {
         currentSession?.let { session ->
             CoroutineScope(Dispatchers.IO).launch {
                 val deleteResponse = authenticationService.deleteSession(SessionBody(session.sessionId))
+                withContext(Dispatchers.Main) {
+                    if (deleteResponse.isSuccessful) {
+                        _currentSession = null
+                        preferences.guestSessionId = ""
+                        preferences.authorizedSessionId = ""
+                    }
+                    onResponse(deleteResponse.isSuccessful)
+                }
+            }
+        }
+    }
+
+    fun clearSessionV4(onResponse: (isSuccessful: Boolean) -> Unit) {
+        currentSession?.let { session ->
+            CoroutineScope(Dispatchers.IO).launch {
+                val deleteResponse = authenticationV4Service.deleteAccessToken(AuthDeleteBody(session.sessionId))
                 withContext(Dispatchers.Main) {
                     if (deleteResponse.isSuccessful) {
                         _currentSession = null
@@ -91,7 +118,57 @@ object SessionManager: KoinComponent {
         return false
     }
 
-    abstract class Session(val sessionId: String, val isAuthorized: Boolean) {
+    suspend fun signInWithV4Part1(context: Context) {
+        isV4SignInInProgress = true
+
+        val service = AuthenticationV4Service()
+        val requestTokenResponse = service.createRequestToken(AuthRequestBody(redirect = ""))
+        if (requestTokenResponse.isSuccessful) {
+            requestTokenResponse.body()?.let { ctr ->
+                _currentSession = InProgressSession(ctr.requestToken)
+                val browserIntent = Intent(
+                    Intent.ACTION_VIEW,
+                    Uri.parse(
+                        context.getString(R.string.tmdb_auth_url, ctr.requestToken)
+                    )
+                )
+                context.startActivity(browserIntent)
+            }
+        }
+    }
+
+    suspend fun signInWithV4Part2(): Boolean {
+        if (isV4SignInInProgress && _currentSession is InProgressSession) {
+            val requestToken = _currentSession!!.sessionId
+            val authResponse = authenticationV4Service.createAccessToken(AuthAccessBody(requestToken))
+            if (authResponse.isSuccessful) {
+                authResponse.body()?.let { ar ->
+                    if (ar.success) {
+                        val sessionResponse = authenticationService.createSessionFromV4Token(V4TokenBody(ar.accessToken))
+                        if (sessionResponse.isSuccessful) {
+                            sessionResponse.body()?.let { sr ->
+                                preferences.authorizedSessionId = sr.sessionId
+                                preferences.guestSessionId = ""
+                                _currentSession = AuthorizedSession(accessToken = ar.accessToken)
+                                _currentSession?.initialize()
+                                isV4SignInInProgress = false
+                                return true
+                            }
+                        }
+//                        preferences.authorizedSessionId = ar.accessToken
+//                        preferences.guestSessionId = ""
+//                        _currentSession = AuthorizedSession()
+//                        _currentSession?.initialize()
+//                        isV4SignInInProgress = false
+//                        return true
+                    }
+                }
+            }
+        }
+        return false
+    }
+
+    abstract class Session(val sessionId: String, val isAuthorized: Boolean, val accessToken: String = "") {
         protected open var _ratedMovies: List<RatedMovie> = emptyList()
         val ratedMovies: List<RatedMovie>
             get() = _ratedMovies
@@ -187,7 +264,18 @@ object SessionManager: KoinComponent {
         }
     }
 
-    private class AuthorizedSession: Session(preferences.authorizedSessionId, true) {
+    private class InProgressSession(requestToken: String): Session(requestToken, false) {
+        override suspend fun initialize() {
+            // do nothing
+        }
+
+        override suspend fun refresh(changed: Array<Changed>) {
+            // do nothing
+        }
+
+    }
+
+    private class AuthorizedSession(accessToken: String = ""): Session(preferences.authorizedSessionId, true, accessToken) {
         private val service by lazy { AccountService() }
 
         override suspend fun initialize() {
