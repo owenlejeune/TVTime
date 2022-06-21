@@ -149,7 +149,7 @@ object SessionManager: KoinComponent {
                             sessionResponse.body()?.let { sr ->
                                 preferences.authorizedSessionId = sr.sessionId
                                 preferences.guestSessionId = ""
-                                _currentSession = AuthorizedSession(accessToken = ar.accessToken)
+                                _currentSession = AuthorizedSession(accessToken = ar.accessToken, accountId = ar.accountId)
                                 _currentSession?.initialize()
                                 isV4SignInInProgress = false
                                 return true
@@ -168,7 +168,7 @@ object SessionManager: KoinComponent {
         return false
     }
 
-    abstract class Session(val sessionId: String, val isAuthorized: Boolean, val accessToken: String = "") {
+    abstract class Session(val sessionId: String, val isAuthorized: Boolean, val accessToken: String = "", val accountId: String = "") {
         protected open var _ratedMovies: List<RatedMovie> = emptyList()
         val ratedMovies: List<RatedMovie>
             get() = _ratedMovies
@@ -275,7 +275,7 @@ object SessionManager: KoinComponent {
 
     }
 
-    private class AuthorizedSession(accessToken: String = ""): Session(preferences.authorizedSessionId, true, accessToken) {
+    private class AuthorizedSession(accessToken: String = "", accountId: String = ""): Session(preferences.authorizedSessionId, true, accessToken, accountId) {
         private val service by lazy { AccountService() }
 
         override suspend fun initialize() {

@@ -5,7 +5,9 @@ import com.owenlejeune.tvtime.BuildConfig
 import com.owenlejeune.tvtime.api.Client
 import com.owenlejeune.tvtime.api.QueryParam
 import com.owenlejeune.tvtime.api.tmdb.api.v3.*
+import com.owenlejeune.tvtime.api.tmdb.api.v4.AccountV4Api
 import com.owenlejeune.tvtime.api.tmdb.api.v4.AuthenticationV4Api
+import com.owenlejeune.tvtime.api.tmdb.api.v4.ListV4Api
 import com.owenlejeune.tvtime.extensions.addQueryParams
 import com.owenlejeune.tvtime.preferences.AppPreferences
 import com.owenlejeune.tvtime.utils.SessionManager
@@ -59,8 +61,16 @@ class TmdbClient: KoinComponent {
         return client.create(AccountApi::class.java)
     }
 
+    fun createV4AccountService(): AccountV4Api {
+        return clientV4.create(AccountV4Api::class.java)
+    }
+
     fun createSearchService(): SearchApi {
         return client.create(SearchApi::class.java)
+    }
+
+    fun createV4ListService(): ListV4Api {
+        return clientV4.create(ListV4Api::class.java)
     }
 
     private inner class TmdbInterceptor: Interceptor {

@@ -7,7 +7,7 @@ import retrofit2.http.*
 interface ListV4Api {
 
     @GET("list/{id}")
-    suspend fun getLists(
+    suspend fun getList(
         @Path("id") listId: Int,
         @Query("api_key") apiKey: String,
         @Query("page") page: Int = 1
@@ -35,6 +35,6 @@ interface ListV4Api {
     suspend fun deleteListItems(@Path("id") listId: Int, body: DeleteListItemsBody): Response<AddToListResponse>
 
     @GET("list/{id}/item_status")
-    suspend fun getListItemStatus(@Path("id") listId: Int, @Query("media_id") mediaId: Int, @Query("media_type") mediaType: String)
+    suspend fun getListItemStatus(@Path("id") listId: Int, @Query("media_id") mediaId: Int, @Query("media_type") mediaType: String): Response<ListItemStatusResponse>
 
 }

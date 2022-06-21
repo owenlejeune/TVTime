@@ -19,6 +19,8 @@ val networkModule = module {
 
     single { TmdbClient() }
     single { get<TmdbClient>().createV4AuthenticationService() }
+    single { get<TmdbClient>().createV4AccountService() }
+    single { get<TmdbClient>().createV4ListService() }
     single { get<TmdbClient>().createAccountService() }
     single { get<TmdbClient>().createGuestSessionService() }
     single { get<TmdbClient>().createAuthenticationService() }
