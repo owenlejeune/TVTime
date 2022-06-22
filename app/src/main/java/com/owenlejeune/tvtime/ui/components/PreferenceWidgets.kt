@@ -1,9 +1,11 @@
 package com.owenlejeune.tvtime.ui.components
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -73,4 +75,41 @@ fun SwitchPreference(
 @Composable
 private fun SwitchPreferencePreview() {
     SwitchPreference("Title", true, subtitleText = "Subtitle")
+}
+
+@Composable
+fun SliderPreference(
+    modifier: Modifier = Modifier,
+    titleText: String,
+    value: Float,
+    onValueChangeFinished: (Float) -> Unit ,
+    titleTextColor: Color = MaterialTheme.colorScheme.onBackground,
+    disabledTextColor: Color = MaterialTheme.colorScheme.outline,
+    enabled: Boolean = true
+) {
+    Column(
+        modifier = modifier
+            .wrapContentHeight()
+            .padding(all = 8.dp)
+    ) {
+        val titleColor = if (enabled) titleTextColor else disabledTextColor
+        Text(text = titleText, style = MaterialTheme.typography.titleLarge, color = titleColor, fontSize = 20.sp)
+
+        var sliderValue by remember { mutableStateOf(value) }
+
+        Slider(
+            modifier = Modifier.fillMaxWidth().padding(start = 8.dp),
+            value = sliderValue,
+            onValueChange = { sliderValue = it },
+            enabled = enabled,
+            valueRange = 0f..100f,
+            onValueChangeFinished = {
+                onValueChangeFinished(sliderValue)
+            },
+            colors = SliderDefaults.colors(
+                thumbColor = MaterialTheme.colorScheme.primary,
+                activeTrackColor = MaterialTheme.colorScheme.primary
+            )
+        )
+    }
 }

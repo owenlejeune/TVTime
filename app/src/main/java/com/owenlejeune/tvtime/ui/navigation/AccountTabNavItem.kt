@@ -4,8 +4,8 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.*
-import com.owenlejeune.tvtime.ui.screens.MediaViewType
-import com.owenlejeune.tvtime.ui.screens.tabs.bottom.AccountTabContent
+import com.owenlejeune.tvtime.ui.screens.main.MediaViewType
+import com.owenlejeune.tvtime.ui.screens.main.AccountTabContent
 import com.owenlejeune.tvtime.utils.ResourceUtils
 import com.owenlejeune.tvtime.utils.SessionManager
 import org.koin.core.component.inject

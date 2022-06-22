@@ -9,11 +9,9 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.owenlejeune.tvtime.ui.screens.MediaDetailView
-import com.owenlejeune.tvtime.ui.screens.MainAppView
-import com.owenlejeune.tvtime.ui.screens.MediaViewType
-import com.owenlejeune.tvtime.ui.screens.PersonDetailView
-import com.owenlejeune.tvtime.ui.screens.tabs.bottom.*
+import com.owenlejeune.tvtime.ui.screens.main.MediaDetailView
+import com.owenlejeune.tvtime.ui.screens.main.MediaViewType
+import com.owenlejeune.tvtime.ui.screens.main.*
 
 object NavConstants {
     const val ID_KEY = "id_key"

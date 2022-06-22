@@ -1,17 +1,13 @@
-package com.owenlejeune.tvtime.ui.screens
+package com.owenlejeune.tvtime.ui.screens.main
 
 import android.content.Context
 import android.widget.Toast
 import androidx.compose.animation.*
-import androidx.compose.animation.core.LinearOutSlowInEasing
-import androidx.compose.animation.core.keyframes
-import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Send
@@ -29,7 +25,6 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.DpSize
-import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController

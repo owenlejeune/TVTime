@@ -1,4 +1,4 @@
-package com.owenlejeune.tvtime.ui.screens.tabs.bottom
+package com.owenlejeune.tvtime.ui.screens.main
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
@@ -14,7 +14,6 @@ import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.api.tmdb.api.v3.PeopleService
 import com.owenlejeune.tvtime.ui.components.PeoplePosterGrid
 import com.owenlejeune.tvtime.ui.navigation.MainNavItem
-import com.owenlejeune.tvtime.ui.screens.MediaViewType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

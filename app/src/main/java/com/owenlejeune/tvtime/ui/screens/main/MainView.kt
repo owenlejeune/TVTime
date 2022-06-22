@@ -1,4 +1,4 @@
-package com.owenlejeune.tvtime.ui.screens
+package com.owenlejeune.tvtime.ui.screens.main
 
 import androidx.compose.animation.rememberSplineBasedDecay
 import androidx.compose.foundation.Image

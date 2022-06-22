@@ -1,4 +1,4 @@
-package com.owenlejeune.tvtime.ui.screens.tabs.top
+package com.owenlejeune.tvtime.ui.screens.main.tabs.top
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Spacer

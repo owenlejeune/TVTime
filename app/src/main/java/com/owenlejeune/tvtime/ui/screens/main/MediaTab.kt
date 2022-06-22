@@ -1,4 +1,4 @@
-package com.owenlejeune.tvtime.ui.screens.tabs.bottom
+package com.owenlejeune.tvtime.ui.screens.main
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
@@ -16,8 +16,7 @@ import com.owenlejeune.tvtime.ui.components.PosterGrid
 import com.owenlejeune.tvtime.ui.navigation.MainNavItem
 import com.owenlejeune.tvtime.ui.navigation.MediaFetchFun
 import com.owenlejeune.tvtime.ui.navigation.MediaTabNavItem
-import com.owenlejeune.tvtime.ui.screens.MediaViewType
-import com.owenlejeune.tvtime.ui.screens.tabs.top.Tabs
+import com.owenlejeune.tvtime.ui.screens.main.tabs.top.Tabs
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

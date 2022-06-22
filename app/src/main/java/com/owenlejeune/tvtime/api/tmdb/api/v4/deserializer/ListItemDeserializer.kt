@@ -4,7 +4,7 @@ import com.google.gson.*
 import com.owenlejeune.tvtime.api.tmdb.api.v4.model.ListItem
 import com.owenlejeune.tvtime.api.tmdb.api.v4.model.ListMovie
 import com.owenlejeune.tvtime.api.tmdb.api.v4.model.ListTv
-import com.owenlejeune.tvtime.ui.screens.MediaViewType
+import com.owenlejeune.tvtime.ui.screens.main.MediaViewType
 import java.lang.reflect.Type
 
 class ListItemDeserializer: JsonDeserializer<ListItem> {

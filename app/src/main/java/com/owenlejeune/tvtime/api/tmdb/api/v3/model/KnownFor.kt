@@ -1,7 +1,7 @@
 package com.owenlejeune.tvtime.api.tmdb.api.v3.model
 
 import com.google.gson.annotations.SerializedName
-import com.owenlejeune.tvtime.ui.screens.MediaViewType
+import com.owenlejeune.tvtime.ui.screens.main.MediaViewType
 
 abstract class KnownFor(
     @SerializedName("backdrop_path") val backdropPath: String?,

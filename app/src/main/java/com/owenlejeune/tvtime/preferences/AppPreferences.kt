@@ -2,6 +2,8 @@ package com.owenlejeune.tvtime.preferences
 
 import android.content.Context
 import android.content.SharedPreferences
+import com.kieronquinn.monetcompat.core.MonetCompat
+import com.owenlejeune.tvtime.BuildConfig
 
 class AppPreferences(context: Context) {
 
@@ -13,6 +15,11 @@ class AppPreferences(context: Context) {
         private val HIDE_TITLE = "hide_title"
         private val GUEST_SESSION = "guest_session_id"
         private val AUTHORIZED_SESSION = "authorized_session_id"
+        private val FIRST_LAUNCH = "first_launch"
+        private val FIRST_LAUNCH_TESTING = "first_launch_testing"
+        private val CHROMA_MULTIPLIER = "chroma_multiplier"
+        private val USE_SYSTEM_COLORS = "use_system_colors"
+        private val SELECTED_COLOR = "selected_color"
     }
 
     private val preferences: SharedPreferences = context.getSharedPreferences(PREF_FILE, Context.MODE_PRIVATE)
@@ -37,6 +44,26 @@ class AppPreferences(context: Context) {
 //        get() = preferences.getBoolean(USE_PREFERENCES, false)
 //        set(value) { preferences.put(USE_PREFERENCES, value) }
 
+    var firstLaunchTesting: Boolean
+        get() = preferences.getBoolean(FIRST_LAUNCH_TESTING, false)
+        set(value) { preferences.put(FIRST_LAUNCH_TESTING, value) }
+
+    var firstLaunch: Boolean
+        get() = if (BuildConfig.DEBUG) firstLaunchTesting else preferences.getBoolean(FIRST_LAUNCH, true)
+        set(value) { preferences.put(FIRST_LAUNCH, value) }
+
+    var useSystemColors: Boolean
+        get() = preferences.getBoolean(USE_SYSTEM_COLORS, true)
+        set(value) { preferences.put(USE_SYSTEM_COLORS, value) }
+
+    var chromaMultiplier: Double
+        get() = preferences.getFloat(CHROMA_MULTIPLIER, MonetCompat.chromaMultiplier.toFloat()).toDouble()
+        set(value) { preferences.put(CHROMA_MULTIPLIER, value) }
+
+    var selectedColor: Int
+        get() = preferences.getInt(SELECTED_COLOR, Int.MAX_VALUE)
+        set(value) { preferences.put(SELECTED_COLOR, value) }
+
     private fun SharedPreferences.put(key: String, value: Any?) {
         edit().apply {
             when (value) {
@@ -44,11 +71,15 @@ class AppPreferences(context: Context) {
                 is Int -> putInt(key, value)
                 is Long -> putLong(key, value)
                 is Float -> putFloat(key, value)
+                is Double -> putFloat(key, value.toFloat())
                 is String -> putString(key, value)
+                else -> throw UnsupportedTypeError()
             }
             apply()
         }
     }
+
+    class UnsupportedTypeError: Exception()
 
 //    private fun <T> SharedPreferences.get(key: String, java: Class<T>): T {
 //

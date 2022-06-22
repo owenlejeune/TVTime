@@ -1,7 +1,6 @@
 package com.owenlejeune.tvtime
 
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.compose.setContent
 import androidx.compose.animation.rememberSplineBasedDecay
 import androidx.compose.foundation.Image
@@ -37,9 +36,9 @@ import com.owenlejeune.tvtime.ui.components.SearchFab
 import com.owenlejeune.tvtime.ui.navigation.BottomNavItem
 import com.owenlejeune.tvtime.ui.navigation.MainNavGraph
 import com.owenlejeune.tvtime.ui.navigation.MainNavItem
-import com.owenlejeune.tvtime.ui.screens.MediaDetailView
-import com.owenlejeune.tvtime.ui.screens.MediaViewType
-import com.owenlejeune.tvtime.ui.screens.PersonDetailView
+import com.owenlejeune.tvtime.ui.screens.main.MediaDetailView
+import com.owenlejeune.tvtime.ui.screens.main.MediaViewType
+import com.owenlejeune.tvtime.ui.screens.main.PersonDetailView
 import com.owenlejeune.tvtime.ui.theme.TVTimeTheme
 import com.owenlejeune.tvtime.utils.KeyboardManager
 import com.owenlejeune.tvtime.utils.SessionManager

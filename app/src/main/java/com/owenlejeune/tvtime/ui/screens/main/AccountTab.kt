@@ -1,4 +1,4 @@
-package com.owenlejeune.tvtime.ui.screens.tabs.bottom
+package com.owenlejeune.tvtime.ui.screens.main
 
 import android.content.Context
 import androidx.compose.foundation.clickable
@@ -12,7 +12,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -29,8 +28,7 @@ import com.owenlejeune.tvtime.ui.components.*
 import com.owenlejeune.tvtime.ui.navigation.AccountTabNavItem
 import com.owenlejeune.tvtime.ui.navigation.ListFetchFun
 import com.owenlejeune.tvtime.ui.navigation.MainNavItem
-import com.owenlejeune.tvtime.ui.screens.MediaViewType
-import com.owenlejeune.tvtime.ui.screens.tabs.top.ScrollableTabs
+import com.owenlejeune.tvtime.ui.screens.main.tabs.top.ScrollableTabs
 import com.owenlejeune.tvtime.utils.SessionManager
 import com.owenlejeune.tvtime.utils.TmdbUtils
 import kotlinx.coroutines.CoroutineScope

@@ -1,4 +1,4 @@
-package com.owenlejeune.tvtime.ui.screens
+package com.owenlejeune.tvtime.ui.screens.main
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*

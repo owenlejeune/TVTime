@@ -20,10 +20,7 @@ import androidx.compose.material.Card
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Error
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -65,6 +62,7 @@ import androidx.core.text.HtmlCompat
 import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
 import com.google.accompanist.flowlayout.FlowRow
+import com.kieronquinn.monetcompat.core.MonetCompat
 import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.AuthorDetails
 import com.owenlejeune.tvtime.ui.theme.RatingSelected
@@ -922,6 +920,42 @@ fun TimeoutSnackbar(
             delay(timeoutMillis)
             snackbarVisible = false
             onDismiss()
+        }
+    }
+}
+
+@Composable
+fun CenteredIconCircle(
+    size: Dp,
+    backgroundColor: Color,
+    iconTint: Color,
+    icon: ImageVector,
+    contentDescription: String?,
+    showIcon: Boolean = true,
+    onClick: () -> Unit = {}
+) {
+    Box(
+        modifier = Modifier
+            .size(size)
+            .clip(CircleShape)
+            .background(color = backgroundColor)
+            .clickable {
+                onClick()
+            }
+    ) {
+        if (showIcon) {
+            Column(
+                modifier = Modifier.size(size),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = contentDescription,
+                    modifier = Modifier.size(size / 2),
+                    tint = iconTint
+                )
+            }
         }
     }
 }

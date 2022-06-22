@@ -2,7 +2,7 @@ package com.owenlejeune.tvtime.api.tmdb.api.v3.deserializer
 
 import com.google.gson.*
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.KnownFor
-import com.owenlejeune.tvtime.ui.screens.MediaViewType
+import com.owenlejeune.tvtime.ui.screens.main.MediaViewType
 import java.lang.reflect.Type
 
 class KnownForDeserializer: JsonDeserializer<KnownFor> {

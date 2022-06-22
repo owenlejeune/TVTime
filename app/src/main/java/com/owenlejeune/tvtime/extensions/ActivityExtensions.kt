@@ -1,6 +1,7 @@
 package com.owenlejeune.tvtime.extensions
 
 import android.app.Activity
+import android.content.Intent
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.geometry.Size
@@ -39,4 +40,10 @@ private fun getWindowSizeClass(windowDpSize: DpSize): WindowSizeClass = when {
     windowDpSize.width < 600.dp -> WindowSizeClass.Compact
     windowDpSize.width < 840.dp -> WindowSizeClass.Medium
     else -> WindowSizeClass.Expanded
+}
+
+fun <T> Activity.launchActivity(activity: Class<T>) {
+    val intent = Intent(this, activity)
+    startActivity(intent)
+    finish()
 }

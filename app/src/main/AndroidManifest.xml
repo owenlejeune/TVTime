@@ -13,15 +13,25 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.TVTime"
         android:usesCleartextTraffic="true">
+
+        <activity android:name=".AppRoutingActivity"
+            android:exported="true"
+            android:theme="@style/Theme.TVTime">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity android:name=".OnboardingActivity"
+            android:exported="true"
+            android:theme="@style/Theme.TVTime" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
             android:theme="@style/Theme.TVTime"
             android:windowSoftInputMode="adjustResize">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.BROWSABLE" />

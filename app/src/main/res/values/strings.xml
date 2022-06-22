@@ -54,6 +54,12 @@
     <string name="preferences_hide_heading_title">Expanded search bar</string>
     <string name="preferences_hide_heading_subtitle">Keep search bar expanded at all times</string>
     <string name="preferences_debug_title">Developer options</string>
+    <string name="preference_heading_design">Design</string>
+    <string name="preference_system_colors_heading">Use system colors</string>
+    <string name="preference_chroma_factor_heading">Saturation</string>
+    <string name="preference_wallpaper_color_heading">Wallpaper Color Picker</string>
+    <string name="preference_no_wallpaper_colors">Unavailable for the current wallpaper or your current settings</string>
+    <string name="preference_wallpaper_color_default_selected">Wallpaper color already set to default</string>
 
     <!-- video type -->
     <string name="video_type_clip">Clips</string>
@@ -104,4 +110,8 @@
 
     <!-- intent routes -->
     <string name="intent_route_auth_return">tvtime.auth.return</string>
+
+    <!-- onboarding -->
+    <string name="get_started">Get started</string>
+    <string name="example_page_desc">This is an example</string>
 </resources>
