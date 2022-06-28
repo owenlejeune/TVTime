@@ -2,6 +2,8 @@ package com.owenlejeune.tvtime.ui.screens.main
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
@@ -9,6 +11,7 @@ import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.rememberPagerState
+import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.api.tmdb.api.v3.HomePageService
 import com.owenlejeune.tvtime.api.tmdb.api.v3.MoviesService
 import com.owenlejeune.tvtime.api.tmdb.api.v3.TvService
@@ -24,7 +27,17 @@ import kotlinx.coroutines.withContext
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
-fun MediaTab(appNavController: NavHostController, mediaType: MediaViewType) {
+fun MediaTab(
+    appBarTitle: MutableState<String>,
+    appNavController: NavHostController,
+    mediaType: MediaViewType
+) {
+    appBarTitle.value = when (mediaType) {
+        MediaViewType.MOVIE -> stringResource(id = R.string.nav_movies_title)
+        MediaViewType.TV -> stringResource(id = R.string.nav_tv_title)
+        else -> ""
+    }
+
     Column {
         val tabs = when (mediaType) {
             MediaViewType.MOVIE -> MediaTabNavItem.MovieItems

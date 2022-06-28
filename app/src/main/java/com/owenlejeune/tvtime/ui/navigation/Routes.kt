@@ -63,26 +63,26 @@ fun MainNavGraph(
     NavHost(navController = navController, startDestination = startDestination) {
         composable(BottomNavItem.Movies.route) {
             appBarActions.value = {}
-            MediaTab(appNavController = appNavController, mediaType = MediaViewType.MOVIE)
+            MediaTab(appBarTitle = appBarTitle, appNavController = appNavController, mediaType = MediaViewType.MOVIE)
         }
         composable(BottomNavItem.TV.route) {
             appBarActions.value = {}
-            MediaTab(appNavController = appNavController, mediaType = MediaViewType.TV)
+            MediaTab(appBarTitle = appBarTitle, appNavController = appNavController, mediaType = MediaViewType.TV)
         }
         composable(BottomNavItem.Account.route) {
             AccountTab(appBarTitle = appBarTitle, appNavController = appNavController, appBarActions = appBarActions)
         }
         composable(BottomNavItem.People.route) {
             appBarActions.value = {}
-            PeopleTab(appBarTitle, appNavController = appNavController)
+            PeopleTab(appBarTitle = appBarTitle, appNavController = appNavController)
         }
-        composable(BottomNavItem.Favourites.route) {
-            appBarActions.value = {}
-            FavouritesTab()
-        }
+//        composable(BottomNavItem.Favourites.route) {
+//            appBarActions.value = {}
+//            FavouritesTab()
+//        }
         composable(BottomNavItem.Settings.route) {
             appBarActions.value = {}
-            SettingsTab()
+            SettingsTab(appBarTitle = appBarTitle)
         }
     }
 }

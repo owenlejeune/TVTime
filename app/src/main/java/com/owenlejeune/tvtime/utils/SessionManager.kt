@@ -3,6 +3,8 @@ package com.owenlejeune.tvtime.utils
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.widget.Toast
+import com.google.gson.annotations.SerializedName
 import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.api.tmdb.api.v3.AccountService
 import com.owenlejeune.tvtime.api.tmdb.api.v3.AuthenticationService
@@ -34,7 +36,13 @@ object SessionManager: KoinComponent {
     private val authenticationService by lazy { TmdbClient().createAuthenticationService() }
     private val authenticationV4Service by lazy { TmdbClient().createV4AuthenticationService() }
 
-    fun clearSession(onResponse: (isSuccessful: Boolean) -> Unit) {
+    class AuthorizedSessionValues(
+        @SerializedName("session_id") val sessionId: String,
+        @SerializedName("access_token") val accessToken: String,
+        @SerializedName("account_id") val accountId: String
+    )
+
+    suspend fun clearSession(onResponse: (isSuccessful: Boolean) -> Unit) {
         currentSession?.let { session ->
             CoroutineScope(Dispatchers.IO).launch {
                 val deleteResponse = authenticationService.deleteSession(SessionBody(session.sessionId))
@@ -42,7 +50,8 @@ object SessionManager: KoinComponent {
                     if (deleteResponse.isSuccessful) {
                         _currentSession = null
                         preferences.guestSessionId = ""
-                        preferences.authorizedSessionId = ""
+                        preferences.authorizedSessionValues = null
+//                        preferences.authorizedSessionId = ""
                     }
                     onResponse(deleteResponse.isSuccessful)
                 }
@@ -53,12 +62,13 @@ object SessionManager: KoinComponent {
     fun clearSessionV4(onResponse: (isSuccessful: Boolean) -> Unit) {
         currentSession?.let { session ->
             CoroutineScope(Dispatchers.IO).launch {
-                val deleteResponse = authenticationV4Service.deleteAccessToken(AuthDeleteBody(session.sessionId))
+                val deleteResponse = authenticationV4Service.deleteAccessToken(AuthDeleteBody(session.accessToken))
                 withContext(Dispatchers.Main) {
                     if (deleteResponse.isSuccessful) {
                         _currentSession = null
                         preferences.guestSessionId = ""
-                        preferences.authorizedSessionId = ""
+                        preferences.authorizedSessionValues = null
+//                        preferences.authorizedSessionId = ""
                     }
                     onResponse(deleteResponse.isSuccessful)
                 }
@@ -75,6 +85,16 @@ object SessionManager: KoinComponent {
             val session = AuthorizedSession()
             session.initialize()
             _currentSession = session
+        } else {
+            preferences.authorizedSessionValues?.let { values ->
+                val session = AuthorizedSession(
+                    sessionId = values.sessionId,
+                    accessToken = values.accessToken,
+                    accountId = values.accountId
+                )
+                session.initialize()
+                _currentSession = session
+            }
         }
     }
 
@@ -104,6 +124,7 @@ object SessionManager: KoinComponent {
                                     if (sr.isSuccess) {
                                         preferences.authorizedSessionId = sr.sessionId
                                         preferences.guestSessionId = ""
+                                        preferences.authorizedSessionValues = null
                                         _currentSession = AuthorizedSession()
                                         _currentSession?.initialize()
                                         return true
@@ -122,7 +143,7 @@ object SessionManager: KoinComponent {
         isV4SignInInProgress = true
 
         val service = AuthenticationV4Service()
-        val requestTokenResponse = service.createRequestToken(AuthRequestBody(redirect = ""))
+        val requestTokenResponse = service.createRequestToken(AuthRequestBody(redirect = "app://tvtime.auth.return"))
         if (requestTokenResponse.isSuccessful) {
             requestTokenResponse.body()?.let { ctr ->
                 _currentSession = InProgressSession(ctr.requestToken)
@@ -147,20 +168,23 @@ object SessionManager: KoinComponent {
                         val sessionResponse = authenticationService.createSessionFromV4Token(V4TokenBody(ar.accessToken))
                         if (sessionResponse.isSuccessful) {
                             sessionResponse.body()?.let { sr ->
-                                preferences.authorizedSessionId = sr.sessionId
+                                preferences.authorizedSessionValues = AuthorizedSessionValues(
+                                    sessionId = sr.sessionId,
+                                    accountId = ar.accountId,
+                                    accessToken = ar.accessToken
+                                )
+                                preferences.authorizedSessionId = ""
                                 preferences.guestSessionId = ""
-                                _currentSession = AuthorizedSession(accessToken = ar.accessToken, accountId = ar.accountId)
+                                _currentSession = AuthorizedSession(
+                                    sessionId = sr.sessionId,
+                                    accessToken = ar.accessToken,
+                                    accountId = ar.accountId
+                                )
                                 _currentSession?.initialize()
                                 isV4SignInInProgress = false
                                 return true
                             }
                         }
-//                        preferences.authorizedSessionId = ar.accessToken
-//                        preferences.guestSessionId = ""
-//                        _currentSession = AuthorizedSession()
-//                        _currentSession?.initialize()
-//                        isV4SignInInProgress = false
-//                        return true
                     }
                 }
             }
@@ -275,7 +299,11 @@ object SessionManager: KoinComponent {
 
     }
 
-    private class AuthorizedSession(accessToken: String = "", accountId: String = ""): Session(preferences.authorizedSessionId, true, accessToken, accountId) {
+    private class AuthorizedSession(
+        sessionId: String = preferences.authorizedSessionId,
+        accessToken: String = "",
+        accountId: String = ""
+    ): Session(sessionId, true, accessToken, accountId) {
         private val service by lazy { AccountService() }
 
         override suspend fun initialize() {
@@ -286,14 +314,14 @@ object SessionManager: KoinComponent {
             if (changed.contains(Changed.AccountDetails)) {
                 service.getAccountDetails().apply {
                     if (isSuccessful) {
-                        withContext(Dispatchers.Main) {
+//                        withContext(Dispatchers.Main) {
                             _accountDetails = body() ?: _accountDetails
                             accountDetails?.let {
-                                CoroutineScope(Dispatchers.IO).launch {
+//                                CoroutineScope(Dispatchers.IO).launch {
                                     refreshWithAccountId(it.id, changed)
-                                }
+//                                }
                             }
-                        }
+//                        }
                     }
                 }
             } else if (accountDetails != null) {

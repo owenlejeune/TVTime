@@ -99,6 +99,9 @@ class TmdbClient: KoinComponent {
                     sessionIdParam = QueryParam("session_id", SessionManager.currentSession!!.sessionId)
                 } else if (preferences.authorizedSessionId.isNotEmpty()) {
                     sessionIdParam = QueryParam("session_id", preferences.authorizedSessionId)
+                } else if (preferences.authorizedSessionValues != null) {
+                    val sessionId = preferences.authorizedSessionValues!!.sessionId
+                    sessionIdParam = QueryParam("session_id", sessionId)
                 }
             }
             return sessionIdParam
@@ -113,15 +116,14 @@ class TmdbClient: KoinComponent {
                     builder.header("Authorization", "Bearer ${BuildConfig.TMDB_Api_v4Key}")
                 } else {
                     builder.header("Authorization", "Bearer ${SessionManager.currentSession!!.accessToken}")
+                    val locale = Locale.current
+                    val languageCode = "${locale.language}-${locale.region}"
+                    val languageParam = QueryParam("language", languageCode)
+
+                    val newUrl = url.newBuilder().addQueryParams(languageParam).build()
+                    builder.url(newUrl)
                 }
             }
-
-            val locale = Locale.current
-            val languageCode = "${locale.language}-${locale.region}"
-            val languageParam = QueryParam("language", languageCode)
-
-            val url = chain.request().url.newBuilder().addQueryParams(languageParam).build()
-            builder.url(url)
 
             return chain.proceed(builder.build())
         }

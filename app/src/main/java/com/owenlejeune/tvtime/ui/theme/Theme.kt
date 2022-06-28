@@ -6,6 +6,7 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.kieronquinn.monetcompat.core.MonetCompat
 
 private val DarkColorPalette = darkColorScheme(
@@ -127,7 +128,12 @@ fun TVTimeTheme(
                 isLight = !isDarkTheme
             ),
             shapes = Shapes,
-            content = content
+            content = {
+                val systemUiController = rememberSystemUiController()
+                systemUiController.setSystemBarsColor(color = androidx.compose.material3.MaterialTheme.colorScheme.background)
+
+                content()
+            }
         )
     }
 }

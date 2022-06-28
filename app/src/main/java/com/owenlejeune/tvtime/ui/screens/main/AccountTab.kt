@@ -8,10 +8,15 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -24,7 +29,9 @@ import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.rememberPagerState
 import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.*
-import com.owenlejeune.tvtime.ui.components.*
+import com.owenlejeune.tvtime.preferences.AppPreferences
+import com.owenlejeune.tvtime.ui.components.RoundedLetterImage
+import com.owenlejeune.tvtime.ui.components.SignInDialog
 import com.owenlejeune.tvtime.ui.navigation.AccountTabNavItem
 import com.owenlejeune.tvtime.ui.navigation.ListFetchFun
 import com.owenlejeune.tvtime.ui.navigation.MainNavItem
@@ -35,6 +42,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.koin.java.KoinJavaComponent
+import org.koin.java.KoinJavaComponent.get
 import kotlin.reflect.KClass
 
 private const val GUEST_SIGN_IN = "guest_sign_in"
@@ -51,11 +60,12 @@ fun AccountTab(
 ) {
     val lastSelectedOption = remember { mutableStateOf("") }
 
+    val lso = lastSelectedOption.value
     if (SessionManager.isV4SignInInProgress) {
+        appBarTitle.value = stringResource(id = R.string.account_not_logged_in)
+        AccountLoadingView()
         v4SignInPart2(lastSelectedOption)
-    }
-
-    if (appBarTitle.value == stringResource(id = R.string.nav_account_title)) {
+    } else {
         when (SessionManager.currentSession?.isAuthorized) {
             false -> {
                 appBarTitle.value =
@@ -75,33 +85,54 @@ fun AccountTab(
                 appBarTitle.value = stringResource(id = R.string.account_not_logged_in)
             }
         }
-    }
 
-    appBarActions.value = {
-        AccountDropdownMenu(session = SessionManager.currentSession, lastSelectedOption = lastSelectedOption)
-    }
-
-    SessionManager.currentSession?.let { session ->
-        val tabs = if (session.isAuthorized) {
-            AccountTabNavItem.AuthorizedItems
-        } else {
-            AccountTabNavItem.GuestItems
-        }
-
-        Column {
-            when(session.isAuthorized) {
-                true -> { AuthorizedSessionIcon() }
-                false -> { GuestSessionIcon() }
-            }
-
-            val pagerState = rememberPagerState()
-            ScrollableTabs(tabs = tabs, pagerState = pagerState)
-            AccountTabs(
-                appNavController = appNavController,
-                tabs = tabs,
-                pagerState = pagerState
+        appBarActions.value = {
+            AccountDropdownMenu(
+                session = SessionManager.currentSession,
+                lastSelectedOption = lastSelectedOption
             )
         }
+
+        if (!SessionManager.isV4SignInInProgress) {
+            SessionManager.currentSession?.let { session ->
+                val tabs = if (session.isAuthorized) {
+                    AccountTabNavItem.AuthorizedItems
+                } else {
+                    AccountTabNavItem.GuestItems
+                }
+
+                Column {
+                    when (session.isAuthorized) {
+                        true -> {
+                            AuthorizedSessionIcon()
+                        }
+                        false -> {
+                            GuestSessionIcon()
+                        }
+                    }
+
+                    val pagerState = rememberPagerState()
+                    ScrollableTabs(tabs = tabs, pagerState = pagerState)
+                    AccountTabs(
+                        appNavController = appNavController,
+                        tabs = tabs,
+                        pagerState = pagerState
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun AccountLoadingView() {
+    Box(modifier = Modifier.fillMaxSize()) {
+        CircularProgressIndicator(
+            modifier = Modifier
+                .align(Alignment.Center)
+                .size(200.dp),
+            color = MaterialTheme.colorScheme.secondary
+        )
     }
 }
 
@@ -276,12 +307,17 @@ private fun AccountDropdownMenu(
 @Composable
 private fun AuthorizedSessionMenuItems(
     expanded: MutableState<Boolean>,
-    lastSelectedOption: MutableState<String>
+    lastSelectedOption: MutableState<String>,
+    preferences: AppPreferences = get(AppPreferences::class.java)
 ) {
     DropdownMenuItem(
         text = { Text(text = stringResource(id = R.string.action_sign_out)) },
         onClick = {
-            signOut(lastSelectedOption)
+            if (preferences.useV4Api) {
+                signOutV4(lastSelectedOption)
+            } else {
+                signOut(lastSelectedOption)
+            }
             expanded.value = false
         }
     )
@@ -320,7 +356,8 @@ private fun GuestSessionMenuItems(
 @Composable
 private fun NoSessionMenuItems(
     expanded: MutableState<Boolean>,
-    lastSelectedOption: MutableState<String>
+    lastSelectedOption: MutableState<String>,
+    preferences: AppPreferences = get(AppPreferences::class.java)
 ) {
     val showSignInDialog = remember { mutableStateOf(false) }
 
@@ -333,15 +370,18 @@ private fun NoSessionMenuItems(
         }
     }
 
-    DropdownMenuItem(
-        text = { Text(text = stringResource(id = R.string.action_sign_in)) },
-        onClick = { showSignInDialog.value = true }
-    )
-//    val context = LocalContext.current
-//    DropdownMenuItem(
-//        text = { Text(text = stringResource(id = R.string.action_sign_in)) },
-//        onClick = { v4SignInPart1(context) }
-//    )
+    if (!preferences.useV4Api) {
+        DropdownMenuItem(
+            text = { Text(text = stringResource(id = R.string.action_sign_in)) },
+            onClick = { showSignInDialog.value = true }
+        )
+    } else {
+        val context = LocalContext.current
+        DropdownMenuItem(
+            text = { Text(text = stringResource(id = R.string.action_sign_in)) },
+            onClick = { v4SignInPart1(context) }
+        )
+    }
 
     DropdownMenuItem(
         text = { Text(text = stringResource(id = R.string.action_sign_in_as_guest)) },
@@ -362,7 +402,9 @@ private fun v4SignInPart2(lastSelectedOption: MutableState<String>) {
     CoroutineScope(Dispatchers.IO).launch {
         val signIn = SessionManager.signInWithV4Part2()
         if (signIn)  {
-            lastSelectedOption.value = NO_SESSION_SIGN_IN
+            withContext(Dispatchers.Main) {
+                lastSelectedOption.value = NO_SESSION_SIGN_IN
+            }
         }
     }
 }
@@ -419,9 +461,21 @@ private fun createGuestSession(lastSelectedOption: MutableState<String>) {
 }
 
 private fun signOut(lastSelectedOption: MutableState<String>) {
-    SessionManager.clearSession { isSuccessful ->
-        if (isSuccessful) {
-            lastSelectedOption.value = SIGN_OUT
+    CoroutineScope(Dispatchers.IO).launch {
+        SessionManager.clearSession { isSuccessful ->
+            if (isSuccessful) {
+                lastSelectedOption.value = SIGN_OUT
+            }
+        }
+    }
+}
+
+private fun signOutV4(lastSelectedOption: MutableState<String>) {
+    CoroutineScope(Dispatchers.IO).launch {
+        SessionManager.clearSessionV4 { isSuccessful ->
+            if (isSuccessful) {
+                lastSelectedOption.value = SIGN_OUT
+            }
         }
     }
 }

@@ -2,8 +2,10 @@ package com.owenlejeune.tvtime.preferences
 
 import android.content.Context
 import android.content.SharedPreferences
+import com.google.gson.Gson
 import com.kieronquinn.monetcompat.core.MonetCompat
 import com.owenlejeune.tvtime.BuildConfig
+import com.owenlejeune.tvtime.utils.SessionManager
 
 class AppPreferences(context: Context) {
 
@@ -15,11 +17,13 @@ class AppPreferences(context: Context) {
         private val HIDE_TITLE = "hide_title"
         private val GUEST_SESSION = "guest_session_id"
         private val AUTHORIZED_SESSION = "authorized_session_id"
+        private val AUTHORIZED_SESSION_VALUES = "authorized_session_values"
         private val FIRST_LAUNCH = "first_launch"
         private val FIRST_LAUNCH_TESTING = "first_launch_testing"
         private val CHROMA_MULTIPLIER = "chroma_multiplier"
         private val USE_SYSTEM_COLORS = "use_system_colors"
         private val SELECTED_COLOR = "selected_color"
+        private val USE_V4_API = "use_v4_api"
     }
 
     private val preferences: SharedPreferences = context.getSharedPreferences(PREF_FILE, Context.MODE_PRIVATE)
@@ -35,6 +39,12 @@ class AppPreferences(context: Context) {
     var guestSessionId: String
         get() = preferences.getString(GUEST_SESSION, "") ?: ""
         set(value) { preferences.put(GUEST_SESSION, value) }
+
+    var authorizedSessionValues: SessionManager.AuthorizedSessionValues?
+        get() = preferences.getString(AUTHORIZED_SESSION_VALUES, null)?.let {
+            Gson().fromJson(it, SessionManager.AuthorizedSessionValues::class.java)
+        }
+        set(value) { preferences.putNullableString(AUTHORIZED_SESSION_VALUES, value?.let { Gson().toJson(value) }) }
 
     var authorizedSessionId: String
         get() = preferences.getString(AUTHORIZED_SESSION, "") ?: ""
@@ -64,6 +74,10 @@ class AppPreferences(context: Context) {
         get() = preferences.getInt(SELECTED_COLOR, Int.MAX_VALUE)
         set(value) { preferences.put(SELECTED_COLOR, value) }
 
+    var useV4Api: Boolean
+        get() = preferences.getBoolean(USE_V4_API, true)
+        set(value) { preferences.put(USE_V4_API, value) }
+
     private fun SharedPreferences.put(key: String, value: Any?) {
         edit().apply {
             when (value) {
@@ -79,25 +93,10 @@ class AppPreferences(context: Context) {
         }
     }
 
-    class UnsupportedTypeError: Exception()
+    private fun SharedPreferences.putNullableString(key: String, value: String?) {
+        edit().putString(key, value).apply()
+    }
 
-//    private fun <T> SharedPreferences.get(key: String, java: Class<T>): T {
-//
-//    }
-//
-//    inner class PrefsMutableState<T>(val key: String): MutableState<T> {
-//        override var value: T
-//            get() = preferences.get(key, T::class.java)
-//            set(value) { preferences.put(key, value) }
-//
-//        override fun component1(): T {
-//            TODO("Not yet implemented")
-//        }
-//
-//        override fun component2(): (T) -> Unit {
-//            TODO("Not yet implemented")
-//        }
-//
-//    }
+    class UnsupportedTypeError: Exception()
 
 }

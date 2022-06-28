@@ -24,7 +24,7 @@ fun PeopleTab(
     appBarTitle: MutableState<String>,
     appNavController: NavHostController
 ) {
-//    appBarTitle.value = stringResource(id = R.string.nav_people_title)
+    appBarTitle.value = stringResource(id = R.string.nav_people_title)
 
     val service = PeopleService()
 

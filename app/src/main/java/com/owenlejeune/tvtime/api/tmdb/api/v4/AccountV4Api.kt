@@ -12,28 +12,28 @@ import retrofit2.http.Path
 
 interface AccountV4Api {
 
-    @GET("/account/{account_id}/lists")
+    @GET("account/{account_id}/lists")
     suspend fun getLists(@Path("account_id") accountId: String, page: Int = 1): Response<V4AccountResponse<V4AccountList>>
 
-    @GET("/account/{account_id}/movie/favorites")
+    @GET("account/{account_id}/movie/favorites")
     suspend fun getFavoriteMovies(@Path("account_id") accountId: String, page: Int = 1): Response<V4AccountResponse<FavoriteMovie>>
 
-    @GET("/account/{account_id}/tv/favorites")
+    @GET("account/{account_id}/tv/favorites")
     suspend fun getFavoriteTvShows(@Path("account_id") accountId: String, page: Int = 1): Response<V4AccountResponse<FavoriteTvSeries>>
 
-    @GET("/account/{account_id}/movie/recommendations")
+    @GET("account/{account_id}/movie/recommendations")
     suspend fun getMovieRecommendations(@Path("account_id") accountId: String, page: Int = 1): Response<V4AccountResponse<FavoriteMovie>>
 
-    @GET("/account/{account_id}/tv/recommendations")
+    @GET("account/{account_id}/tv/recommendations")
     suspend fun getTvShowRecommendations(@Path("account_id") accountId: String, page: Int = 1): Response<V4AccountResponse<FavoriteTvSeries>>
 
-    @GET("/account/{account_id}/movie/watchlist")
+    @GET("account/{account_id}/movie/watchlist")
     suspend fun getMovieWatchlist(@Path("account_id") accountId: String, page: Int = 1): Response<V4AccountResponse<FavoriteMovie>>
 
-    @GET("/account/{account_id}/tv/watchlist")
+    @GET("account/{account_id}/tv/watchlist")
     suspend fun getTvShowWatchlist(@Path("account_id") accountId: String, page: Int = 1): Response<V4AccountResponse<FavoriteTvSeries>>
 
-    @GET("/account/{account_id}/movie/rated")
+    @GET("account/{account_id}/movie/rated")
     suspend fun getRatedMovies(@Path("account_id") accountId: String, page: Int = 1): Response<V4AccountResponse<V4RatedMovie>>
 
     @GET("account/{account_id}/tv/rated")

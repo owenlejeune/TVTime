@@ -4,12 +4,15 @@ import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.compose.animation.rememberSplineBasedDecay
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Scaffold
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -27,6 +30,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.kieronquinn.monetcompat.app.MonetCompatActivity
 import com.owenlejeune.tvtime.extensions.WindowSizeClass
 import com.owenlejeune.tvtime.extensions.rememberWindowSizeClass
@@ -171,6 +175,9 @@ class MainActivity : MonetCompatActivity() {
         NavigationBar {
             BottomNavItem.Items.forEach { item ->
                 NavigationBarItem(
+                    modifier = Modifier
+                        .padding(4.dp)
+                        .clip(RoundedCornerShape(24.dp)),
                     icon = { Icon(painter = painterResource(id = item.icon), contentDescription = null) },
                     label = { Text(item.name) },
                     selected = currentRoute == item.route,
@@ -191,8 +198,8 @@ class MainActivity : MonetCompatActivity() {
         appBarTitle: MutableState<String>,
         item: BottomNavItem
     ) {
-        appBarTitle.value = item.name
         navigateToRoute(navController, item.route)
+        appBarTitle.value = item.name
     }
 
     private fun navigateToRoute(navController: NavController, route: String) {

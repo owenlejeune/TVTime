@@ -40,7 +40,12 @@ import kotlinx.coroutines.launch
 import org.koin.java.KoinJavaComponent.get
 
 @Composable
-fun SettingsTab(preferences: AppPreferences = get(AppPreferences::class.java)) {
+fun SettingsTab(
+    appBarTitle: MutableState<String>,
+    preferences: AppPreferences = get(AppPreferences::class.java)
+) {
+    appBarTitle.value = stringResource(id = R.string.nav_settings_title)
+
     val scrollState = rememberScrollState()
 
     Column(
@@ -238,6 +243,7 @@ private fun WallpaperPicker(
 @Composable
 private fun DebugOptions(preferences: AppPreferences = get(AppPreferences::class.java)) {
     val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
 
     val firstLaunchTesting = remember { mutableStateOf(preferences.firstLaunchTesting) }
     SwitchPreference(
@@ -285,12 +291,29 @@ private fun DebugOptions(preferences: AppPreferences = get(AppPreferences::class
             .clickable(
                 onClick = {
                     preferences.guestSessionId = ""
-                    SessionManager.clearSession {
-                        Toast
-                            .makeText(context, "Cleared session: $it", Toast.LENGTH_SHORT)
-                            .show()
+                    coroutineScope.launch {
+                        SessionManager.clearSession {
+                            Toast
+                                .makeText(context, "Cleared session: $it", Toast.LENGTH_SHORT)
+                                .show()
+                        }
+                        SessionManager.clearSessionV4 {
+                            Toast
+                                .makeText(context, "Cleared session v4: $it", Toast.LENGTH_SHORT)
+                                .show()
+                        }
                     }
                 }
             )
+    )
+
+    val useV4Api = remember { mutableStateOf(preferences.useV4Api) }
+    SwitchPreference(
+        titleText = "Use v4 API",
+        checkState = useV4Api.value,
+        onCheckedChange = { isChecked ->
+            useV4Api.value = isChecked
+            preferences.useV4Api = isChecked
+        }
     )
 }
