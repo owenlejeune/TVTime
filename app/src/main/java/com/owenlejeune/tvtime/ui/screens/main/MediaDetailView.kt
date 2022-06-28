@@ -837,8 +837,8 @@ private fun ReviewsCard(
 
                     RoundedTextField(
                         modifier = Modifier
-                            .height(50.dp)
-                            .padding(top = 4.dp)
+                            .height(40.dp)
+                            .align(Alignment.CenterVertically)
                             .weight(1f),
                         value = reviewTextState,
                         onValueChange = { reviewTextState = it },
@@ -849,6 +849,7 @@ private fun ReviewsCard(
                     )
 
                     CircleBackgroundColorImage(
+                        modifier = Modifier.align(Alignment.CenterVertically),
                         size = 40.dp,
                         backgroundColor = MaterialTheme.colorScheme.tertiary,
                         image = Icons.Filled.Send,
