@@ -31,95 +31,7 @@ import com.owenlejeune.tvtime.ui.components.RatingRing
 import com.owenlejeune.tvtime.utils.TmdbUtils
 
 @Composable
-fun DetailContent(
-    modifier: Modifier = Modifier,
-    content: @Composable () -> Unit
-) {
-    Box(modifier = modifier
-        .background(color = MaterialTheme.colorScheme.background)
-        .verticalScroll(rememberScrollState())
-    ) {
-        content()
-    }
-}
-
-@Composable
 fun DetailHeader(
-    appNavController: NavController,
-    title: String,
-    modifier: Modifier = Modifier,
-    backdropUrl: String? = null,
-    posterUrl: String? = null,
-    backdropContentDescription: String? = null,
-    posterContentDescription: String? = null,
-    rating: Float? = null
-) {
-    ConstraintLayout(modifier = modifier
-        .fillMaxWidth()
-        .wrapContentHeight()
-    ) {
-       val (
-            backButton, backdropImage, posterImage, titleText, ratingsView
-       )  = createRefs()
-
-        Backdrop(
-            modifier = Modifier
-                .constrainAs(backdropImage) {
-                    top.linkTo(parent.top)
-                    start.linkTo(parent.start)
-                    end.linkTo(parent.end)
-                },
-            imageUrl = backdropUrl,
-            contentDescription = backdropContentDescription
-        )
-
-        PosterItem(
-            modifier = Modifier
-                .constrainAs(posterImage) {
-                    bottom.linkTo(backdropImage.bottom)
-                    start.linkTo(parent.start, margin = 16.dp)
-                    top.linkTo(backButton.bottom)
-                },
-            url = posterUrl,
-            contentDescription = posterContentDescription
-        )
-
-        TitleText(
-            modifier = Modifier
-                .constrainAs(titleText) {
-                    bottom.linkTo(posterImage.bottom)
-                    start.linkTo(posterImage.end, margin = 8.dp)
-                    end.linkTo(parent.end, margin = 16.dp)
-                },
-            title = title
-        )
-
-        rating?.let {
-            RatingView(
-                modifier = Modifier
-                    .constrainAs(ratingsView) {
-                        bottom.linkTo(titleText.top)
-                        start.linkTo(posterImage.end, margin = 20.dp)
-                    },
-                progress = rating
-            )
-        }
-
-        BackButton(
-            modifier = Modifier.constrainAs(backButton) {
-                top.linkTo(parent.top)//, 8.dp)
-                start.linkTo(parent.start, 8.dp)
-                bottom.linkTo(posterImage.top)
-            },
-            appNavController = appNavController
-        )
-    }
-}
-
-@Composable
-fun DetailHeader2(
-    appNavController: NavController,
-    title: String,
     modifier: Modifier = Modifier,
     backdropUrl: String? = null,
     posterUrl: String? = null,
@@ -189,22 +101,6 @@ private fun Backdrop(modifier: Modifier, imageUrl: String?, contentDescription: 
 }
 
 @Composable
-private fun TitleText(modifier: Modifier, title: String) {
-    Text(
-        text = title,
-        color = MaterialTheme.colorScheme.primary,
-        modifier = modifier
-            .padding(start = 16.dp, end = 16.dp)
-            .fillMaxWidth(.6f),
-        style = MaterialTheme.typography.headlineMedium,
-        textAlign = TextAlign.Start,
-        softWrap = true,
-        maxLines = 3,
-        overflow = TextOverflow.Ellipsis
-    )
-}
-
-@Composable
 fun RatingView(
     progress: Float,
     modifier: Modifier = Modifier
@@ -223,25 +119,6 @@ fun RatingView(
             ringColor = MaterialTheme.colorScheme.primary,
             ringStrokeWidth = 4.dp,
             size = 50.dp
-        )
-    }
-}
-
-@Composable
-private fun BackButton(modifier: Modifier, appNavController: NavController) {
-    val start = if (isSystemInDarkTheme()) Color.Black else Color.White
-    IconButton(
-        onClick = { appNavController.popBackStack() },
-        modifier = modifier
-            .background(
-                brush = Brush.radialGradient(colors = listOf(start, Color.Transparent))
-            )
-            .wrapContentSize()
-    ) {
-        Icon(
-            imageVector = Icons.Filled.ArrowBack,
-            contentDescription = stringResource(R.string.content_description_back_button),
-            tint = MaterialTheme.colorScheme.primary
         )
     }
 }

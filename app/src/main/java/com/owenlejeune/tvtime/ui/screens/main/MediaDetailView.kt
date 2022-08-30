@@ -108,9 +108,7 @@ fun MediaDetailView(
                     .padding(bottom = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                DetailHeader2(
-                    appNavController = appNavController,
-                    title = mediaItem.value?.title ?: "",
+                DetailHeader(
                     posterUrl = TmdbUtils.getFullPosterPath(mediaItem.value?.posterPath),
                     posterContentDescription = mediaItem.value?.title,
                     backdropUrl = TmdbUtils.getFullBackdropPath(mediaItem.value?.backdropPath),
