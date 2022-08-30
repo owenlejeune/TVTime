@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.*
@@ -18,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -47,13 +49,14 @@ import kotlinx.coroutines.*
 import org.json.JSONObject
 import java.text.DecimalFormat
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MediaDetailView(
     appNavController: NavController,
     itemId: Int?,
     type: MediaViewType
 ) {
-    val service = when(type) {
+    val service = when (type) {
         MediaViewType.MOVIE -> MoviesService()
         MediaViewType.TV -> TvService()
         else -> throw IllegalArgumentException("Media type given: ${type}, \n     expected one of MediaViewType.MOVIE, MediaViewType.TV") // shouldn't happen
@@ -66,48 +69,79 @@ fun MediaDetailView(
         }
     }
 
-   Column(
-       modifier = Modifier
-           .background(color = MaterialTheme.colorScheme.background)
-           .verticalScroll(rememberScrollState())
-           .fillMaxSize()
-           .padding(bottom = 16.dp),
-       verticalArrangement = Arrangement.spacedBy(16.dp)
-   ) {
-       DetailHeader(
-           appNavController = appNavController,
-           title = mediaItem.value?.title ?: "",
-           posterUrl = TmdbUtils.getFullPosterPath(mediaItem.value?.posterPath),
-           posterContentDescription = mediaItem.value?.title,
-           backdropUrl = TmdbUtils.getFullBackdropPath(mediaItem.value?.backdropPath),
-           rating = mediaItem.value?.voteAverage?.let { it / 10 }
-       )
+    val decayAnimationSpec = rememberSplineBasedDecay<Float>()
+    val topAppBarScrollState = rememberTopAppBarScrollState()
+    val scrollBehavior = remember(decayAnimationSpec) {
+        TopAppBarDefaults.exitUntilCollapsedScrollBehavior(decayAnimationSpec, topAppBarScrollState)
+    }
 
-       Column(
-           modifier = Modifier.padding(horizontal = 16.dp),
-           verticalArrangement = Arrangement.spacedBy(16.dp),
-//           horizontalAlignment = Alignment.CenterHorizontally
-       ) {
-           if (type == MediaViewType.MOVIE) {
-               MiscMovieDetails(mediaItem = mediaItem, service as MoviesService)
-           } else {
-               MiscTvDetails(mediaItem = mediaItem, service as TvService)
-           }
+    Scaffold(
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        topBar = {
+            SmallTopAppBar(
+                scrollBehavior = scrollBehavior,
+                colors = TopAppBarDefaults
+                    .largeTopAppBarColors(
+                        scrolledContainerColor = MaterialTheme.colorScheme.background,
+                        titleContentColor = MaterialTheme.colorScheme.primary
+                    ),
+                title = { Text(text = mediaItem.value?.title ?: "") },
+                navigationIcon = {
+                    IconButton(
+                        onClick = { appNavController.popBackStack() }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.ArrowBack,
+                            contentDescription = stringResource(id = R.string.content_description_back_button),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
+            )
+        }
+    ) { innerPadding ->
+        Box(modifier = Modifier.padding(innerPadding)) {
+            Column(
+                modifier = Modifier
+                    .background(color = MaterialTheme.colorScheme.background)
+                    .verticalScroll(state = rememberScrollState())
+                    .padding(bottom = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                DetailHeader2(
+                    appNavController = appNavController,
+                    title = mediaItem.value?.title ?: "",
+                    posterUrl = TmdbUtils.getFullPosterPath(mediaItem.value?.posterPath),
+                    posterContentDescription = mediaItem.value?.title,
+                    backdropUrl = TmdbUtils.getFullBackdropPath(mediaItem.value?.backdropPath),
+                    rating = mediaItem.value?.voteAverage?.let { it / 10 }
+                )
 
-           ActionsView(itemId = itemId, type = type, service = service)
+                Column(
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    if (type == MediaViewType.MOVIE) {
+                        MiscMovieDetails(mediaItem = mediaItem, service as MoviesService)
+                    } else {
+                        MiscTvDetails(mediaItem = mediaItem, service as TvService)
+                    }
 
-           OverviewCard(itemId = itemId, mediaItem = mediaItem, service = service)
+                    ActionsView(itemId = itemId, type = type, service = service)
 
-           CastCard(itemId = itemId, service = service, appNavController = appNavController)
+                    OverviewCard(itemId = itemId, mediaItem = mediaItem, service = service)
 
-           SimilarContentCard(itemId = itemId, service = service, mediaType = type, appNavController = appNavController)
+                    CastCard(itemId = itemId, service = service, appNavController = appNavController)
 
-           VideosCard(itemId = itemId, service = service)
+                    SimilarContentCard(itemId = itemId, service = service, mediaType = type, appNavController = appNavController)
 
-           ReviewsCard(itemId = itemId, service = service)
-       }
+                    VideosCard(itemId = itemId, service = service)
 
-   }
+                    ReviewsCard(itemId = itemId, service = service)
+                }
+            }
+        }
+    }
 }
 
 @Composable
@@ -184,7 +218,7 @@ private fun MiscDetails(
             modifier = Modifier
                 .fillMaxWidth()
                 .wrapContentHeight(),
-            chips = genres.map { it.name }
+            chips = genres.map { ChipInfo(it.name, false) }
         )
     }
 }
@@ -618,7 +652,7 @@ private fun OverviewCard(itemId: Int?, mediaItem: MutableState<DetailedItem?>, s
 
 
                 keywordResponse.value?.keywords?.let { keywords ->
-                    val names = keywords.map { it.name }
+                    val names = keywords.map { ChipInfo(it.name, false) }
                     ChipGroup(
                         chips = names,
                         chipStyle = ChipStyle.Rounded,
@@ -677,7 +711,7 @@ private fun CastCrewCard(appNavController: NavController, person: Person) {
         imageUrl = TmdbUtils.getFullPersonImagePath(person),
         noDataImage = R.drawable.no_person_photo,
         titleTextColor = MaterialTheme.colorScheme.onPrimary,
-        subtitleTextColor = Color.Unspecified,
+        subtitleTextColor = MaterialTheme.colorScheme.onSecondary,
         onItemClicked = {
             appNavController.navigate(
                 "${MainNavItem.DetailView.route}/${MediaViewType.PERSON}/${person.id}"

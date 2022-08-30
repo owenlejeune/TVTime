@@ -117,6 +117,60 @@ fun DetailHeader(
 }
 
 @Composable
+fun DetailHeader2(
+    appNavController: NavController,
+    title: String,
+    modifier: Modifier = Modifier,
+    backdropUrl: String? = null,
+    posterUrl: String? = null,
+    backdropContentDescription: String? = null,
+    posterContentDescription: String? = null,
+    rating: Float? = null
+) {
+    ConstraintLayout(modifier = modifier
+        .fillMaxWidth()
+        .wrapContentHeight()
+    ) {
+        val (
+            backdropImage, posterImage, ratingsView
+        )  = createRefs()
+
+        Backdrop(
+            modifier = Modifier
+                .constrainAs(backdropImage) {
+                    top.linkTo(parent.top)
+                    start.linkTo(parent.start)
+                    end.linkTo(parent.end)
+                },
+            imageUrl = backdropUrl,
+            contentDescription = backdropContentDescription
+        )
+
+        PosterItem(
+            modifier = Modifier
+                .constrainAs(posterImage) {
+                    bottom.linkTo(backdropImage.bottom)
+                    start.linkTo(parent.start, margin = 16.dp)
+                },
+            url = posterUrl,
+            contentDescription = posterContentDescription,
+            elevation = 20.dp
+        )
+
+        rating?.let {
+            RatingView(
+                modifier = Modifier
+                    .constrainAs(ratingsView) {
+                        bottom.linkTo(parent.bottom)
+                        start.linkTo(posterImage.end, margin = 20.dp)
+                    },
+                progress = rating
+            )
+        }
+    }
+}
+
+@Composable
 private fun Backdrop(modifier: Modifier, imageUrl: String?, contentDescription: String? = null) {
 //        val images = remember { mutableStateOf<ImageCollection?>(null) }
 //        itemId?.let {
@@ -151,7 +205,7 @@ private fun TitleText(modifier: Modifier, title: String) {
 }
 
 @Composable
-private fun RatingView(
+fun RatingView(
     progress: Float,
     modifier: Modifier = Modifier
 ) {

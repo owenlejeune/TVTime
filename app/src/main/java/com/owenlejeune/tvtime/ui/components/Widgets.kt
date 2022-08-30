@@ -272,10 +272,12 @@ fun MinLinesText(
     )
 }
 
+class ChipInfo(val text: String, val enabled: Boolean = true)
+
 sealed class ChipStyle(val mainAxisSpacing: Dp, val crossAxisSpacing: Dp) {
     object Boxy: ChipStyle(8.dp, 4.dp)
     object Rounded: ChipStyle(4.dp, 4.dp)
-    class Mixed(val predicate: (String) -> ChipStyle): ChipStyle(8.dp, 4.dp)
+    class Mixed(val predicate: (ChipInfo) -> ChipStyle): ChipStyle(8.dp, 4.dp)
 }
 
 @Composable
@@ -283,7 +285,8 @@ fun BoxyChip(
     text: String,
     style: TextStyle = MaterialTheme.typography.bodySmall,
     isSelected: Boolean = true,
-    onSelectionChanged: (String) -> Unit = {}
+    onSelectionChanged: (String) -> Unit = {},
+    enabled: Boolean = true
 ) {
     Surface(
 //        modifier = Modifier.padding(4.dp),
@@ -297,7 +300,8 @@ fun BoxyChip(
                     value = isSelected,
                     onValueChange = {
                         onSelectionChanged(text)
-                    }
+                    },
+                    enabled = enabled
                 )
         ) {
             Text(
@@ -315,7 +319,8 @@ fun RoundedChip(
     text: String,
     style: TextStyle = MaterialTheme.typography.bodySmall,
     isSelected: Boolean = false,
-    onSelectionChanged: (String) -> Unit = {}
+    onSelectionChanged: (String) -> Unit = {},
+    enabled: Boolean = true
 ) {
     val borderColor = if (isSelected) MaterialTheme.colorScheme.inverseSurface else MaterialTheme.colorScheme.onSurfaceVariant
     val radius = style.fontSize.value.dp * 2
@@ -330,7 +335,8 @@ fun RoundedChip(
                     value = isSelected,
                     onValueChange = {
                         onSelectionChanged(text)
-                    }
+                    },
+                    enabled = enabled
                 )
                 .padding(8.dp)
         ) {
@@ -346,24 +352,26 @@ fun RoundedChip(
 @Composable
 fun ChipGroup(
     modifier: Modifier = Modifier,
-    chips: List<String> = emptyList(),
+    chips: List<ChipInfo> = emptyList(),
     onSelectedChanged: (String) -> Unit = {},
     chipStyle: ChipStyle = ChipStyle.Boxy
 ) {
 
     @Composable
-    fun DrawChip(chipStyle: ChipStyle, chip: String) {
+    fun DrawChip(chipStyle: ChipStyle, chip: ChipInfo) {
         when (chipStyle) {
             ChipStyle.Boxy -> {
                 BoxyChip(
-                    text = chip,
-                    onSelectionChanged = onSelectedChanged
+                    text = chip.text,
+                    onSelectionChanged = onSelectedChanged,
+                    enabled = chip.enabled
                 )
             }
             ChipStyle.Rounded -> {
                 RoundedChip(
-                    text = chip,
-                    onSelectionChanged = onSelectedChanged
+                    text = chip.text,
+                    onSelectionChanged = onSelectedChanged,
+                    enabled = chip.enabled
                 )
             }
             is ChipStyle.Mixed -> {
