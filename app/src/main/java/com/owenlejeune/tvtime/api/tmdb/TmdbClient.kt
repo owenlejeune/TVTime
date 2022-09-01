@@ -77,15 +77,20 @@ class TmdbClient: KoinComponent {
         override fun intercept(chain: Interceptor.Chain): Response {
             val apiParam = QueryParam("api_key", BuildConfig.TMDB_ApiKey)
 
-            val locale = Locale.current
-            val languageCode = "${locale.language}-${locale.region}"
-            val languageParam = QueryParam("language", languageCode)
-
             val segments = chain.request().url.encodedPathSegments
             val sessionIdParam: QueryParam? = sessionIdParam(segments)
 
             val builder = chain.request().url.newBuilder()
-            builder.addQueryParams(apiParam, languageParam, sessionIdParam)
+            builder.addQueryParams(apiParam, sessionIdParam)
+
+            if (shouldIncludeLanguageParam(segments)) {
+                val locale = Locale.current
+                val languageCode = "${locale.language}-${locale.region}"
+                val languageParam = QueryParam("language", languageCode)
+
+                builder.addQueryParams(languageParam)
+            }
+
             val requestBuilder = chain.request().newBuilder().url(builder.build())
 
             val request = requestBuilder.build()
@@ -105,6 +110,16 @@ class TmdbClient: KoinComponent {
                 }
             }
             return sessionIdParam
+        }
+
+        private fun shouldIncludeLanguageParam(urlSegments: List<String>): Boolean {
+            val ignoredRoutes = listOf("images")
+            for (route in ignoredRoutes) {
+                if (urlSegments.contains(route)) {
+                    return false
+                }
+            }
+            return true
         }
     }
 

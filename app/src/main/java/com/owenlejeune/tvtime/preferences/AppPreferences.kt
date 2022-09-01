@@ -6,6 +6,7 @@ import com.google.gson.Gson
 import com.kieronquinn.monetcompat.core.MonetCompat
 import com.owenlejeune.tvtime.BuildConfig
 import com.owenlejeune.tvtime.utils.SessionManager
+import java.util.function.BiPredicate
 
 class AppPreferences(context: Context) {
 
@@ -24,6 +25,7 @@ class AppPreferences(context: Context) {
         private val USE_SYSTEM_COLORS = "use_system_colors"
         private val SELECTED_COLOR = "selected_color"
         private val USE_V4_API = "use_v4_api"
+        private val SHOW_BACKDROP_GALLERY = "show_backdrop_gallery"
     }
 
     private val preferences: SharedPreferences = context.getSharedPreferences(PREF_FILE, Context.MODE_PRIVATE)
@@ -77,6 +79,8 @@ class AppPreferences(context: Context) {
     var useV4Api: Boolean
         get() = preferences.getBoolean(USE_V4_API, true)
         set(value) { preferences.put(USE_V4_API, value) }
+
+    var showBackdropGallery: Boolean = true
 
     private fun SharedPreferences.put(key: String, value: Any?) {
         edit().apply {

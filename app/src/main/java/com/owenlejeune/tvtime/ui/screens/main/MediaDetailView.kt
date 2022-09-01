@@ -37,6 +37,7 @@ import com.owenlejeune.tvtime.api.tmdb.api.v3.MoviesService
 import com.owenlejeune.tvtime.api.tmdb.api.v3.TvService
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.*
 import com.owenlejeune.tvtime.extensions.listItems
+import com.owenlejeune.tvtime.preferences.AppPreferences
 import com.owenlejeune.tvtime.ui.components.*
 import com.owenlejeune.tvtime.ui.navigation.MainNavItem
 import com.owenlejeune.tvtime.ui.theme.FavoriteSelected
@@ -47,6 +48,7 @@ import com.owenlejeune.tvtime.utils.SessionManager
 import com.owenlejeune.tvtime.utils.TmdbUtils
 import kotlinx.coroutines.*
 import org.json.JSONObject
+import org.koin.java.KoinJavaComponent
 import java.text.DecimalFormat
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -54,7 +56,8 @@ import java.text.DecimalFormat
 fun MediaDetailView(
     appNavController: NavController,
     itemId: Int?,
-    type: MediaViewType
+    type: MediaViewType,
+    preferences: AppPreferences = KoinJavaComponent.get(AppPreferences::class.java)
 ) {
     val service = when (type) {
         MediaViewType.MOVIE -> MoviesService()
@@ -108,11 +111,19 @@ fun MediaDetailView(
                     .padding(bottom = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
+                val images = remember { mutableStateOf<ImageCollection?>(null) }
+                itemId?.let {
+                    if (preferences.showBackdropGallery && images.value == null) {
+                        fetchImages(itemId, service, images)
+                    }
+                }
+
                 DetailHeader(
                     posterUrl = TmdbUtils.getFullPosterPath(mediaItem.value?.posterPath),
                     posterContentDescription = mediaItem.value?.title,
                     backdropUrl = TmdbUtils.getFullBackdropPath(mediaItem.value?.backdropPath),
-                    rating = mediaItem.value?.voteAverage?.let { it / 10 }
+                    rating = mediaItem.value?.voteAverage?.let { it / 10 },
+                    imageCollection = images.value
                 )
 
                 Column(
@@ -995,7 +1006,7 @@ private fun fetchMediaItem(id: Int, service: DetailService, mediaItem: MutableSt
     }
 }
 
-private fun fetchImages(id: Int, service: DetailService, images: MutableState<ImageCollection?>) {
+fun fetchImages(id: Int, service: DetailService, images: MutableState<ImageCollection?>) {
     CoroutineScope(Dispatchers.IO).launch {
         val response = service.getImages(id)
         if (response.isSuccessful) {
