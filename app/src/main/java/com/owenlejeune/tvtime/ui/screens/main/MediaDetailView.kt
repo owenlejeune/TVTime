@@ -637,9 +637,9 @@ private fun OverviewCard(itemId: Int?, mediaItem: MutableState<DetailedItem?>, s
                 mi.tagline?.let { tagline ->
                     Text(
                         text = tagline,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        color = MaterialTheme.colorScheme.primary,
                         style = MaterialTheme.typography.bodyLarge,
-                        fontStyle = FontStyle.Italic
+                        fontStyle = FontStyle.Italic,
                     )
                 }
                 Text(
@@ -650,16 +650,27 @@ private fun OverviewCard(itemId: Int?, mediaItem: MutableState<DetailedItem?>, s
 
 
                 keywordResponse.value?.keywords?.let { keywords ->
-                    val names = keywords.map { ChipInfo(it.name, false) }
-                    ChipGroup(
-                        chips = names,
-                        chipStyle = ChipStyle.Rounded,
-                        onSelectedChanged = { chip ->
-                            if (service is MoviesService) {
-//                            Toast.makeText(context, chip, Toast.LENGTH_SHORT).show()
-                            }
+                    val keywordsChipInfo = keywords.map { ChipInfo(it.name, false) }
+                    Row(
+                        modifier = Modifier.horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(ChipStyle.Rounded.mainAxisSpacing)
+                    ) {
+                        keywordsChipInfo.forEach { keywordChipInfo ->
+                            RoundedChip(
+                                text = keywordChipInfo.text,
+                                enabled = keywordChipInfo.enabled,
+                                colors = ChipDefaults.roundedChipColors(
+                                    unselectedContainerColor = MaterialTheme.colorScheme.primary,
+                                    unselectedContentColor = MaterialTheme.colorScheme.primary
+                                ),
+                                onSelectionChanged = { chip ->
+                                    if (service is MoviesService) {
+                                        // Toast.makeText(context, chip, Toast.LENGTH_SHORT).show()
+                                    }
+                                }
+                            )
                         }
-                    )
+                    }
                 }
             }
         }

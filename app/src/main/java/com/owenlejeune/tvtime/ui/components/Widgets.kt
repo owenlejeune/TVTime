@@ -272,12 +272,54 @@ fun MinLinesText(
     )
 }
 
-class ChipInfo(val text: String, val enabled: Boolean = true)
+class ChipInfo(
+    val text: String,
+    val enabled: Boolean = true
+)
 
 sealed class ChipStyle(val mainAxisSpacing: Dp, val crossAxisSpacing: Dp) {
     object Boxy: ChipStyle(8.dp, 4.dp)
     object Rounded: ChipStyle(4.dp, 4.dp)
     class Mixed(val predicate: (ChipInfo) -> ChipStyle): ChipStyle(8.dp, 4.dp)
+}
+
+interface ChipColors {
+    @Composable fun selectedContainerColor(): Color
+    @Composable fun selectedContentColor(): Color
+    @Composable fun unselectedContentColor(): Color
+    @Composable fun unselectedContainerColor(): Color
+}
+
+object ChipDefaults {
+    @Composable
+    fun roundedChipColors(
+        selectedContainerColor: Color = MaterialTheme.colorScheme.inverseSurface,
+        unselectedContainerColor: Color = MaterialTheme.colorScheme.inverseSurface,
+        selectedContentColor: Color = MaterialTheme.colorScheme.onSurfaceVariant,
+        unselectedContentColor: Color = MaterialTheme.colorScheme.onSurfaceVariant
+    ): ChipColors {
+        return object : ChipColors {
+            @Composable override fun selectedContainerColor() = selectedContainerColor
+            @Composable override fun selectedContentColor() = selectedContentColor
+            @Composable override fun unselectedContainerColor() = unselectedContainerColor
+            @Composable override fun unselectedContentColor() = unselectedContentColor
+        }
+    }
+
+    @Composable
+    fun boxyChipColors(
+        selectedContainerColor: Color = MaterialTheme.colorScheme.secondaryContainer,
+        unselectedContainerColor: Color = MaterialTheme.colorScheme.secondary,
+        selectedContentColor: Color = MaterialTheme.colorScheme.onSecondaryContainer,
+        unselectedContentColor: Color = MaterialTheme.colorScheme.onSecondary
+    ): ChipColors {
+        return object : ChipColors {
+            @Composable override fun selectedContainerColor() = selectedContainerColor
+            @Composable override fun selectedContentColor() = selectedContentColor
+            @Composable override fun unselectedContainerColor() = unselectedContainerColor
+            @Composable override fun unselectedContentColor() = unselectedContentColor
+        }
+    }
 }
 
 @Composable
@@ -286,13 +328,13 @@ fun BoxyChip(
     style: TextStyle = MaterialTheme.typography.bodySmall,
     isSelected: Boolean = true,
     onSelectionChanged: (String) -> Unit = {},
-    enabled: Boolean = true
+    enabled: Boolean = true,
+    colors: ChipColors = ChipDefaults.boxyChipColors()
 ) {
     Surface(
-//        modifier = Modifier.padding(4.dp),
         shadowElevation = 8.dp,
         shape = RoundedCornerShape(5.dp),
-        color = if (isSelected) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.secondary
+        color = if (isSelected) colors.selectedContainerColor() else colors.unselectedContainerColor()
     ) {
         Row(
             modifier = Modifier
@@ -307,7 +349,7 @@ fun BoxyChip(
             Text(
                 text = text,
                 style = style,
-                color = if (isSelected) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSecondary,
+                color = if (isSelected) colors.selectedContentColor() else colors.unselectedContentColor(),
                 modifier = Modifier.padding(8.dp)
             )
         }
@@ -320,9 +362,10 @@ fun RoundedChip(
     style: TextStyle = MaterialTheme.typography.bodySmall,
     isSelected: Boolean = false,
     onSelectionChanged: (String) -> Unit = {},
-    enabled: Boolean = true
+    enabled: Boolean = true,
+    colors: ChipColors = ChipDefaults.roundedChipColors()
 ) {
-    val borderColor = if (isSelected) MaterialTheme.colorScheme.inverseSurface else MaterialTheme.colorScheme.onSurfaceVariant
+    val borderColor = if (isSelected) colors.selectedContainerColor() else colors.unselectedContainerColor()
     val radius = style.fontSize.value.dp * 2
     Surface(
         border = BorderStroke(width = 1.dp, borderColor),
@@ -343,7 +386,7 @@ fun RoundedChip(
             Text(
                 text = text,
                 style = style,
-                color = if (isSelected) MaterialTheme.colorScheme.inverseSurface else MaterialTheme.colorScheme.onSurfaceVariant
+                color = if (isSelected) colors.selectedContentColor() else colors.unselectedContentColor()
             )
         }
     }
@@ -354,7 +397,9 @@ fun ChipGroup(
     modifier: Modifier = Modifier,
     chips: List<ChipInfo> = emptyList(),
     onSelectedChanged: (String) -> Unit = {},
-    chipStyle: ChipStyle = ChipStyle.Boxy
+    chipStyle: ChipStyle = ChipStyle.Boxy,
+    roundedChipColors: ChipColors = ChipDefaults.roundedChipColors(),
+    boxyChipColors: ChipColors = ChipDefaults.boxyChipColors()
 ) {
 
     @Composable
@@ -364,14 +409,16 @@ fun ChipGroup(
                 BoxyChip(
                     text = chip.text,
                     onSelectionChanged = onSelectedChanged,
-                    enabled = chip.enabled
+                    enabled = chip.enabled,
+                    colors = boxyChipColors
                 )
             }
             ChipStyle.Rounded -> {
                 RoundedChip(
                     text = chip.text,
                     onSelectionChanged = onSelectedChanged,
-                    enabled = chip.enabled
+                    enabled = chip.enabled,
+                    colors = roundedChipColors
                 )
             }
             is ChipStyle.Mixed -> {
@@ -382,7 +429,7 @@ fun ChipGroup(
 
     FlowRow(
         modifier = modifier,
-        crossAxisSpacing = 4.dp,
+        crossAxisSpacing = chipStyle.crossAxisSpacing,
         mainAxisSpacing = chipStyle.mainAxisSpacing
     ) {
         chips.forEach { chip ->
@@ -695,7 +742,9 @@ fun AvatarImage(
 ) {
     if (author.avatarPath != null) {
         AsyncImage(
-            modifier = modifier.size(size).clip(CircleShape),
+            modifier = modifier
+                .size(size)
+                .clip(CircleShape),
             model = TmdbUtils.getFullAvatarPath(author),
             contentDescription = ""
         )
