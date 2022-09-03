@@ -7,6 +7,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import androidx.paging.compose.collectAsLazyPagingItems
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.PagerState
@@ -15,10 +16,12 @@ import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.api.tmdb.api.v3.HomePageService
 import com.owenlejeune.tvtime.api.tmdb.api.v3.MoviesService
 import com.owenlejeune.tvtime.api.tmdb.api.v3.TvService
+import com.owenlejeune.tvtime.ui.components.PagingPosterGrid
 import com.owenlejeune.tvtime.ui.components.PosterGrid
 import com.owenlejeune.tvtime.ui.navigation.MainNavItem
 import com.owenlejeune.tvtime.ui.navigation.MediaFetchFun
 import com.owenlejeune.tvtime.ui.navigation.MediaTabNavItem
+import com.owenlejeune.tvtime.ui.navigation.MediaTabViewModel
 import com.owenlejeune.tvtime.ui.screens.main.tabs.top.Tabs
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -56,23 +59,16 @@ fun MediaTab(
 }
 
 @Composable
-fun MediaTabContent(appNavController: NavHostController, mediaType: MediaViewType, mediaFetchFun: MediaFetchFun) {
-    val service: HomePageService = when(mediaType) {
-        MediaViewType.MOVIE -> MoviesService()
-        MediaViewType.TV -> TvService()
+fun MediaTabContent(appNavController: NavHostController, mediaType: MediaViewType, mediaTabItem: MediaTabNavItem) {
+    val viewModel: MediaTabViewModel? = when(mediaType) {
+        MediaViewType.MOVIE -> mediaTabItem.movieViewModel
+        MediaViewType.TV -> mediaTabItem.tvViewModel
         else -> throw IllegalArgumentException("Media type given: ${mediaType}, \n     expected one of MediaViewType.MOVIE, MediaViewType.TV") // shouldn't happen
     }
-    PosterGrid(
-        fetchMedia =  { mediaList ->
-            CoroutineScope(Dispatchers.IO).launch {
-                val response = mediaFetchFun.invoke(service, 1)
-                if (response.isSuccessful) {
-                    withContext(Dispatchers.Main) {
-                        mediaList.value = response.body()?.results ?: emptyList()
-                    }
-                }
-            }
-        },
+    val mediaListItems = viewModel?.mediaItems?.collectAsLazyPagingItems()
+
+    PagingPosterGrid(
+        lazyPagingItems = mediaListItems,
         onClick = { id ->
             appNavController.navigate(
                 "${MainNavItem.DetailView.route}/${mediaType}/${id}"
@@ -90,7 +86,7 @@ fun MediaTabs(
     appNavController: NavHostController = rememberNavController()
 ) {
     HorizontalPager(count = tabs.size, state = pagerState) { page ->
-        tabs[page].screen(appNavController, mediaViewType, tabs[page].mediaFetchFun)
+        tabs[page].screen(appNavController, mediaViewType, tabs[page])
     }
 }
 
@@ -102,7 +98,3 @@ fun MediaTabsPreview() {
     val pagerState = rememberPagerState()
     MediaTabs(tabs = tabs, pagerState = pagerState, MediaViewType.MOVIE)
 }
-
-//    val moviesViewModel = viewModel(PopularMovieViewModel::class.java)
-//    val moviesList = moviesViewModel.moviePage
-//    val movieListItems: LazyPagingItems<PopularMovie> = moviesList.collectAsLazyPagingItems()

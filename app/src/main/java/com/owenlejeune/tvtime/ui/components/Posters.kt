@@ -22,6 +22,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import androidx.paging.LoadState
+import androidx.paging.compose.LazyPagingItems
 import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
 import com.google.accompanist.pager.ExperimentalPagerApi
@@ -33,6 +35,7 @@ import com.owenlejeune.tvtime.api.tmdb.api.v3.model.ImageCollection
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.Person
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.TmdbItem
 import com.owenlejeune.tvtime.extensions.dpToPx
+import com.owenlejeune.tvtime.extensions.lazyPagingItems
 import com.owenlejeune.tvtime.extensions.listItems
 import com.owenlejeune.tvtime.utils.TmdbUtils
 
@@ -58,6 +61,37 @@ fun PosterGrid(
                 mediaItem = item,
                 onClick = onClick
             )
+        }
+    }
+}
+
+@Composable
+fun PagingPosterGrid(
+    lazyPagingItems: LazyPagingItems<TmdbItem>?,
+    onClick: (id: Int) -> Unit = {}
+) {
+    lazyPagingItems?.let {
+        LazyVerticalGrid(
+            columns = GridCells.Adaptive(minSize = POSTER_WIDTH),
+            contentPadding = PaddingValues(8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            lazyPagingItems(lazyPagingItems) { item ->
+                item?.let {
+                    PosterItem(
+                        modifier = Modifier.padding(5.dp),
+                        mediaItem = item,
+                        onClick = onClick
+                    )
+                }
+            }
+            lazyPagingItems.apply {
+                when {
+                    loadState.refresh is LoadState.Loading -> {}
+                    loadState.append is LoadState.Loading -> {}
+                    loadState.append is LoadState.Error -> {}
+                }
+            }
         }
     }
 }
