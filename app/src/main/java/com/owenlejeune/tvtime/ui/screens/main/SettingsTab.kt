@@ -2,6 +2,7 @@ package com.owenlejeune.tvtime.ui.screens.main
 
 import android.os.Build
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -42,6 +43,7 @@ import org.koin.java.KoinJavaComponent.get
 @Composable
 fun SettingsTab(
     appBarTitle: MutableState<String>,
+    activity: AppCompatActivity,
     preferences: AppPreferences = get(AppPreferences::class.java)
 ) {
     appBarTitle.value = stringResource(id = R.string.nav_settings_title)
@@ -54,23 +56,7 @@ fun SettingsTab(
             .padding(start = 8.dp, top = 8.dp, bottom = 8.dp, end = 24.dp)
             .verticalScroll(scrollState)
     ) {
-//        val usePreferences = remember { mutableStateOf(preferences.usePreferences) }
-//        TopLevelSwitch(
-//            text = "Enable Preferences",
-//            checkedState = usePreferences,
-//            onCheckChanged = { isChecked ->
-//                usePreferences.value = isChecked
-//                preferences.usePreferences = isChecked
-//            }
-//        )
-//
-//        Column(
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .wrapContentHeight()
-//                .padding(start = 8.dp, top = 8.dp, bottom = 8.dp, end = 24.dp)
-//                .verticalScroll()
-//        ) {
+        /******* Search Preferences ********/
         PreferenceHeading(text = stringResource(R.string.preference_heading_search))
 
         val persistentSearch = remember { mutableStateOf(preferences.persistentSearch) }
@@ -96,20 +82,35 @@ fun SettingsTab(
             enabled = persistentSearch.value
         )
 
+        /******* Design Preferences ********/
         PreferenceHeading(text = stringResource(id = R.string.preference_heading_design))
+
+        val useWallpaperColors = remember { mutableStateOf(preferences.useWallpaperColors) }
+        SwitchPreference(
+            titleText = stringResource(R.string.preferences_use_wallpaper_colors_title),
+            subtitleText = stringResource(R.string.preferences_use_wallpaper_colors_subtitle),
+            checkState = useWallpaperColors.value,
+            onCheckedChange = { isChecked ->
+                useWallpaperColors.value = isChecked
+                preferences.useWallpaperColors = isChecked
+                activity.recreate()
+            }
+        )
 
         val isSystemColorsSupported = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
         if (isSystemColorsSupported) {
             val useSystemColors = remember { mutableStateOf(preferences.useSystemColors) }
             SwitchPreference(
                 titleText = stringResource(id = R.string.preference_system_colors_heading),
+                subtitleText = stringResource(R.string.preference_system_colors_subtitle),
                 checkState = useSystemColors.value,
                 onCheckedChange = { isChecked ->
                     useSystemColors.value = isChecked
                     preferences.useSystemColors = isChecked
                     MonetCompat.useSystemColorsOnAndroid12 = isChecked
                     MonetCompat.getInstance().updateMonetColors()
-                }
+                },
+                enabled = useWallpaperColors.value
             )
         }
 
@@ -123,11 +124,11 @@ fun SettingsTab(
                 }
                 MonetCompat.getInstance().updateMonetColors()
             },
-            enabled = if (isSystemColorsSupported) !preferences.useSystemColors else true
+            enabled = (if (isSystemColorsSupported) !preferences.useSystemColors else true).and(useWallpaperColors.value)
         )
 
         val showWallpaperPicker = remember { mutableStateOf(false) }
-        val wallpaperPickerModifier = if (isSystemColorsSupported && preferences.useSystemColors) {
+        val wallpaperPickerModifier = if (isSystemColorsSupported && preferences.useSystemColors && useWallpaperColors.value) {
             Modifier
         } else {
             Modifier.clickable { showWallpaperPicker.value = true }
@@ -148,8 +149,9 @@ fun SettingsTab(
             WallpaperPicker(showPopup = showWallpaperPicker)
         }
 
+        /******* Dev Preferences ********/
         if (BuildConfig.DEBUG) {
-            Divider(modifier = Modifier.padding(start = 8.dp, top = 20.dp))
+            Divider(modifier = Modifier.padding(start = 8.dp, top = 20.dp), color = MaterialTheme.colorScheme.primaryContainer)
             Text(
                 modifier = Modifier.padding(start = 8.dp, top = 20.dp),
                 text = stringResource(R.string.preferences_debug_title),

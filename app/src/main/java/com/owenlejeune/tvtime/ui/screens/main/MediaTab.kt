@@ -89,12 +89,3 @@ fun MediaTabs(
         tabs[page].screen(appNavController, mediaViewType, tabs[page])
     }
 }
-
-@OptIn(ExperimentalPagerApi::class)
-@Preview(showBackground = true)
-@Composable
-fun MediaTabsPreview() {
-    val tabs = MediaTabNavItem.MovieItems
-    val pagerState = rememberPagerState()
-    MediaTabs(tabs = tabs, pagerState = pagerState, MediaViewType.MOVIE)
-}

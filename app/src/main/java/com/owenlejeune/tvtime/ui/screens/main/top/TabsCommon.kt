@@ -137,12 +137,3 @@ private fun SmallTabIndicator(
     )
 }
 
-@OptIn(ExperimentalPagerApi::class)
-@Preview(showBackground = true)
-@Composable
-fun TabsPreview() {
-    val tabs = MediaTabNavItem.MovieItems
-    val pagerState = rememberPagerState()
-    Tabs(tabs = tabs, pagerState = pagerState)
-}
-

@@ -196,16 +196,6 @@ fun CustomSwitch(
     }
 }
 
-@Preview(name = "TopLevelSwitch", showBackground = true)
-@Preview(name = "Dark TopLevelSwitch", showBackground = true, uiMode = UI_MODE_NIGHT_YES)
-@Composable
-fun TopLevelSwitchPreview() {
-    val context = LocalContext.current
-    TopLevelSwitch("This is a switch") { isChecked ->
-        Toast.makeText(context, "Switch changed to $isChecked", Toast.LENGTH_SHORT).show()
-    }
-}
-
 @Composable
 fun SearchFab(
     focusSearchBar: MutableState<Boolean> = mutableStateOf(false),
@@ -219,12 +209,6 @@ fun SearchFab(
     }) {
         Icon(Icons.Filled.Search, "")
     }
-}
-
-@Preview
-@Composable
-fun SearchFabPreview() {
-    SearchFab()
 }
 
 @Composable
@@ -438,12 +422,6 @@ fun ChipGroup(
     }
 }
 
-@Preview
-@Composable
-fun ChipPreview() {
-    BoxyChip("Test Chip")
-}
-
 /**
  * @param progress The progress of the ring as a value between 0 and 1
  */
@@ -566,28 +544,6 @@ fun RoundedTextField(
     }
 }
 
-@Preview(widthDp = 300, heightDp = 40)
-@Composable
-private fun RoundedEditTextPreview() {
-    RoundedTextField(
-        value = "this is my value",
-        onValueChange = {},
-        placeHolder = "this is my placeholder",
-        trailingIcon = {
-            Image(
-                painter = painterResource(id = R.drawable.ic_search),
-                contentDescription = ""
-            )
-       },
-        leadingIcon = {
-            Image(
-                painter = painterResource(id = R.drawable.ic_search),
-                contentDescription = ""
-            )
-        }
-    )
-}
-
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun FullScreenThumbnailVideoPlayer(
@@ -687,18 +643,6 @@ fun CircleBackgroundColorImage(
             contentScale = ContentScale.FillBounds
         )
     }
-}
-
-@Composable
-@Preview
-private fun CircleBackgroundColorImagePreview() {
-    CircleBackgroundColorImage(
-        size = 100.dp,
-        backgroundColor = MaterialTheme.colorScheme.inverseSurface, 
-        painter = painterResource(id = R.drawable.ic_rating_star),
-        colorFilter = ColorFilter.tint(color = RatingSelected),
-        imageSize = DpSize(width = 70.dp, height = 70.dp)
-    )
 }
 
 @Composable

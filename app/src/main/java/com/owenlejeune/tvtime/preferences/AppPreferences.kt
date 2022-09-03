@@ -26,10 +26,12 @@ class AppPreferences(context: Context) {
         private val SELECTED_COLOR = "selected_color"
         private val USE_V4_API = "use_v4_api"
         private val SHOW_BACKDROP_GALLERY = "show_backdrop_gallery"
+        private val USE_WALLPAPER_COLORS = "use_wallpaper_colors"
     }
 
     private val preferences: SharedPreferences = context.getSharedPreferences(PREF_FILE, Context.MODE_PRIVATE)
 
+    /******** Search Preferences ********/
     var persistentSearch: Boolean
         get() = preferences.getBoolean(PERSISTENT_SEARCH, true)
         set(value) { preferences.put(PERSISTENT_SEARCH, value) }
@@ -38,6 +40,25 @@ class AppPreferences(context: Context) {
         get() = preferences.getBoolean(HIDE_TITLE, false)
         set(value) { preferences.put(HIDE_TITLE, value) }
 
+    var useWallpaperColors: Boolean
+        get() = preferences.getBoolean(USE_WALLPAPER_COLORS, true)
+        set(value) { preferences.put(USE_WALLPAPER_COLORS, value) }
+
+
+    /******* Design Preferences ********/
+    var useSystemColors: Boolean
+        get() = preferences.getBoolean(USE_SYSTEM_COLORS, true)
+        set(value) { preferences.put(USE_SYSTEM_COLORS, value) }
+
+    var chromaMultiplier: Double
+        get() = preferences.getFloat(CHROMA_MULTIPLIER, MonetCompat.chromaMultiplier.toFloat()).toDouble()
+        set(value) { preferences.put(CHROMA_MULTIPLIER, value) }
+
+    var selectedColor: Int
+        get() = preferences.getInt(SELECTED_COLOR, Int.MAX_VALUE)
+        set(value) { preferences.put(SELECTED_COLOR, value) }
+
+    /******* Session Tokens ********/
     var guestSessionId: String
         get() = preferences.getString(GUEST_SESSION, "") ?: ""
         set(value) { preferences.put(GUEST_SESSION, value) }
@@ -51,11 +72,8 @@ class AppPreferences(context: Context) {
     var authorizedSessionId: String
         get() = preferences.getString(AUTHORIZED_SESSION, "") ?: ""
         set(value) { preferences.put(AUTHORIZED_SESSION, value) }
-//    val usePreferences:  MutableState<Boolean>
-//    var usePreferences: Boolean
-//        get() = preferences.getBoolean(USE_PREFERENCES, false)
-//        set(value) { preferences.put(USE_PREFERENCES, value) }
 
+    /******** Dev Preferences ********/
     var firstLaunchTesting: Boolean
         get() = preferences.getBoolean(FIRST_LAUNCH_TESTING, false)
         set(value) { preferences.put(FIRST_LAUNCH_TESTING, value) }
@@ -63,18 +81,6 @@ class AppPreferences(context: Context) {
     var firstLaunch: Boolean
         get() = if (BuildConfig.DEBUG) firstLaunchTesting else preferences.getBoolean(FIRST_LAUNCH, true)
         set(value) { preferences.put(FIRST_LAUNCH, value) }
-
-    var useSystemColors: Boolean
-        get() = preferences.getBoolean(USE_SYSTEM_COLORS, true)
-        set(value) { preferences.put(USE_SYSTEM_COLORS, value) }
-
-    var chromaMultiplier: Double
-        get() = preferences.getFloat(CHROMA_MULTIPLIER, MonetCompat.chromaMultiplier.toFloat()).toDouble()
-        set(value) { preferences.put(CHROMA_MULTIPLIER, value) }
-
-    var selectedColor: Int
-        get() = preferences.getInt(SELECTED_COLOR, Int.MAX_VALUE)
-        set(value) { preferences.put(SELECTED_COLOR, value) }
 
     var useV4Api: Boolean
         get() = preferences.getBoolean(USE_V4_API, true)

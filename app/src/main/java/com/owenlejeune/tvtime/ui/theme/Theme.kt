@@ -8,6 +8,8 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.kieronquinn.monetcompat.core.MonetCompat
+import com.owenlejeune.tvtime.preferences.AppPreferences
+import org.koin.java.KoinJavaComponent.get
 
 private val DarkColorPalette = darkColorScheme(
     primary = A1_200,
@@ -97,14 +99,22 @@ private val LightColorPalette = lightColorScheme(
 
 @Composable
 fun TVTimeTheme(
+    preferences: AppPreferences = get(AppPreferences::class.java),
     isDarkTheme: Boolean = isSystemInDarkTheme(),
     monetCompat: MonetCompat,
     content: @Composable () -> Unit
 ) {
-    val colors = if(isDarkTheme) {
-        monetCompat.darkMonetCompatScheme()
-    } else {
-        monetCompat.lightMonetCompatScheme()
+//    val colors = if(isDarkTheme) {
+//        monetCompat.darkMonetCompatScheme()
+//    } else {
+//        monetCompat.lightMonetCompatScheme()
+//    }
+    val colors = when {
+        isDarkTheme && preferences.useWallpaperColors -> monetCompat.darkMonetCompatScheme()
+        isDarkTheme && !preferences.useWallpaperColors -> DarkColorPalette
+        !isDarkTheme && preferences.useWallpaperColors -> monetCompat.lightMonetCompatScheme()
+        !isDarkTheme && !preferences.useWallpaperColors -> LightColorPalette
+        else -> throw Exception("Error getting theme colors, should never happen")
     }
 
     androidx.compose.material3.MaterialTheme(

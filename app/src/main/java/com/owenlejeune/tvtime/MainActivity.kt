@@ -352,6 +352,7 @@ class MainActivity : MonetCompatActivity() {
             }
 
             MainNavGraph(
+                activity = this@MainActivity,
                 appNavController = appNavController,
                 navController = navController,
                 appBarTitle = appBarTitle,

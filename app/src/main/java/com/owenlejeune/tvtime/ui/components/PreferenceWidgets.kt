@@ -71,12 +71,6 @@ fun SwitchPreference(
     }
 }
 
-@Preview
-@Composable
-private fun SwitchPreferencePreview() {
-    SwitchPreference("Title", true, subtitleText = "Subtitle")
-}
-
 @Composable
 fun SliderPreference(
     modifier: Modifier = Modifier,

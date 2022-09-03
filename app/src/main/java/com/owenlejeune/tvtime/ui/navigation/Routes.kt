@@ -1,5 +1,6 @@
 package com.owenlejeune.tvtime.ui.navigation
 
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -19,41 +20,8 @@ object NavConstants {
 }
 
 @Composable
-fun MainNavigationRoutes(
-    navController: NavHostController,
-    startDestination: String = MainNavItem.MainView.route
-) {
-    NavHost(navController = navController, startDestination = startDestination) {
-        composable(MainNavItem.MainView.route) {
-            MainAppView(appNavController = navController)
-        }
-        composable(
-            MainNavItem.DetailView.route.plus("/{${NavConstants.TYPE_KEY}}/{${NavConstants.ID_KEY}}"),
-            arguments = listOf(
-                navArgument(NavConstants.ID_KEY) { type = NavType.IntType },
-                navArgument(NavConstants.TYPE_KEY) { type = NavType.EnumType(MediaViewType::class.java) }
-            )
-        ) { navBackStackEntry ->
-            val args = navBackStackEntry.arguments
-            val mediaType = args?.getSerializable(NavConstants.TYPE_KEY) as MediaViewType
-            if (mediaType != MediaViewType.PERSON) {
-                MediaDetailView(
-                    appNavController = navController,
-                    itemId = args.getInt(NavConstants.ID_KEY),
-                    type = mediaType
-                )
-            } else {
-                PersonDetailView(
-                    appNavController = navController,
-                    personId = args.getInt(NavConstants.ID_KEY)
-                )
-            }
-        }
-    }
-}
-
-@Composable
 fun MainNavGraph(
+    activity: AppCompatActivity,
     appNavController: NavHostController,
     navController: NavHostController,
     appBarTitle: MutableState<String>,
@@ -82,7 +50,7 @@ fun MainNavGraph(
 //        }
         composable(BottomNavItem.Settings.route) {
             appBarActions.value = {}
-            SettingsTab(appBarTitle = appBarTitle)
+            SettingsTab(appBarTitle = appBarTitle, activity = activity)
         }
     }
 }
