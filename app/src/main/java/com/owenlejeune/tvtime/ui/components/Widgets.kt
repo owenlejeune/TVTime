@@ -43,6 +43,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
@@ -60,12 +61,16 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.core.text.HtmlCompat
+import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
 import com.google.accompanist.flowlayout.FlowRow
 import com.kieronquinn.monetcompat.core.MonetCompat
 import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.AuthorDetails
+import com.owenlejeune.tvtime.preferences.AppPreferences
+import com.owenlejeune.tvtime.ui.navigation.MainNavItem
+import com.owenlejeune.tvtime.ui.screens.main.MediaViewType
 import com.owenlejeune.tvtime.ui.theme.RatingSelected
 import com.owenlejeune.tvtime.utils.TmdbUtils
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
@@ -76,6 +81,7 @@ import kotlinx.coroutines.launch
 import org.intellij.markdown.flavours.commonmark.CommonMarkFlavourDescriptor
 import org.intellij.markdown.html.HtmlGenerator
 import org.intellij.markdown.parser.MarkdownParser
+import org.koin.java.KoinJavaComponent
 import kotlin.math.exp
 
 @Composable
@@ -199,17 +205,30 @@ fun CustomSwitch(
 }
 
 @Composable
-fun SearchFab(
-    focusSearchBar: MutableState<Boolean> = mutableStateOf(false),
-    focusRequester: FocusRequester = remember { FocusRequester() }
+fun SearchView(
+    title: String,
+    appNavController: NavHostController,
+    mediaType: MediaViewType,
+    fab: MutableState<@Composable () -> Unit>,
+    preferences: AppPreferences = KoinJavaComponent.get(AppPreferences::class.java)
 ) {
-    val context = LocalContext.current
-    FloatingActionButton(onClick = {
-        focusSearchBar.value = true
-//        focusRequester.requestFocus()
-//        Toast.makeText(context, "Search Clicked!", Toast.LENGTH_SHORT).show()
-    }) {
-        Icon(Icons.Filled.Search, "")
+    val route = "${MainNavItem.SearchView.route}/${mediaType.ordinal}"
+    if (preferences.showSearchBar) {
+        SearchBar(
+            placeholder = title
+        ) {
+            appNavController.navigate(route)
+        }
+    } else {
+        fab.value = @Composable {
+            FloatingActionButton(
+                onClick = {
+                    appNavController.navigate(route)
+                }
+            ) {
+                Icon(Icons.Filled.Search, stringResource(id = R.string.preference_heading_search))
+            }
+        }
     }
 }
 
@@ -484,7 +503,7 @@ fun RoundedTextField(
 ) {
     Surface(
         modifier = modifier,
-        shape = RoundedCornerShape(50.dp),
+        shape = RoundedCornerShape(25.dp),
         color = backgroundColor
     ) {
         Row(Modifier.padding(horizontal = 12.dp),
@@ -1006,7 +1025,27 @@ fun <T> Spinner(
 }
 
 @Composable
-@Preview
-fun SpinnerPreview() {
-    Spinner(list = listOf("T" to "T", "Q" to "Q", "F" to "F"), modifier = Modifier.width(300.dp), preselected = "T" to "T", onSelectionChanged = {})
+fun SearchBar(
+    placeholder: String,
+    onClick: () -> Unit
+) {
+    RoundedTextField(
+        modifier = Modifier
+            .padding(all = 12.dp)
+            .height(55.dp)
+            .clickable(
+                onClick = onClick
+            ),
+        value = "",
+        enabled = false,
+        onValueChange = {  },
+        placeHolder = stringResource(id = R.string.search_placeholder, placeholder),
+        leadingIcon = {
+            Image(
+                painter = painterResource(id = R.drawable.ic_search),
+                contentDescription = stringResource(R.string.search_icon_content_descriptor),
+                colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.primary)
+            )
+        }
+    )
 }

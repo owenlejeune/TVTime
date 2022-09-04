@@ -13,6 +13,7 @@ import androidx.navigation.NavHostController
 import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.api.tmdb.api.v3.PeopleService
 import com.owenlejeune.tvtime.ui.components.PeoplePosterGrid
+import com.owenlejeune.tvtime.ui.components.SearchView
 import com.owenlejeune.tvtime.ui.navigation.MainNavItem
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -22,13 +23,21 @@ import kotlinx.coroutines.withContext
 @Composable
 fun PeopleTab(
     appBarTitle: MutableState<String>,
-    appNavController: NavHostController
+    appNavController: NavHostController,
+    fab: MutableState<@Composable () -> Unit>
 ) {
     appBarTitle.value = stringResource(id = R.string.nav_people_title)
 
     val service = PeopleService()
 
     Column {
+        SearchView(
+            title = appBarTitle.value,
+            appNavController = appNavController,
+            mediaType = MediaViewType.PERSON,
+            fab = fab
+        )
+
         Text(
             modifier = Modifier.padding(start = 16.dp),
             text = stringResource(id = R.string.nav_popular_people_title),

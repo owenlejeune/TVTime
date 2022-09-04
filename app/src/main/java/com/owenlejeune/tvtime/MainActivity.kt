@@ -3,7 +3,6 @@ package com.owenlejeune.tvtime
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.compose.animation.rememberSplineBasedDecay
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Scaffold
@@ -14,8 +13,6 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
@@ -35,12 +32,14 @@ import com.kieronquinn.monetcompat.app.MonetCompatActivity
 import com.owenlejeune.tvtime.extensions.WindowSizeClass
 import com.owenlejeune.tvtime.extensions.rememberWindowSizeClass
 import com.owenlejeune.tvtime.preferences.AppPreferences
-import com.owenlejeune.tvtime.ui.components.RoundedTextField
-import com.owenlejeune.tvtime.ui.components.SearchFab
 import com.owenlejeune.tvtime.ui.navigation.BottomNavItem
 import com.owenlejeune.tvtime.ui.navigation.MainNavGraph
 import com.owenlejeune.tvtime.ui.navigation.MainNavItem
-import com.owenlejeune.tvtime.ui.screens.main.*
+import com.owenlejeune.tvtime.ui.screens.SearchScreen
+import com.owenlejeune.tvtime.ui.screens.main.MediaDetailView
+import com.owenlejeune.tvtime.ui.screens.main.MediaViewType
+import com.owenlejeune.tvtime.ui.screens.main.PersonDetailView
+import com.owenlejeune.tvtime.ui.screens.main.SettingsTab
 import com.owenlejeune.tvtime.ui.theme.TVTimeTheme
 import com.owenlejeune.tvtime.utils.KeyboardManager
 import com.owenlejeune.tvtime.utils.SessionManager
@@ -51,8 +50,6 @@ import org.koin.java.KoinJavaComponent.get
 
 @OptIn(ExperimentalMaterial3Api::class)
 class MainActivity : MonetCompatActivity() {
-
-    private val searchableScreens = listOf(BottomNavItem.Movies.route, BottomNavItem.TV.route, BottomNavItem.People.route)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -101,10 +98,8 @@ class MainActivity : MonetCompatActivity() {
             TopAppBarDefaults.exitUntilCollapsedScrollBehavior(decayAnimationSpec, topAppBarScrollState)
         }
 
-        val focusRequester = remember { FocusRequester() }
-        val focusSearchBar = rememberSaveable { mutableStateOf(false) }
-
-        val appBarActions = remember { mutableStateOf<@Composable RowScope.() -> Unit>( {} ) }
+        val appBarActions = remember { mutableStateOf<@Composable RowScope.() -> Unit>({}) }
+        val fab = remember { mutableStateOf<@Composable () -> Unit>({}) }
 
         // todo - scroll state not remember when returing from detail screen
 
@@ -121,12 +116,7 @@ class MainActivity : MonetCompatActivity() {
                 }
             },
             floatingActionButton = {
-                if (currentRoute in searchableScreens && !preferences.persistentSearch && !focusSearchBar.value) {
-                    SearchFab(
-                        focusSearchBar = focusSearchBar,
-                        focusRequester = focusRequester
-                    )
-                }
+                fab.value()
             },
             bottomBar = {
                 if (windowSize != WindowSizeClass.Expanded) {
@@ -139,6 +129,7 @@ class MainActivity : MonetCompatActivity() {
                     windowSize = windowSize,
                     appNavController = appNavController,
                     navController = navController,
+                    fab = fab,
                     appBarTitle = appBarTitle,
                     appBarActions = appBarActions,
                     topBarScrollBehaviour = scrollBehavior,
@@ -226,32 +217,11 @@ class MainActivity : MonetCompatActivity() {
     }
 
     @Composable
-    private fun SearchBar(
-        textState: MutableState<String>,
-        placeholder: String
-    ) {
-        RoundedTextField(
-            modifier = Modifier
-                .padding(all = 12.dp)
-                .height(35.dp),
-            value = textState.value,
-            onValueChange = { textState.value = it },
-            placeHolder = stringResource(id = R.string.search_placeholder, placeholder),
-            trailingIcon = {
-                Image(
-                    painter = painterResource(id = R.drawable.ic_search),
-                    contentDescription = stringResource(R.string.search_icon_content_descriptor),
-                    colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.primary)
-                )
-            }
-        )
-    }
-
-    @Composable
     private fun MainContent(
         windowSize: WindowSizeClass,
         appNavController: NavHostController,
         navController: NavHostController,
+        fab: MutableState<@Composable () -> Unit>,
         topBarScrollBehaviour: TopAppBarScrollBehavior,
         appBarTitle: MutableState<String>,
         appBarActions: MutableState<@Composable (RowScope.() -> Unit)> = mutableStateOf({}),
@@ -261,6 +231,7 @@ class MainActivity : MonetCompatActivity() {
             DualColumnMainContent(
                 appNavController = appNavController,
                 navController = navController,
+                fab = fab,
                 appBarTitle = appBarTitle,
                 appBarActions = appBarActions,
                 topBarScrollBehaviour = topBarScrollBehaviour,
@@ -270,6 +241,7 @@ class MainActivity : MonetCompatActivity() {
             SingleColumnMainContent(
                 appNavController = appNavController,
                 navController = navController,
+                fab = fab,
                 appBarTitle = appBarTitle,
                 appBarActions = appBarActions,
                 mainNavStartRoute = mainNavStartRoute
@@ -281,6 +253,7 @@ class MainActivity : MonetCompatActivity() {
     private fun SingleColumnMainContent(
         appNavController: NavHostController,
         navController: NavHostController,
+        fab: MutableState<@Composable () -> Unit>,
         appBarTitle: MutableState<String>,
         appBarActions: MutableState<@Composable (RowScope.() -> Unit)> = mutableStateOf({}),
         mainNavStartRoute: String = BottomNavItem.Items[0].route
@@ -288,6 +261,7 @@ class MainActivity : MonetCompatActivity() {
         MainMediaView(
             appNavController = appNavController,
             navController = navController,
+            fab = fab,
             appBarTitle = appBarTitle,
             appBarActions = appBarActions,
             mainNavStartRoute = mainNavStartRoute
@@ -298,6 +272,7 @@ class MainActivity : MonetCompatActivity() {
     private fun DualColumnMainContent(
         appNavController: NavHostController,
         navController: NavHostController,
+        fab: MutableState<@Composable () -> Unit>,
         topBarScrollBehaviour: TopAppBarScrollBehavior,
         appBarTitle: MutableState<String>,
         appBarActions: MutableState<@Composable (RowScope.() -> Unit)> = mutableStateOf({}),
@@ -335,6 +310,7 @@ class MainActivity : MonetCompatActivity() {
                 MainMediaView(
                     appNavController = appNavController,
                     navController = navController,
+                    fab = fab,
                     appBarTitle = appBarTitle,
                     appBarActions = appBarActions,
                     mainNavStartRoute = mainNavStartRoute
@@ -347,6 +323,7 @@ class MainActivity : MonetCompatActivity() {
     private fun MainMediaView(
         appNavController: NavHostController,
         navController: NavHostController,
+        fab: MutableState<@Composable () -> Unit>,
         appBarTitle: MutableState<String>,
         appBarActions: MutableState<RowScope.() -> Unit> = mutableStateOf({}),
         mainNavStartRoute: String = BottomNavItem.Items[0].route
@@ -355,18 +332,15 @@ class MainActivity : MonetCompatActivity() {
             val navBackStackEntry by navController.currentBackStackEntryAsState()
             val currentRoute = navBackStackEntry?.destination?.route
 
-            if (currentRoute in searchableScreens) {
-                val textState = remember { mutableStateOf("") }
-                SearchBar(
-                    textState,
-                    appBarTitle.value
-                )
-            }
+//            if (currentRoute in searchableScreens) {
+//                SearchBar(appBarTitle.value)
+//            }
 
             MainNavGraph(
                 activity = this@MainActivity,
                 appNavController = appNavController,
                 navController = navController,
+                fab = fab,
                 appBarTitle = appBarTitle,
                 appBarActions = appBarActions,
                 startDestination = mainNavStartRoute
@@ -378,6 +352,7 @@ class MainActivity : MonetCompatActivity() {
         const val ID_KEY = "id_key"
         const val TYPE_KEY = "type_key"
         const val SETTINGS_KEY = "settings_key"
+        const val SEARCH_KEY = "search_key"
     }
 
     @Composable
@@ -427,6 +402,14 @@ class MainActivity : MonetCompatActivity() {
             }
             composable(MainNavItem.SettingsView.route) {
                 SettingsTab(appNavController = appNavController, activity = this@MainActivity)
+            }
+            composable(
+                route = MainNavItem.SearchView.route.plus("/{${NavConstants.SEARCH_KEY}}"),
+                arguments = listOf(
+                    navArgument(NavConstants.SEARCH_KEY) { type = NavType.IntType }
+                )
+            ) {
+                SearchScreen(appNavController = appNavController)
             }
         }
     }

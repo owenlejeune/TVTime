@@ -49,10 +49,8 @@
 
     <!-- preferences -->
     <string name="preference_heading_search">Search</string>
-    <string name="preferences_persistent_search_title">Persistent search bar</string>
-    <string name="preferences_persistent_search_subtitle">Keep search bar visible at all times</string>
-    <string name="preferences_hide_heading_title">Expanded search bar</string>
-    <string name="preferences_hide_heading_subtitle">Keep search bar expanded at all times</string>
+    <string name="preferences_persistent_search_title">Show search bar</string>
+    <string name="preferences_persistent_search_subtitle">Show a search bar instead of a search fab</string>
     <string name="preferences_debug_title">Developer options</string>
     <string name="preference_heading_design">Design</string>
     <string name="preference_system_colors_heading">Use system colors</string>

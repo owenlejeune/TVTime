@@ -15,7 +15,6 @@ class AppPreferences(context: Context) {
 
 //        private val USE_PREFERENCES = "use_android_12_colors"
         private val PERSISTENT_SEARCH = "persistent_search"
-        private val HIDE_TITLE = "hide_title"
         private val GUEST_SESSION = "guest_session_id"
         private val AUTHORIZED_SESSION = "authorized_session_id"
         private val AUTHORIZED_SESSION_VALUES = "authorized_session_values"
@@ -33,13 +32,9 @@ class AppPreferences(context: Context) {
     private val preferences: SharedPreferences = context.getSharedPreferences(PREF_FILE, Context.MODE_PRIVATE)
 
     /******** Search Preferences ********/
-    var persistentSearch: Boolean
+    var showSearchBar: Boolean
         get() = preferences.getBoolean(PERSISTENT_SEARCH, true)
         set(value) { preferences.put(PERSISTENT_SEARCH, value) }
-
-    var hideTitle: Boolean
-        get() = preferences.getBoolean(HIDE_TITLE, false)
-        set(value) { preferences.put(HIDE_TITLE, value) }
 
     var useWallpaperColors: Boolean
         get() = preferences.getBoolean(USE_WALLPAPER_COLORS, true)
@@ -91,8 +86,11 @@ class AppPreferences(context: Context) {
         get() = preferences.getBoolean(USE_V4_API, true)
         set(value) { preferences.put(USE_V4_API, value) }
 
-    var showBackdropGallery: Boolean = true
+    var showBackdropGallery: Boolean// = true
+        get() = preferences.getBoolean(SHOW_BACKDROP_GALLERY, true)
+        set(value) { preferences.put(SHOW_BACKDROP_GALLERY, value) }
 
+    /********* Helpers ********/
     private fun SharedPreferences.put(key: String, value: Any?) {
         edit().apply {
             when (value) {

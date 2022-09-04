@@ -24,6 +24,7 @@ fun MainNavGraph(
     activity: AppCompatActivity,
     appNavController: NavHostController,
     navController: NavHostController,
+    fab: MutableState<@Composable () -> Unit>,
     appBarTitle: MutableState<String>,
     appBarActions: MutableState<@Composable (RowScope.() -> Unit)> = mutableStateOf({}),
     startDestination: String = BottomNavItem.Items[0].route
@@ -31,18 +32,32 @@ fun MainNavGraph(
     NavHost(navController = navController, startDestination = startDestination) {
         composable(BottomNavItem.Movies.route) {
             appBarActions.value = {}
-            MediaTab(appBarTitle = appBarTitle, appNavController = appNavController, mediaType = MediaViewType.MOVIE)
+            MediaTab(
+                appBarTitle = appBarTitle,
+                appNavController = appNavController,
+                mediaType = MediaViewType.MOVIE,
+                fab = fab
+            )
         }
         composable(BottomNavItem.TV.route) {
             appBarActions.value = {}
-            MediaTab(appBarTitle = appBarTitle, appNavController = appNavController, mediaType = MediaViewType.TV)
+            MediaTab(
+                appBarTitle = appBarTitle,
+                appNavController = appNavController,
+                mediaType = MediaViewType.TV,
+                fab = fab
+            )
         }
         composable(BottomNavItem.Account.route) {
             AccountTab(appBarTitle = appBarTitle, appNavController = appNavController, appBarActions = appBarActions)
         }
         composable(BottomNavItem.People.route) {
             appBarActions.value = {}
-            PeopleTab(appBarTitle = appBarTitle, appNavController = appNavController)
+            PeopleTab(
+                appBarTitle = appBarTitle,
+                appNavController = appNavController,
+                fab = fab
+            )
         }
         composable(BottomNavItem.Favourites.route) {
             appBarActions.value = {}

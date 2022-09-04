@@ -1,6 +1,10 @@
 package com.owenlejeune.tvtime.ui.screens.main
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.res.stringResource
@@ -16,8 +20,11 @@ import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.api.tmdb.api.v3.HomePageService
 import com.owenlejeune.tvtime.api.tmdb.api.v3.MoviesService
 import com.owenlejeune.tvtime.api.tmdb.api.v3.TvService
+import com.owenlejeune.tvtime.preferences.AppPreferences
 import com.owenlejeune.tvtime.ui.components.PagingPosterGrid
 import com.owenlejeune.tvtime.ui.components.PosterGrid
+import com.owenlejeune.tvtime.ui.components.SearchBar
+import com.owenlejeune.tvtime.ui.components.SearchView
 import com.owenlejeune.tvtime.ui.navigation.MainNavItem
 import com.owenlejeune.tvtime.ui.navigation.MediaFetchFun
 import com.owenlejeune.tvtime.ui.navigation.MediaTabNavItem
@@ -27,13 +34,15 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.koin.java.KoinJavaComponent.get
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
 fun MediaTab(
     appBarTitle: MutableState<String>,
     appNavController: NavHostController,
-    mediaType: MediaViewType
+    mediaType: MediaViewType,
+    fab: MutableState<@Composable () -> Unit>
 ) {
     appBarTitle.value = when (mediaType) {
         MediaViewType.MOVIE -> stringResource(id = R.string.nav_movies_title)
@@ -42,6 +51,13 @@ fun MediaTab(
     }
 
     Column {
+        SearchView(
+            title = appBarTitle.value,
+            appNavController = appNavController,
+            mediaType = mediaType,
+            fab = fab
+        )
+
         val tabs = when (mediaType) {
             MediaViewType.MOVIE -> MediaTabNavItem.MovieItems
             MediaViewType.TV -> MediaTabNavItem.TvItems
@@ -89,3 +105,31 @@ fun MediaTabs(
         tabs[page].screen(appNavController, mediaViewType, tabs[page])
     }
 }
+
+//@Composable
+//private fun SearchView(
+//    title: String,
+//    appNavController: NavHostController,
+//    mediaType: MediaViewType,
+//    fab: MutableState<@Composable () -> Unit>,
+//    preferences: AppPreferences = get(AppPreferences::class.java)
+//) {
+//    val route = "${MainNavItem.SearchView.route}/${mediaType.ordinal}"
+//    if (preferences.showSearchBar) {
+//        SearchBar(
+//            placeholder = title
+//        ) {
+//            appNavController.navigate(route)
+//        }
+//    } else {
+//        fab.value = @Composable {
+//            FloatingActionButton(
+//                onClick = {
+//                    appNavController.navigate(route)
+//                }
+//            ) {
+//                Icon(Icons.Filled.Search, stringResource(id = R.string.preference_heading_search))
+//            }
+//        }
+//    }
+//}
