@@ -44,13 +44,9 @@ fun MainNavGraph(
             appBarActions.value = {}
             PeopleTab(appBarTitle = appBarTitle, appNavController = appNavController)
         }
-//        composable(BottomNavItem.Favourites.route) {
-//            appBarActions.value = {}
-//            FavouritesTab()
-//        }
-        composable(BottomNavItem.Settings.route) {
+        composable(BottomNavItem.Favourites.route) {
             appBarActions.value = {}
-            SettingsTab(appBarTitle = appBarTitle, activity = activity)
+            FavouritesTab()
         }
     }
 }

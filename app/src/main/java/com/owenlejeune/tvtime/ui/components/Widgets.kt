@@ -21,6 +21,7 @@ import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.ArrowDropDown
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -75,6 +76,7 @@ import kotlinx.coroutines.launch
 import org.intellij.markdown.flavours.commonmark.CommonMarkFlavourDescriptor
 import org.intellij.markdown.html.HtmlGenerator
 import org.intellij.markdown.parser.MarkdownParser
+import kotlin.math.exp
 
 @Composable
 fun TopLevelSwitch(
@@ -959,4 +961,52 @@ fun CenteredIconCircle(
             }
         }
     }
+}
+
+@Composable
+fun <T> Spinner(
+    modifier: Modifier = Modifier,
+    list: List<Pair<String, T>>,
+    preselected: Pair<String, T>,
+    onSelectionChanged: (Pair<String, T>) -> Unit
+) {
+    var selected by remember { mutableStateOf(preselected) }
+    var expanded by remember { mutableStateOf(false) }
+
+    Box(modifier = modifier) {
+        Column {
+            OutlinedTextField(
+                value = selected.first,
+                onValueChange = { },
+                trailingIcon = { Icon(Icons.Outlined.ArrowDropDown, null) },
+                readOnly = true,
+                modifier = Modifier.clickable(
+                    onClick = {
+                        expanded = true
+                    }
+                )
+            )
+            DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false }
+            ) {
+                list.forEach { entry ->
+                    DropdownMenuItem(
+                        text = { Text(text = entry.first) },
+                        onClick = {
+                            selected = entry
+                            expanded = false
+                            onSelectionChanged(selected)
+                        }
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+@Preview
+fun SpinnerPreview() {
+    Spinner(list = listOf("T" to "T", "Q" to "Q", "F" to "F"), modifier = Modifier.width(300.dp), preselected = "T" to "T", onSelectionChanged = {})
 }

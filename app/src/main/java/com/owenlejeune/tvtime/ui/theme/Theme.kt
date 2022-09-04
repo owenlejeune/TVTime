@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.kieronquinn.monetcompat.core.MonetCompat
 import com.owenlejeune.tvtime.preferences.AppPreferences
+import com.owenlejeune.tvtime.ui.screens.main.DarkMode
 import org.koin.java.KoinJavaComponent.get
 
 private val DarkColorPalette = darkColorScheme(
@@ -69,46 +70,19 @@ private val LightColorPalette = lightColorScheme(
     inverseOnSurface = N1_50
 )
 
-//@Composable
-//fun TVTimeTheme(
-//    isDarkTheme: Boolean = isSystemInDarkTheme(),
-//    isDynamicColor: Boolean = true,
-//    content: @Composable () -> Unit
-//) {
-//    val dynamicColor = isDynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
-//    val colorScheme = when {
-//        dynamicColor && isDarkTheme -> {
-//            dynamicDarkColorScheme(LocalContext.current)
-//        }
-//        dynamicColor && !isDarkTheme -> {
-//            dynamicLightColorScheme(LocalContext.current)
-//        }
-//        isDarkTheme -> DarkColorPalette
-//        else -> LightColorPalette
-//    }
-//
-//    val systemUiController = rememberSystemUiController()
-//    systemUiController.setSystemBarsColor(colorScheme.background, !isDarkTheme)
-//
-//    MaterialTheme(
-//        colorScheme = colorScheme,
-//        typography = Typography,
-//        content = content
-//    )
-//}
-
 @Composable
 fun TVTimeTheme(
     preferences: AppPreferences = get(AppPreferences::class.java),
-    isDarkTheme: Boolean = isSystemInDarkTheme(),
     monetCompat: MonetCompat,
     content: @Composable () -> Unit
 ) {
-//    val colors = if(isDarkTheme) {
-//        monetCompat.darkMonetCompatScheme()
-//    } else {
-//        monetCompat.lightMonetCompatScheme()
-//    }
+    val isDarkTheme = when(preferences.darkTheme) {
+        DarkMode.Automatic.ordinal -> isSystemInDarkTheme()
+        DarkMode.Dark.ordinal -> true
+        DarkMode.Light.ordinal -> false
+        else -> throw IllegalArgumentException("Illegal theme value ${preferences.darkTheme}")
+    }
+
     val colors = when {
         isDarkTheme && preferences.useWallpaperColors -> monetCompat.darkMonetCompatScheme()
         isDarkTheme && !preferences.useWallpaperColors -> DarkColorPalette

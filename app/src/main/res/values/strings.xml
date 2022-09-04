@@ -117,4 +117,9 @@
     <string name="preferences_use_wallpaper_colors_title">Use wallpaper colors</string>
     <string name="preferences_use_wallpaper_colors_subtitle">Use theme colors pulled from your device\'s wallpaper</string>
     <string name="preference_system_colors_subtitle">Use wallpaper colors chosen by your device</string>
+    <string name="preference_subtitle_search">Search bar view settings</string>
+    <string name="preference_subtitle_design">Design and theming options</string>
+    <string name="preference_subtitle_debug">Secret developer options</string>
+    <string name="preference_heading_dark_mode">Dark mode</string>
+    <string name="preference_subtitle_dark_mode">Light, dark, or auto</string>
 </resources>

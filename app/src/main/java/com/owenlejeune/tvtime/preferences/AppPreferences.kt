@@ -27,6 +27,7 @@ class AppPreferences(context: Context) {
         private val USE_V4_API = "use_v4_api"
         private val SHOW_BACKDROP_GALLERY = "show_backdrop_gallery"
         private val USE_WALLPAPER_COLORS = "use_wallpaper_colors"
+        private val DARK_THEME = "dark_theme"
     }
 
     private val preferences: SharedPreferences = context.getSharedPreferences(PREF_FILE, Context.MODE_PRIVATE)
@@ -46,6 +47,10 @@ class AppPreferences(context: Context) {
 
 
     /******* Design Preferences ********/
+    var darkTheme: Int
+        get() = preferences.getInt(DARK_THEME, 0)
+        set(value) { preferences.put(DARK_THEME, value) }
+
     var useSystemColors: Boolean
         get() = preferences.getBoolean(USE_SYSTEM_COLORS, true)
         set(value) { preferences.put(USE_SYSTEM_COLORS, value) }

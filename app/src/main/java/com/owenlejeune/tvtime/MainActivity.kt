@@ -4,10 +4,11 @@ import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.compose.animation.rememberSplineBasedDecay
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Scaffold
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -30,7 +31,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.kieronquinn.monetcompat.app.MonetCompatActivity
 import com.owenlejeune.tvtime.extensions.WindowSizeClass
 import com.owenlejeune.tvtime.extensions.rememberWindowSizeClass
@@ -40,9 +40,7 @@ import com.owenlejeune.tvtime.ui.components.SearchFab
 import com.owenlejeune.tvtime.ui.navigation.BottomNavItem
 import com.owenlejeune.tvtime.ui.navigation.MainNavGraph
 import com.owenlejeune.tvtime.ui.navigation.MainNavItem
-import com.owenlejeune.tvtime.ui.screens.main.MediaDetailView
-import com.owenlejeune.tvtime.ui.screens.main.MediaViewType
-import com.owenlejeune.tvtime.ui.screens.main.PersonDetailView
+import com.owenlejeune.tvtime.ui.screens.main.*
 import com.owenlejeune.tvtime.ui.theme.TVTimeTheme
 import com.owenlejeune.tvtime.utils.KeyboardManager
 import com.owenlejeune.tvtime.utils.SessionManager
@@ -115,6 +113,7 @@ class MainActivity : MonetCompatActivity() {
             topBar = {
                 if (windowSize != WindowSizeClass.Expanded) {
                     TopBar(
+                        appNavController = appNavController,
                         title = appBarTitle,
                         scrollBehavior = scrollBehavior,
                         appBarActions = appBarActions
@@ -151,19 +150,31 @@ class MainActivity : MonetCompatActivity() {
 
     @Composable
     private fun TopBar(
+        appNavController: NavHostController,
         title: MutableState<String>,
         scrollBehavior: TopAppBarScrollBehavior,
         appBarActions: MutableState<@Composable (RowScope.() -> Unit)> = mutableStateOf({})
     ) {
+        val defaultAppBarActions: @Composable RowScope.() -> Unit = {
+            IconButton(
+                onClick = {
+                    appNavController.navigate(MainNavItem.SettingsView.route)
+                }
+            ) {
+                Icon(imageVector = Icons.Filled.Settings, contentDescription = stringResource(id = R.string.nav_settings_title))
+            }
+        }
         LargeTopAppBar(
             title = { Text(text = title.value) },
             scrollBehavior = scrollBehavior,
             colors = TopAppBarDefaults
                 .largeTopAppBarColors(
-                    scrolledContainerColor = MaterialTheme.colorScheme.background,
-                    titleContentColor = MaterialTheme.colorScheme.primary
+                    scrolledContainerColor = MaterialTheme.colorScheme.background
                 ),
-            actions = appBarActions.value
+            actions = {
+                defaultAppBarActions()
+                appBarActions.value(this)
+            }
         )
     }
 
@@ -316,6 +327,7 @@ class MainActivity : MonetCompatActivity() {
             }
             Column {
                 TopBar(
+                    appNavController = appNavController,
                     title = appBarTitle,
                     scrollBehavior = topBarScrollBehaviour,
                     appBarActions = appBarActions
@@ -365,12 +377,13 @@ class MainActivity : MonetCompatActivity() {
     private object NavConstants {
         const val ID_KEY = "id_key"
         const val TYPE_KEY = "type_key"
+        const val SETTINGS_KEY = "settings_key"
     }
 
     @Composable
     private fun MainNavigationRoutes(
         startDestination: String = MainNavItem.MainView.route,
-        mainNavStartRoute: String = BottomNavItem.Items[0].route,
+        mainNavStartRoute: String = MainNavItem.Items[0].route,
         appNavController: NavHostController,
     ) {
         NavHost(navController = appNavController, startDestination = startDestination) {
@@ -398,6 +411,22 @@ class MainActivity : MonetCompatActivity() {
                         personId = args.getInt(NavConstants.ID_KEY)
                     )
                 }
+            }
+            composable(
+                MainNavItem.SettingsView.route.plus("/{${NavConstants.SETTINGS_KEY}}"),
+                arguments = listOf(
+                    navArgument(NavConstants.SETTINGS_KEY) { type = NavType.StringType }
+                )
+            ) {
+                val route = it.arguments?.getString(NavConstants.SETTINGS_KEY)
+                SettingsTab(
+                    appNavController = appNavController,
+                    activity = this@MainActivity,
+                    route = route
+                )
+            }
+            composable(MainNavItem.SettingsView.route) {
+                SettingsTab(appNavController = appNavController, activity = this@MainActivity)
             }
         }
     }
