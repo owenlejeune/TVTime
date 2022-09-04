@@ -1,33 +1,62 @@
 package com.owenlejeune.tvtime.ui.screens
 
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavHostController
+import com.owenlejeune.tvtime.R
+import com.owenlejeune.tvtime.ui.screens.main.MediaViewType
 
 @Composable
 fun SearchScreen(
-    appNavController: NavHostController
+    appNavController: NavHostController,
+    title: String,
+    mediaViewType: MediaViewType
 ) {
     Column(
         modifier = Modifier
-            .clickable(
-                onClick = {
-                    appNavController.popBackStack()
-                }
-            )
             .fillMaxSize()
+            .background(color = MaterialTheme.colorScheme.background)
     ) {
-        Spacer(modifier = Modifier.weight(1f))
-        Text(
-            modifier = Modifier.align(Alignment.CenterHorizontally),
-            text = "Search"
+        var searchValue by remember { mutableStateOf("") }
+        val focusRequester = remember { FocusRequester() }
+
+        SmallTopAppBar(
+            modifier = Modifier,
+            title = {
+                TextField(
+                    value = searchValue,
+                    onValueChange = { searchValue = it },
+                    placeholder = { Text(text = stringResource(id = R.string.search_placeholder, title)) },
+                    colors = TextFieldDefaults.textFieldColors(
+                        containerColor = MaterialTheme.colorScheme.surface,
+                        focusedIndicatorColor = MaterialTheme.colorScheme.surface,
+                        unfocusedIndicatorColor = MaterialTheme.colorScheme.surface
+                    ),
+                    modifier = Modifier
+                        .focusRequester(focusRequester)
+                )
+            },
+            navigationIcon = {
+                IconButton(onClick = { appNavController.popBackStack() }) {
+                    Icon(
+                        imageVector = Icons.Filled.ArrowBack,
+                        contentDescription = stringResource(id = R.string.content_description_back_button)
+                    )
+                }
+            }
         )
-        Spacer(modifier = Modifier.weight(1f))
+
+        LaunchedEffect(key1 = "") {
+            focusRequester.requestFocus()
+        }
     }
 }

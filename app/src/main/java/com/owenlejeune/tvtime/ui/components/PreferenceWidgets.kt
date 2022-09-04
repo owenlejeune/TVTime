@@ -1,6 +1,5 @@
 package com.owenlejeune.tvtime.ui.components
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.material3.*
@@ -10,10 +9,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.role
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -47,7 +42,7 @@ fun SwitchPreference(
         modifier = modifier
             .fillMaxWidth()
             .wrapContentHeight()
-            .padding(start = 8.dp, top = 8.dp, bottom = 8.dp, end = 8.dp)
+            .padding(all = 8.dp)
     ) {
         Column(
             modifier = Modifier
@@ -61,6 +56,8 @@ fun SwitchPreference(
                 Text(text = subtitleText, style = MaterialTheme.typography.bodyMedium, color = subtitleColor)
             }
         }
+        
+        Spacer(modifier = Modifier.width(32.dp))
 
         CustomSwitch(
             modifier = Modifier
@@ -127,12 +124,6 @@ fun RadioButtonPreference(
     disabledTextColor: Color = MaterialTheme.colorScheme.outline
 ) {
     Row(
-//        modifier = modifier
-//            .clickable(
-//                enabled = enabled,
-//                onClick = onClick
-//            )
-//            .semantics { role = Role.RadioButton }
         modifier = modifier
             .padding(all = 8.dp)
             .selectable(

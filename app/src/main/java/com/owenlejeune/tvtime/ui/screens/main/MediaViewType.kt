@@ -8,5 +8,12 @@ enum class MediaViewType {
     @SerializedName("tv")
     TV,
     PERSON,
-    EPISODE
+    EPISODE,
+    MIXED;
+
+    companion object {
+        operator fun get(oridinal: Int): MediaViewType {
+            return values()[oridinal]
+        }
+    }
 }

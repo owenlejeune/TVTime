@@ -6,7 +6,6 @@ import com.google.gson.Gson
 import com.kieronquinn.monetcompat.core.MonetCompat
 import com.owenlejeune.tvtime.BuildConfig
 import com.owenlejeune.tvtime.utils.SessionManager
-import java.util.function.BiPredicate
 
 class AppPreferences(context: Context) {
 
@@ -27,6 +26,7 @@ class AppPreferences(context: Context) {
         private val SHOW_BACKDROP_GALLERY = "show_backdrop_gallery"
         private val USE_WALLPAPER_COLORS = "use_wallpaper_colors"
         private val DARK_THEME = "dark_theme"
+        private val MULTI_SEARCH = "multi_search"
     }
 
     private val preferences: SharedPreferences = context.getSharedPreferences(PREF_FILE, Context.MODE_PRIVATE)
@@ -36,12 +36,15 @@ class AppPreferences(context: Context) {
         get() = preferences.getBoolean(PERSISTENT_SEARCH, true)
         set(value) { preferences.put(PERSISTENT_SEARCH, value) }
 
+    var multiSearch: Boolean
+        get() = preferences.getBoolean(MULTI_SEARCH, false)
+        set(value) { preferences.put(MULTI_SEARCH, value) }
+
+    /******* Design Preferences ********/
     var useWallpaperColors: Boolean
         get() = preferences.getBoolean(USE_WALLPAPER_COLORS, true)
         set(value) { preferences.put(USE_WALLPAPER_COLORS, value) }
 
-
-    /******* Design Preferences ********/
     var darkTheme: Int
         get() = preferences.getInt(DARK_THEME, 0)
         set(value) { preferences.put(DARK_THEME, value) }

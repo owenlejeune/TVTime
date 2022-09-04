@@ -6,17 +6,13 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.rememberSplineBasedDecay
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.*
+import androidx.compose.material.IconButton
 import androidx.compose.material.TextButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.DarkMode
 import androidx.compose.material.icons.outlined.LightMode
 import androidx.compose.material3.*
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.material3.Icon
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -195,6 +191,17 @@ private fun SearchPreferences(
         onCheckedChange = { isChecked ->
             persistentSearch.value = isChecked
             preferences.showSearchBar = isChecked
+        }
+    )
+
+    val multiSearch = remember { mutableStateOf(preferences.multiSearch) }
+    SwitchPreference(
+        titleText = "Multi Search",
+        subtitleText = "Search across movies, TV, and people at the same time",
+        checkState = multiSearch.value,
+        onCheckedChange = { isChecked ->
+            multiSearch.value = isChecked
+            preferences.multiSearch = isChecked
         }
     )
 }

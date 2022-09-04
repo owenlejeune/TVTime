@@ -1,8 +1,6 @@
 package com.owenlejeune.tvtime.ui.components
 
-import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import android.widget.TextView
-import android.widget.Toast
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.*
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -20,7 +18,10 @@ import androidx.compose.material.Card
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.Error
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material.icons.outlined.ArrowDropDown
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -55,7 +56,6 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.*
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
@@ -65,13 +65,11 @@ import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
 import com.google.accompanist.flowlayout.FlowRow
-import com.kieronquinn.monetcompat.core.MonetCompat
 import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.AuthorDetails
 import com.owenlejeune.tvtime.preferences.AppPreferences
 import com.owenlejeune.tvtime.ui.navigation.MainNavItem
 import com.owenlejeune.tvtime.ui.screens.main.MediaViewType
-import com.owenlejeune.tvtime.ui.theme.RatingSelected
 import com.owenlejeune.tvtime.utils.TmdbUtils
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
@@ -82,7 +80,6 @@ import org.intellij.markdown.flavours.commonmark.CommonMarkFlavourDescriptor
 import org.intellij.markdown.html.HtmlGenerator
 import org.intellij.markdown.parser.MarkdownParser
 import org.koin.java.KoinJavaComponent
-import kotlin.math.exp
 
 @Composable
 fun TopLevelSwitch(
@@ -212,7 +209,7 @@ fun SearchView(
     fab: MutableState<@Composable () -> Unit>,
     preferences: AppPreferences = KoinJavaComponent.get(AppPreferences::class.java)
 ) {
-    val route = "${MainNavItem.SearchView.route}/${mediaType.ordinal}"
+    val route = "${MainNavItem.SearchView.route}/${mediaType.ordinal}/$title"
     if (preferences.showSearchBar) {
         SearchBar(
             placeholder = title

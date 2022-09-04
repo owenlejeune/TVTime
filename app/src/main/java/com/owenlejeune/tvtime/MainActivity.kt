@@ -352,7 +352,8 @@ class MainActivity : MonetCompatActivity() {
         const val ID_KEY = "id_key"
         const val TYPE_KEY = "type_key"
         const val SETTINGS_KEY = "settings_key"
-        const val SEARCH_KEY = "search_key"
+        const val SEARCH_ID_KEY = "search_key"
+        const val SEARCH_TITLE_KEY = "search_title_key"
     }
 
     @Composable
@@ -360,6 +361,7 @@ class MainActivity : MonetCompatActivity() {
         startDestination: String = MainNavItem.MainView.route,
         mainNavStartRoute: String = MainNavItem.Items[0].route,
         appNavController: NavHostController,
+        preferences: AppPreferences = get(AppPreferences::class.java)
     ) {
         NavHost(navController = appNavController, startDestination = startDestination) {
             composable(MainNavItem.MainView.route) {
@@ -404,12 +406,26 @@ class MainActivity : MonetCompatActivity() {
                 SettingsTab(appNavController = appNavController, activity = this@MainActivity)
             }
             composable(
-                route = MainNavItem.SearchView.route.plus("/{${NavConstants.SEARCH_KEY}}"),
+                route = MainNavItem.SearchView.route.plus("/{${NavConstants.SEARCH_ID_KEY}}/{${NavConstants.SEARCH_TITLE_KEY}}"),
                 arguments = listOf(
-                    navArgument(NavConstants.SEARCH_KEY) { type = NavType.IntType }
+                    navArgument(NavConstants.SEARCH_ID_KEY) { type = NavType.IntType },
+                    navArgument(NavConstants.SEARCH_TITLE_KEY) { type = NavType.StringType }
                 )
             ) {
-                SearchScreen(appNavController = appNavController)
+                it.arguments?.let { arguments ->
+                    val title = arguments.getString(NavConstants.SEARCH_TITLE_KEY) ?: ""
+                    val type = if (preferences.multiSearch) {
+                        MediaViewType.MIXED
+                    } else {
+                        MediaViewType[arguments.getInt(NavConstants.SEARCH_ID_KEY)]
+                    }
+
+                    SearchScreen(
+                        appNavController = appNavController,
+                        title = title,
+                        mediaViewType = type
+                    )
+                }
             }
         }
     }
