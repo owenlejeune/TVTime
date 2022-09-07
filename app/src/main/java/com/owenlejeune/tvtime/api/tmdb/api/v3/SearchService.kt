@@ -39,4 +39,8 @@ class SearchService: KoinComponent {
         return service.searchPeople(query, page)
     }
 
+    suspend fun searchMulti(query: String, page: Int = 1): Response<SearchResult<SortableSearchResult>> {
+        return service.searchMulti(query, page)
+    }
+
 }

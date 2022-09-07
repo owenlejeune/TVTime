@@ -18,6 +18,6 @@ class SearchResultTv(
     releaseDate: String,
     @SerializedName("origin_country") val originCountry: List<String>,
 ): SearchResultMedia(
-    MediaViewType.TV, overview, voteAverage, voteCount, releaseDate, backdropPath,
-    genreIds, originalLanguage, originalName, posterPath, id, name, popularity
+    overview, voteAverage, voteCount, releaseDate, backdropPath, genreIds,
+    originalLanguage, originalName, posterPath, MediaViewType.TV, id, name, popularity
 )

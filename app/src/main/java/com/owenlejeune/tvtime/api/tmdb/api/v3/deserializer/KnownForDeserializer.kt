@@ -1,36 +1,26 @@
 package com.owenlejeune.tvtime.api.tmdb.api.v3.deserializer
 
-import com.google.gson.*
+import com.google.gson.Gson
+import com.google.gson.JsonObject
+import com.google.gson.JsonParseException
+import com.owenlejeune.tvtime.api.tmdb.api.BaseDeserializer
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.KnownFor
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.KnownForMovie
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.KnownForTv
 import com.owenlejeune.tvtime.ui.screens.main.MediaViewType
-import java.lang.reflect.Type
 
-class KnownForDeserializer: JsonDeserializer<KnownFor> {
+class KnownForDeserializer: BaseDeserializer<KnownFor>() {
 
-    companion object {
-        const val MEDIA_TYPE = "media_type"
-    }
-
-    override fun deserialize(
-        json: JsonElement?,
-        typeOfT: Type?,
-        context: JsonDeserializationContext?
-    ): KnownFor {
-        if (json?.isJsonObject == true) {
-            val obj = json.asJsonObject
-            if (obj.has(MEDIA_TYPE)) {
-                val typeStr = obj.get(MEDIA_TYPE).asString
-                return when (Gson().fromJson(typeStr, MediaViewType::class.java)) {
-                    MediaViewType.MOVIE -> Gson().fromJson(obj.toString(), KnownForMovie::class.java)
-                    MediaViewType.TV -> Gson().fromJson(obj.toString(), KnownForTv::class.java)
-                    else -> throw JsonParseException("Not a valid MediaViewType: $typeStr")
-                }
+    override fun processJson(obj: JsonObject): KnownFor {
+        if (obj.has(MediaViewType.JSON_KEY)) {
+            val typeStr = obj.get(MediaViewType.JSON_KEY).asString
+            return when (gson.fromJson(typeStr, MediaViewType::class.java)) {
+                MediaViewType.MOVIE -> gson.fromJson(obj.toString(), KnownForMovie::class.java)
+                MediaViewType.TV -> gson.fromJson(obj.toString(), KnownForTv::class.java)
+                else -> throw JsonParseException("Not a valid MediaViewType: $typeStr")
             }
-            throw JsonParseException("JSON object has no property $MEDIA_TYPE")
         }
-        throw JsonParseException("Not a JSON object")
+        throw JsonParseException("JSON object has no property ${MediaViewType.JSON_KEY}")
     }
 
 }

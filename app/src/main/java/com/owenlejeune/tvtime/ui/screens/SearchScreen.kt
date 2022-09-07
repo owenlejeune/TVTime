@@ -108,7 +108,6 @@ fun SearchScreen(
                     SearchResultListView(
                         showLoadingAnimation = showLoadingAnimation,
                         currentQuery = searchValue,
-                        resultsSortingStrategy = { o1, o2 -> o2.popularity.compareTo(o1.popularity) },
                         searchExecutor = { searchResults: MutableState<List<SearchResultTv>> ->
                             searchTv(searchValue.value, searchResults)
                         }
@@ -120,7 +119,6 @@ fun SearchScreen(
                     SearchResultListView(
                         showLoadingAnimation = showLoadingAnimation,
                         currentQuery = searchValue,
-                        resultsSortingStrategy = { o1, o2 -> o2.popularity.compareTo(o1.popularity) },
                         searchExecutor = { searchResults: MutableState<List<SearchResultMovie>> ->
                             searchMovies(searchValue.value, searchResults)
                         }
@@ -132,7 +130,6 @@ fun SearchScreen(
                     SearchResultListView(
                         showLoadingAnimation = showLoadingAnimation,
                         currentQuery = searchValue,
-                        resultsSortingStrategy = { o1, o2 -> o2.popularity.compareTo(o1.popularity) },
                         searchExecutor = { searchResults: MutableState<List<SearchResultPerson>> ->
                             searchPeople(searchValue.value, searchResults)
                         }
@@ -145,11 +142,24 @@ fun SearchScreen(
                         showLoadingAnimation = showLoadingAnimation,
                         currentQuery = searchValue,
                         searchExecutor = { searchResults: MutableState<List<SortableSearchResult>> ->
-
+                            searchMulti(searchValue.value, searchResults)
                         },
-                        resultsSortingStrategy = { o1, o2 -> o2.popularity.compareTo(o1.popularity) }
                     ) { item ->
-
+                        when (item.mediaType) {
+                            MediaViewType.MOVIE -> MovieSearchResultView(
+                                appNavController = appNavController,
+                                result = item as SearchResultMovie
+                            )
+                            MediaViewType.TV -> TvSearchResultView(
+                                appNavController = appNavController,
+                                result = item as SearchResultTv
+                            )
+                            MediaViewType.PERSON -> PeopleSearchResultView(
+                                appNavController = appNavController,
+                                result = item as SearchResultPerson
+                            )
+                            else -> {}
+                        }
                     }
                 }
                 else -> {}
@@ -167,7 +177,6 @@ private fun <T: SortableSearchResult> SearchResultListView(
     showLoadingAnimation: MutableState<Boolean>,
     currentQuery: MutableState<String>,
     searchExecutor: (MutableState<List<T>>) -> Unit,
-    resultsSortingStrategy: Comparator<T>? = null,
     viewRenderer: @Composable (T) -> Unit
 ) {
     val searchResults = remember { mutableStateOf(emptyList<T>()) }
@@ -184,7 +193,7 @@ private fun <T: SortableSearchResult> SearchResultListView(
         ) {
             Spacer(modifier = Modifier.weight(1f))
             Text(
-                text = "No search results found",
+                text = stringResource(R.string.no_search_results),
                 color = MaterialTheme.colorScheme.onBackground,
                 modifier = Modifier.align(Alignment.CenterHorizontally),
                 fontSize = 18.sp
@@ -196,9 +205,7 @@ private fun <T: SortableSearchResult> SearchResultListView(
         modifier = Modifier.padding(12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        val items = resultsSortingStrategy?.let {
-            searchResults.value.sortedWith(resultsSortingStrategy)
-        } ?: searchResults.value
+        val items = searchResults.value.sortedByDescending { it.popularity }
         listItems(items) { item ->
             viewRenderer(item)
         }
@@ -383,6 +390,20 @@ private fun searchPeople(
 ) {
     CoroutineScope(Dispatchers.IO).launch {
         val response = SearchService().searchPeople(query)
+        if (response.isSuccessful) {
+            withContext(Dispatchers.Main) {
+                searchResults.value = response.body()?.results ?: emptyList()
+            }
+        }
+    }
+}
+
+private fun searchMulti(
+    query: String,
+    searchResults: MutableState<List<SortableSearchResult>>
+) {
+    CoroutineScope(Dispatchers.IO).launch {
+        val response = SearchService().searchMulti(query)
         if (response.isSuccessful) {
             withContext(Dispatchers.Main) {
                 searchResults.value = response.body()?.results ?: emptyList()

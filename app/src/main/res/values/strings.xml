@@ -123,4 +123,5 @@
 
     <!-- search results -->
     <string name="search_result_tv_services">TV Series</string>
+    <string name="no_search_results">No search results found</string>
 </resources>

@@ -1,5 +1,6 @@
 package com.owenlejeune.tvtime.api
 
+import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonDeserializer
 import org.koin.core.component.KoinComponent
@@ -9,17 +10,8 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 class GsonConverter: ConverterFactoryFactory, KoinComponent {
 
-    private val deserializers: Map<Class<*>, JsonDeserializer<*>> by inject()
+    private val gson: Gson by inject()
 
-    override fun get(): Converter.Factory {
-        val builder = GsonBuilder()
+    override fun get(): Converter.Factory = GsonConverterFactory.create(gson)
 
-        deserializers.forEach { deserializer ->
-            builder.registerTypeAdapter(deserializer.key, deserializer.value)
-        }
-
-        val gson = builder.create()
-
-        return GsonConverterFactory.create(gson)
-    }
 }

@@ -19,6 +19,6 @@ class SearchResultMovie(
     @SerializedName("adult") val isAdult: Boolean,
     @SerializedName("video") val video: Boolean,
 ): SearchResultMedia(
-    MediaViewType.MOVIE, overview, voteAverage, voteCount, releaseDate, backdropPath,
-    genreIds, originalLanguage, originalName, posterPath, id, name, popularity
+    overview, voteAverage, voteCount, releaseDate, backdropPath, genreIds,
+    originalLanguage, originalName, posterPath, MediaViewType.MOVIE, id, name, popularity
 )

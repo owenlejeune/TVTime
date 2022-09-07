@@ -413,11 +413,20 @@ class MainActivity : MonetCompatActivity() {
                 )
             ) {
                 it.arguments?.let { arguments ->
-                    val title = arguments.getString(NavConstants.SEARCH_TITLE_KEY) ?: ""
-                    val type = if (preferences.multiSearch) {
-                        MediaViewType.MIXED
+//                    val title = arguments.getString(NavConstants.SEARCH_TITLE_KEY) ?: ""
+//                    val type = if (preferences.multiSearch) {
+//                        MediaViewType.MIXED
+//                    } else {
+//                        MediaViewType[arguments.getInt(NavConstants.SEARCH_ID_KEY)]
+//                    }
+
+                    val (type, title) = if (preferences.multiSearch) {
+                        Pair(MediaViewType.MIXED, "")
                     } else {
-                        MediaViewType[arguments.getInt(NavConstants.SEARCH_ID_KEY)]
+                        Pair(
+                            MediaViewType[arguments.getInt(NavConstants.SEARCH_ID_KEY)],
+                            arguments.getString(NavConstants.SEARCH_TITLE_KEY) ?: ""
+                        )
                     }
 
                     SearchScreen(

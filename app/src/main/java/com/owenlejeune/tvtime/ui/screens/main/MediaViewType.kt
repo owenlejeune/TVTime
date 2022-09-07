@@ -13,6 +13,8 @@ enum class MediaViewType {
     MIXED;
 
     companion object {
+        const val JSON_KEY = "media_type"
+
         operator fun get(oridinal: Int): MediaViewType {
             return values()[oridinal]
         }

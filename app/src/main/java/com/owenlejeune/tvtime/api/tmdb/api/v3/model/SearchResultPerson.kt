@@ -1,6 +1,7 @@
 package com.owenlejeune.tvtime.api.tmdb.api.v3.model
 
 import com.google.gson.annotations.SerializedName
+import com.owenlejeune.tvtime.ui.screens.main.MediaViewType
 
 class SearchResultPerson(
     @SerializedName("profile_path") val profilePath: String,
@@ -9,4 +10,4 @@ class SearchResultPerson(
     id: Int,
     name: String,
     popularity: Float
-): SortableSearchResult(popularity, id, name)
+): SortableSearchResult(MediaViewType.PERSON, popularity, id, name)

@@ -4,7 +4,6 @@ import com.google.gson.annotations.SerializedName
 import com.owenlejeune.tvtime.ui.screens.main.MediaViewType
 
 abstract class SearchResultMedia(
-    var type: MediaViewType,
     @SerializedName("overview") val overview: String,
     @SerializedName("vote_average") val voteAverage: Float,
     @SerializedName("vote_count") val voteCount: Int,
@@ -14,7 +13,8 @@ abstract class SearchResultMedia(
     @SerializedName("original_language") val originalLanguage: String,
     @SerializedName("original_name", alternate = ["original_title"]) val originalName: String,
     @SerializedName("poster_path") val posterPath: String?,
+    type: MediaViewType,
     id: Int,
     name: String,
     popularity: Float
-): SortableSearchResult(popularity, id, name)
+): SortableSearchResult(type, popularity, id, name)
