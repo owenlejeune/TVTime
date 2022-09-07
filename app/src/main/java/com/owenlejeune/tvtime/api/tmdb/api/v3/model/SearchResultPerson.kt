@@ -5,8 +5,8 @@ import com.google.gson.annotations.SerializedName
 class SearchResultPerson(
     @SerializedName("profile_path") val profilePath: String,
     @SerializedName("adult") val isAdult: Boolean,
-    @SerializedName("id") val id: Int,
-    @SerializedName("name") val name: String,
     @SerializedName("known_for") val knownFor: List<KnownFor>,
+    id: Int,
+    name: String,
     popularity: Float
-): SortableSearchResult(popularity)
+): SortableSearchResult(popularity, id, name)

@@ -105,31 +105,3 @@ fun MediaTabs(
         tabs[page].screen(appNavController, mediaViewType, tabs[page])
     }
 }
-
-//@Composable
-//private fun SearchView(
-//    title: String,
-//    appNavController: NavHostController,
-//    mediaType: MediaViewType,
-//    fab: MutableState<@Composable () -> Unit>,
-//    preferences: AppPreferences = get(AppPreferences::class.java)
-//) {
-//    val route = "${MainNavItem.SearchView.route}/${mediaType.ordinal}"
-//    if (preferences.showSearchBar) {
-//        SearchBar(
-//            placeholder = title
-//        ) {
-//            appNavController.navigate(route)
-//        }
-//    } else {
-//        fab.value = @Composable {
-//            FloatingActionButton(
-//                onClick = {
-//                    appNavController.navigate(route)
-//                }
-//            ) {
-//                Icon(Icons.Filled.Search, stringResource(id = R.string.preference_heading_search))
-//            }
-//        }
-//    }
-//}

@@ -7,6 +7,7 @@ enum class MediaViewType {
     MOVIE,
     @SerializedName("tv")
     TV,
+    @SerializedName("person")
     PERSON,
     EPISODE,
     MIXED;

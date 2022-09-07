@@ -2,6 +2,8 @@ package com.owenlejeune.tvtime.api.tmdb.api.v3.deserializer
 
 import com.google.gson.*
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.KnownFor
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.KnownForMovie
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.KnownForTv
 import com.owenlejeune.tvtime.ui.screens.main.MediaViewType
 import java.lang.reflect.Type
 
@@ -21,8 +23,8 @@ class KnownForDeserializer: JsonDeserializer<KnownFor> {
             if (obj.has(MEDIA_TYPE)) {
                 val typeStr = obj.get(MEDIA_TYPE).asString
                 return when (Gson().fromJson(typeStr, MediaViewType::class.java)) {
-                    MediaViewType.MOVIE -> Gson().fromJson(obj.toString(), KnownFor::class.java)
-                    MediaViewType.TV -> Gson().fromJson(obj.toString(), KnownFor::class.java)
+                    MediaViewType.MOVIE -> Gson().fromJson(obj.toString(), KnownForMovie::class.java)
+                    MediaViewType.TV -> Gson().fromJson(obj.toString(), KnownForTv::class.java)
                     else -> throw JsonParseException("Not a valid MediaViewType: $typeStr")
                 }
             }

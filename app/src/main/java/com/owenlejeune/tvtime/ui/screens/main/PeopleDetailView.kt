@@ -80,7 +80,7 @@ fun PersonDetailView(
                 modifier = Modifier
                     .background(color = MaterialTheme.colorScheme.background)
                     .verticalScroll(state = rememberScrollState())
-                    .padding(bottom = 16.dp),
+                    .padding(bottom = 16.dp, start = 16.dp, end = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 DetailHeader(

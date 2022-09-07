@@ -91,6 +91,13 @@ class TmdbClient: KoinComponent {
                 builder.addQueryParams(languageParam)
             }
 
+            if (shouldIncludeRegionParam(segments)) {
+                val locale = Locale.current
+                val regionParam = QueryParam("region", locale.region)
+
+                builder.addQueryParams(regionParam)
+            }
+
             val requestBuilder = chain.request().newBuilder().url(builder.build())
 
             val request = requestBuilder.build()
@@ -120,6 +127,16 @@ class TmdbClient: KoinComponent {
                 }
             }
             return true
+        }
+
+        private fun shouldIncludeRegionParam(urlSegments: List<String>): Boolean {
+            val includedRoutes = listOf("search")
+            for (route in includedRoutes) {
+                if (urlSegments.contains(route)) {
+                    return true
+                }
+            }
+            return false
         }
     }
 

@@ -1,12 +1,11 @@
 package com.owenlejeune.tvtime.api.tmdb.api.v3.model
 
 import com.google.gson.annotations.SerializedName
+import com.owenlejeune.tvtime.ui.screens.main.MediaViewType
 
 abstract class SearchResultMedia(
-    var type: SearchResultType,
-    @SerializedName("id") val id: Int,
+    var type: MediaViewType,
     @SerializedName("overview") val overview: String,
-    @SerializedName("name", alternate = ["title"]) val name: String,
     @SerializedName("vote_average") val voteAverage: Float,
     @SerializedName("vote_count") val voteCount: Int,
     @SerializedName("release_date", alternate = ["first_air_date", "air_date"]) val releaseDate: String,
@@ -15,10 +14,7 @@ abstract class SearchResultMedia(
     @SerializedName("original_language") val originalLanguage: String,
     @SerializedName("original_name", alternate = ["original_title"]) val originalName: String,
     @SerializedName("poster_path") val posterPath: String?,
+    id: Int,
+    name: String,
     popularity: Float
-): SortableSearchResult(popularity) {
-    enum class SearchResultType {
-        MOVIE,
-        TV
-    }
-}
+): SortableSearchResult(popularity, id, name)

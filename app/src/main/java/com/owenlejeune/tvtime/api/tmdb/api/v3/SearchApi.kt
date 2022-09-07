@@ -26,4 +26,7 @@ interface SearchApi {
     @GET("search/person")
     suspend fun searchPeople(@Query("query") query: String, @Query("page") page: Int): Response<SearchResult<SearchResultPerson>>
 
+    @GET("search/multi")
+    suspend fun searchMulti(@Query("query") query: String, @Query("page") page: Int)
+
 }

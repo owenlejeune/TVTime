@@ -174,4 +174,11 @@ object TmdbUtils {
         return "${AVATAR_BASE}${path}"
     }
 
+    fun releaseYearFromData(releaseDate: String): String {
+        if (releaseDate.length >=4) {
+            return releaseDate.split("-").first { it.length == 4 }
+        }
+        return ""
+    }
+
 }

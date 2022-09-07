@@ -1,6 +1,7 @@
 package com.owenlejeune.tvtime.api.tmdb.api.v3.model
 
 import com.google.gson.annotations.SerializedName
+import com.owenlejeune.tvtime.ui.screens.main.MediaViewType
 
 class SearchResultMovie(
     id: Int,
@@ -18,6 +19,6 @@ class SearchResultMovie(
     @SerializedName("adult") val isAdult: Boolean,
     @SerializedName("video") val video: Boolean,
 ): SearchResultMedia(
-    SearchResultType.MOVIE, id, overview, name, voteAverage, voteCount, releaseDate,
-    backdropPath, genreIds, originalLanguage, originalName, posterPath, popularity
+    MediaViewType.MOVIE, overview, voteAverage, voteCount, releaseDate, backdropPath,
+    genreIds, originalLanguage, originalName, posterPath, id, name, popularity
 )

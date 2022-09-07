@@ -3,7 +3,7 @@ package com.owenlejeune.tvtime.api.tmdb.api.v3.model
 import com.google.gson.annotations.SerializedName
 import com.owenlejeune.tvtime.ui.screens.main.MediaViewType
 
-class KnowForTv(
+class KnownForTv(
     backdropPath: String?,
     releaseDate: String,
     genreIds: List<Int>,
