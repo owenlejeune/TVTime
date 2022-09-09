@@ -107,7 +107,7 @@ fun SettingsTab(
                     SettingsPage.getByRoute(route).apply {
                         appBarTitle.value = name
                         restoreAction.value = resetPreferencesHandler
-                        SettingsPageRenderer(appNavController, activity, preferences)
+                        settingsPageRenderer(appNavController, activity, preferences)
                     }
                 }
             } else {
@@ -619,10 +619,12 @@ private fun resetHomeScreenPreferences(preferences: AppPreferences) {
     preferences.showBottomTabLabels = preferences.showBottomTabLabelsDefault
 }
 
+private typealias SettingsPageRenderer = @Composable (NavController, AppCompatActivity, AppPreferences) -> Unit
+
 private sealed class SettingsPage(
     stringRes: Int,
     val route: String,
-    val SettingsPageRenderer: @Composable (NavController, AppCompatActivity, AppPreferences) -> Unit,
+    val settingsPageRenderer: SettingsPageRenderer,
     val resetPreferencesHandler: (AppPreferences) -> Unit
 ): KoinComponent {
     private val resources: ResourceUtils by inject()
