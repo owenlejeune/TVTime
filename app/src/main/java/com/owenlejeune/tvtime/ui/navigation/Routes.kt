@@ -6,11 +6,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.navigation.NavHostController
-import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.navArgument
-import com.owenlejeune.tvtime.ui.screens.main.MediaDetailView
 import com.owenlejeune.tvtime.ui.screens.main.MediaViewType
 import com.owenlejeune.tvtime.ui.screens.main.*
 
@@ -27,7 +24,7 @@ fun MainNavGraph(
     fab: MutableState<@Composable () -> Unit>,
     appBarTitle: MutableState<String>,
     appBarActions: MutableState<@Composable (RowScope.() -> Unit)> = mutableStateOf({}),
-    startDestination: String = BottomNavItem.Items[0].route
+    startDestination: String = BottomNavItem.SortedItems[0].route
 ) {
     NavHost(navController = navController, startDestination = startDestination) {
         composable(BottomNavItem.Movies.route) {
@@ -58,10 +55,6 @@ fun MainNavGraph(
                 appNavController = appNavController,
                 fab = fab
             )
-        }
-        composable(BottomNavItem.Favourites.route) {
-            appBarActions.value = {}
-            FavouritesTab()
         }
     }
 }

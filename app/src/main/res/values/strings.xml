@@ -66,6 +66,20 @@
     <string name="preference_subtitle_debug">Secret developer options</string>
     <string name="preference_heading_dark_mode">Dark mode</string>
     <string name="preference_subtitle_dark_mode">Light, dark, or auto</string>
+    <string name="preference_heading_home_screen">Home Screen</string>
+    <string name="preference_subtitle_home_screen">Home screen layout options</string>
+    <string name="preference_dark_mode_automatic_heading">Automatic</string>
+    <string name="preference_dark_mode_maual_heading">Manual</string>
+    <string name="preference_dark_mode_follow_system_label">Follow system</string>
+    <string name="preference_dark_mode_light_mode_label">Light mode</string>
+    <string name="preference_dark_mode_dark_mode_label">Dark mode</string>
+    <string name="preference_look_and_feel_heading">Look &amp; Feel</string>
+    <string name="preferences_restore_content_description">Restore settings</string>
+    <string name="preference_multi_search_title">Multi Search</string>
+    <string name="preference_multi_search_subtitle">Search across movies, TV, and people at the same time</string>
+    <string name="preference_show_text_labels_title">Show tab text labels</string>
+    <string name="preference_show_text_labels_subtitle">Show text labels for tab items in the bottom tab bar or navigation rail</string>
+    <string name="preference_home_tab_order_heading">Home Tab Order</string>
 
     <!-- video type -->
     <string name="video_type_clip">Clips</string>
@@ -122,6 +136,6 @@
     <string name="example_page_desc">This is an example</string>
 
     <!-- search results -->
-    <string name="search_result_tv_services">TV Series</string>
+    <string name="search_result_tv_series">TV Series</string>
     <string name="no_search_results">No search results found</string>
 </resources>

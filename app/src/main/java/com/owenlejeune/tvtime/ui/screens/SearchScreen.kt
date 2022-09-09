@@ -328,7 +328,7 @@ private fun TvSearchResultView(
         backdropModel = { TmdbUtils.getFullBackdropPath(result.backdropPath) },
         additionalDetails = {
             listOf(
-                "${TmdbUtils.releaseYearFromData(result.releaseDate)}  ${context.getString(R.string.search_result_tv_services)}",
+                "${TmdbUtils.releaseYearFromData(result.releaseDate)}  ${context.getString(R.string.search_result_tv_series)}",
                 cast.value?.joinToString(separator = ", ") { it.name } ?: ""
             )
         }

@@ -4,8 +4,10 @@ import android.os.Build
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.rememberSplineBasedDecay
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.IconButton
 import androidx.compose.material.TextButton
 import androidx.compose.material.icons.Icons
@@ -23,13 +25,19 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavController
+import androidx.recyclerview.widget.ItemTouchHelper
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.kieronquinn.monetcompat.core.MonetCompat
 import com.owenlejeune.tvtime.BuildConfig
 import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.preferences.AppPreferences
 import com.owenlejeune.tvtime.ui.components.*
 import com.owenlejeune.tvtime.ui.navigation.MainNavItem
+import com.owenlejeune.tvtime.ui.views.HomeTabRecyclerAdapter
+import com.owenlejeune.tvtime.ui.views.ItemMoveCallback
 import com.owenlejeune.tvtime.utils.ResourceUtils
 import com.owenlejeune.tvtime.utils.SessionManager
 import kotlinx.coroutines.launch
@@ -52,6 +60,8 @@ fun SettingsTab(
     }
 
     val appBarTitle = remember { mutableStateOf("") }
+    val defaultRestoreAction = ::resetAllPreferences
+    val restoreAction = remember { mutableStateOf<(AppPreferences) -> Unit>(defaultRestoreAction) }
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -72,6 +82,16 @@ fun SettingsTab(
                             contentDescription = stringResource(id = R.string.content_description_back_button)
                         )
                     }
+                },
+                actions = {
+                    IconButton(onClick = {
+                        restoreAction.value(preferences)
+                    }) {
+                        Icon(
+                            imageVector = Icons.Filled.SettingsBackupRestore,
+                            contentDescription = stringResource(R.string.preferences_restore_content_description)
+                        )
+                    }
                 }
             )
         }
@@ -82,14 +102,16 @@ fun SettingsTab(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(all = 24.dp),
-                    verticalArrangement = Arrangement.spacedBy(24.dp)
+                    verticalArrangement = Arrangement.spacedBy(18.dp)
                 ) {
                     SettingsPage.getByRoute(route).apply {
                         appBarTitle.value = name
+                        restoreAction.value = resetPreferencesHandler
                         SettingsPageRenderer(appNavController, activity, preferences)
                     }
                 }
             } else {
+                restoreAction.value = ::resetAllPreferences
                 SettingsTabView(
                     appNavController = appNavController,
                     appBarTitle = appBarTitle
@@ -125,6 +147,14 @@ private fun SettingsTabView(
             subtitle = stringResource(R.string.preference_subtitle_design),
             icon = Icons.Filled.Palette,
             settingsView = SettingsPage.DesignSettings,
+            appNavController = appNavController
+        )
+
+        TopLevelSettingsCard(
+            title = stringResource(id = R.string.preference_heading_home_screen),
+            subtitle = stringResource(R.string.preference_subtitle_home_screen),
+            icon = Icons.Filled.Home,
+            settingsView = SettingsPage.HomeScreenSettings,
             appNavController = appNavController
         )
 
@@ -196,8 +226,8 @@ private fun SearchPreferences(
 
     val multiSearch = remember { mutableStateOf(preferences.multiSearch) }
     SwitchPreference(
-        titleText = "Multi Search",
-        subtitleText = "Search across movies, TV, and people at the same time",
+        titleText = stringResource(R.string.preference_multi_search_title),
+        subtitleText = stringResource(R.string.preference_multi_search_subtitle),
         checkState = multiSearch.value,
         onCheckedChange = { isChecked ->
             multiSearch.value = isChecked
@@ -288,12 +318,6 @@ private fun DesignPreferences(
     }
 }
 
-enum class DarkMode {
-    Automatic,
-    Dark,
-    Light
-}
-
 @Composable
 private fun DarkModePreferences(
     activity: AppCompatActivity,
@@ -308,33 +332,77 @@ private fun DarkModePreferences(
         activity.recreate()
     }
 
-    PreferenceHeading(text = "Automatic")
+    PreferenceHeading(text = stringResource(R.string.preference_dark_mode_automatic_heading))
     RadioButtonPreference(
-        selected = isSelected(DarkMode.Automatic.ordinal),
-        title = "Follow system",
+        selected = isSelected(AppPreferences.DarkMode.Automatic.ordinal),
+        title = stringResource(R.string.preference_dark_mode_follow_system_label),
         icon = Icons.Filled.Brightness6,
         onClick = {
-            onChangeState(DarkMode.Automatic.ordinal)
+            onChangeState(AppPreferences.DarkMode.Automatic.ordinal)
         }
     )
 
-    PreferenceHeading(text = "Manual")
+    PreferenceHeading(text = stringResource(R.string.preference_dark_mode_maual_heading))
     RadioButtonPreference(
-        selected = isSelected(DarkMode.Light.ordinal),
-        title = "Light mode",
+        selected = isSelected(AppPreferences.DarkMode.Light.ordinal),
+        title = stringResource(R.string.preference_dark_mode_light_mode_label),
         icon = Icons.Outlined.LightMode,
         onClick = {
-            onChangeState(DarkMode.Light.ordinal)
+            onChangeState(AppPreferences.DarkMode.Light.ordinal)
         }
     )
     RadioButtonPreference(
-        selected = isSelected(DarkMode.Dark.ordinal),
-        title = "Dark mode",
+        selected = isSelected(AppPreferences.DarkMode.Dark.ordinal),
+        title = stringResource(R.string.preference_dark_mode_dark_mode_label),
         icon = Icons.Outlined.DarkMode,
         onClick = {
-            onChangeState(DarkMode.Dark.ordinal)
+            onChangeState(AppPreferences.DarkMode.Dark.ordinal)
         }
     )
+}
+
+@Composable
+private fun HomeScreenPreferences(
+    preferences: AppPreferences = get(AppPreferences::class.java)
+) {
+    PreferenceHeading(text = stringResource(R.string.preference_look_and_feel_heading))
+
+    val showTabLabels = remember { mutableStateOf(preferences.showBottomTabLabels) }
+    SwitchPreference(
+        titleText = stringResource(R.string.preference_show_text_labels_title),
+        subtitleText = stringResource(R.string.preference_show_text_labels_subtitle),
+        checkState = showTabLabels.value,
+        onCheckedChange = { isChecked ->
+            showTabLabels.value = isChecked
+            preferences.showBottomTabLabels = isChecked
+        }
+    )
+    
+    PreferenceHeading(text = stringResource(R.string.preference_home_tab_order_heading))
+
+    Box(modifier = Modifier
+        .border(
+            width = 1.dp,
+            color = MaterialTheme.colorScheme.primary,
+            shape = RoundedCornerShape(10.dp)
+        )
+        .padding(horizontal = 12.dp)
+    ) {
+        AndroidView(
+            modifier = Modifier.fillMaxWidth(),
+            factory = { context ->
+                RecyclerView(context).apply {
+                    layoutManager = LinearLayoutManager(context)
+                    val mAdapter = HomeTabRecyclerAdapter()
+                    val touchCallback = ItemMoveCallback(mAdapter)
+                    val touchHelper = ItemTouchHelper(touchCallback)
+                    touchHelper.attachToRecyclerView(this)
+                    adapter = mAdapter
+                }
+            },
+            update = { }
+        )
+    }
 }
 
 @Composable
@@ -513,13 +581,64 @@ private fun WallpaperPicker(
     }
 }
 
-private sealed class SettingsPage(stringRes: Int, val route: String, val SettingsPageRenderer: @Composable (NavController, AppCompatActivity, AppPreferences) -> Unit): KoinComponent {
+private fun resetAllPreferences(preferences: AppPreferences) {
+    resetSearchPreferences(preferences = preferences)
+    resetDesignPreferences(preferences = preferences)
+    resetHomeScreenPreferences(preferences = preferences)
+    resetDevModePreference(preferences = preferences)
+}
+
+private fun resetSearchPreferences(preferences: AppPreferences) {
+    preferences.showSearchBar = preferences.showSearchBarDefault
+    preferences.multiSearch = preferences.multiSearchDefault
+}
+
+private fun resetDesignPreferences(preferences: AppPreferences) {
+    preferences.useWallpaperColors = preferences.useWallpaperColorsDefault
+    preferences.useSystemColors = preferences.useSystemColorsDefault
+    preferences.chromaMultiplier = preferences.chromeMultiplyerDefault
+    preferences.selectedColor = preferences.selectedColorDefault
+    resetDarkModePreferences(preferences = preferences)
+}
+
+private fun resetDarkModePreferences(preferences: AppPreferences) {
+    preferences.darkTheme = preferences.darkThemeDefault
+}
+
+private fun resetDevModePreference(preferences: AppPreferences) {
+    preferences.firstLaunchTesting = preferences.firstLaunchTestingDefault
+    preferences.useV4Api = preferences.useV4ApiDefault
+    preferences.showBackdropGallery = preferences.showBackdropGalleryDefault
+}
+
+private fun resetHomeScreenPreferences(preferences: AppPreferences) {
+    preferences.moviesTabPosition = preferences.moviesTabPositionDefault
+    preferences.tvTabPosition = preferences.tvTabPositionDefault
+    preferences.peopleTabPosition = preferences.peopleTabPositionDefault
+    preferences.accountTabPosition = preferences.accountTabPositionDefault
+    preferences.showBottomTabLabels = preferences.showBottomTabLabelsDefault
+}
+
+private sealed class SettingsPage(
+    stringRes: Int,
+    val route: String,
+    val SettingsPageRenderer: @Composable (NavController, AppCompatActivity, AppPreferences) -> Unit,
+    val resetPreferencesHandler: (AppPreferences) -> Unit
+): KoinComponent {
     private val resources: ResourceUtils by inject()
 
     val name = resources.getString(stringRes)
 
     companion object {
-        val Pages by lazy {listOf(SearchSettings, DesignSettings, DeveloperSettings, DarkModeSettings) }
+        val Pages by lazy {
+            listOf(
+                SearchSettings,
+                DesignSettings,
+                DeveloperSettings,
+                DarkModeSettings,
+                HomeScreenSettings
+            )
+        }
 
         fun getByRoute(route: String): SettingsPage {
             return Pages.map { it.route to it }
@@ -529,8 +648,34 @@ private sealed class SettingsPage(stringRes: Int, val route: String, val Setting
         }
     }
 
-    object SearchSettings: SettingsPage(R.string.preference_heading_search, "search", @Composable { n, a, p -> SearchPreferences(p) } )
-    object DesignSettings: SettingsPage(R.string.preference_heading_design, "design", @Composable { n, a, p -> DesignPreferences(n, a, p) } )
-    object DeveloperSettings: SettingsPage(R.string.preferences_debug_title,"dev", @Composable { n, a, p -> DevPreferences(p) } )
-    object DarkModeSettings: SettingsPage(R.string.preference_heading_dark_mode, "darkmode", @Composable { n, a, p -> DarkModePreferences(a, p) } )
+    object SearchSettings: SettingsPage(
+        R.string.preference_heading_search,
+        "search",
+        @Composable { _, _, p -> SearchPreferences(p) },
+        ::resetSearchPreferences
+    )
+    object DesignSettings: SettingsPage(
+        R.string.preference_heading_design,
+        "design",
+        @Composable { n, a, p -> DesignPreferences(n, a, p) },
+        ::resetDesignPreferences
+    )
+    object HomeScreenSettings: SettingsPage(
+        R.string.preference_heading_home_screen,
+        "home",
+        @Composable { _, _, p -> HomeScreenPreferences(p) },
+        ::resetHomeScreenPreferences
+    )
+    object DeveloperSettings: SettingsPage(
+        R.string.preferences_debug_title,
+        "dev",
+        @Composable { _, _, p -> DevPreferences(p) },
+        ::resetDevModePreference
+    )
+    object DarkModeSettings: SettingsPage(
+        R.string.preference_heading_dark_mode,
+        "darkmode",
+        @Composable { _, a, p -> DarkModePreferences(a, p) },
+        ::resetDarkModePreferences
+    )
 }

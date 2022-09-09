@@ -9,7 +9,6 @@ import androidx.compose.runtime.Composable
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.kieronquinn.monetcompat.core.MonetCompat
 import com.owenlejeune.tvtime.preferences.AppPreferences
-import com.owenlejeune.tvtime.ui.screens.main.DarkMode
 import org.koin.java.KoinJavaComponent.get
 
 private val DarkColorPalette = darkColorScheme(
@@ -77,9 +76,9 @@ fun TVTimeTheme(
     content: @Composable () -> Unit
 ) {
     val isDarkTheme = when(preferences.darkTheme) {
-        DarkMode.Automatic.ordinal -> isSystemInDarkTheme()
-        DarkMode.Dark.ordinal -> true
-        DarkMode.Light.ordinal -> false
+        AppPreferences.DarkMode.Automatic.ordinal -> isSystemInDarkTheme()
+        AppPreferences.DarkMode.Dark.ordinal -> true
+        AppPreferences.DarkMode.Light.ordinal -> false
         else -> throw IllegalArgumentException("Illegal theme value ${preferences.darkTheme}")
     }
 

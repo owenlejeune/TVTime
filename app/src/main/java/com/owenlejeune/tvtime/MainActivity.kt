@@ -58,7 +58,7 @@ class MainActivity : MonetCompatActivity() {
             SessionManager.initialize()
         }
 
-        var mainNavStartRoute = BottomNavItem.Items[0].route
+        var mainNavStartRoute = BottomNavItem.SortedItems[0].route
         intent.data?.let {
             when (it.host) {
                 getString(R.string.intent_route_auth_return) -> mainNavStartRoute = BottomNavItem.Account.route
@@ -82,7 +82,7 @@ class MainActivity : MonetCompatActivity() {
     @Composable
     private fun AppScaffold(
         appNavController: NavHostController,
-        mainNavStartRoute: String = BottomNavItem.Items[0].route,
+        mainNavStartRoute: String = BottomNavItem.SortedItems[0].route,
         preferences: AppPreferences = get(AppPreferences::class.java)
     ) {
         val windowSize = rememberWindowSizeClass()
@@ -91,7 +91,7 @@ class MainActivity : MonetCompatActivity() {
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentRoute = navBackStackEntry?.destination?.route
 
-        val appBarTitle = rememberSaveable { mutableStateOf(BottomNavItem.getByRoute(currentRoute)?.name ?: BottomNavItem.Items[0].name) }
+        val appBarTitle = rememberSaveable { mutableStateOf(BottomNavItem.getByRoute(currentRoute)?.name ?: BottomNavItem.SortedItems[0].name) }
         val decayAnimationSpec = rememberSplineBasedDecay<Float>()
         val topAppBarScrollState = rememberTopAppBarScrollState()
         val scrollBehavior = remember(decayAnimationSpec) {
@@ -100,8 +100,6 @@ class MainActivity : MonetCompatActivity() {
 
         val appBarActions = remember { mutableStateOf<@Composable RowScope.() -> Unit>({}) }
         val fab = remember { mutableStateOf<@Composable () -> Unit>({}) }
-
-        // todo - scroll state not remember when returing from detail screen
 
         Scaffold (
             modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -170,18 +168,25 @@ class MainActivity : MonetCompatActivity() {
     }
 
     @Composable
-    private fun BottomNavBar(navController: NavController, appBarTitle: MutableState<String>) {
+    private fun BottomNavBar(
+        navController: NavController,
+        appBarTitle: MutableState<String>,
+        preferences: AppPreferences = get(AppPreferences::class.java)
+    ) {
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentRoute = navBackStackEntry?.destination?.route
 
         NavigationBar {
-            BottomNavItem.Items.forEach { item ->
+            BottomNavItem.SortedItems.forEach { item ->
                 NavigationBarItem(
                     modifier = Modifier
                         .padding(4.dp)
                         .clip(RoundedCornerShape(24.dp)),
                     icon = { Icon(painter = painterResource(id = item.icon), contentDescription = null) },
-                    label = { Text(item.name) },
+                    label = {
+                        val name = if (preferences.showBottomTabLabels) item.name else " "
+                        Text(text = name)
+                    },
                     selected = currentRoute == item.route,
                     onClick = {
                         onBottomAppBarItemClicked(
@@ -225,7 +230,7 @@ class MainActivity : MonetCompatActivity() {
         topBarScrollBehaviour: TopAppBarScrollBehavior,
         appBarTitle: MutableState<String>,
         appBarActions: MutableState<@Composable (RowScope.() -> Unit)> = mutableStateOf({}),
-        mainNavStartRoute: String = BottomNavItem.Items[0].route
+        mainNavStartRoute: String = BottomNavItem.SortedItems[0].route
     ) {
         if (windowSize == WindowSizeClass.Expanded) {
             DualColumnMainContent(
@@ -256,7 +261,7 @@ class MainActivity : MonetCompatActivity() {
         fab: MutableState<@Composable () -> Unit>,
         appBarTitle: MutableState<String>,
         appBarActions: MutableState<@Composable (RowScope.() -> Unit)> = mutableStateOf({}),
-        mainNavStartRoute: String = BottomNavItem.Items[0].route
+        mainNavStartRoute: String = BottomNavItem.SortedItems[0].route
     ) {
         MainMediaView(
             appNavController = appNavController,
@@ -276,7 +281,8 @@ class MainActivity : MonetCompatActivity() {
         topBarScrollBehaviour: TopAppBarScrollBehavior,
         appBarTitle: MutableState<String>,
         appBarActions: MutableState<@Composable (RowScope.() -> Unit)> = mutableStateOf({}),
-        mainNavStartRoute: String = BottomNavItem.Items[0].route
+        mainNavStartRoute: String = BottomNavItem.SortedItems[0].route,
+        preferences: AppPreferences = get(AppPreferences::class.java)
     ) {
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentRoute = navBackStackEntry?.destination?.route
@@ -284,10 +290,10 @@ class MainActivity : MonetCompatActivity() {
         Row(modifier = Modifier.fillMaxSize()) {
             NavigationRail {
                 Spacer(modifier = Modifier.weight(1f))
-                BottomNavItem.Items.forEach { item ->
+                BottomNavItem.SortedItems.forEach { item ->
                     NavigationRailItem(
                         icon = { Icon(painter = painterResource(id = item.icon), contentDescription = null) },
-                        label = { Text(item.name) },
+                        label = { if (preferences.showBottomTabLabels) Text(item.name) },
                         selected = currentRoute == item.route,
                         onClick = {
                             onBottomAppBarItemClicked(
@@ -326,7 +332,7 @@ class MainActivity : MonetCompatActivity() {
         fab: MutableState<@Composable () -> Unit>,
         appBarTitle: MutableState<String>,
         appBarActions: MutableState<RowScope.() -> Unit> = mutableStateOf({}),
-        mainNavStartRoute: String = BottomNavItem.Items[0].route
+        mainNavStartRoute: String = BottomNavItem.SortedItems[0].route
     ) {
         Column {
             val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -413,13 +419,6 @@ class MainActivity : MonetCompatActivity() {
                 )
             ) {
                 it.arguments?.let { arguments ->
-//                    val title = arguments.getString(NavConstants.SEARCH_TITLE_KEY) ?: ""
-//                    val type = if (preferences.multiSearch) {
-//                        MediaViewType.MIXED
-//                    } else {
-//                        MediaViewType[arguments.getInt(NavConstants.SEARCH_ID_KEY)]
-//                    }
-
                     val (type, title) = if (preferences.multiSearch) {
                         Pair(MediaViewType.MIXED, "")
                     } else {

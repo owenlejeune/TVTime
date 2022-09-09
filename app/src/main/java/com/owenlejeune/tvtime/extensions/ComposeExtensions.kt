@@ -36,6 +36,16 @@ fun <T: Any> LazyListScope.listItems(
     }
 }
 
+fun <T: Any?> LazyListScope.listItems(
+    items: List<T?>,
+    key: (T?) -> Any,
+    itemContent: @Composable (value: T?) -> Unit
+) {
+    items(items.size, key = { key(items[it]) }) { index ->
+        itemContent(items[index])
+    }
+}
+
 fun <T: Any> LazyListScope.lazyPagingItems(
     lazyPagingItems: LazyPagingItems<T>,
     itemContent: @Composable LazyItemScope.(value: T?) -> Unit
