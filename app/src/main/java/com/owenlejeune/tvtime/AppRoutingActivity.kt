@@ -13,7 +13,7 @@ class AppRoutingActivity: AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        if (preferences.firstLaunch) {
+        if (preferences.firstLaunchTesting || preferences.firstLaunch) {
             launchActivity(OnboardingActivity::class.java)
         } else {
             launchActivity(MainActivity::class.java)

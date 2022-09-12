@@ -119,6 +119,7 @@ fun RadioButtonPreference(
     selected: Boolean,
     onClick: () -> Unit,
     title: String,
+    description: String? = null,
     icon: ImageVector,
     titleTextColor: Color = MaterialTheme.colorScheme.onBackground,
     disabledTextColor: Color = MaterialTheme.colorScheme.outline
@@ -142,19 +143,31 @@ fun RadioButtonPreference(
         )
 
         val titleColor = if (enabled) titleTextColor else disabledTextColor
-        Text(
+        Column(
             modifier = Modifier
-                .align(Alignment.CenterVertically),
-            text = title,
-            style = MaterialTheme.typography.titleLarge,
-            color = titleColor,
-            fontSize = 20.sp
-        )
+                .align(Alignment.CenterVertically)
+                .padding(end = 36.dp)
+                .fillMaxWidth()
+        ) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleLarge,
+                color = titleColor,
+                fontSize = 20.sp
+            )
+            description?.let {
+                Text(
+                    text = description,
+                    color = titleColor,
+                    fontSize = 14.sp
+                )
+            }
+        }
 
         Spacer(modifier = Modifier.weight(1f))
 
         RadioButton(
-            modifier = Modifier.align(Alignment.CenterVertically),
+            modifier = Modifier.align(Alignment.CenterVertically).weight(1f),
             selected = selected,
             onClick = null
         )

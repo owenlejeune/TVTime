@@ -126,7 +126,7 @@ class AppPreferences(context: Context) {
         set(value) { preferences.put(FIRST_LAUNCH_TESTING, value) }
 
     var firstLaunch: Boolean
-        get() = if (BuildConfig.DEBUG) firstLaunchTesting else preferences.getBoolean(FIRST_LAUNCH, true)
+        get() = preferences.getBoolean(FIRST_LAUNCH, true)
         set(value) { preferences.put(FIRST_LAUNCH, value) }
 
     val useV4ApiDefault: Boolean = false

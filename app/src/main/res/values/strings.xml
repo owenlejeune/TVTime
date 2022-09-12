@@ -132,8 +132,18 @@
     <string name="intent_route_auth_return">tvtime.auth.return</string>
 
     <!-- onboarding -->
-    <string name="get_started">Get started</string>
-    <string name="example_page_desc">This is an example</string>
+    <string name="get_started">Start</string>
+    <string name="intro_page_desc">This is an example</string>
+    <string name="sign_in_page_title">Sign into TMDb</string>
+    <string name="sign_in_page_description">Sign into TMDb to add content to your favourites or watchlist and leave reviews</string>
+    <string name="search_page_title">Search type</string>
+    <string name="search_page_description">Show search view with a search bar or fab</string>
+    <string name="search_type_title">Search mode</string>
+    <string name="search_type_description">Search across individual media types, or across all at once</string>
+    <string name="dark_mode_page_title">Dark mode</string>
+    <string name="dark_mode_page_description"> </string>
+    <string name="system_color_page_title">Theme management</string>
+    <string name="system_color_page_description">Theme the app using colors pulled from your wallpaper or the color theme built into the app</string>
 
     <!-- search results -->
     <string name="search_result_tv_series">TV Series</string>

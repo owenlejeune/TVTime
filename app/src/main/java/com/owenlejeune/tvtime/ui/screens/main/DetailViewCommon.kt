@@ -173,10 +173,7 @@ private fun BackdropGallery(
                     with (pagerState) {
                         val target = if (currentPage < pageCount - 1) currentPage + 1 else 0
 
-                        animateScrollToPage(
-                            page = target,
-                            pageOffset = 0f
-                        )
+                        pagerState.animateScrollToPage(target)
                     }
                 }
             }

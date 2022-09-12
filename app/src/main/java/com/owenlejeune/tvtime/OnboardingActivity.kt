@@ -7,15 +7,13 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
-import androidx.compose.material3.Button
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -63,16 +61,38 @@ class OnboardingActivity: MonetCompatActivity() {
         Column(
             modifier = Modifier.background(color = MaterialTheme.colorScheme.background)
         ) {
+            val isFirstPage = pagerState.currentPage == 0
+            val isLastPage = pagerState.currentPage == OnboardingPage.values().size - 1
+
+            if (!isFirstPage) {
+                IconButton(
+                    modifier = Modifier.padding(12.dp),
+                    onClick = {
+                        coroutineScope.launch {
+                            pagerState.animateScrollToPage(pagerState.currentPage - 1)
+                        }
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.ArrowBack,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onBackground
+                    )
+                }
+            }
+
+            val nextButtonEnabled = remember { mutableStateOf(true) }
             HorizontalPager(
                 state = pagerState,
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f),
-//                    .background(MaterialTheme.colorScheme.primary),
                 count = OnboardingPage.values().size,
                 userScrollEnabled = false
             ) { page ->
-                OnboardingPageUi(page = OnboardingPage[page])
+                Box(modifier = Modifier.padding(start = 12.dp, end = 24.dp)) {
+                    OnboardingPageUi(page = OnboardingPage[page], nextButtonEnabled)
+                }
             }
 
             Box(
@@ -80,6 +100,17 @@ class OnboardingActivity: MonetCompatActivity() {
                     .fillMaxWidth()
                     .padding(all = 12.dp)
             ) {
+                Button(
+                    modifier = Modifier.align(Alignment.CenterStart),
+                    enabled = true,
+                    onClick = {
+                        preferences.firstLaunch = false
+                        launchActivity(MainActivity::class.java)
+                    }
+                ) {
+                    Text(text = "Skip")
+                }
+
                 HorizontalPagerIndicator(
                     pagerState = pagerState,
                     modifier = Modifier
@@ -88,10 +119,10 @@ class OnboardingActivity: MonetCompatActivity() {
                     activeColor = MaterialTheme.colorScheme.secondary
                 )
 
-                val isLastPage = pagerState.currentPage == OnboardingPage.values().size - 1
                 Button(
                     modifier = Modifier.align(Alignment.CenterEnd),
                     shape = CircleShape,
+                    enabled = nextButtonEnabled.value,
                     onClick = {
                         if (isLastPage) {
                             preferences.firstLaunch = false
@@ -103,7 +134,7 @@ class OnboardingActivity: MonetCompatActivity() {
                         }
                     }
                 ) {
-                    if (isLastPage) {
+                    if (!isLastPage) {
                         Text(stringResource(id = R.string.get_started))
                     } else {
                         Icon(imageVector = Icons.Filled.ArrowForward, contentDescription = null)
@@ -114,7 +145,7 @@ class OnboardingActivity: MonetCompatActivity() {
     }
 
     @Composable
-    fun OnboardingPageUi(page: OnboardingPage) {
+    fun OnboardingPageUi(page: OnboardingPage, nextButtonEnabled: MutableState<Boolean>) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -122,8 +153,8 @@ class OnboardingActivity: MonetCompatActivity() {
                 Image(
                     painter = painterResource(id = it),
                     contentDescription = null,
-                    modifier = Modifier.size(200.dp),
-                    colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.secondary)
+                    modifier = Modifier.size(100.dp),
+                    colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.primary)
                 )
                 Spacer(modifier = Modifier.height(20.dp))
             }
@@ -140,8 +171,8 @@ class OnboardingActivity: MonetCompatActivity() {
                 fontSize = 14.sp,
                 color = MaterialTheme.colorScheme.onBackground
             )
-            Spacer(modifier = Modifier.height(12.dp))
-            page.additionalContent(this@OnboardingActivity)
+            Spacer(modifier = Modifier.height(50.dp))
+            page.additionalContent(this@OnboardingActivity, nextButtonEnabled)
         }
     }
 
