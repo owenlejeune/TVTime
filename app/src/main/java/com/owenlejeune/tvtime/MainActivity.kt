@@ -338,10 +338,6 @@ class MainActivity : MonetCompatActivity() {
             val navBackStackEntry by navController.currentBackStackEntryAsState()
             val currentRoute = navBackStackEntry?.destination?.route
 
-//            if (currentRoute in searchableScreens) {
-//                SearchBar(appBarTitle.value)
-//            }
-
             MainNavGraph(
                 activity = this@MainActivity,
                 appNavController = appNavController,

@@ -75,7 +75,7 @@ fun MediaDetailView(
     val decayAnimationSpec = rememberSplineBasedDecay<Float>()
     val topAppBarScrollState = rememberTopAppBarScrollState()
     val scrollBehavior = remember(decayAnimationSpec) {
-        TopAppBarDefaults.exitUntilCollapsedScrollBehavior(decayAnimationSpec, topAppBarScrollState)
+        TopAppBarDefaults.pinnedScrollBehavior(topAppBarScrollState)
     }
 
     Scaffold(
@@ -84,7 +84,7 @@ fun MediaDetailView(
             SmallTopAppBar(
                 scrollBehavior = scrollBehavior,
                 colors = TopAppBarDefaults
-                    .largeTopAppBarColors(
+                    .smallTopAppBarColors(
                         scrolledContainerColor = MaterialTheme.colorScheme.background,
                         titleContentColor = MaterialTheme.colorScheme.primary
                     ),
@@ -902,8 +902,15 @@ private fun ReviewsCard(
                         textColor = MaterialTheme.colorScheme.onSecondary
                     )
 
+                    val context = LocalContext.current
                     CircleBackgroundColorImage(
-                        modifier = Modifier.align(Alignment.CenterVertically),
+                        modifier = Modifier
+                            .align(Alignment.CenterVertically)
+                            .clickable (
+                                onClick = {
+                                   Toast.makeText(context, "TODO", Toast.LENGTH_SHORT).show()
+                                }
+                            ),
                         size = 40.dp,
                         backgroundColor = MaterialTheme.colorScheme.tertiary,
                         image = Icons.Filled.Send,

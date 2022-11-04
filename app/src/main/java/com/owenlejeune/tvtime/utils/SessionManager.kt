@@ -51,7 +51,6 @@ object SessionManager: KoinComponent {
                         _currentSession = null
                         preferences.guestSessionId = ""
                         preferences.authorizedSessionValues = null
-//                        preferences.authorizedSessionId = ""
                     }
                     onResponse(deleteResponse.isSuccessful)
                 }
@@ -68,7 +67,6 @@ object SessionManager: KoinComponent {
                         _currentSession = null
                         preferences.guestSessionId = ""
                         preferences.authorizedSessionValues = null
-//                        preferences.authorizedSessionId = ""
                     }
                     onResponse(deleteResponse.isSuccessful)
                 }
@@ -314,14 +312,10 @@ object SessionManager: KoinComponent {
             if (changed.contains(Changed.AccountDetails)) {
                 service.getAccountDetails().apply {
                     if (isSuccessful) {
-//                        withContext(Dispatchers.Main) {
-                            _accountDetails = body() ?: _accountDetails
-                            accountDetails?.let {
-//                                CoroutineScope(Dispatchers.IO).launch {
-                                    refreshWithAccountId(it.id, changed)
-//                                }
-                            }
-//                        }
+                        _accountDetails = body() ?: _accountDetails
+                        accountDetails?.let {
+                            refreshWithAccountId(it.id, changed)
+                        }
                     }
                 }
             } else if (accountDetails != null) {

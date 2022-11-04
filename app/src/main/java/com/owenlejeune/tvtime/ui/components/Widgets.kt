@@ -456,8 +456,6 @@ fun RatingRing(
     Box(
         modifier = modifier
             .size(size)
-//            .size(60.dp)
-//            .padding(8.dp)
     ) {
         CircularProgressIndicator(
             modifier = Modifier.fillMaxSize(),
@@ -716,22 +714,6 @@ fun AvatarImage(
             size = size,
             character = text
         )
-//        Box(
-//            modifier = Modifier
-//                .clip(CircleShape)
-//                .size(size)
-//                .background(color = MaterialTheme.colorScheme.tertiary)
-//        ) {
-//            Text(
-//                modifier = Modifier
-//                    .fillMaxSize()
-//                    .padding(top = size / 5),
-//                text = if (author.name.isNotEmpty()) author.name[0].uppercase() else author.username[0].toString(),
-//                color = MaterialTheme.colorScheme.onTertiary,
-//                textAlign = TextAlign.Center,
-//                style = MaterialTheme.typography.titleLarge
-//            )
-//        }
     }
 }
 
@@ -739,8 +721,7 @@ fun AvatarImage(
 fun RoundedLetterImage(
     size: Dp,
     character: Char,
-    modifier: Modifier = Modifier,
-    topPadding: Dp = size / 5
+    modifier: Modifier = Modifier
 ) {
     Box(
         modifier = modifier
@@ -750,8 +731,7 @@ fun RoundedLetterImage(
     ) {
         Text(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(top = topPadding),
+                .align(Alignment.Center),
             text = character.uppercase(),
             color = MaterialTheme.colorScheme.onTertiary,
             textAlign = TextAlign.Center,

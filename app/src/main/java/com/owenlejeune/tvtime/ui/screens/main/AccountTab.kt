@@ -1,13 +1,14 @@
 package com.owenlejeune.tvtime.ui.screens.main
 
 import android.content.Context
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -15,13 +16,19 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.constraintlayout.compose.Dimension
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.google.accompanist.pager.ExperimentalPagerApi
@@ -43,7 +50,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.koin.java.KoinJavaComponent
 import org.koin.java.KoinJavaComponent.get
 import kotlin.reflect.KClass
 
@@ -184,9 +190,11 @@ fun <T: Any> AccountTabContent(
                             mediaViewType = mediaViewType,
                             id = item.id,
                             posterPath = TmdbUtils.getFullPosterPath(item.posterPath),
+                            backdropPath = TmdbUtils.getFullBackdropPath(item.backdropPath),
                             name = item.name,
                             date = item.releaseDate,
-                            rating = item.rating
+                            rating = item.rating,
+                            description = item.overview
                         )
                     }
                     RatedEpisode::class -> {
@@ -197,7 +205,8 @@ fun <T: Any> AccountTabContent(
                             id = item.id,
                             name = item.name,
                             date = item.releaseDate,
-                            rating = item.rating
+                            rating = item.rating,
+                            description = item.overview
                         )
                     }
                     FavoriteMovie::class, FavoriteTvSeries::class -> {
@@ -207,8 +216,10 @@ fun <T: Any> AccountTabContent(
                             mediaViewType = mediaViewType,
                             id = item.id,
                             posterPath = TmdbUtils.getFullPosterPath(item.posterPath),
+                            backdropPath = TmdbUtils.getFullBackdropPath(item.backdropPath),
                             name = item.title,
-                            date = item.releaseDate
+                            date = item.releaseDate,
+                            description = item.overview
                         )
                     }
                     WatchlistMovie::class, WatchlistTvSeries::class -> {
@@ -218,8 +229,10 @@ fun <T: Any> AccountTabContent(
                             mediaViewType = mediaViewType,
                             id = item.id,
                             posterPath = TmdbUtils.getFullPosterPath(item.posterPath),
+                            backdropPath = TmdbUtils.getFullBackdropPath(item.backdropPath),
                             name = item.title,
-                            date = item.releaseDate
+                            date = item.releaseDate,
+                            description = item.overview
                         )
                     }
                 }
@@ -228,6 +241,7 @@ fun <T: Any> AccountTabContent(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun MediaItemRow(
     appNavController: NavHostController,
@@ -235,46 +249,109 @@ private fun MediaItemRow(
     id: Int,
     name: String,
     date: String,
+    description: String,
     posterPath: String? = null,
+    backdropPath: String? = null,
     rating: Float? = null
 ) {
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = Modifier.clickable(
-            onClick = {
-                appNavController.navigate(
-                    "${MainNavItem.DetailView.route}/${mediaViewType}/${id}"
+    Card(
+        shape = RoundedCornerShape(10.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 10.dp),
+        modifier = Modifier
+            .background(color = MaterialTheme.colorScheme.surface)
+            .fillMaxWidth()
+            .clickable(
+                onClick = {
+                    appNavController.navigate(
+                        "${MainNavItem.DetailView.route}/${mediaViewType}/${id}"
+                    )
+                }
+            )
+    ) {
+        Box(
+            modifier = Modifier
+                .height(112.dp)
+        ) {
+            AsyncImage(
+                model = backdropPath,
+                contentDescription = null,
+                contentScale = ContentScale.FillWidth,
+                modifier = Modifier
+                    .blur(radius = 10.dp)
+                    .fillMaxWidth()
+                    .wrapContentHeight()
+            )
+
+            backdropPath?.let {
+                Box(modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.7f))
+                    .blur(radius = 10.dp)
                 )
             }
-        )
-    ) {
-        AsyncImage(
-            modifier = Modifier
-                .size(width = 60.dp, height = 80.dp),
-            model = posterPath,
-            contentDescription = ""
-        )
 
-        Column(
-            modifier = Modifier.height(80.dp),
-            verticalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(
-                text = name,
-                color = MaterialTheme.colorScheme.onBackground,
-                fontSize = 18.sp
-            )
+            ConstraintLayout(
+                modifier = Modifier
+                    .padding(8.dp)
+                    .fillMaxSize()
+            ) {
+                val (poster, content, ratingView) = createRefs()
 
-            Text(
-                text = date,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-
-            if (rating != null) {
-                Text(
-                    text = stringResource(id = R.string.rating_test, (rating * 10).toInt()),
-                    color = MaterialTheme.colorScheme.onBackground
+                AsyncImage(
+                    modifier = Modifier
+                        .constrainAs(poster) {
+                            start.linkTo(parent.start)
+                            top.linkTo(parent.top)
+                            bottom.linkTo(parent.bottom)
+                            height = Dimension.fillToConstraints
+                        }
+                        .clip(RoundedCornerShape(10.dp)),
+                    model = posterPath,
+                    contentDescription =  "",
                 )
+
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                    modifier = Modifier
+                        .constrainAs(content) {
+                            end.linkTo(
+                                rating?.let { ratingView.start } ?: parent.end,
+                                margin = 8.dp
+                            )
+                            start.linkTo(poster.end, margin = 8.dp)
+                            top.linkTo(parent.top)
+                            bottom.linkTo(parent.bottom)
+                            width = Dimension.fillToConstraints
+                            height = Dimension.fillToConstraints
+                        }
+                ) {
+                    val releaseYear = date.split("-")[0]
+                    Text(
+                        text = "$name (${releaseYear})",
+                        color = MaterialTheme.colorScheme.onBackground,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    Text(
+                        text = description,
+                        color = MaterialTheme.colorScheme.onBackground,
+                        fontSize = 14.sp,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+
+                rating?.let {
+                    RatingView(
+                        progress = rating/10,
+                        modifier = Modifier
+                            .constrainAs(ratingView) {
+                                end.linkTo(parent.end)
+                                top.linkTo(parent.top)
+                                bottom.linkTo(parent.bottom)
+                            }
+                    )
+                }
             }
         }
     }
@@ -290,7 +367,6 @@ private fun AccountDropdownMenu(
     IconButton(
         onClick = { expanded.value = true }
     ) {
-//        Icon(imageVector = Icons.Filled.MoreVert, contentDescription = null)
         Icon(imageVector = Icons.Filled.AccountCircle, contentDescription = stringResource(id = R.string.nav_account_title))
     }
     
@@ -372,18 +448,17 @@ private fun NoSessionMenuItems(
         }
     }
 
-    if (!preferences.useV4Api) {
-        DropdownMenuItem(
-            text = { Text(text = stringResource(id = R.string.action_sign_in)) },
-            onClick = { showSignInDialog.value = true }
-        )
-    } else {
-        val context = LocalContext.current
-        DropdownMenuItem(
-            text = { Text(text = stringResource(id = R.string.action_sign_in)) },
-            onClick = { v4SignInPart1(context) }
-        )
-    }
+    val context = LocalContext.current
+    DropdownMenuItem(
+        text = { Text(text = stringResource(id = R.string.action_sign_in)) },
+        onClick = {
+            if (preferences.useV4Api) {
+                v4SignInPart1(context)
+            } else {
+                showSignInDialog.value = true
+            }
+        }
+    )
 
     DropdownMenuItem(
         text = { Text(text = stringResource(id = R.string.action_sign_in_as_guest)) },
@@ -414,7 +489,7 @@ private fun v4SignInPart2(lastSelectedOption: MutableState<String>) {
 @Composable
 private fun GuestSessionIcon() {
     val guestName = stringResource(id = R.string.account_name_guest)
-    RoundedLetterImage(size = 60.dp, character = guestName[0], topPadding = 60.dp / 4)
+    RoundedLetterImage(size = 60.dp, character = guestName[0])
 }
 
 @Composable
@@ -435,7 +510,7 @@ private fun AuthorizedSessionIcon() {
     Box(modifier = Modifier.padding(start = 12.dp)) {
         if (accountDetails == null || avatarUrl == null) {
             val accLetter = (accountDetails?.name?.ifEmpty { accountDetails.username } ?: " ")[0]
-            RoundedLetterImage(size = 60.dp, character = accLetter, topPadding = 60.dp / 4)
+            RoundedLetterImage(size = 60.dp, character = accLetter)
         } else {
             Box(modifier = Modifier.size(60.dp)) {
                 AsyncImage(

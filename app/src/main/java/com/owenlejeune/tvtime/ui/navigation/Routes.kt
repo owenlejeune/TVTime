@@ -47,6 +47,7 @@ fun MainNavGraph(
         }
         composable(BottomNavItem.Account.route) {
             AccountTab(appBarTitle = appBarTitle, appNavController = appNavController, appBarActions = appBarActions)
+            fab.value = {}
         }
         composable(BottomNavItem.People.route) {
             appBarActions.value = {}
