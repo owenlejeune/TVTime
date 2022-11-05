@@ -1,6 +1,9 @@
 package com.owenlejeune.tvtime
 
+import android.annotation.SuppressLint
 import android.os.Bundle
+import android.window.OnBackInvokedDispatcher
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -21,6 +24,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.os.BuildCompat
 import androidx.lifecycle.lifecycleScope
 import com.google.accompanist.pager.*
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
@@ -41,6 +45,7 @@ class OnboardingActivity: MonetCompatActivity() {
     private lateinit var pagerState: PagerState
     private lateinit var coroutineScope: CoroutineScope
 
+    @SuppressLint("UnsafeOptInUsageError")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         lifecycleScope.launchWhenCreated {
@@ -51,6 +56,12 @@ class OnboardingActivity: MonetCompatActivity() {
                 }
             }
         }
+
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                handleBackPressed()
+            }
+        })
     }
 
     @Composable
@@ -68,9 +79,7 @@ class OnboardingActivity: MonetCompatActivity() {
                 IconButton(
                     modifier = Modifier.padding(12.dp),
                     onClick = {
-                        coroutineScope.launch {
-                            pagerState.animateScrollToPage(pagerState.currentPage - 1)
-                        }
+                        onBackPressedDispatcher.onBackPressed()
                     }
                 ) {
                     Icon(
@@ -180,7 +189,7 @@ class OnboardingActivity: MonetCompatActivity() {
         }
     }
 
-    override fun onBackPressed() {
+    private fun handleBackPressed() {
         if (pagerState.currentPage == 0) {
             finish()
         } else {
