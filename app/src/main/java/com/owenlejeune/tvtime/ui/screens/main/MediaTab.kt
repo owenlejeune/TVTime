@@ -1,14 +1,9 @@
 package com.owenlejeune.tvtime.ui.screens.main
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import androidx.paging.compose.collectAsLazyPagingItems
@@ -17,24 +12,12 @@ import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.rememberPagerState
 import com.owenlejeune.tvtime.R
-import com.owenlejeune.tvtime.api.tmdb.api.v3.HomePageService
-import com.owenlejeune.tvtime.api.tmdb.api.v3.MoviesService
-import com.owenlejeune.tvtime.api.tmdb.api.v3.TvService
-import com.owenlejeune.tvtime.preferences.AppPreferences
 import com.owenlejeune.tvtime.ui.components.PagingPosterGrid
-import com.owenlejeune.tvtime.ui.components.PosterGrid
-import com.owenlejeune.tvtime.ui.components.SearchBar
 import com.owenlejeune.tvtime.ui.components.SearchView
 import com.owenlejeune.tvtime.ui.navigation.MainNavItem
-import com.owenlejeune.tvtime.ui.navigation.MediaFetchFun
 import com.owenlejeune.tvtime.ui.navigation.MediaTabNavItem
-import com.owenlejeune.tvtime.ui.navigation.MediaTabViewModel
 import com.owenlejeune.tvtime.ui.screens.main.tabs.top.Tabs
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import org.koin.java.KoinJavaComponent.get
+import com.owenlejeune.tvtime.ui.viewmodel.MediaTabViewModel
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable

@@ -148,4 +148,7 @@
     <!-- search results -->
     <string name="search_result_tv_series">TV Series</string>
     <string name="no_search_results">No search results found</string>
+    <string name="action_skip">Skip</string>
+    <string name="action_skip_testing">Skip (testing)</string>
+    <string name="popular_today_header">Popular Today</string>
 </resources>

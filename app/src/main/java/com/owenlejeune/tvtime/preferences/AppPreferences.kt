@@ -129,7 +129,7 @@ class AppPreferences(context: Context) {
         get() = preferences.getBoolean(FIRST_LAUNCH, true)
         set(value) { preferences.put(FIRST_LAUNCH, value) }
 
-    val useV4ApiDefault: Boolean = false
+    val useV4ApiDefault: Boolean = true
     var useV4Api: Boolean
         get() = preferences.getBoolean(USE_V4_API, useV4ApiDefault)
         set(value) { preferences.put(USE_V4_API, value) }

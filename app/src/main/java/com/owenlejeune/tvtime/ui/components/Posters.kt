@@ -35,6 +35,7 @@ import com.owenlejeune.tvtime.api.tmdb.api.v3.model.ImageCollection
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.Person
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.TmdbItem
 import com.owenlejeune.tvtime.extensions.dpToPx
+import com.owenlejeune.tvtime.extensions.header
 import com.owenlejeune.tvtime.extensions.lazyPagingItems
 import com.owenlejeune.tvtime.extensions.listItems
 import com.owenlejeune.tvtime.utils.TmdbUtils
@@ -82,6 +83,46 @@ fun PagingPosterGrid(
                         modifier = Modifier.padding(5.dp),
                         mediaItem = item,
                         onClick = onClick
+                    )
+                }
+            }
+            lazyPagingItems.apply {
+                when {
+                    loadState.refresh is LoadState.Loading -> {}
+                    loadState.append is LoadState.Loading -> {}
+                    loadState.append is LoadState.Error -> {}
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun PagingPeoplePosterGrid(
+    lazyPagingItems: LazyPagingItems<HomePagePerson>?,
+    header: @Composable () -> Unit = {},
+    onClick: (id: Int) -> Unit = {}
+) {
+    lazyPagingItems?.let {
+        LazyVerticalGrid(
+            columns = GridCells.Adaptive(minSize = POSTER_WIDTH),
+            contentPadding = PaddingValues(8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            header {
+                header()
+            }
+
+            lazyPagingItems(lazyPagingItems) { person ->
+                person?.let {
+                    PosterItem(
+                        url = TmdbUtils.getFullPersonImagePath(person.profilePath),
+                        noDataImage = R.drawable.no_person_photo,
+                        modifier = Modifier.padding(5.dp),
+                        onClick = {
+                            onClick(person.id)
+                        },
+                        contentDescription = person.name
                     )
                 }
             }
@@ -187,13 +228,14 @@ fun PosterItem(
     Card(
         elevation = elevation,
         modifier = modifier
-            .size(width = width, height = height),
+            .width(width = width)
+            .wrapContentHeight(),
         shape = RoundedCornerShape(5.dp)
     ) {
         if (url != null) {
             AsyncImage(
                 modifier = Modifier
-                    .size(width = width, height = height)
+                    .width(width = width)
                     .clip(RoundedCornerShape(5.dp))
                     .clickable(
                         onClick = onClick
@@ -201,7 +243,7 @@ fun PosterItem(
                 model = url,
                 placeholder = rememberAsyncImagePainter(model = placeholder),
                 contentDescription = contentDescription,
-                contentScale = ContentScale.FillBounds
+                contentScale = ContentScale.FillWidth
             )
         } else {
             Image(

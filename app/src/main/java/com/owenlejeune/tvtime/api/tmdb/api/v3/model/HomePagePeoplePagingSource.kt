@@ -1,33 +1,30 @@
 package com.owenlejeune.tvtime.api.tmdb.api.v3.model
 
 import android.content.Context
+import android.util.Log
 import android.widget.Toast
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
-import com.owenlejeune.tvtime.api.tmdb.api.v3.HomePageService
-import com.owenlejeune.tvtime.ui.navigation.MediaFetchFun
-import org.koin.core.Koin
+import com.owenlejeune.tvtime.api.tmdb.api.v3.PeopleApi
+import com.owenlejeune.tvtime.api.tmdb.api.v3.PeopleService
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import retrofit2.Response
 
-class HomePagePagingSource(
-    private val service: HomePageService,
-    private val mediaFetch: MediaFetchFun
-): PagingSource<Int, TmdbItem>(), KoinComponent {
+class HomePagePeoplePagingSource: PagingSource<Int, HomePagePerson>(), KoinComponent {
 
+    private val service: PeopleApi by inject()
     private val context: Context by inject()
 
-    override fun getRefreshKey(state: PagingState<Int, TmdbItem>): Int? {
+    override fun getRefreshKey(state: PagingState<Int, HomePagePerson>): Int? {
         return state.anchorPosition
     }
 
-    override suspend fun load(params: LoadParams<Int>): LoadResult<Int, TmdbItem> {
+    override suspend fun load(params: LoadParams<Int>): LoadResult<Int, HomePagePerson> {
         return try {
             val nextPage = params.key ?: 1
-            val mediaResponse = mediaFetch.invoke(service, nextPage)
-            if (mediaResponse.isSuccessful) {
-                val responseBody = mediaResponse.body()
+            val peopleResponse = service.getPopular(page = nextPage)
+            if (peopleResponse.isSuccessful) {
+                val responseBody = peopleResponse.body()
                 val results = responseBody?.results ?: emptyList()
                 LoadResult.Page(
                     data = results,

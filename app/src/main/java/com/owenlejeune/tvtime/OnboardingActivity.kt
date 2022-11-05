@@ -108,7 +108,11 @@ class OnboardingActivity: MonetCompatActivity() {
                         launchActivity(MainActivity::class.java)
                     }
                 ) {
-                    Text(text = "Skip")
+                    val skipText = if (preferences.firstLaunchTesting)
+                        stringResource(id = R.string.action_skip_testing)
+                    else
+                        stringResource(id = R.string.action_skip)
+                    Text(text = skipText)
                 }
 
                 HorizontalPagerIndicator(
