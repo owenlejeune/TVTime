@@ -33,6 +33,7 @@ import com.owenlejeune.tvtime.api.tmdb.api.v3.TvService
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.*
 import com.owenlejeune.tvtime.extensions.listItems
 import com.owenlejeune.tvtime.ui.navigation.MainNavItem
+import com.owenlejeune.tvtime.ui.screens.main.MediaResultCard
 import com.owenlejeune.tvtime.ui.screens.main.MediaViewType
 import com.owenlejeune.tvtime.utils.TmdbUtils
 import kotlinx.coroutines.CoroutineScope
@@ -221,70 +222,15 @@ private fun <T: SortableSearchResult> SearchResultItemView(
     backdropModel: (T) -> Any?,
     additionalDetails: (T) -> List<String> = { emptyList() }
 ) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(
-                onClick = {
-                    appNavController.navigate("${MainNavItem.DetailView.route}/${mediaViewType}/${searchResult.id}")
-                }
-            ),
-        shape = RoundedCornerShape(10.dp),
-        elevation = 8.dp
-    ) {
-        Box(
-            modifier = Modifier.height(112.dp)
-        ) {
-            AsyncImage(
-                model = backdropModel(searchResult),
-                contentDescription = null,
-                contentScale = ContentScale.FillWidth,
-                modifier = Modifier
-                    .blur(radius = 10.dp)
-                    .fillMaxWidth()
-            )
-
-            Box(modifier = Modifier
-                .fillMaxSize()
-                .background(Color.Black.copy(alpha = 0.7f))
-                .blur(radius = 10.dp)
-            )
-
-            Row(
-                modifier = Modifier.padding(8.dp)
-            ) {
-                AsyncImage(
-                    model = posterModel(searchResult),
-                    contentDescription = null,
-                    modifier = Modifier
-                        .padding(end = 8.dp)
-                        .size(width = 75.dp, height = 112.dp)
-                )
-
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(4.dp),
-                    modifier = Modifier
-                        .align(Alignment.CenterVertically)
-                ) {
-                    Text(
-                        text = searchResult.name,
-                        color = MaterialTheme.colorScheme.onBackground,
-                        fontSize = 18.sp
-                    )
-
-                    additionalDetails(searchResult)
-                        .filter { it.isNotEmpty() }
-                        .forEach { item ->
-                            Text(
-                                text = item,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                fontSize = 16.sp
-                            )
-                        }
-                }
-            }
-        }
-    }
+    MediaResultCard(
+        appNavController = appNavController,
+        mediaViewType = mediaViewType,
+        id = searchResult.id,
+        backdropPath = backdropModel(searchResult),
+        posterPath = posterModel(searchResult),
+        title = searchResult.name,
+        additionalDetails = additionalDetails(searchResult)
+    )
 }
 
 @Composable

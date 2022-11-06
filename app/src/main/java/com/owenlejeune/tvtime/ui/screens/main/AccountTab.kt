@@ -254,107 +254,16 @@ private fun MediaItemRow(
     backdropPath: String? = null,
     rating: Float? = null
 ) {
-    Card(
-        shape = RoundedCornerShape(10.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 10.dp),
-        modifier = Modifier
-            .background(color = MaterialTheme.colorScheme.surface)
-            .fillMaxWidth()
-            .clickable(
-                onClick = {
-                    appNavController.navigate(
-                        "${MainNavItem.DetailView.route}/${mediaViewType}/${id}"
-                    )
-                }
-            )
-    ) {
-        Box(
-            modifier = Modifier
-                .height(112.dp)
-        ) {
-            AsyncImage(
-                model = backdropPath,
-                contentDescription = null,
-                contentScale = ContentScale.FillWidth,
-                modifier = Modifier
-                    .blur(radius = 10.dp)
-                    .fillMaxWidth()
-                    .wrapContentHeight()
-            )
-
-            backdropPath?.let {
-                Box(modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.7f))
-                    .blur(radius = 10.dp)
-                )
-            }
-
-            ConstraintLayout(
-                modifier = Modifier
-                    .padding(8.dp)
-                    .fillMaxSize()
-            ) {
-                val (poster, content, ratingView) = createRefs()
-
-                AsyncImage(
-                    modifier = Modifier
-                        .constrainAs(poster) {
-                            start.linkTo(parent.start)
-                            top.linkTo(parent.top)
-                            bottom.linkTo(parent.bottom)
-                            height = Dimension.fillToConstraints
-                        }
-                        .clip(RoundedCornerShape(10.dp)),
-                    model = posterPath,
-                    contentDescription =  "",
-                )
-
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(4.dp),
-                    modifier = Modifier
-                        .constrainAs(content) {
-                            end.linkTo(
-                                rating?.let { ratingView.start } ?: parent.end,
-                                margin = 8.dp
-                            )
-                            start.linkTo(poster.end, margin = 8.dp)
-                            top.linkTo(parent.top)
-                            bottom.linkTo(parent.bottom)
-                            width = Dimension.fillToConstraints
-                            height = Dimension.fillToConstraints
-                        }
-                ) {
-                    val releaseYear = date.split("-")[0]
-                    Text(
-                        text = "$name (${releaseYear})",
-                        color = MaterialTheme.colorScheme.onBackground,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-
-                    Text(
-                        text = description,
-                        color = MaterialTheme.colorScheme.onBackground,
-                        fontSize = 14.sp,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
-
-                rating?.let {
-                    RatingView(
-                        progress = rating/10,
-                        modifier = Modifier
-                            .constrainAs(ratingView) {
-                                end.linkTo(parent.end)
-                                top.linkTo(parent.top)
-                                bottom.linkTo(parent.bottom)
-                            }
-                    )
-                }
-            }
-        }
-    }
+    MediaResultCard(
+        appNavController = appNavController,
+        mediaViewType = mediaViewType,
+        id = id,
+        backdropPath = backdropPath,
+        posterPath = posterPath,
+        title = "$name (${date.split("-")[0]})",
+        additionalDetails = listOf(description),
+        rating = rating
+    )
 }
 
 @Composable
