@@ -1,7 +1,5 @@
 package com.owenlejeune.tvtime.ui.screens.main
 
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -25,13 +23,11 @@ import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.rememberPagerState
 import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.ImageCollection
-import com.owenlejeune.tvtime.preferences.AppPreferences
 import com.owenlejeune.tvtime.ui.components.PosterItem
 import com.owenlejeune.tvtime.ui.components.RatingRing
 import com.owenlejeune.tvtime.utils.TmdbUtils
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import org.koin.java.KoinJavaComponent.get
 
 @Composable
 fun DetailHeader(
@@ -75,7 +71,7 @@ fun DetailHeader(
                     start.linkTo(parent.start, margin = 16.dp)
                 },
             url = posterUrl,
-            contentDescription = posterContentDescription,
+            title = posterContentDescription,
             elevation = 20.dp
         )
 

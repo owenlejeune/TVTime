@@ -151,4 +151,6 @@
     <string name="action_skip">Skip</string>
     <string name="action_skip_testing">Skip (t)</string>
     <string name="popular_today_header">Popular Today</string>
+    <string name="preference_show_poster_titles_title">Show Poster Titles</string>
+    <string name="preference_show_poster_titles_subtitle">Show titles on home screen posters</string>
 </resources>

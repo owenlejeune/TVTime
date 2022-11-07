@@ -35,7 +35,7 @@ class HomePagePagingSource(
                     nextKey = if (results.isEmpty() || responseBody == null) null else responseBody.page + 1
                 )
             } else {
-                Toast.makeText(context, "No more results found", Toast.LENGTH_SHORT).show()
+//                Toast.makeText(context, "No more results found", Toast.LENGTH_SHORT).show()
                 LoadResult.Invalid()
             }
         } catch (e: Exception) {

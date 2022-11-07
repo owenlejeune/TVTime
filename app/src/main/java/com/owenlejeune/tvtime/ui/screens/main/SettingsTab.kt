@@ -377,6 +377,17 @@ private fun HomeScreenPreferences(
             preferences.showBottomTabLabels = isChecked
         }
     )
+
+    val showPosterTitles = remember { mutableStateOf(preferences.showPosterTitles) }
+    SwitchPreference(
+        titleText = stringResource(R.string.preference_show_poster_titles_title),
+        subtitleText = stringResource(R.string.preference_show_poster_titles_subtitle),
+        checkState = showTabLabels.value,
+        onCheckedChange = { isChecked ->
+            showPosterTitles.value = isChecked
+            preferences.showPosterTitles = isChecked
+        }
+    )
     
     PreferenceHeading(text = stringResource(R.string.preference_home_tab_order_heading))
 

@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.SharedPreferences
 import com.google.gson.Gson
 import com.kieronquinn.monetcompat.core.MonetCompat
-import com.owenlejeune.tvtime.BuildConfig
 import com.owenlejeune.tvtime.utils.SessionManager
 
 class AppPreferences(context: Context) {
@@ -37,6 +36,7 @@ class AppPreferences(context: Context) {
         private val PEOPLE_TAB_POSITION = "people_tab_position"
         private val ACCOUNT_TAB_POSITION = "account_tab_position"
         private val SHOW_BTAB_LABELS = "show_btab_labels"
+        private val SHOW_POSTER_TITLE = "show_poster_titles"
     }
 
     private val preferences: SharedPreferences = context.getSharedPreferences(PREF_FILE, Context.MODE_PRIVATE)
@@ -118,6 +118,11 @@ class AppPreferences(context: Context) {
     var showBottomTabLabels: Boolean
         get() = preferences.getBoolean(SHOW_BTAB_LABELS, showBottomTabLabelsDefault)
         set(value) { preferences.put(SHOW_BTAB_LABELS, value) }
+
+    val showPosterTitlesDefault: Boolean = false
+    var showPosterTitles: Boolean
+        get() = preferences.getBoolean(SHOW_POSTER_TITLE, showPosterTitlesDefault)
+        set(value) { preferences.put(SHOW_POSTER_TITLE, value) }
 
     /******** Dev Preferences ********/
     val firstLaunchTestingDefault: Boolean = false

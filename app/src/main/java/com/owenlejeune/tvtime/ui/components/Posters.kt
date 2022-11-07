@@ -1,6 +1,5 @@
 package com.owenlejeune.tvtime.ui.components
 
-import android.annotation.SuppressLint
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -11,14 +10,16 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Card
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
@@ -26,19 +27,16 @@ import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
-import com.google.accompanist.pager.ExperimentalPagerApi
-import com.google.accompanist.pager.HorizontalPager
-import com.google.accompanist.pager.rememberPagerState
 import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.HomePagePerson
-import com.owenlejeune.tvtime.api.tmdb.api.v3.model.ImageCollection
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.Person
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.TmdbItem
-import com.owenlejeune.tvtime.extensions.dpToPx
 import com.owenlejeune.tvtime.extensions.header
 import com.owenlejeune.tvtime.extensions.lazyPagingItems
 import com.owenlejeune.tvtime.extensions.listItems
+import com.owenlejeune.tvtime.preferences.AppPreferences
 import com.owenlejeune.tvtime.utils.TmdbUtils
+import org.koin.java.KoinJavaComponent.get
 
 private val POSTER_WIDTH = 120.dp
 private val POSTER_HEIGHT = 190.dp
@@ -122,7 +120,7 @@ fun PagingPeoplePosterGrid(
                         onClick = {
                             onClick(person.id)
                         },
-                        contentDescription = person.name
+                        title = person.name
                     )
                 }
             }
@@ -159,7 +157,7 @@ fun PeoplePosterGrid(
                 onClick = {
                     onClick(person.id)
                 },
-                contentDescription = person.name
+                title = person.name
             )
         }
     }
@@ -185,7 +183,7 @@ fun PosterItem(
         },
         url = mediaItem?.let { TmdbUtils.getFullPosterPath(mediaItem) },
         elevation = elevation,
-        contentDescription = mediaItem?.title
+        title = mediaItem?.title
     )
 }
 
@@ -209,7 +207,7 @@ fun PosterItem(
         },
         url = person?.let { TmdbUtils.getFullPersonImagePath(person) },
         elevation = 8.dp,
-        contentDescription = person?.name
+        title = person?.name
     )
 }
 
@@ -223,7 +221,8 @@ fun PosterItem(
     noDataImage: Int = R.drawable.placeholder,
     placeholder: Int = R.drawable.placeholder,
     elevation: Dp = 8.dp,
-    contentDescription: String?
+    title: String?,
+    preferences: AppPreferences = get(AppPreferences::class.java)
 ) {
     Card(
         elevation = elevation,
@@ -232,31 +231,64 @@ fun PosterItem(
             .wrapContentHeight(),
         shape = RoundedCornerShape(5.dp)
     ) {
-        if (url != null) {
-            AsyncImage(
-                modifier = Modifier
-                    .width(width = width)
-                    .clip(RoundedCornerShape(5.dp))
-                    .clickable(
-                        onClick = onClick
-                    ),
-                model = url,
-                placeholder = rememberAsyncImagePainter(model = placeholder),
-                contentDescription = contentDescription,
-                contentScale = ContentScale.FillWidth
+        Box {
+            var sizeImage by remember { mutableStateOf(IntSize.Zero) }
+            val gradient = Brush.verticalGradient(
+                colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.7f)),
+                startY = sizeImage.height.toFloat() / 3f,
+                endY = sizeImage.height.toFloat()
             )
-        } else {
-            Image(
-                modifier = Modifier
-                    .size(width = width, height = height)
-                    .clip(RoundedCornerShape(5.dp))
-                    .clickable(
-                        onClick = onClick
-                    ),
-                painter = rememberAsyncImagePainter(model = noDataImage),
-                contentDescription = contentDescription,
-                contentScale = ContentScale.FillBounds
-            )
+
+            if (url != null) {
+                AsyncImage(
+                    modifier = Modifier
+                        .width(width = width)
+                        .wrapContentHeight()
+                        .clip(RoundedCornerShape(5.dp))
+                        .clickable(
+                            onClick = onClick
+                        )
+                        .onGloballyPositioned { sizeImage = it.size },
+                    model = url,
+                    placeholder = rememberAsyncImagePainter(model = placeholder),
+                    contentDescription = title,
+                    contentScale = ContentScale.FillWidth
+                )
+            } else {
+                Image(
+                    modifier = Modifier
+                        .width(width = width)
+                        .wrapContentHeight()
+                        .clip(RoundedCornerShape(5.dp))
+                        .clickable(
+                            onClick = onClick
+                        )
+                        .onGloballyPositioned { sizeImage = it.size },
+                    painter = rememberAsyncImagePainter(model = noDataImage),
+                    contentDescription = title,
+                    contentScale = ContentScale.FillBounds
+                )
+            }
+
+            if (preferences.showPosterTitles) {
+                title?.let {
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(5.dp))
+                            .background(brush = gradient)
+                            .matchParentSize()
+                    )
+
+                    Text(
+                        text = title,
+                        modifier = Modifier
+                            .align(Alignment.BottomStart)
+                            .padding(6.dp),
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
+                }
+            }
         }
     }
 }

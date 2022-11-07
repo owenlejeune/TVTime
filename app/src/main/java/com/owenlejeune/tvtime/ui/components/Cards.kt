@@ -149,7 +149,7 @@ fun TwoLineImageTextCard(
             url = imageUrl,
             noDataImage = noDataImage,
             placeholder = placeholder,
-            contentDescription = title,
+            title = title,
             elevation = 0.dp
         )
         MinLinesText(
