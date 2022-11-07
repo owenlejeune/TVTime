@@ -26,8 +26,10 @@ import com.owenlejeune.tvtime.api.tmdb.api.v3.model.ImageCollection
 import com.owenlejeune.tvtime.ui.components.PosterItem
 import com.owenlejeune.tvtime.ui.components.RatingRing
 import com.owenlejeune.tvtime.utils.TmdbUtils
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
 fun DetailHeader(
@@ -154,23 +156,30 @@ private fun BackdropGallery(
     ) { sizeImage ->
         if (imageCollection != null) {
             val pagerState = rememberPagerState()
-            HorizontalPager(count = imageCollection.backdrops.size, state = pagerState) { page ->
+            HorizontalPager(
+                count = imageCollection.backdrops.size,
+                state = pagerState,
+                modifier = Modifier.fillMaxWidth()
+            ) { page ->
                 val backdrop = imageCollection.backdrops[page]
                 AsyncImage(
                     model = TmdbUtils.getFullBackdropPath(backdrop),
                     placeholder = rememberAsyncImagePainter(model = R.drawable.placeholder),
                     contentDescription = "",
-                    modifier = Modifier.onGloballyPositioned { sizeImage.value = it.size }
+                    modifier = Modifier.onGloballyPositioned { sizeImage.value = it.size },
+                    contentScale = ContentScale.FillWidth
                 )
             }
-            
-            LaunchedEffect(key1 = pagerState.currentPage) {
+
+            // fixes an issue where using pagerState.current page breaks paging animations
+            var key by remember { mutableStateOf(false) }
+            LaunchedEffect(key1 = key) {
                 launch {
                     delay(5000)
-                    with (pagerState) {
+                    with(pagerState) {
                         val target = if (currentPage < pageCount - 1) currentPage + 1 else 0
-
-                        pagerState.animateScrollToPage(target)
+                        animateScrollToPage(target)
+                        key = !key
                     }
                 }
             }
