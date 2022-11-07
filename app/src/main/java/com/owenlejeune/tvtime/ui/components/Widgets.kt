@@ -1,5 +1,7 @@
 package com.owenlejeune.tvtime.ui.components
 
+import android.content.Intent
+import android.net.Uri
 import android.widget.TextView
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.*
@@ -564,46 +566,34 @@ fun RoundedTextField(
 @Composable
 fun FullScreenThumbnailVideoPlayer(
     key: String,
+    title: String,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
 
-    val showFullscreenView = remember { mutableStateOf(false) }
-
-    AsyncImage(
-        modifier = modifier
-            .clickable(
-                onClick = { showFullscreenView.value = true }
-            ),
-        model = "https://img.youtube.com/vi/${key}/hqdefault.jpg",
-        contentDescription = "",
-        placeholder = rememberAsyncImagePainter(model = R.drawable.placeholder)
-    )
-
-    if (showFullscreenView.value) {
-        Dialog(
-            onDismissRequest = { showFullscreenView.value = false },
-            properties = DialogProperties(usePlatformDefaultWidth = false)
-        ) {
-            Surface(modifier = Modifier
-                .fillMaxWidth()
-                .wrapContentHeight()) {
-                AndroidView(
-                    modifier = Modifier
-                        .wrapContentHeight()
-                        .fillMaxWidth(),
-                    factory = {
-                        YouTubePlayerView(context).apply {
-                            addYouTubePlayerListener(object : AbstractYouTubePlayerListener() {
-                                override fun onReady(youTubePlayer: YouTubePlayer) {
-                                    youTubePlayer.loadVideo(key, 0f)
-                                }
-                            })
+    Column(
+        verticalArrangement = Arrangement.spacedBy(6.dp)
+    ) {
+        AsyncImage(
+            modifier = modifier
+                .clickable(
+                    onClick = {
+                        val intent = Intent(Intent.ACTION_VIEW).apply {
+                            data = Uri.parse("https://www.youtube.com/watch?v=$key")
                         }
+                        context.startActivity(intent)
                     }
-                )
-            }
-        }
+                ),
+            model = "https://img.youtube.com/vi/${key}/hqdefault.jpg",
+            contentDescription = "",
+            placeholder = rememberAsyncImagePainter(model = R.drawable.placeholder)
+        )
+
+        Text(
+            text = title,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            fontSize = 16.sp
+        )
     }
 }
 

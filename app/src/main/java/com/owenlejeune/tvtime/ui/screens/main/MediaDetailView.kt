@@ -838,9 +838,10 @@ private fun VideoGroup(results: List<Video>, type: Video.Type, title: String) {
             listItems(videos) { video ->
                 FullScreenThumbnailVideoPlayer(
                     key = video.key,
+                    title = video.name,
                     modifier = Modifier
                         .width(posterWidth)
-                        .height(90.dp)
+                        .wrapContentHeight()
                 )
             }
         }

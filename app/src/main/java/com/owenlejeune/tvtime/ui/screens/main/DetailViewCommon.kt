@@ -72,7 +72,8 @@ fun DetailHeader(
                 },
             url = posterUrl,
             title = posterContentDescription,
-            elevation = 20.dp
+            elevation = 20.dp,
+            overrideShowTitle = false
         )
 
         rating?.let {

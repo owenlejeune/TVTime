@@ -24,8 +24,8 @@ sealed class MediaTabNavItem(
     override val name = resourceUtils.getString(stringRes)
 
     companion object  {
-        val MovieItems = listOf(Popular, NowPlaying, Upcoming, TopRated)
-        val TvItems = listOf(Popular, AiringToday, OnTheAir, TopRated)
+        val MovieItems = listOf(NowPlaying, Popular, Upcoming, TopRated)
+        val TvItems = listOf(OnTheAir, Popular, AiringToday, TopRated)
 
         private val Items = listOf(NowPlaying, Popular, TopRated, Upcoming, AiringToday, OnTheAir)
 

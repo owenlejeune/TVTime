@@ -144,13 +144,13 @@ fun TwoLineImageTextCard(
     Column(modifier = modifier) {
         PosterItem(
             width = 120.dp,
-            height = 180.dp,
             onClick = onItemClicked,
             url = imageUrl,
             noDataImage = noDataImage,
             placeholder = placeholder,
             title = title,
-            elevation = 0.dp
+            elevation = 0.dp,
+            overrideShowTitle = false
         )
         MinLinesText(
             modifier = Modifier

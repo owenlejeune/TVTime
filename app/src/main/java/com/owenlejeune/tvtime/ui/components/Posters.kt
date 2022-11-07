@@ -1,5 +1,7 @@
 package com.owenlejeune.tvtime.ui.components
 
+import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -19,6 +21,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
@@ -39,7 +42,7 @@ import com.owenlejeune.tvtime.utils.TmdbUtils
 import org.koin.java.KoinJavaComponent.get
 
 private val POSTER_WIDTH = 120.dp
-private val POSTER_HEIGHT = 190.dp
+private val POSTER_HEIGHT = 180.dp
 
 @Composable
 fun PosterGrid(
@@ -167,7 +170,6 @@ fun PeoplePosterGrid(
 fun PosterItem(
     modifier: Modifier = Modifier,
     width: Dp = POSTER_WIDTH,
-    height: Dp = POSTER_HEIGHT,
     onClick: (id: Int) -> Unit = {},
     elevation: Dp = 8.dp,
     mediaItem: TmdbItem?
@@ -175,7 +177,6 @@ fun PosterItem(
     PosterItem(
         modifier = modifier,
         width = width,
-        height = height,
         onClick = {
             mediaItem?.let {
                 onClick(mediaItem.id)
@@ -191,15 +192,12 @@ fun PosterItem(
 fun PosterItem(
     modifier: Modifier = Modifier,
     width: Dp = POSTER_WIDTH,
-    height: Dp = POSTER_HEIGHT,
     onClick: (id: Int) -> Unit = {},
-    elevation: Dp = 8.dp,
     person: Person?
 ) {
     PosterItem(
         modifier = modifier,
         width = width,
-        height = height,
         onClick = {
             person?.let {
                 onClick(person.id)
@@ -216,12 +214,12 @@ fun PosterItem(
     url: String?,
     modifier: Modifier = Modifier,
     width: Dp = POSTER_WIDTH,
-    height: Dp = POSTER_HEIGHT,
     onClick: () -> Unit = {},
     noDataImage: Int = R.drawable.placeholder,
     placeholder: Int = R.drawable.placeholder,
     elevation: Dp = 8.dp,
     title: String?,
+    overrideShowTitle: Boolean? = null,
     preferences: AppPreferences = get(AppPreferences::class.java)
 ) {
     Card(
@@ -249,6 +247,8 @@ fun PosterItem(
                             onClick = onClick
                         )
                         .onGloballyPositioned { sizeImage = it.size },
+                    onError = { Log.d("Poster", "Error loading: $url") },
+                    error = rememberAsyncImagePainter(model = noDataImage),
                     model = url,
                     placeholder = rememberAsyncImagePainter(model = placeholder),
                     contentDescription = title,
@@ -258,7 +258,7 @@ fun PosterItem(
                 Image(
                     modifier = Modifier
                         .width(width = width)
-                        .wrapContentHeight()
+                        .height(height = POSTER_HEIGHT)
                         .clip(RoundedCornerShape(5.dp))
                         .clickable(
                             onClick = onClick
@@ -270,7 +270,8 @@ fun PosterItem(
                 )
             }
 
-            if (preferences.showPosterTitles) {
+            val showTitle = overrideShowTitle ?: preferences.showPosterTitles
+            if (showTitle) {
                 title?.let {
                     Box(
                         modifier = Modifier
