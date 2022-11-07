@@ -130,6 +130,37 @@ fun LazyListContentCard(
 }
 
 @Composable
+fun ListContentCard(
+    modifier: Modifier = Modifier,
+    header: @Composable (() -> Unit)? = null,
+    footer: @Composable (() -> Unit)? = null,
+    backgroundColor: Color = MaterialTheme.colorScheme.surfaceVariant,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    Card(
+        modifier = modifier,
+        shape = RoundedCornerShape(10.dp),
+        backgroundColor = backgroundColor,
+        elevation = 8.dp
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            header?.invoke()
+            Column(
+                content = content,
+                modifier = Modifier
+                    .fillMaxWidth()
+            )
+            footer?.invoke()
+        }
+    }
+}
+
+@Composable
 fun TwoLineImageTextCard(
     title: String,
     modifier: Modifier = Modifier,

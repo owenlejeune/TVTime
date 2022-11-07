@@ -153,4 +153,6 @@
     <string name="popular_today_header">Popular Today</string>
     <string name="preference_show_poster_titles_title">Show Poster Titles</string>
     <string name="preference_show_poster_titles_subtitle">Show titles on home screen posters</string>
+    <string name="reviews_title">Reviews</string>
+    <string name="add_a_review_hint">Add a review</string>
 </resources>

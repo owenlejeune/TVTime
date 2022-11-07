@@ -848,7 +848,6 @@ private fun VideoGroup(results: List<Video>, type: Video.Type, title: String) {
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun ReviewsCard(
     itemId: Int?,
@@ -862,145 +861,136 @@ private fun ReviewsCard(
         }
     }
 
-    val hasReviews = reviewsResponse.value?.results?.size?.let { it > 0 }
-    val m = if (hasReviews == true) {
-        modifier.height(400.dp)
-    } else {
-        modifier.height(200.dp)
-    }
+   ListContentCard(
+       modifier = modifier,
+       header = {
+           Column(
+               verticalArrangement = Arrangement.spacedBy(9.dp)
+           ) {
+               Text(
+                   text = stringResource(R.string.reviews_title),
+                   style = MaterialTheme.typography.titleLarge,
+                   color = MaterialTheme.colorScheme.onSurfaceVariant
+               )
 
-    LazyListContentCard(
-        modifier = m
-            .fillMaxWidth(),
-        header = {
-            Text(
-                text = "Reviews",
-                style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        },
-        footer = {
-            if (SessionManager.currentSession?.isAuthorized == true) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(50.dp)
-                        .padding(top = 4.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    var reviewTextState by remember { mutableStateOf("") }
+               if (SessionManager.currentSession?.isAuthorized == true) {
+                   Row(
+                       modifier = Modifier
+                           .fillMaxWidth()
+                           .height(50.dp)
+                           .padding(bottom = 4.dp),
+                       horizontalArrangement = Arrangement.spacedBy(8.dp)
+                   ) {
+                       var reviewTextState by remember { mutableStateOf("") }
 
-                    RoundedTextField(
-                        modifier = Modifier
-                            .height(40.dp)
-                            .align(Alignment.CenterVertically)
-                            .weight(1f),
-                        value = reviewTextState,
-                        onValueChange = { reviewTextState = it },
-                        placeHolder = "Add a review",
-                        backgroundColor = MaterialTheme.colorScheme.secondary,
-                        placeHolderTextColor = MaterialTheme.colorScheme.background,
-                        textColor = MaterialTheme.colorScheme.onSecondary
-                    )
+                       RoundedTextField(
+                           modifier = Modifier
+                               .height(40.dp)
+                               .align(Alignment.CenterVertically)
+                               .weight(1f),
+                           value = reviewTextState,
+                           onValueChange = { reviewTextState = it },
+                           placeHolder = stringResource(R.string.add_a_review_hint),
+                           backgroundColor = MaterialTheme.colorScheme.secondary,
+                           placeHolderTextColor = MaterialTheme.colorScheme.background,
+                           textColor = MaterialTheme.colorScheme.onSecondary
+                       )
 
-                    val context = LocalContext.current
-                    CircleBackgroundColorImage(
-                        modifier = Modifier
-                            .align(Alignment.CenterVertically)
-                            .clickable (
-                                onClick = {
-                                   Toast.makeText(context, "TODO", Toast.LENGTH_SHORT).show()
-                                }
-                            ),
-                        size = 40.dp,
-                        backgroundColor = MaterialTheme.colorScheme.tertiary,
-                        image = Icons.Filled.Send,
-                        colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.surfaceVariant),
-                        contentDescription = ""
-                    )
-                }
-            }
-        }
-    ) {
-        val reviews = reviewsResponse.value?.results ?: emptyList()
-        if (reviews.isNotEmpty()) {
-            items(reviews.size) { i ->
-                val review = reviews[i]
+                       val context = LocalContext.current
+                       CircleBackgroundColorImage(
+                           modifier = Modifier
+                               .align(Alignment.CenterVertically)
+                               .clickable(
+                                   onClick = {
+                                       Toast.makeText(context, "TODO", Toast.LENGTH_SHORT).show()
+                                   }
+                               ),
+                           size = 40.dp,
+                           backgroundColor = MaterialTheme.colorScheme.tertiary,
+                           image = Icons.Filled.Send,
+                           colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.surfaceVariant),
+                           contentDescription = ""
+                       )
+                   }
+               }
+           }
+       },
+   ) {
+       val reviews = reviewsResponse.value?.results ?: emptyList()
+       if (reviews.isNotEmpty()) {
+           reviews.reversed().forEach { review ->
+               Row(
+                   modifier = Modifier
+                       .fillMaxWidth()
+                       .padding(end = 16.dp),
+                   verticalAlignment = Alignment.Top,
+                   horizontalArrangement = Arrangement.spacedBy(16.dp)
+               ) {
+                   Column(
+                       verticalArrangement = Arrangement.spacedBy(8.dp),
+                       horizontalAlignment = Alignment.CenterHorizontally
+                   ) {
+                       AvatarImage(
+                           size = 50.dp,
+                           author = review.authorDetails
+                       )
 
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(end = 16.dp),
-                    verticalAlignment = Alignment.Top,
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    Column(
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        AvatarImage(
-                            size = 50.dp,
-                            author = review.authorDetails
-                        )
+                       // todo - only show this for user's review
+                       CircleBackgroundColorImage(
+                           image = Icons.Filled.Delete,
+                           size = 30.dp,
+                           backgroundColor = MaterialTheme.colorScheme.error,
+                           contentDescription = "",
+                           imageSize = DpSize(width = 20.dp, height = 15.dp),
+                           colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.surfaceVariant)
+                       )
+                   }
 
-                        // todo - only show this for user's review
-                        CircleBackgroundColorImage(
-                            image = Icons.Filled.Delete,
-                            size = 30.dp,
-                            backgroundColor = MaterialTheme.colorScheme.error,
-                            contentDescription = "",
-                            imageSize = DpSize(width = 20.dp, height = 15.dp),
-                            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.surfaceVariant)
-                        )
-                    }
+                   Column(
+                       verticalArrangement = Arrangement.spacedBy(4.dp)
+                   ) {
+                       Text(
+                           text = review.author,
+                           color = MaterialTheme.colorScheme.secondary,
+                           fontWeight = FontWeight.Bold
+                       )
 
-                    Column(
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        Text(
-                            text = review.author,
-                            color = MaterialTheme.colorScheme.secondary,
-                            fontWeight = FontWeight.Bold
-                        )
+                       HtmlText(
+                           text = review.content,
+                           color = MaterialTheme.colorScheme.onSurfaceVariant
+                       )
 
-                        HtmlText(
-                            text = review.content,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-
-                        val createdAt = TmdbUtils.formatDate(review.createdAt)
-                        val updatedAt = TmdbUtils.formatDate(review.updatedAt)
-                        var timestamp = stringResource(id = R.string.created_at_label, createdAt)
-                        if (updatedAt != createdAt) {
-                            timestamp += "\n${stringResource(id = R.string.updated_at_label, updatedAt)}"
-                        }
-                        Text(
-                            text = timestamp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            fontSize = 12.sp
-                        )
-                    }
-                }
-                Divider(
-                    color = MaterialTheme.colorScheme.secondary,
-                    modifier = Modifier.padding(horizontal = 50.dp, vertical = 6.dp)
-                )
-            }
-        } else {
-            item {
-                Text(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .wrapContentHeight()
-                        .padding(horizontal = 24.dp, vertical = 22.dp),
-                    text = stringResource(R.string.no_reviews_label),
-                    color = MaterialTheme.colorScheme.tertiary,
-                    textAlign = TextAlign.Center,
-                    style = MaterialTheme.typography.headlineMedium
-                )
-            }
-        }
-    }
+                       val createdAt = TmdbUtils.formatDate(review.createdAt)
+                       val updatedAt = TmdbUtils.formatDate(review.updatedAt)
+                       var timestamp = stringResource(id = R.string.created_at_label, createdAt)
+                       if (updatedAt != createdAt) {
+                           timestamp += "\n${stringResource(id = R.string.updated_at_label, updatedAt)}"
+                       }
+                       Text(
+                           text = timestamp,
+                           color = MaterialTheme.colorScheme.onSurfaceVariant,
+                           fontSize = 12.sp
+                       )
+                   }
+               }
+               Divider(
+                   color = MaterialTheme.colorScheme.secondary,
+                   modifier = Modifier.padding(horizontal = 50.dp, vertical = 6.dp)
+               )
+           }
+       } else {
+           Text(
+               modifier = Modifier
+                   .fillMaxWidth()
+                   .wrapContentHeight()
+                   .padding(horizontal = 24.dp, vertical = 22.dp),
+               text = stringResource(R.string.no_reviews_label),
+               color = MaterialTheme.colorScheme.tertiary,
+               textAlign = TextAlign.Center,
+               style = MaterialTheme.typography.headlineMedium
+           )
+       }
+   }
 }
 
 private fun fetchMediaItem(id: Int, service: DetailService, mediaItem: MutableState<DetailedItem?>) {

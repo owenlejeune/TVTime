@@ -572,10 +572,11 @@ fun FullScreenThumbnailVideoPlayer(
     val context = LocalContext.current
 
     Column(
+        modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
         AsyncImage(
-            modifier = modifier
+            modifier = Modifier
                 .clickable(
                     onClick = {
                         val intent = Intent(Intent.ACTION_VIEW).apply {
