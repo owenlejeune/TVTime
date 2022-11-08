@@ -935,15 +935,23 @@ private fun ReviewsCard(
                            author = review.authorDetails
                        )
 
-                       // todo - only show this for user's review
-                       CircleBackgroundColorImage(
-                           image = Icons.Filled.Delete,
-                           size = 30.dp,
-                           backgroundColor = MaterialTheme.colorScheme.error,
-                           contentDescription = "",
-                           imageSize = DpSize(width = 20.dp, height = 15.dp),
-                           colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.surfaceVariant)
-                       )
+//                       if (review.authorDetails.username == SessionManager.currentSession?.accountDetails?.username) {
+                       if (false) { // currently doesn't appear deleting reviews is possible
+                           CircleBackgroundColorImage(
+                               image = Icons.Filled.Delete,
+                               size = 30.dp,
+                               backgroundColor = MaterialTheme.colorScheme.error,
+                               contentDescription = "",
+                               imageSize = DpSize(width = 20.dp, height = 15.dp),
+                               colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.surfaceVariant),
+                               modifier = Modifier
+                                   .clickable(
+                                       onClick = {
+
+                                       }
+                                   )
+                           )
+                       }
                    }
 
                    Column(
