@@ -276,16 +276,55 @@ private fun ActionsView(
 
 @Composable
 private fun ActionButton(
+    modifier: Modifier = Modifier,
+    itemId: Int,
+    type: MediaViewType,
     iconRes: Int,
     contentDescription: String,
     isSelected: Boolean,
     filledIconColor: Color,
-    modifier: Modifier = Modifier,
-    unfilledIconColor: Color = MaterialTheme.colorScheme.background,
-    backgroundColor: Color = MaterialTheme.colorScheme.actionButtonColor,
-    onClick: () -> Unit = {}
+    onClick: (Context, Int, MediaViewType, MutableState<Boolean>, (Boolean) -> Unit) -> Unit = { _, _, _, _, _ -> }//(MutableState<Boolean>) -> Unit = { _ -> }
 ) {
-    // TODO - refactor buttons here
+    val context = LocalContext.current
+    val session = SessionManager.currentSession
+
+    val hasSelected = remember { mutableStateOf(isSelected) }
+
+    val bgColor = MaterialTheme.colorScheme.background
+    val tintColor = remember { Animatable(if (hasSelected.value) filledIconColor else bgColor) }
+
+    val coroutineScope = rememberCoroutineScope()
+
+    Box(
+        modifier = modifier
+            .clip(CircleShape)
+            .height(40.dp)
+            .requiredWidthIn(min = 40.dp)
+            .background(color = MaterialTheme.colorScheme.actionButtonColor)
+            .clickable(
+                onClick = {
+                    if (session != null) {
+                        onClick(context, itemId, type, hasSelected) {
+                            coroutineScope.launch {
+                                tintColor.animateTo(
+                                    targetValue = if (it) filledIconColor else bgColor,
+                                    animationSpec = tween(200)
+                                )
+                            }
+                        }
+                    }
+                }
+            )
+    ) {
+        Icon(
+            modifier = Modifier
+                .clip(CircleShape)
+                .align(Alignment.Center),
+            painter = painterResource(id = iconRes),
+            contentDescription = contentDescription,
+            tint = tintColor.value
+        )
+    }
 }
 
 @Composable
@@ -368,61 +407,24 @@ fun WatchlistButton(
     type: MediaViewType,
     modifier: Modifier = Modifier
 ) {
-    val context = LocalContext.current
     val session = SessionManager.currentSession
 
-    val hasWatchlistedItem = remember {
-        mutableStateOf(
-            if (type == MediaViewType.MOVIE) {
-                session?.hasWatchlistedMovie(itemId) == true
-            } else {
-                session?.hasWatchlistedTvShow(itemId) == true
-            }
-        )
+    val hasWatchlistedItem = if (type == MediaViewType.MOVIE) {
+        session?.hasWatchlistedMovie(itemId) == true
+    } else {
+        session?.hasWatchlistedTvShow(itemId) == true
     }
 
-    val showSessionDialog = remember { mutableStateOf(false) }
-
-    val bgColor = MaterialTheme.colorScheme.background
-    val filledColor = WatchlistSelected
-    val tintColor = remember { Animatable(if (hasWatchlistedItem.value) filledColor else bgColor) }
-
-    val coroutineScope = rememberCoroutineScope()
-
-    Box(
-        modifier = modifier
-            .clip(CircleShape)
-            .height(40.dp)
-            .requiredWidthIn(min = 40.dp)
-            .background(color = MaterialTheme.colorScheme.actionButtonColor)
-            .clickable(
-                onClick = {
-                    if (session == null) {
-                        showSessionDialog.value = true
-                    } else {
-                        addToWatchlist(context, itemId, type, hasWatchlistedItem) { added ->
-                            coroutineScope.launch {
-                                tintColor.animateTo(
-                                    targetValue = if (added) filledColor else bgColor,
-                                    animationSpec = tween(200)
-                                )
-                            }
-                        }
-                    }
-                }
-            ),
-    ) {
-        Icon(
-            modifier = Modifier
-                .clip(CircleShape)
-                .align(Alignment.Center),
-            painter = painterResource(id = R.drawable.ic_watchlist),
-            contentDescription = "",
-            tint = tintColor.value
-        )
-    }
-
-    CreateSessionDialog(showDialog = showSessionDialog, onSessionReturned = {})
+    ActionButton(
+        modifier = modifier,
+        itemId = itemId,
+        type = type,
+        iconRes = R.drawable.ic_watchlist,
+        contentDescription = "",
+        isSelected = hasWatchlistedItem,
+        filledIconColor = WatchlistSelected,
+        onClick = ::addToWatchlist
+    )
 }
 
 @Composable
@@ -465,59 +467,23 @@ fun FavoriteButton(
     type: MediaViewType,
     modifier: Modifier = Modifier
 ) {
-    val context = LocalContext.current
     val session = SessionManager.currentSession
-
-    val hasFavorited = remember {
-        mutableStateOf(
-            if (type == MediaViewType.MOVIE) {
-                session?.hasFavoritedMovie(itemId) == true
-            } else {
-                session?.hasFavoritedTvShow(itemId) == true
-            }
-        )
+    val isFavourited = if (type == MediaViewType.MOVIE) {
+        session?.hasFavoritedMovie(itemId) == true
+    } else {
+        session?.hasFavoritedTvShow(itemId) == true
     }
 
-    val showSessionDialog = remember { mutableStateOf(false) }
-
-    val bgColor = MaterialTheme.colorScheme.background
-    val filledColor = FavoriteSelected
-    val tintColor = remember { Animatable(if (hasFavorited.value) filledColor else bgColor) }
-
-    val coroutineScope = rememberCoroutineScope()
-
-    Box(
-        modifier = modifier
-            .clip(CircleShape)
-            .height(40.dp)
-            .requiredWidthIn(min = 40.dp)
-            .background(color = MaterialTheme.colorScheme.actionButtonColor)
-            .clickable(
-                onClick = {
-                    if (session == null) {
-                        showSessionDialog.value = true
-                    } else {
-                        addToFavorite(context, itemId, type, hasFavorited) { added ->
-                            coroutineScope.launch {
-                                tintColor.animateTo(
-                                    targetValue = if (added) filledColor else bgColor,
-                                    animationSpec = tween(200)
-                                )
-                            }
-                        }
-                    }
-                }
-            ),
-    ) {
-        Icon(
-            modifier = Modifier
-                .clip(CircleShape)
-                .align(Alignment.Center),
-            painter = painterResource(id = R.drawable.ic_favorite),
-            contentDescription = "",
-            tint = tintColor.value
-        )
-    }
+    ActionButton(
+        modifier = modifier,
+        itemId = itemId,
+        type = type,
+        iconRes = R.drawable.ic_favorite,
+        contentDescription = "",
+        isSelected = isFavourited,
+        filledIconColor = FavoriteSelected,
+        onClick = ::addToFavorite
+    )
 }
 
 @Composable
