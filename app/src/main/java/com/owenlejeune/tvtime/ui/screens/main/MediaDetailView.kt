@@ -727,7 +727,9 @@ private fun AdditionalDetailsCard(
                     subtext = mi.productionCountries.joinToString(separator = ", ") { it.name },
                 )
                 if (type == MediaViewType.MOVIE) {
-                    AdditionalMovieItems(movie = mi as DetailedMovie)
+                    AdditionalTvItems(movie = mi as DetailedMovie)
+                } else {
+                    AdditionalTvItems(tv = mi as DetailedTv)
                 }
             }
         }
@@ -735,7 +737,7 @@ private fun AdditionalDetailsCard(
 }
 
 @Composable
-private fun AdditionalMovieItems(
+private fun AdditionalTvItems(
     movie: DetailedMovie
 ) {
     AdditionalDetailItem(
@@ -754,6 +756,49 @@ private fun AdditionalMovieItems(
             includeDivider = false
         )
     }
+}
+
+@Composable
+private fun AdditionalTvItems(
+    tv: DetailedTv
+) {
+    AdditionalDetailItem(
+        title = stringResource(R.string.created_by_title),
+        subtext = tv.createdBy.joinToString(separator = ", ") { it.name }
+    )
+    AdditionalDetailItem(
+        title = stringResource(R.string.in_production_title),
+        subtext = if (tv.inProduction) {
+            stringResource(R.string.in_production_state)
+        } else {
+            stringResource(R.string.ended_state)
+        }
+    )
+    AdditionalDetailItem(
+        title = stringResource(R.string.networks_title),
+        subtext = tv.networks.joinToString(separator = ", ") { it.name }
+    )
+    AdditionalDetailItem(
+        title = stringResource(R.string.number_of_episodes_title),
+        subtext = tv.numberOfEpisodes.toString()
+    )
+    AdditionalDetailItem(
+        title = stringResource(R.string.number_of_seasons_title),
+        subtext = tv.numberOfSeasons.toString()
+    )
+    AdditionalDetailItem(
+        title = stringResource(R.string.last_episode_to_air_title),
+        subtext = "#${tv.lastEpisodeToAir.episodeNumber} ${tv.lastEpisodeToAir.name}"
+    )
+    AdditionalDetailItem(
+        title = stringResource(R.string.original_country_title),
+        subtext = tv.originCountry.joinToString(separator = ", ")
+    )
+    AdditionalDetailItem(
+        title = stringResource(R.string.tv_type_title),
+        subtext = tv.type,
+        includeDivider = false
+    )
 }
 
 @Composable

@@ -163,4 +163,14 @@
     <string name="movie_budget_title">Budget</string>
     <string name="movie_revenue_title">Revenue</string>
     <string name="movie_collection_title">Collection</string>
+    <string name="created_by_title">Created By</string>
+    <string name="in_production_title">In Production</string>
+    <string name="networks_title">Networks</string>
+    <string name="in_production_state">In Production</string>
+    <string name="ended_state">Ended</string>
+    <string name="number_of_episodes_title">Number of Episodes</string>
+    <string name="number_of_seasons_title">Number of Seasons</string>
+    <string name="last_episode_to_air_title">Last Episode to Air</string>
+    <string name="original_country_title">Original Country</string>
+    <string name="tv_type_title">Type</string>
 </resources>
