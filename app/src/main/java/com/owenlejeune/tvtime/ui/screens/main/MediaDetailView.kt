@@ -319,7 +319,7 @@ private fun RateButton(
 
     Box(
         modifier = modifier
-            .animateContentSize(tween(durationMillis = 300))
+            .animateContentSize(tween(durationMillis = 100))
             .clip(CircleShape)
             .height(40.dp)
             .requiredWidthIn(min = 40.dp)
@@ -391,7 +391,6 @@ fun WatchlistButton(
 
     Box(
         modifier = modifier
-            .animateContentSize(tween(durationMillis = 300))
             .clip(CircleShape)
             .height(40.dp)
             .requiredWidthIn(min = 40.dp)
@@ -405,7 +404,7 @@ fun WatchlistButton(
                             coroutineScope.launch {
                                 tintColor.animateTo(
                                     targetValue = if (added) filledColor else bgColor,
-                                    animationSpec = tween(300)
+                                    animationSpec = tween(200)
                                 )
                             }
                         }
@@ -489,7 +488,6 @@ fun FavoriteButton(
 
     Box(
         modifier = modifier
-            .animateContentSize(tween(durationMillis = 300))
             .clip(CircleShape)
             .height(40.dp)
             .requiredWidthIn(min = 40.dp)
@@ -503,7 +501,7 @@ fun FavoriteButton(
                             coroutineScope.launch {
                                 tintColor.animateTo(
                                     targetValue = if (added) filledColor else bgColor,
-                                    animationSpec = tween(300)
+                                    animationSpec = tween(200)
                                 )
                             }
                         }
@@ -842,9 +840,10 @@ private fun CastCard(itemId: Int?, service: DetailService, appNavController: Nav
         backgroundColor = MaterialTheme.colorScheme.primary,
         textColor = MaterialTheme.colorScheme.background
     ) {
-        LazyRow(modifier = Modifier
-            .fillMaxWidth()
-            .padding(12.dp),
+        LazyRow(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
             horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             items(castAndCrew.value?.cast?.size ?: 0) { i ->
@@ -898,10 +897,11 @@ fun SimilarContentCard(
         modifier = modifier,
         title = stringResource(id = R.string.recommended_label)
     ) {
-        LazyRow(modifier = Modifier
-            .fillMaxWidth()
-            .wrapContentHeight()
-            .padding(12.dp),
+        LazyRow(
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentHeight()
+                .padding(16.dp),
             horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             items(similarContent.value?.results?.size ?: 0) { i ->
@@ -1124,7 +1124,7 @@ private fun ReviewsCard(
                }
                Divider(
                    color = MaterialTheme.colorScheme.secondary,
-                   modifier = Modifier.padding(horizontal = 50.dp, vertical = 6.dp)
+                   modifier = Modifier.padding(vertical = 12.dp)
                )
            }
        } else {

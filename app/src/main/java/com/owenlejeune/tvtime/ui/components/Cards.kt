@@ -41,7 +41,7 @@ fun ContentCard(
                 Text(
                     text = title,
                     style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.padding(start = 12.dp, top = 8.dp),
+                    modifier = Modifier.padding(start = 16.dp, top = 8.dp),
                     color = textColor
                 )
             }
@@ -146,7 +146,7 @@ fun ListContentCard(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(12.dp),
+                .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             header?.invoke()
