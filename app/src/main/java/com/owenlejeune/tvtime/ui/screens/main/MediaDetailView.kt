@@ -146,6 +146,8 @@ fun MediaDetailView(
 
                     VideosCard(itemId = itemId, service = service)
 
+                    AdditionalDetailsCard(itemId = itemId, mediaItem = mediaItem, service = service, type = type)
+
                     ReviewsCard(itemId = itemId, service = service)
                 }
             }
@@ -689,6 +691,98 @@ private fun OverviewCard(itemId: Int?, mediaItem: MutableState<DetailedItem?>, s
 }
 
 @Composable
+private fun AdditionalDetailsCard(
+    modifier: Modifier = Modifier,
+    itemId: Int?,
+    mediaItem: MutableState<DetailedItem?>,
+    service: DetailService,
+    type: MediaViewType
+) {
+    mediaItem.value?.let { mi ->
+        ContentCard(
+            modifier = modifier,
+            title = stringResource(R.string.additional_details_title)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight()
+                    .padding(vertical = 12.dp, horizontal = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                AdditionalDetailItem(
+                    title = stringResource(R.string.spoken_languages_title),
+                    subtext = mi.spokenLanguages.map { it.name }.filter { it.isNotEmpty() }.joinToString(separator = ", ")//joinToString(separator = ", ") { it.name }
+                )
+                AdditionalDetailItem(
+                    title = stringResource(R.string.original_title_title),
+                    subtext = mi.originalTitle
+                )
+                AdditionalDetailItem(
+                    title = stringResource(R.string.production_companies_title),
+                    subtext = mi.productionCompanies.joinToString(separator = ", ") { it.name }
+                )
+                AdditionalDetailItem(
+                    title = stringResource(R.string.production_countries_title),
+                    subtext = mi.productionCountries.joinToString(separator = ", ") { it.name },
+                )
+                if (type == MediaViewType.MOVIE) {
+                    AdditionalMovieItems(movie = mi as DetailedMovie)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun AdditionalMovieItems(
+    movie: DetailedMovie
+) {
+    AdditionalDetailItem(
+        title = stringResource(R.string.movie_budget_title),
+        subtext = "$${movie.budget}"
+    )
+    AdditionalDetailItem(
+        title = stringResource(R.string.movie_revenue_title),
+        subtext = "$${movie.revenue}",
+        includeDivider = movie.collection != null
+    )
+    movie.collection?.let {
+        AdditionalDetailItem(
+            title = stringResource(R.string.movie_collection_title),
+            subtext = movie.collection.name,
+            includeDivider = false
+        )
+    }
+}
+
+@Composable
+private fun AdditionalDetailItem(
+    title: String,
+    subtext: String,
+    includeDivider: Boolean = true
+) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Text(
+            text = title,
+            fontSize = 16.sp,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+        Text(
+            text = subtext,
+            fontSize = 14.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        if (includeDivider) {
+            Divider()
+        }
+    }
+}
+
+
+@Composable
 private fun CastCard(itemId: Int?, service: DetailService, appNavController: NavController, modifier: Modifier = Modifier) {
     val castAndCrew = remember { mutableStateOf<CastAndCrew?>(null) }
     itemId?.let {
@@ -902,7 +996,9 @@ private fun ReviewsCard(
                                .align(Alignment.CenterVertically)
                                .clickable(
                                    onClick = {
-                                       Toast.makeText(context, "TODO", Toast.LENGTH_SHORT).show()
+                                       Toast
+                                           .makeText(context, "TODO", Toast.LENGTH_SHORT)
+                                           .show()
                                    }
                                ),
                            size = 40.dp,

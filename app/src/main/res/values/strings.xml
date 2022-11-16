@@ -155,4 +155,12 @@
     <string name="preference_show_poster_titles_subtitle">Show titles on home screen posters</string>
     <string name="reviews_title">Reviews</string>
     <string name="add_a_review_hint">Add a review</string>
+    <string name="additional_details_title">Additional Details</string>
+    <string name="original_title_title">Original Title</string>
+    <string name="spoken_languages_title">Spoken Languages</string>
+    <string name="production_companies_title">Production Companies</string>
+    <string name="production_countries_title">Production Countries</string>
+    <string name="movie_budget_title">Budget</string>
+    <string name="movie_revenue_title">Revenue</string>
+    <string name="movie_collection_title">Collection</string>
 </resources>
