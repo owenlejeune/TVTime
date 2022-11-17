@@ -173,4 +173,11 @@
     <string name="last_episode_to_air_title">Last Episode to Air</string>
     <string name="original_country_title">Original Country</string>
     <string name="tv_type_title">Type</string>
+    <string name="no_rated_movies">No Rated Movies</string>
+    <string name="no_rated_tv">No Rated TV</string>
+    <string name="no_rated_episodes">No Rated TV Episodes</string>
+    <string name="no_favorite_movies">No Favorite Movies</string>
+    <string name="no_favorite_tv">No Favorite TV</string>
+    <string name="no_watchlist_movies">No Watchlisted Movies</string>
+    <string name="no_watchlist_tv">No Watchlisted TV</string>
 </resources>

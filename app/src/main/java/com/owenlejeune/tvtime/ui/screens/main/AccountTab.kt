@@ -156,6 +156,7 @@ private fun getAccountName(accountDetails: AccountDetails?): String {
 
 @Composable
 fun <T: Any> AccountTabContent(
+    noContentText: String,
     appNavController: NavHostController,
     mediaViewType: MediaViewType,
     listFetchFun: ListFetchFun,
@@ -163,24 +164,26 @@ fun <T: Any> AccountTabContent(
 ) {
     val contentItems = listFetchFun()
 
-    LazyColumn(modifier = Modifier
-        .fillMaxSize()
-        .padding(12.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        if (contentItems.isEmpty()) {
-            item {
-                Text(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp, vertical = 15.dp),
-                    text = stringResource(R.string.no_rated_content_message),
-                    color = MaterialTheme.colorScheme.onBackground,
-                    fontSize = 22.sp,
-                    textAlign = TextAlign.Center
-                )
-            }
-        } else {
+    if (contentItems.isEmpty()) {
+        Column {
+            Spacer(modifier = Modifier.weight(1f))
+            Text(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                text = noContentText,
+                color = MaterialTheme.colorScheme.onBackground,
+                fontSize = 22.sp,
+                textAlign = TextAlign.Center
+            )
+            Spacer(modifier = Modifier.weight(1f))
+        }
+    } else {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(12.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
             items(contentItems.size) { i ->
                 when (clazz) {
                     RatedTv::class, RatedMovie::class -> {
@@ -475,6 +478,6 @@ fun AccountTabs(
     appNavController: NavHostController
 ) {
     HorizontalPager(count = tabs.size, state = pagerState) { page ->
-        tabs[page].screen(appNavController, tabs[page].mediaType, tabs[page].listFetchFun, tabs[page].listType)
+        tabs[page].screen(tabs[page].noContentText, appNavController, tabs[page].mediaType, tabs[page].listFetchFun, tabs[page].listType)
     }
 }
