@@ -103,11 +103,13 @@ dependencies {
     def retrofit = "2.9.0"
     def stetho = "1.6.0"
     def gson = "2.9.0"
+    def profiler = "1.0.8"
     implementation "com.squareup.retrofit2:retrofit:$retrofit"
     implementation "com.squareup.retrofit2:converter-gson:$retrofit"
     implementation "com.google.code.gson:gson:$gson"
     implementation "com.facebook.stetho:stetho:$stetho"
     implementation "com.facebook.stetho:stetho-okhttp3:$stetho"
+    implementation "com.localebro:okhttpprofiler:$profiler"
 
     // koin
     def koin = "3.1.4"
