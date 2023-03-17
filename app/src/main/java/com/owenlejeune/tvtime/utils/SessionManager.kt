@@ -1,5 +1,6 @@
 package com.owenlejeune.tvtime.utils
 
+import android.accounts.Account
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -10,11 +11,15 @@ import com.owenlejeune.tvtime.api.tmdb.api.v3.AccountService
 import com.owenlejeune.tvtime.api.tmdb.api.v3.AuthenticationService
 import com.owenlejeune.tvtime.api.tmdb.api.v3.GuestSessionService
 import com.owenlejeune.tvtime.api.tmdb.TmdbClient
+import com.owenlejeune.tvtime.api.tmdb.api.v3.AccountApi
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.*
+import com.owenlejeune.tvtime.api.tmdb.api.v4.AccountV4Api
+import com.owenlejeune.tvtime.api.tmdb.api.v4.AccountV4Service
 import com.owenlejeune.tvtime.api.tmdb.api.v4.AuthenticationV4Service
 import com.owenlejeune.tvtime.api.tmdb.api.v4.model.AuthAccessBody
 import com.owenlejeune.tvtime.api.tmdb.api.v4.model.AuthDeleteBody
 import com.owenlejeune.tvtime.api.tmdb.api.v4.model.AuthRequestBody
+import com.owenlejeune.tvtime.api.tmdb.api.v4.model.V4AccountList
 import com.owenlejeune.tvtime.preferences.AppPreferences
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -90,8 +95,8 @@ object SessionManager: KoinComponent {
                     accessToken = values.accessToken,
                     accountId = values.accountId
                 )
-                session.initialize()
                 _currentSession = session
+                session.initialize()
             }
         }
     }
@@ -207,8 +212,8 @@ object SessionManager: KoinComponent {
         val accountDetails: AccountDetails?
             get() = _accountDetails
 
-        protected open var _accountLists: List<AccountList> = emptyList()
-        val accountLists: List<AccountList>
+        protected open var _accountLists: List<V4AccountList> = emptyList()
+        val accountLists: List<V4AccountList>
             get() = _accountLists
 
         protected open var _favoriteMovies: List<FavoriteMovie> = emptyList()
@@ -302,7 +307,8 @@ object SessionManager: KoinComponent {
         accessToken: String = "",
         accountId: String = ""
     ): Session(sessionId, true, accessToken, accountId) {
-        private val service by lazy { AccountService() }
+        private val service: AccountService by inject()
+        private val serviceV4: AccountV4Service by inject()
 
         override suspend fun initialize() {
             refresh()
@@ -325,7 +331,7 @@ object SessionManager: KoinComponent {
 
         private suspend fun refreshWithAccountId(accountId: Int, changed: Array<Changed> = Changed.All) {
             if (changed.contains(Changed.Lists)) {
-                service.getLists(accountId).apply {
+                serviceV4.getLists(preferences.authorizedSessionValues?.accountId ?: "").apply {
                     if (isSuccessful) {
                         withContext(Dispatchers.Main) {
                             _accountLists = body()?.results ?: _accountLists

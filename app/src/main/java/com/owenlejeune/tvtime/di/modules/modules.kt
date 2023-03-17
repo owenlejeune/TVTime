@@ -6,10 +6,12 @@ import com.google.gson.JsonDeserializer
 import com.owenlejeune.tvtime.BuildConfig
 import com.owenlejeune.tvtime.api.*
 import com.owenlejeune.tvtime.api.tmdb.TmdbClient
+import com.owenlejeune.tvtime.api.tmdb.api.v3.AccountService
 import com.owenlejeune.tvtime.api.tmdb.api.v3.deserializer.KnownForDeserializer
 import com.owenlejeune.tvtime.api.tmdb.api.v3.deserializer.SortableSearchResultDeserializer
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.KnownFor
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.SortableSearchResult
+import com.owenlejeune.tvtime.api.tmdb.api.v4.AccountV4Service
 import com.owenlejeune.tvtime.api.tmdb.api.v4.deserializer.ListItemDeserializer
 import com.owenlejeune.tvtime.api.tmdb.api.v4.model.ListItem
 import com.owenlejeune.tvtime.preferences.AppPreferences
@@ -32,6 +34,9 @@ val networkModule = module {
     single { get<TmdbClient>().createPeopleService() }
     single { get<TmdbClient>().createSearchService() }
     single { get<TmdbClient>().createTvService() }
+
+    single { AccountService() }
+    single { AccountV4Service() }
 
     single<Map<Class<*>, JsonDeserializer<*>>> {
         mapOf(

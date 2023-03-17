@@ -10,7 +10,8 @@ enum class MediaViewType {
     @SerializedName("person")
     PERSON,
     EPISODE,
-    MIXED;
+    MIXED,
+    LIST;
 
     companion object {
         const val JSON_KEY = "media_type"

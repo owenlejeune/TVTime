@@ -36,6 +36,7 @@ import com.owenlejeune.tvtime.api.tmdb.api.v3.DetailService
 import com.owenlejeune.tvtime.api.tmdb.api.v3.MoviesService
 import com.owenlejeune.tvtime.api.tmdb.api.v3.TvService
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.*
+import com.owenlejeune.tvtime.extensions.WindowSizeClass
 import com.owenlejeune.tvtime.extensions.listItems
 import com.owenlejeune.tvtime.preferences.AppPreferences
 import com.owenlejeune.tvtime.ui.components.*
@@ -57,6 +58,7 @@ fun MediaDetailView(
     appNavController: NavController,
     itemId: Int?,
     type: MediaViewType,
+    windowSize: WindowSizeClass,
     preferences: AppPreferences = KoinJavaComponent.get(AppPreferences::class.java)
 ) {
     val service = when (type) {
@@ -104,51 +106,76 @@ fun MediaDetailView(
         }
     ) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)) {
-            Column(
+            Row(
                 modifier = Modifier
                     .background(color = MaterialTheme.colorScheme.background)
-                    .verticalScroll(state = rememberScrollState())
                     .padding(bottom = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                val images = remember { mutableStateOf<ImageCollection?>(null) }
-                itemId?.let {
-                    if (preferences.showBackdropGallery && images.value == null) {
-                        fetchImages(itemId, service, images)
-                    }
-                }
-
-                DetailHeader(
-                    posterUrl = TmdbUtils.getFullPosterPath(mediaItem.value?.posterPath),
-                    posterContentDescription = mediaItem.value?.title,
-                    backdropUrl = TmdbUtils.getFullBackdropPath(mediaItem.value?.backdropPath),
-                    rating = mediaItem.value?.voteAverage?.let { it / 10 },
-                    imageCollection = images.value
-                )
-
                 Column(
-                    modifier = Modifier.padding(horizontal = 16.dp),
+                    modifier = Modifier
+                        .background(color = MaterialTheme.colorScheme.background)
+                        .weight(1f)
+                        .verticalScroll(state = rememberScrollState()),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    if (type == MediaViewType.MOVIE) {
-                        MiscMovieDetails(mediaItem = mediaItem, service as MoviesService)
-                    } else {
-                        MiscTvDetails(mediaItem = mediaItem, service as TvService)
+                    val images = remember { mutableStateOf<ImageCollection?>(null) }
+                    itemId?.let {
+                        if (preferences.showBackdropGallery && images.value == null) {
+                            fetchImages(itemId, service, images)
+                        }
                     }
 
-                    ActionsView(itemId = itemId, type = type, service = service)
+                    DetailHeader(
+                        posterUrl = TmdbUtils.getFullPosterPath(mediaItem.value?.posterPath),
+                        posterContentDescription = mediaItem.value?.title,
+                        backdropUrl = TmdbUtils.getFullBackdropPath(mediaItem.value?.backdropPath),
+                        rating = mediaItem.value?.voteAverage?.let { it / 10 },
+                        imageCollection = images.value
+                    )
 
-                    OverviewCard(itemId = itemId, mediaItem = mediaItem, service = service)
+                    Column(
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        if (type == MediaViewType.MOVIE) {
+                            MiscMovieDetails(mediaItem = mediaItem, service as MoviesService)
+                        } else {
+                            MiscTvDetails(mediaItem = mediaItem, service as TvService)
+                        }
 
-                    CastCard(itemId = itemId, service = service, appNavController = appNavController)
+                        ActionsView(itemId = itemId, type = type, service = service)
 
-                    SimilarContentCard(itemId = itemId, service = service, mediaType = type, appNavController = appNavController)
+                        OverviewCard(itemId = itemId, mediaItem = mediaItem, service = service)
 
-                    VideosCard(itemId = itemId, service = service)
+                        CastCard(itemId = itemId, service = service, appNavController = appNavController)
 
-                    AdditionalDetailsCard(itemId = itemId, mediaItem = mediaItem, service = service, type = type)
+                        SimilarContentCard(itemId = itemId, service = service, mediaType = type, appNavController = appNavController)
 
-                    ReviewsCard(itemId = itemId, service = service)
+                        VideosCard(itemId = itemId, service = service)
+
+                        AdditionalDetailsCard(itemId = itemId, mediaItem = mediaItem, service = service, type = type)
+
+                        if (windowSize != WindowSizeClass.Expanded) {
+                            ReviewsCard(itemId = itemId, service = service)
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
+
+                if (windowSize == WindowSizeClass.Expanded) {
+                    Column(
+                        modifier = Modifier
+                            .background(color = MaterialTheme.colorScheme.background)
+                            .weight(1f)
+                            .padding(bottom = 16.dp)
+                            .verticalScroll(state = rememberScrollState())
+                    ) {
+                        ReviewsCard(itemId = itemId, service = service)
+
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
                 }
             }
         }
@@ -1025,7 +1052,7 @@ private fun ReviewsCard(
    ) {
        val reviews = reviewsResponse.value?.results ?: emptyList()
        if (reviews.isNotEmpty()) {
-           reviews.reversed().forEach { review ->
+           reviews.reversed().forEachIndexed { index, review ->
                Row(
                    modifier = Modifier
                        .fillMaxWidth()
@@ -1088,10 +1115,12 @@ private fun ReviewsCard(
                        )
                    }
                }
-               Divider(
-                   color = MaterialTheme.colorScheme.secondary,
-                   modifier = Modifier.padding(vertical = 12.dp)
-               )
+               if (index != reviews.size - 1) {
+                   Divider(
+                       color = MaterialTheme.colorScheme.secondary,
+                       modifier = Modifier.padding(vertical = 12.dp)
+                   )
+               }
            }
        } else {
            Text(

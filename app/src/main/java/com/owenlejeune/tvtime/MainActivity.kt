@@ -1,6 +1,7 @@
 package com.owenlejeune.tvtime
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.compose.setContent
 import androidx.compose.animation.rememberSplineBasedDecay
 import androidx.compose.foundation.layout.*
@@ -70,9 +71,14 @@ class MainActivity : MonetCompatActivity() {
             setContent {
                 AppKeyboardFocusManager()
                 TVTimeTheme(monetCompat = monet) {
+                    val windowSize = rememberWindowSizeClass()
                     val appNavController = rememberNavController()
                     Box {
-                       MainNavigationRoutes(appNavController = appNavController, mainNavStartRoute = mainNavStartRoute)
+                       MainNavigationRoutes(
+                           appNavController = appNavController,
+                           mainNavStartRoute = mainNavStartRoute,
+                           windowSize = windowSize
+                       )
                     }
                 }
             }
@@ -83,10 +89,9 @@ class MainActivity : MonetCompatActivity() {
     private fun AppScaffold(
         appNavController: NavHostController,
         mainNavStartRoute: String = BottomNavItem.SortedItems[0].route,
+        windowSize: WindowSizeClass,
         preferences: AppPreferences = get(AppPreferences::class.java)
     ) {
-        val windowSize = rememberWindowSizeClass()
-
         val navController = rememberNavController()
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentRoute = navBackStackEntry?.destination?.route
@@ -363,11 +368,16 @@ class MainActivity : MonetCompatActivity() {
         startDestination: String = MainNavItem.MainView.route,
         mainNavStartRoute: String = MainNavItem.Items[0].route,
         appNavController: NavHostController,
+        windowSize: WindowSizeClass,
         preferences: AppPreferences = get(AppPreferences::class.java)
     ) {
         NavHost(navController = appNavController, startDestination = startDestination) {
             composable(MainNavItem.MainView.route) {
-                AppScaffold(appNavController = appNavController, mainNavStartRoute = mainNavStartRoute)
+                AppScaffold(
+                    appNavController = appNavController,
+                    mainNavStartRoute = mainNavStartRoute,
+                    windowSize = windowSize
+                )
             }
             composable(
                 MainNavItem.DetailView.route.plus("/{${NavConstants.TYPE_KEY}}/{${NavConstants.ID_KEY}}"),
@@ -378,17 +388,27 @@ class MainActivity : MonetCompatActivity() {
             ) { navBackStackEntry ->
                 val args = navBackStackEntry.arguments
                 val mediaType = args?.getSerializable(NavConstants.TYPE_KEY) as MediaViewType
-                if (mediaType != MediaViewType.PERSON) {
-                    MediaDetailView(
-                        appNavController = appNavController,
-                        itemId = args.getInt(NavConstants.ID_KEY),
-                        type = mediaType
-                    )
-                } else {
-                    PersonDetailView(
-                        appNavController = appNavController,
-                        personId = args.getInt(NavConstants.ID_KEY)
-                    )
+
+                when (mediaType) {
+                    MediaViewType.PERSON -> {
+                        PersonDetailView(
+                            appNavController = appNavController,
+                            personId = args.getInt(NavConstants.ID_KEY)
+                        )
+                    }
+                    MediaViewType.LIST -> {
+                        LocalContext.current.let {
+                            Toast.makeText(it, "It's a list!", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                    else -> {
+                        MediaDetailView(
+                            appNavController = appNavController,
+                            itemId = args.getInt(NavConstants.ID_KEY),
+                            type = mediaType,
+                            windowSize = windowSize
+                        )
+                    }
                 }
             }
             composable(

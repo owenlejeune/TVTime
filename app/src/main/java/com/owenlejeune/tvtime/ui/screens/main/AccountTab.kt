@@ -37,6 +37,8 @@ import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.rememberPagerState
 import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.*
+import com.owenlejeune.tvtime.api.tmdb.api.v4.model.V4AccountList
+import com.owenlejeune.tvtime.extensions.unlessEmpty
 import com.owenlejeune.tvtime.preferences.AppPreferences
 import com.owenlejeune.tvtime.ui.components.RoundedLetterImage
 import com.owenlejeune.tvtime.ui.components.SignInDialog
@@ -236,6 +238,19 @@ fun <T: Any> AccountTabContent(
                             name = item.title,
                             date = item.releaseDate,
                             description = item.overview
+                        )
+                    }
+                    V4AccountList::class -> {
+                        val item = contentItems[i] as V4AccountList
+                        MediaItemRow(
+                            appNavController = appNavController,
+                            mediaViewType = mediaViewType,
+                            id = item.id,
+                            name = item.name,
+                            date = item.createdAt,
+                            description = item.description.unlessEmpty(stringResource(R.string.no_description_provided)),
+                            posterPath = TmdbUtils.getFullPosterPath(item.posterPath),
+                            backdropPath = TmdbUtils.getFullBackdropPath(item.backdropPath)
                         )
                     }
                 }

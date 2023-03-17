@@ -15,7 +15,9 @@ object TmdbUtils {
     private const val DEF_REGION = "US"
 
     fun getFullPosterPath(posterPath: String?): String? {
-        return posterPath?.let { "${POSTER_BASE}${posterPath}" }
+        return posterPath?.let {
+            if (posterPath.isEmpty()) null else "${POSTER_BASE}${posterPath}"
+        }
     }
 
     fun getFullPosterPath(tmdbItem: TmdbItem?): String? {
@@ -27,7 +29,9 @@ object TmdbUtils {
     }
 
     fun getFullBackdropPath(backdropPath: String?): String? {
-        return backdropPath?.let { "${BACKDROP_BASE}${backdropPath}" }
+        return backdropPath?.let {
+            if (backdropPath.isEmpty()) null else "${BACKDROP_BASE}${backdropPath}"
+        }
     }
 
     fun getFullBackdropPath(detailItem: DetailedItem?): String? {

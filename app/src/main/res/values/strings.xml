@@ -22,6 +22,7 @@
     <string name="nav_favorite_tv_show_title">Favorite TV Shows</string>
     <string name="nav_movie_watchlist_title">Movie Watchlist</string>
     <string name="nav_tv_watchlist_title">TV Watchlist</string>
+    <string name="nav_user_lists_title">Lists</string>
 
     <!-- Headings -->
     <string name="cast_label">Cast</string>
@@ -180,4 +181,6 @@
     <string name="no_favorite_tv">No Favorite TV</string>
     <string name="no_watchlist_movies">No Watchlisted Movies</string>
     <string name="no_watchlist_tv">No Watchlisted TV</string>
+    <string name="no_lists">No Lists</string>
+    <string name="no_description_provided">No description provided</string>
 </resources>

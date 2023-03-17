@@ -8,7 +8,7 @@ class ListV4Service {
 
     private val service by lazy { TmdbClient().createV4ListService() }
 
-    suspend fun getLists(listId: Int, apiKey: String, page: Int = 1): Response<MediaList> {
+    suspend fun getList(listId: Int, apiKey: String, page: Int = 1): Response<MediaList> {
         return service.getList(listId, apiKey, page)
     }
 

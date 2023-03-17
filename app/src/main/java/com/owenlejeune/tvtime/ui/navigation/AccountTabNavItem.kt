@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.*
+import com.owenlejeune.tvtime.api.tmdb.api.v4.model.V4AccountList
 import com.owenlejeune.tvtime.ui.screens.main.MediaViewType
 import com.owenlejeune.tvtime.ui.screens.main.AccountTabContent
 import com.owenlejeune.tvtime.utils.ResourceUtils
@@ -31,7 +32,10 @@ sealed class AccountTabNavItem(
             get() = listOf(RatedMovies, RatedTvShows, RatedTvEpisodes)
 
         val AuthorizedItems
-            get() = listOf(RatedMovies, RatedTvShows, RatedTvEpisodes, FavoriteMovies, FavoriteTvShows, MovieWatchlist, TvWatchlist).filter { it.ordinal > -1 }.sortedBy { it.ordinal }
+            get() = listOf(
+                RatedMovies, RatedTvShows, RatedTvEpisodes, FavoriteMovies, FavoriteTvShows,
+                MovieWatchlist, TvWatchlist, UserLists
+            ).filter { it.ordinal > -1 }.sortedBy { it.ordinal }
     }
 
     object RatedMovies: AccountTabNavItem(
@@ -39,7 +43,8 @@ sealed class AccountTabNavItem(
         "rated_movies_route",
         R.string.no_rated_movies,
         MediaViewType.MOVIE,
-        screenContent, { SessionManager.currentSession?.ratedMovies ?: emptyList() },
+        screenContent,
+        { SessionManager.currentSession?.ratedMovies ?: emptyList() },
         RatedMovie::class,
         0
     )
@@ -48,7 +53,8 @@ sealed class AccountTabNavItem(
         "rated_shows_route",
         R.string.no_rated_tv,
         MediaViewType.TV,
-        screenContent, { SessionManager.currentSession?.ratedTvShows ?: emptyList() },
+        screenContent,
+        { SessionManager.currentSession?.ratedTvShows ?: emptyList() },
         RatedTv::class,
         1
     )
@@ -57,16 +63,18 @@ sealed class AccountTabNavItem(
         "rated_episodes_route",
         R.string.no_rated_episodes,
         MediaViewType.EPISODE,
-        screenContent, { SessionManager.currentSession?.ratedTvEpisodes ?: emptyList() },
+        screenContent,
+        { SessionManager.currentSession?.ratedTvEpisodes ?: emptyList() },
         RatedEpisode::class,
-        2
+        -1 //2
     )
     object FavoriteMovies: AccountTabNavItem(
         R.string.nav_favorite_movies_title,
         "favorite_movies_route",
         R.string.no_favorite_movies,
         MediaViewType.MOVIE,
-        screenContent, { SessionManager.currentSession?.favoriteMovies ?: emptyList() },
+        screenContent,
+        { SessionManager.currentSession?.favoriteMovies ?: emptyList() },
         FavoriteMovie::class,
         3
     )
@@ -75,7 +83,8 @@ sealed class AccountTabNavItem(
         "favorite_shows_route",
         R.string.no_favorite_tv,
         MediaViewType.TV,
-        screenContent, { SessionManager.currentSession?.favoriteTvShows ?: emptyList() },
+        screenContent,
+        { SessionManager.currentSession?.favoriteTvShows ?: emptyList() },
         FavoriteTvSeries::class,
         4
     )
@@ -84,7 +93,8 @@ sealed class AccountTabNavItem(
         "movie_watchlist_route",
         R.string.no_watchlist_movies,
         MediaViewType.MOVIE,
-        screenContent, { SessionManager.currentSession?.movieWatchlist ?: emptyList() },
+        screenContent,
+        { SessionManager.currentSession?.movieWatchlist ?: emptyList() },
         WatchlistMovie::class,
         5
     )
@@ -93,9 +103,21 @@ sealed class AccountTabNavItem(
         "tv_watchlist_route",
         R.string.no_watchlist_tv,
         MediaViewType.TV,
-        screenContent, { SessionManager.currentSession?.tvWatchlist ?: emptyList() },
+        screenContent,
+        { SessionManager.currentSession?.tvWatchlist ?: emptyList() },
         WatchlistTvSeries::class,
         6
+    )
+
+    object UserLists: AccountTabNavItem(
+        R.string.nav_user_lists_title,
+        "user_lists_route",
+        R.string.no_lists,
+        MediaViewType.LIST,
+        screenContent,
+        { SessionManager.currentSession?.accountLists ?: emptyList() },
+        V4AccountList::class,
+        0//7
     )
 }
 

@@ -2,6 +2,7 @@ package com.owenlejeune.tvtime.ui.screens.main
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -11,6 +12,7 @@ import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -19,6 +21,7 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.ui.navigation.MainNavItem
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -63,7 +66,7 @@ fun MediaResultCard(
 
                 Box(modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.7f))
+                    .background(Color.Black.copy(alpha = 0.4f))
                     .blur(radius = 10.dp)
                 )
             }
@@ -83,8 +86,9 @@ fun MediaResultCard(
                             bottom.linkTo(parent.bottom)
                             height = Dimension.fillToConstraints
                         }
+                        .aspectRatio(0.7f)
                         .clip(RoundedCornerShape(10.dp)),
-                    model = posterPath,
+                    model = posterPath ?: R.drawable.placeholder,
                     contentDescription = title
                 )
 
@@ -101,9 +105,10 @@ fun MediaResultCard(
                             height = Dimension.matchParent
                         }
                 ) {
+                    val textColor = backdropPath?.let { Color.White } ?: if (isSystemInDarkTheme()) Color.White else Color.Black
                     Text(
                         text = title,
-                        color = MaterialTheme.colorScheme.onBackground,
+                        color = textColor,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -111,7 +116,7 @@ fun MediaResultCard(
                     additionalDetails.forEach {
                         Text(
                             text = it,
-                            color = MaterialTheme.colorScheme.onBackground,
+                            color = textColor,
                             fontSize = 14.sp,
                             overflow = TextOverflow.Ellipsis
                         )
