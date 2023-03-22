@@ -88,7 +88,7 @@ fun MediaResultCard(
                         }
                         .aspectRatio(0.7f)
                         .clip(RoundedCornerShape(10.dp)),
-                    model = posterPath ?: R.drawable.placeholder,
+                    model = posterPath ?: R.drawable.placeholder_transparent,
                     contentDescription = title
                 )
 
@@ -105,6 +105,7 @@ fun MediaResultCard(
                             height = Dimension.matchParent
                         }
                 ) {
+                    Spacer(modifier = Modifier.weight(1f))
                     val textColor = backdropPath?.let { Color.White } ?: if (isSystemInDarkTheme()) Color.White else Color.Black
                     Text(
                         text = title,
@@ -121,6 +122,7 @@ fun MediaResultCard(
                             overflow = TextOverflow.Ellipsis
                         )
                     }
+                    Spacer(modifier = Modifier.weight(1f))
                 }
 
                 rating?.let {

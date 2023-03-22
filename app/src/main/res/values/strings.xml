@@ -183,4 +183,14 @@
     <string name="no_watchlist_tv">No Watchlisted TV</string>
     <string name="no_lists">No Lists</string>
     <string name="no_description_provided">No description provided</string>
+    <string name="list_created_by">Created by %s</string>
+    <string name="list_description_label">About this List</string>
+    <string name="items_in_list_label">Items on this List</string>
+    <string name="average_rating_label">Average Rating</string>
+    <string name="runtime_label">Runtime</string>
+    <string name="total_revenue_label">Total Revenue</string>
+    <string name="action_edit">Edit</string>
+    <string name="action_sort_by">Sort By</string>
+    <string name="action_share">Share</string>
+    <string name="remove_from_list_cd">Remove from list</string>
 </resources>

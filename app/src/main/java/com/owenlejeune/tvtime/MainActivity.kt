@@ -37,10 +37,7 @@ import com.owenlejeune.tvtime.ui.navigation.BottomNavItem
 import com.owenlejeune.tvtime.ui.navigation.MainNavGraph
 import com.owenlejeune.tvtime.ui.navigation.MainNavItem
 import com.owenlejeune.tvtime.ui.screens.SearchScreen
-import com.owenlejeune.tvtime.ui.screens.main.MediaDetailView
-import com.owenlejeune.tvtime.ui.screens.main.MediaViewType
-import com.owenlejeune.tvtime.ui.screens.main.PersonDetailView
-import com.owenlejeune.tvtime.ui.screens.main.SettingsTab
+import com.owenlejeune.tvtime.ui.screens.main.*
 import com.owenlejeune.tvtime.ui.theme.TVTimeTheme
 import com.owenlejeune.tvtime.utils.KeyboardManager
 import com.owenlejeune.tvtime.utils.SessionManager
@@ -397,9 +394,11 @@ class MainActivity : MonetCompatActivity() {
                         )
                     }
                     MediaViewType.LIST -> {
-                        LocalContext.current.let {
-                            Toast.makeText(it, "It's a list!", Toast.LENGTH_SHORT).show()
-                        }
+                        ListDetailView(
+                            appNavController = appNavController,
+                            itemId = args.getInt(NavConstants.ID_KEY),
+                            windowSize = windowSize
+                        )
                     }
                     else -> {
                         MediaDetailView(

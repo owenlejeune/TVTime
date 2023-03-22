@@ -1,15 +1,21 @@
 package com.owenlejeune.tvtime.api.tmdb.api.v4
 
+import com.owenlejeune.tvtime.BuildConfig
 import com.owenlejeune.tvtime.api.tmdb.TmdbClient
 import com.owenlejeune.tvtime.api.tmdb.api.v4.model.*
+import com.owenlejeune.tvtime.preferences.AppPreferences
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import retrofit2.Response
 
-class ListV4Service {
+class ListV4Service: KoinComponent {
 
     private val service by lazy { TmdbClient().createV4ListService() }
 
-    suspend fun getList(listId: Int, apiKey: String, page: Int = 1): Response<MediaList> {
-        return service.getList(listId, apiKey, page)
+    private val preferences: AppPreferences by inject()
+
+    suspend fun getList(listId: Int, page: Int = 1): Response<MediaList> {
+        return service.getList(listId, BuildConfig.TMDB_Api_v4Key, page)
     }
 
     suspend fun createList(body: CreateListBody): Response<CreateListResponse> {

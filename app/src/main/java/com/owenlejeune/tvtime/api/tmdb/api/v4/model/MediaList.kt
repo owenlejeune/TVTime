@@ -7,7 +7,7 @@ class MediaList(
     @SerializedName("id") val id: Int,
     @SerializedName("backdrop_path") val backdropPath: String?,
     @SerializedName("total_results") val totalResults: Int,
-    @SerializedName("public") val isPublic: Int,
+    @SerializedName("public") val isPublic: Boolean,
     @SerializedName("results") val results: List<ListItem>,
     @SerializedName("iso_639_1") val language: String,
     @SerializedName("total_pages") val totalPages: Int,
@@ -16,5 +16,6 @@ class MediaList(
     @SerializedName("iso_3166_1") val localeCode: String,
     @SerializedName("average_rating") val averageRating: Float,
     @SerializedName("runtime") val runtime: Int,
-    @SerializedName("name") val name: String
+    @SerializedName("name") val name: String,
+    @SerializedName("revenue") val revenue: Int
 )

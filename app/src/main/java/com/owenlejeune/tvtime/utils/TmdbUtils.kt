@@ -96,12 +96,12 @@ object TmdbUtils {
         return convertRuntimeToHoursAndMinutes(series.episodeRuntime[0])
     }
 
-    private fun convertRuntimeToHoursAndMinutes(runtime: Int): String {
+    fun convertRuntimeToHoursAndMinutes(runtime: Int): String {
         val hours = runtime / 60
         val minutes = runtime % 60
         return if (hours > 0){
             if (minutes > 0) {
-                "${hours}h${minutes}"
+                "${hours}h ${minutes}m"
             } else {
                 "${hours}h"
             }
@@ -173,6 +173,10 @@ object TmdbUtils {
         return "${GRAVATAR_BASE}${hash}"
     }
 
+    fun getAccountGravatarUrl(gravatarHash: String): String {
+        return "${GRAVATAR_BASE}${gravatarHash}"
+    }
+
     fun getAccountAvatarUrl(accountDetails: AccountDetails): String {
         val path = accountDetails.avatar.tmdb?.avatarPath
         return "${AVATAR_BASE}${path}"
@@ -183,6 +187,22 @@ object TmdbUtils {
             return releaseDate.split("-").first { it.length == 4 }
         }
         return ""
+    }
+
+    fun formatRevenue(revenue: Int): String {
+        val decFormat = "%.1f"
+        val thousands = revenue.toFloat() / 1000f
+        if (thousands > 1000) {
+            val millions = thousands / 1000f
+            if (millions > 1000) {
+                val billions = millions / 1000f
+                val bs = decFormat.format(billions)
+                return "$${bs}B"
+            }
+            val ms = decFormat.format(millions)
+            return "$${ms}M"
+        }
+        return "$${thousands}"
     }
 
 }
