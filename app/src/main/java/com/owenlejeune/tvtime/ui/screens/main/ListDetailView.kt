@@ -1,5 +1,4 @@
 package com.owenlejeune.tvtime.ui.screens.main
-
 import android.content.Context
 import android.content.Intent
 import android.widget.Toast
@@ -8,14 +7,12 @@ import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
@@ -44,12 +41,11 @@ import com.owenlejeune.tvtime.extensions.WindowSizeClass
 import com.owenlejeune.tvtime.extensions.unlessEmpty
 import com.owenlejeune.tvtime.preferences.AppPreferences
 import com.owenlejeune.tvtime.ui.navigation.MainNavItem
-import com.owenlejeune.tvtime.ui.theme.FavoriteSelected
-import com.owenlejeune.tvtime.ui.theme.RatingSelected
-import com.owenlejeune.tvtime.ui.theme.WatchlistSelected
-import com.owenlejeune.tvtime.ui.theme.actionButtonColor
+import com.owenlejeune.tvtime.ui.theme.*
 import com.owenlejeune.tvtime.utils.SessionManager
 import com.owenlejeune.tvtime.utils.TmdbUtils
+import de.charlex.compose.RevealDirection
+import de.charlex.compose.RevealSwipe
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -252,133 +248,126 @@ private fun RowScope.OverviewStatCard(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
 private fun ListItemView(
     appNavController: NavController,
     listItem: ListItem
 ) {
-    Card(
-        shape = RoundedCornerShape(10.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 10.dp),
-        modifier = Modifier
-            .background(color = MaterialTheme.colorScheme.background)
-            .fillMaxWidth()
-            .clickable(
-                onClick = {
-                    appNavController.navigate(
-                        "${MainNavItem.DetailView.route}/${listItem.mediaType}/${listItem.id}"
-                    )
-                }
-            )
-    ) {
-        Box(
-            modifier = Modifier.height(112.dp)
-        ) {
-            listItem.backdropPath?.let {
-                AsyncImage(
-                    model = TmdbUtils.getFullBackdropPath(listItem.backdropPath),
-                    contentDescription = null,
-                    contentScale = ContentScale.FillWidth,
-                    modifier = Modifier
-                        .blur(radius = 10.dp)
-                        .fillMaxWidth()
-                        .wrapContentHeight()
-                )
+    val context = LocalContext.current
 
-                Box(modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.4f))
-                    .blur(radius = 10.dp)
+    RevealSwipe (
+        directions = setOf(RevealDirection.EndToStart),
+        hiddenContentEnd = {
+            IconButton(
+                modifier = Modifier.padding(horizontal = 15.dp),
+                onClick = { Toast.makeText(context, "Remove from list", Toast.LENGTH_SHORT).show() }
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Delete,
+                    contentDescription = stringResource(id = R.string.remove_from_list_cd),
+                    tint = Color.White
                 )
             }
-
-            ConstraintLayout(
-                modifier = Modifier
-                    .padding(8.dp)
-                    .fillMaxSize()
-            ) {
-                val (poster, content, ratingView) = createRefs()
-
-                AsyncImage(
-                    modifier = Modifier
-                        .constrainAs(poster) {
-                            start.linkTo(parent.start)
-                            top.linkTo(parent.top)
-                            bottom.linkTo(parent.bottom)
-                            height = Dimension.fillToConstraints
-                        }
-                        .aspectRatio(0.7f)
-                        .clip(RoundedCornerShape(10.dp)),
-                    model = TmdbUtils.getFullPosterPath(listItem.posterPath) ?: R.drawable.placeholder_transparent,
-                    contentDescription = listItem.title
-                )
-
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(4.dp),
-                    modifier = Modifier
-                        .constrainAs(content) {
-                            end.linkTo(ratingView.start, margin = 12.dp)
-                            start.linkTo(poster.end, margin = 12.dp)
-                            width = Dimension.fillToConstraints
-                            height = Dimension.matchParent
-                        }
-                ) {
-                    Spacer(modifier = Modifier.weight(1f))
-                    val textColor = if (listItem.backdropPath != null || isSystemInDarkTheme()) {
-                        Color.White
-                    } else {
-                        Color.Black
+        },
+        backgroundCardEndColor = SwipeRemoveBackground
+    ) {
+        Card(
+            shape = RoundedCornerShape(10.dp),
+            elevation = CardDefaults.cardElevation(defaultElevation = 10.dp),
+            modifier = Modifier
+                .background(color = MaterialTheme.colorScheme.background)
+                .fillMaxWidth()
+                .clickable(
+                    onClick = {
+                        appNavController.navigate(
+                            "${MainNavItem.DetailView.route}/${listItem.mediaType}/${listItem.id}"
+                        )
                     }
-                    Text(
-                        modifier = Modifier.padding(bottom = 8.dp),
-                        text = listItem.title,
-                        color = textColor,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold
+                )
+        ) {
+            Box(
+                modifier = Modifier.height(112.dp)
+            ) {
+                listItem.backdropPath?.let {
+                    AsyncImage(
+                        model = TmdbUtils.getFullBackdropPath(listItem.backdropPath),
+                        contentDescription = null,
+                        contentScale = ContentScale.FillWidth,
+                        modifier = Modifier
+                            .blur(radius = 10.dp)
+                            .fillMaxWidth()
+                            .wrapContentHeight()
                     )
-                    ActionButtonRow(listItem)
-                    Spacer(modifier = Modifier.weight(1f))
+
+                    Box(modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black.copy(alpha = 0.4f))
+                        .blur(radius = 10.dp)
+                    )
                 }
 
-
-                val rating = SessionManager.currentSession?.getRatingForId(listItem.id, listItem.mediaType) ?: 0f
-                RatingView(
-                    progress = rating / 10f,
+                ConstraintLayout(
                     modifier = Modifier
-                        .constrainAs(ratingView) {
-                            end.linkTo(parent.end)
-                            top.linkTo(parent.top)
-                            bottom.linkTo(parent.bottom)
+                        .padding(8.dp)
+                        .fillMaxSize()
+                ) {
+                    val (poster, content, ratingView) = createRefs()
+
+                    AsyncImage(
+                        modifier = Modifier
+                            .constrainAs(poster) {
+                                start.linkTo(parent.start)
+                                top.linkTo(parent.top)
+                                bottom.linkTo(parent.bottom)
+                                height = Dimension.fillToConstraints
+                            }
+                            .aspectRatio(0.7f)
+                            .clip(RoundedCornerShape(10.dp)),
+                        model = TmdbUtils.getFullPosterPath(listItem.posterPath) ?: R.drawable.placeholder_transparent,
+                        contentDescription = listItem.title
+                    )
+
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(4.dp),
+                        modifier = Modifier
+                            .constrainAs(content) {
+                                end.linkTo(ratingView.start, margin = 12.dp)
+                                start.linkTo(poster.end, margin = 12.dp)
+                                width = Dimension.fillToConstraints
+                                height = Dimension.matchParent
+                            }
+                    ) {
+                        Spacer(modifier = Modifier.weight(1f))
+                        val textColor = if (listItem.backdropPath != null || isSystemInDarkTheme()) {
+                            Color.White
+                        } else {
+                            Color.Black
                         }
-                )
+                        Text(
+                            modifier = Modifier.padding(bottom = 8.dp),
+                            text = listItem.title,
+                            color = textColor,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        ActionButtonRow(listItem)
+                        Spacer(modifier = Modifier.weight(1f))
+                    }
+
+
+                    RatingView(
+                        progress = listItem.voteAverage / 10f,
+                        modifier = Modifier
+                            .constrainAs(ratingView) {
+                                end.linkTo(parent.end)
+                                top.linkTo(parent.top)
+                                bottom.linkTo(parent.bottom)
+                            }
+                    )
+                }
             }
         }
-    }
-}
-
-@Composable
-private fun DeleteButton(
-    modifier: Modifier
-) {
-    Box(
-        modifier = modifier
-            .clip(CircleShape)
-            .size(48.dp)
-            .background(color = MaterialTheme.colorScheme.actionButtonColor)
-            .clickable(
-                onClick = {
-                }
-            )
-    ) {
-        Icon(
-            modifier = Modifier
-                .clip(CircleShape)
-                .align(Alignment.Center),
-            imageVector = Icons.Filled.Delete,
-            contentDescription = stringResource(id = R.string.remove_from_list_cd),
-            tint = Color.Red
-        )
     }
 }
 

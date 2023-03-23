@@ -133,6 +133,8 @@ dependencies {
     def markdown = "0.2.1"
     implementation "org.jetbrains:markdown:$markdown"
 
+    implementation 'de.charlex.compose:revealswipe:1.0.0'
+
     // testing
     def junit = "4.13.2"
     def androidx_junit = "1.1.3"

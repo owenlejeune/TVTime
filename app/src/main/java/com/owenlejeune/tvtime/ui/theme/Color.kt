@@ -55,5 +55,7 @@ val WatchlistSelected = Color(0xFFBF3F39)
 val RatingSelected = Color(0xFFE7C343)
 val FavoriteSelected = Color(0xFFDD57B2)
 
+val SwipeRemoveBackground = WatchlistSelected
+
 val LightActionButton = Color(0xFF48C9B0)
 val DarkActionButton = Color(0xFF17A589)
