@@ -21,6 +21,7 @@ import com.owenlejeune.tvtime.api.tmdb.api.v4.model.AuthDeleteBody
 import com.owenlejeune.tvtime.api.tmdb.api.v4.model.AuthRequestBody
 import com.owenlejeune.tvtime.api.tmdb.api.v4.model.V4AccountList
 import com.owenlejeune.tvtime.preferences.AppPreferences
+import com.owenlejeune.tvtime.ui.screens.main.MediaViewType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -244,11 +245,13 @@ object SessionManager: KoinComponent {
             return ratedTvEpisodes.map { it.id }.contains(id)
         }
 
-        fun getRatingForId(id: Int): Float {
-            return ratedMovies.firstOrNull { it.id == id }?.rating
-                ?: ratedTvShows.firstOrNull { it.id == id }?.rating
-                ?: ratedTvEpisodes.firstOrNull { it.id == id }?.rating
-                ?: 0f
+        fun getRatingForId(id: Int, type: MediaViewType): Float? {
+            return when(type) {
+                MediaViewType.MOVIE -> ratedMovies.firstOrNull { it.id == id }?.rating
+                MediaViewType.TV -> ratedTvShows.firstOrNull { it.id == id }?.rating
+                MediaViewType.EPISODE -> ratedTvEpisodes.firstOrNull { it.id == id }?.rating
+                else -> null
+            }
         }
 
         fun hasFavoritedMovie(id: Int): Boolean {

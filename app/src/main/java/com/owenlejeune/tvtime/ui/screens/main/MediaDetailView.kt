@@ -302,7 +302,7 @@ private fun ActionsView(
 }
 
 @Composable
-private fun ActionButton(
+fun ActionButton(
     modifier: Modifier = Modifier,
     itemId: Int,
     type: MediaViewType,
@@ -412,7 +412,7 @@ private fun RateButton(
 
     CreateSessionDialog(showDialog = showSessionDialog, onSessionReturned = {})
 
-    val userRating = session?.getRatingForId(itemId) ?: 0f
+    val userRating = session?.getRatingForId(itemId, type) ?: 0f
     RatingDialog(showDialog = showRatingDialog, rating = userRating, onValueConfirmed = { rating ->
         if (rating > 0f) {
             postRating(context, rating, itemId, service, itemIsRated)

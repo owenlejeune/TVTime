@@ -2,6 +2,7 @@ package com.owenlejeune.tvtime.ui.screens.main
 
 import android.content.Context
 import android.content.Intent
+import android.widget.Toast
 import androidx.compose.animation.rememberSplineBasedDecay
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -20,7 +21,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -34,6 +34,9 @@ import androidx.constraintlayout.compose.Dimension
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.owenlejeune.tvtime.R
+import com.owenlejeune.tvtime.api.tmdb.api.v3.AccountService
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.MarkAsFavoriteBody
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.WatchlistBody
 import com.owenlejeune.tvtime.api.tmdb.api.v4.ListV4Service
 import com.owenlejeune.tvtime.api.tmdb.api.v4.model.ListItem
 import com.owenlejeune.tvtime.api.tmdb.api.v4.model.MediaList
@@ -41,6 +44,11 @@ import com.owenlejeune.tvtime.extensions.WindowSizeClass
 import com.owenlejeune.tvtime.extensions.unlessEmpty
 import com.owenlejeune.tvtime.preferences.AppPreferences
 import com.owenlejeune.tvtime.ui.navigation.MainNavItem
+import com.owenlejeune.tvtime.ui.theme.FavoriteSelected
+import com.owenlejeune.tvtime.ui.theme.RatingSelected
+import com.owenlejeune.tvtime.ui.theme.WatchlistSelected
+import com.owenlejeune.tvtime.ui.theme.actionButtonColor
+import com.owenlejeune.tvtime.utils.SessionManager
 import com.owenlejeune.tvtime.utils.TmdbUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -190,14 +198,14 @@ private fun ListHeader(list: MediaList) {
             Button(
                 modifier = Modifier.weight(1f),
                 shape = RoundedCornerShape(10.dp),
-                onClick = {  }
+                onClick = { Toast.makeText(context, "Edit", Toast.LENGTH_SHORT).show() }
             ) {
                 Text(text = stringResource(R.string.action_edit))
             }
             Button(
                 modifier = Modifier.weight(1f),
                 shape = RoundedCornerShape(10.dp),
-                onClick = {  }
+                onClick = { Toast.makeText(context, "Sort By", Toast.LENGTH_SHORT).show() }
             ) {
                 Text(text = stringResource(R.string.action_sort_by))
             }
@@ -290,7 +298,7 @@ private fun ListItemView(
                     .padding(8.dp)
                     .fillMaxSize()
             ) {
-                val (poster, content, delete) = createRefs()
+                val (poster, content, ratingView) = createRefs()
 
                 AsyncImage(
                     modifier = Modifier
@@ -310,7 +318,7 @@ private fun ListItemView(
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                     modifier = Modifier
                         .constrainAs(content) {
-                            end.linkTo(delete.start, margin = 12.dp)
+                            end.linkTo(ratingView.start, margin = 12.dp)
                             start.linkTo(poster.end, margin = 12.dp)
                             width = Dimension.fillToConstraints
                             height = Dimension.matchParent
@@ -323,24 +331,153 @@ private fun ListItemView(
                         Color.Black
                     }
                     Text(
+                        modifier = Modifier.padding(bottom = 8.dp),
                         text = listItem.title,
                         color = textColor,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold
                     )
+                    ActionButtonRow(listItem)
                     Spacer(modifier = Modifier.weight(1f))
                 }
 
-                Image(
-                    imageVector = Icons.Filled.Delete,
-                    contentDescription = stringResource(R.string.remove_from_list_cd),
-                    colorFilter = ColorFilter.tint(color = Color.Red),
-                    modifier = Modifier.constrainAs(delete) {
-                        top.linkTo(parent.top)
-                        bottom.linkTo(parent.bottom)
-                        end.linkTo(parent.end, margin = 12.dp)
-                    }
+
+                val rating = SessionManager.currentSession?.getRatingForId(listItem.id, listItem.mediaType) ?: 0f
+                RatingView(
+                    progress = rating / 10f,
+                    modifier = Modifier
+                        .constrainAs(ratingView) {
+                            end.linkTo(parent.end)
+                            top.linkTo(parent.top)
+                            bottom.linkTo(parent.bottom)
+                        }
                 )
+            }
+        }
+    }
+}
+
+@Composable
+private fun DeleteButton(
+    modifier: Modifier
+) {
+    Box(
+        modifier = modifier
+            .clip(CircleShape)
+            .size(48.dp)
+            .background(color = MaterialTheme.colorScheme.actionButtonColor)
+            .clickable(
+                onClick = {
+                }
+            )
+    ) {
+        Icon(
+            modifier = Modifier
+                .clip(CircleShape)
+                .align(Alignment.Center),
+            imageVector = Icons.Filled.Delete,
+            contentDescription = stringResource(id = R.string.remove_from_list_cd),
+            tint = Color.Red
+        )
+    }
+}
+
+@Composable
+private fun ActionButtonRow(listItem: ListItem) {
+    val session = SessionManager.currentSession
+
+    val (isFavourited, isWatchlisted, isRated) = if (listItem.mediaType == MediaViewType.MOVIE) {
+        Triple(
+            session?.hasFavoritedMovie(listItem.id) == true,
+            session?.hasWatchlistedMovie(listItem.id) == true,
+            session?.hasRatedMovie(listItem.id) == true
+        )
+    } else {
+        Triple(
+            session?.hasFavoritedTvShow(listItem.id) == true,
+            session?.hasWatchlistedTvShow(listItem.id) == true,
+            session?.hasRatedTvShow(listItem.id) == true
+        )
+    }
+
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        ActionButton(
+            itemId = listItem.id,
+            type = listItem.mediaType,
+            iconRes = R.drawable.ic_favorite,
+            contentDescription = stringResource(id = R.string.favourite_label),
+            isSelected = isFavourited,
+            filledIconColor = FavoriteSelected,
+            onClick = ::addToFavorite
+        )
+
+        ActionButton(
+            itemId = listItem.id,
+            type = listItem.mediaType,
+            iconRes = R.drawable.ic_watchlist,
+            contentDescription = "",
+            isSelected = isWatchlisted,
+            filledIconColor = WatchlistSelected,
+            onClick = ::addToWatchlist
+        )
+
+        val context = LocalContext.current
+        ActionButton(
+            itemId = listItem.id,
+            type = listItem.mediaType,
+            iconRes = R.drawable.ic_rating_star,
+            contentDescription = "",
+            isSelected = isRated,
+            filledIconColor = RatingSelected,
+            onClick = { c, i, t, s, f ->
+                // todo - add rating
+                Toast.makeText(context, "Rating", Toast.LENGTH_SHORT).show()
+            }
+        )
+    }
+}
+
+private fun addToWatchlist(
+    context: Context,
+    itemId: Int,
+    type: MediaViewType,
+    itemIsWatchlisted: MutableState<Boolean>,
+    onWatchlistChanged: (Boolean) -> Unit
+) {
+    val accountId = SessionManager.currentSession!!.accountDetails!!.id
+    CoroutineScope(Dispatchers.IO).launch {
+        val response = AccountService().addToWatchlist(accountId, WatchlistBody(type, itemId, !itemIsWatchlisted.value))
+        if (response.isSuccessful) {
+            SessionManager.currentSession?.refresh(changed = SessionManager.Session.Changed.Watchlist)
+            withContext(Dispatchers.Main) {
+                itemIsWatchlisted.value = !itemIsWatchlisted.value
+                onWatchlistChanged(itemIsWatchlisted.value)
+            }
+        } else {
+            withContext(Dispatchers.Main) {
+                Toast.makeText(context, "An error occurred", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+}
+
+private fun addToFavorite(
+    context: Context,
+    itemId: Int,
+    type: MediaViewType,
+    itemIsFavorited: MutableState<Boolean>,
+    onFavoriteChanged: (Boolean) -> Unit
+) {
+    val accountId = SessionManager.currentSession!!.accountDetails!!.id
+    CoroutineScope(Dispatchers.IO).launch {
+        val response = AccountService().markAsFavorite(accountId, MarkAsFavoriteBody(type, itemId, !itemIsFavorited.value))
+        if (response.isSuccessful) {
+            SessionManager.currentSession?.refresh(changed = SessionManager.Session.Changed.Favorites)
+            withContext(Dispatchers.Main) {
+                itemIsFavorited.value = !itemIsFavorited.value
+                onFavoriteChanged(itemIsFavorited.value)
             }
         }
     }
