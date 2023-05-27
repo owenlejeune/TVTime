@@ -290,6 +290,7 @@ object SessionManager: KoinComponent {
                 val Rated get() = arrayOf(RatedMovies, RatedTv, RatedEpisodes)
                 val Favorites get() = arrayOf(FavoriteMovies, FavoriteTv)
                 val Watchlist get() = arrayOf(WatchlistMovies, WatchlistTv)
+                val List get() = arrayOf(Changed.Lists)
             }
         }
     }

@@ -14,10 +14,10 @@ interface ListV4Api {
     ): Response<MediaList>
 
     @POST("list")
-    suspend fun createList(body: CreateListBody): Response<CreateListResponse>
+    suspend fun createList(@Body body: CreateListBody): Response<CreateListResponse>
 
     @PUT("list/{id}")
-    suspend fun updateList(@Path("id") listId: Int, body: ListUpdateBody): Response<StatusResponse>
+    suspend fun updateList(@Path("id") listId: Int, @Body body: ListUpdateBody): Response<StatusResponse>
 
     @GET("list/{id}/clear")
     suspend fun clearList(@Path("id") listId: Int): Response<ClearListResponse>
@@ -26,13 +26,13 @@ interface ListV4Api {
     suspend fun deleteList(@Path("id") listId: Int): Response<StatusResponse>
 
     @POST("list/{id}/items")
-    suspend fun addItemsToList(@Path("id") listId: Int, body: AddToListBody): Response<AddToListResponse>
+    suspend fun addItemsToList(@Path("id") listId: Int, @Body body: AddToListBody): Response<AddToListResponse>
 
     @PUT("list/{id}/items")
-    suspend fun updateListItems(@Path("id") listId: Int, body: UpdateListItemBody): Response<AddToListResponse>
+    suspend fun updateListItems(@Path("id") listId: Int, @Body body: UpdateListItemBody): Response<AddToListResponse>
 
-    @DELETE("list/{id}/items")
-    suspend fun deleteListItems(@Path("id") listId: Int, body: DeleteListItemsBody): Response<AddToListResponse>
+    @HTTP(method = "DELETE", path = "/list/{id}/items", hasBody = true)
+    suspend fun deleteListItems(@Path("id") listId: Int, @Body body: DeleteListItemsBody): Response<AddToListResponse>
 
     @GET("list/{id}/item_status")
     suspend fun getListItemStatus(@Path("id") listId: Int, @Query("media_id") mediaId: Int, @Query("media_type") mediaType: String): Response<ListItemStatusResponse>

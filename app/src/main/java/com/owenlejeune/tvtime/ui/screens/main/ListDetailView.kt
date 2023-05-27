@@ -1,6 +1,7 @@
 package com.owenlejeune.tvtime.ui.screens.main
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.animation.rememberSplineBasedDecay
 import androidx.compose.foundation.*
@@ -35,8 +36,7 @@ import com.owenlejeune.tvtime.api.tmdb.api.v3.AccountService
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.MarkAsFavoriteBody
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.WatchlistBody
 import com.owenlejeune.tvtime.api.tmdb.api.v4.ListV4Service
-import com.owenlejeune.tvtime.api.tmdb.api.v4.model.ListItem
-import com.owenlejeune.tvtime.api.tmdb.api.v4.model.MediaList
+import com.owenlejeune.tvtime.api.tmdb.api.v4.model.*
 import com.owenlejeune.tvtime.extensions.WindowSizeClass
 import com.owenlejeune.tvtime.extensions.unlessEmpty
 import com.owenlejeune.tvtime.preferences.AppPreferences
@@ -63,10 +63,10 @@ fun ListDetailView(
 ) {
     val service = ListV4Service()
 
-    val listItem = remember { mutableStateOf<MediaList?>(null) }
+    val parentList = remember { mutableStateOf<MediaList?>(null) }
     itemId?.let {
-        if (listItem.value == null) {
-            fetchList(itemId, service, listItem)
+        if (parentList.value == null) {
+            fetchList(itemId, service, parentList)
         }
     }
 
@@ -86,7 +86,7 @@ fun ListDetailView(
                         scrolledContainerColor = MaterialTheme.colorScheme.background,
                         titleContentColor = MaterialTheme.colorScheme.primary
                     ),
-                title = { Text(text = listItem.value?.name ?: "") },
+                title = { Text(text = parentList.value?.name ?: "") },
                 navigationIcon = {
                     IconButton(
                         onClick = { appNavController.popBackStack() }
@@ -102,7 +102,7 @@ fun ListDetailView(
         }
     ) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)) {
-            listItem.value?.let { mediaList ->
+            parentList.value?.let { mediaList ->
                 Column(
                     modifier = Modifier
                         .padding(all = 12.dp)
@@ -114,7 +114,8 @@ fun ListDetailView(
                     mediaList.results.forEach { listItem ->
                         ListItemView(
                             appNavController = appNavController,
-                            listItem = listItem
+                            listItem = listItem,
+                            list = parentList
                         )
                     }
                 }
@@ -252,16 +253,22 @@ private fun RowScope.OverviewStatCard(
 @Composable
 private fun ListItemView(
     appNavController: NavController,
-    listItem: ListItem
+    listItem: ListItem,
+    list: MutableState<MediaList?>
 ) {
-    val context = LocalContext.current
-
     RevealSwipe (
         directions = setOf(RevealDirection.EndToStart),
         hiddenContentEnd = {
             IconButton(
                 modifier = Modifier.padding(horizontal = 15.dp),
-                onClick = { Toast.makeText(context, "Remove from list", Toast.LENGTH_SHORT).show() }
+                onClick = {
+                    removeItemFromList(
+                        itemId = listItem.id,
+                        itemType =  listItem.mediaType,
+                        service = ListV4Service(),
+                        list = list
+                    )
+                }
             ) {
                 Icon(
                     imageVector = Icons.Filled.Delete,
@@ -494,6 +501,29 @@ private fun fetchList(
             withContext(Dispatchers.Main) {
                 listItem.value = response.body()
             }
+        }
+    }
+}
+
+private fun removeItemFromList(
+    itemId: Int,
+    itemType: MediaViewType,
+    service: ListV4Service,
+    list: MutableState<MediaList?>
+) {
+    CoroutineScope(Dispatchers.IO).launch {
+        val listId = list.value?.id ?: 0
+        val removeItem = DeleteListItemsItem(itemId, itemType)
+        val result = service.deleteListItems(listId, DeleteListItemsBody(listOf(removeItem)))
+        if (result.isSuccessful) {
+            SessionManager.currentSession?.refresh(SessionManager.Session.Changed.List)
+            service.getList(listId).body()?.let {
+                withContext(Dispatchers.Main) {
+                    list.value = it
+                }
+            }
+        } else {
+            Log.w("RemoveListItemError", result.toString())
         }
     }
 }

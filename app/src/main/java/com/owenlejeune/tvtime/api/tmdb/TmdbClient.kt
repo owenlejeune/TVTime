@@ -148,6 +148,8 @@ class TmdbClient: KoinComponent {
                     builder.header("Authorization", "Bearer ${BuildConfig.TMDB_Api_v4Key}")
                 } else {
                     builder.header("Authorization", "Bearer ${SessionManager.currentSession!!.accessToken}")
+                }
+                if (shouldIncludeLanguageParam(url.encodedPathSegments)) {
                     val locale = Locale.current
                     val languageCode = "${locale.language}-${locale.region}"
                     val languageParam = QueryParam("language", languageCode)
@@ -155,9 +157,22 @@ class TmdbClient: KoinComponent {
                     val newUrl = url.newBuilder().addQueryParams(languageParam).build()
                     builder.url(newUrl)
                 }
+                if (url.encodedPathSegments.contains("list")) {
+                    builder.header("Content-Type", "application/json;charset=utf8")
+                }
             }
 
             return chain.proceed(builder.build())
+        }
+
+        private fun shouldIncludeLanguageParam(urlSegments: List<String>): Boolean {
+            val ignoredRoutes = listOf("list", "auth")
+            for (route in ignoredRoutes) {
+                if (urlSegments.contains(route)) {
+                    return false
+                }
+            }
+            return true
         }
     }
 
