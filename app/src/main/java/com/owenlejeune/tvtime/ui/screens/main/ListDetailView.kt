@@ -6,6 +6,7 @@ import android.widget.Toast
 import androidx.compose.animation.rememberSplineBasedDecay
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ExperimentalMaterialApi
@@ -23,6 +24,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -52,6 +54,31 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.koin.java.KoinJavaComponent
 import kotlin.math.roundToInt
+
+enum class SortOrder(val stringKey: Int) {
+    ORIGINAL(R.string.sort_order_original) {
+        override fun sort(listIn: List<ListItem>): List<ListItem> {
+            return listIn
+        }
+    },
+    RATING(R.string.sort_order_rating) {
+        override fun sort(listIn: List<ListItem>): List<ListItem> {
+            return listIn.sortedBy { it.voteAverage }.reversed()
+        }
+    },
+    RELEASE_DATE(R.string.sort_order_release_date) {
+        override fun sort(listIn: List<ListItem>): List<ListItem> {
+            return listIn.sortedBy { it.releaseDate }.reversed()
+        }
+    },
+    TITLE(R.string.sort_order_title) {
+        override fun sort(listIn: List<ListItem>): List<ListItem> {
+            return listIn.sortedBy { it.title }
+        }
+    };
+
+    abstract fun sort(listIn: List<ListItem>): List<ListItem>
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -109,9 +136,10 @@ fun ListDetailView(
                         .verticalScroll(state = rememberScrollState()),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    ListHeader(list = mediaList)
+                    val selectedSortOrder = remember { mutableStateOf(SortOrder.ORIGINAL) }
+                    ListHeader(list = mediaList, selectedSortOrder = selectedSortOrder)
 
-                    mediaList.results.forEach { listItem ->
+                    selectedSortOrder.value.sort(mediaList.results).forEach { listItem ->
                         ListItemView(
                             appNavController = appNavController,
                             listItem = listItem,
@@ -124,8 +152,12 @@ fun ListDetailView(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ListHeader(list: MediaList) {
+private fun ListHeader(
+    list: MediaList,
+    selectedSortOrder: MutableState<SortOrder>
+) {
     val context = LocalContext.current
 
     Column(
@@ -189,6 +221,8 @@ private fun ListHeader(list: MediaList) {
             )
         }
 
+        val showSortByOrderDialog = remember { mutableStateOf(false) }
+
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
@@ -202,7 +236,7 @@ private fun ListHeader(list: MediaList) {
             Button(
                 modifier = Modifier.weight(1f),
                 shape = RoundedCornerShape(10.dp),
-                onClick = { Toast.makeText(context, "Sort By", Toast.LENGTH_SHORT).show() }
+                onClick = { showSortByOrderDialog.value = true }
             ) {
                 Text(text = stringResource(R.string.action_sort_by))
             }
@@ -214,7 +248,51 @@ private fun ListHeader(list: MediaList) {
                 Text(text = stringResource(R.string.action_share))
             }
         }
+
+        if (showSortByOrderDialog.value) {
+            SortOrderDialog(showSortByOrderDialog = showSortByOrderDialog, selectedSortOrder = selectedSortOrder)
+        }
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SortOrderDialog(
+    showSortByOrderDialog: MutableState<Boolean>,
+    selectedSortOrder: MutableState<SortOrder>
+) {
+    AlertDialog(
+        onDismissRequest = { showSortByOrderDialog.value = false },
+        confirmButton = {},
+        title = { Text(text = "Sort By") },
+        dismissButton = { Text(text = "Dismiss") },
+        text = {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                SortOrder.values().forEach {
+                    Row(
+                        modifier = Modifier.selectable(
+                            selected = selectedSortOrder.value == it,
+                            onClick = {
+                                selectedSortOrder.value = it
+                                showSortByOrderDialog.value = false
+                            },
+                            role = Role.RadioButton
+                        ),
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        RadioButton(
+                            selected = selectedSortOrder.value == it,
+                            onClick = null
+                        )
+                        Text(text = stringResource(id = it.stringKey), fontSize = 20.sp)
+                    }
+                }
+            }
+        }
+    )
 }
 
 @Composable

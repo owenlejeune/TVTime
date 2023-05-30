@@ -193,4 +193,8 @@
     <string name="action_sort_by">Sort By</string>
     <string name="action_share">Share</string>
     <string name="remove_from_list_cd">Remove from list</string>
+    <string name="sort_order_original">Original</string>
+    <string name="sort_order_rating">Rating</string>
+    <string name="sort_order_release_date">Release Date</string>
+    <string name="sort_order_title">Title</string>
 </resources>
