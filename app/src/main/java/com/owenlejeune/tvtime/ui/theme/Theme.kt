@@ -6,6 +6,7 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.compositeOver
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.kieronquinn.monetcompat.core.MonetCompat
 import com.owenlejeune.tvtime.preferences.AppPreferences
@@ -113,7 +114,14 @@ fun TVTimeTheme(
             shapes = Shapes,
             content = {
                 val systemUiController = rememberSystemUiController()
-                systemUiController.setSystemBarsColor(color = androidx.compose.material3.MaterialTheme.colorScheme.background)
+                systemUiController.setStatusBarColor(color = androidx.compose.material3.MaterialTheme.colorScheme.background)
+                systemUiController.setNavigationBarColor(
+                    color = androidx.compose.material3.MaterialTheme.colorScheme.primary.copy(
+                        alpha = 0.08f
+                    ).compositeOver(
+                        background = androidx.compose.material3.MaterialTheme.colorScheme.surface
+                    )
+                )
 
                 content()
             }

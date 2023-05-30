@@ -31,7 +31,7 @@ interface ListV4Api {
     @PUT("list/{id}/items")
     suspend fun updateListItems(@Path("id") listId: Int, @Body body: UpdateListItemBody): Response<AddToListResponse>
 
-    @HTTP(method = "DELETE", path = "/list/{id}/items", hasBody = true)
+    @HTTP(method = "DELETE", path = "list/{id}/items", hasBody = true)
     suspend fun deleteListItems(@Path("id") listId: Int, @Body body: DeleteListItemsBody): Response<AddToListResponse>
 
     @GET("list/{id}/item_status")

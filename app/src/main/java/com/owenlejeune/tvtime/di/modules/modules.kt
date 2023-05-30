@@ -1,6 +1,5 @@
 package com.owenlejeune.tvtime.di.modules
 
-import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonDeserializer
 import com.owenlejeune.tvtime.BuildConfig

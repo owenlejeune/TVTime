@@ -256,6 +256,7 @@ private fun ListItemView(
     listItem: ListItem,
     list: MutableState<MediaList?>
 ) {
+    val context = LocalContext.current
     RevealSwipe (
         directions = setOf(RevealDirection.EndToStart),
         hiddenContentEnd = {
@@ -263,8 +264,10 @@ private fun ListItemView(
                 modifier = Modifier.padding(horizontal = 15.dp),
                 onClick = {
                     removeItemFromList(
+                        context = context,
                         itemId = listItem.id,
                         itemType =  listItem.mediaType,
+                        itemName = listItem.title,
                         service = ListV4Service(),
                         list = list
                     )
@@ -506,6 +509,8 @@ private fun fetchList(
 }
 
 private fun removeItemFromList(
+    context: Context,
+    itemName: String,
     itemId: Int,
     itemType: MediaViewType,
     service: ListV4Service,
@@ -522,8 +527,10 @@ private fun removeItemFromList(
                     list.value = it
                 }
             }
+            Toast.makeText(context, "Successfully removed $itemName", Toast.LENGTH_SHORT).show()
         } else {
             Log.w("RemoveListItemError", result.toString())
+            Toast.makeText(context, "An error occurred!", Toast.LENGTH_SHORT).show()
         }
     }
 }
