@@ -83,8 +83,6 @@ fun ExpandableContentCard(
 
     Card(
         modifier = modifier
-            .fillMaxWidth()
-            .wrapContentHeight()
             .animateContentSize(
                 animationSpec = tween(
                     durationMillis = 300,
@@ -95,7 +93,9 @@ fun ExpandableContentCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
         colors = CardDefaults.cardColors(containerColor = backgroundColor)
     ) {
-        Column(modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier.fillMaxSize()
+        ) {
             title()
             content(expandedState)
             Text(
@@ -124,10 +124,10 @@ fun LazyListContentCard(
     content: LazyListScope.() -> Unit
 ) {
     Card(
-        modifier = modifier
-            .background(color = backgroundColor),
+        modifier = modifier,
         shape = RoundedCornerShape(10.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+        colors = CardDefaults.cardColors(containerColor = backgroundColor)
     ) {
         Column(
             modifier = Modifier
@@ -159,10 +159,10 @@ fun ListContentCard(
     content: @Composable ColumnScope.() -> Unit
 ) {
     Card(
-        modifier = modifier
-            .background(color = backgroundColor),
+        modifier = modifier,
         shape = RoundedCornerShape(10.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+        colors = CardDefaults.cardColors(containerColor = backgroundColor)
     ) {
         Column(
             modifier = Modifier

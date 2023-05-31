@@ -108,8 +108,7 @@ fun MediaDetailView(
         Box(modifier = Modifier.padding(innerPadding)) {
             Row(
                 modifier = Modifier
-                    .background(color = MaterialTheme.colorScheme.background)
-                    .padding(bottom = 16.dp),
+                    .background(color = MaterialTheme.colorScheme.background),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Column(
@@ -169,7 +168,6 @@ fun MediaDetailView(
                         modifier = Modifier
                             .background(color = MaterialTheme.colorScheme.background)
                             .weight(1f)
-                            .padding(bottom = 16.dp)
                             .verticalScroll(state = rememberScrollState())
                     ) {
                         ReviewsCard(itemId = itemId, service = service)
@@ -924,7 +922,6 @@ fun SimilarContentCard(
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun VideosCard(itemId: Int?, service: DetailService, modifier: Modifier = Modifier) {
     val videoResponse = remember { mutableStateOf<VideoResponse?>(null) }

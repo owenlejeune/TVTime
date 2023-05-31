@@ -215,6 +215,7 @@ fun PosterItem(
     modifier: Modifier = Modifier,
     width: Dp = POSTER_WIDTH,
     onClick: () -> Unit = {},
+    enabled: Boolean = true,
     noDataImage: Int = R.drawable.placeholder,
     placeholder: Int = R.drawable.placeholder,
     elevation: Dp = 8.dp,
@@ -229,7 +230,12 @@ fun PosterItem(
             .wrapContentHeight(),
         shape = RoundedCornerShape(5.dp)
     ) {
-        Box {
+        Box(
+            modifier = Modifier.clickable(
+                enabled = true,
+                onClick = onClick
+            )
+        ) {
             var sizeImage by remember { mutableStateOf(IntSize.Zero) }
             val gradient = Brush.verticalGradient(
                 colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.7f)),
@@ -243,9 +249,6 @@ fun PosterItem(
                         .width(width = width)
                         .wrapContentHeight()
                         .clip(RoundedCornerShape(5.dp))
-                        .clickable(
-                            onClick = onClick
-                        )
                         .onGloballyPositioned { sizeImage = it.size },
                     onError = { Log.d("Poster", "Error loading: $url") },
                     error = rememberAsyncImagePainter(model = noDataImage),
@@ -260,9 +263,6 @@ fun PosterItem(
                         .width(width = width)
                         .height(height = POSTER_HEIGHT)
                         .clip(RoundedCornerShape(5.dp))
-                        .clickable(
-                            onClick = onClick
-                        )
                         .onGloballyPositioned { sizeImage = it.size },
                     painter = rememberAsyncImagePainter(model = noDataImage),
                     contentDescription = title,

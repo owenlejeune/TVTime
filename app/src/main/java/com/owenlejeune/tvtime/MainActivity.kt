@@ -163,8 +163,8 @@ class MainActivity : MonetCompatActivity() {
                     scrolledContainerColor = MaterialTheme.colorScheme.background
                 ),
             actions = {
-                defaultAppBarActions()
                 appBarActions.value(this)
+                defaultAppBarActions()
             }
         )
     }
@@ -292,7 +292,7 @@ class MainActivity : MonetCompatActivity() {
         Row(modifier = Modifier.fillMaxSize()) {
             NavigationRail {
                 Spacer(modifier = Modifier.weight(1f))
-                BottomNavItem.SortedItems.forEach { item ->
+                BottomNavItem.SortedItems.forEachIndexed { index, item ->
                     NavigationRailItem(
                         icon = { Icon(painter = painterResource(id = item.icon), contentDescription = null) },
                         label = { if (preferences.showBottomTabLabels) Text(item.name) },
@@ -305,6 +305,9 @@ class MainActivity : MonetCompatActivity() {
                             )
                         }
                     )
+                    if (index < BottomNavItem.SortedItems.size - 1) {
+                        Spacer(modifier = Modifier.height(20.dp))
+                    }
                 }
                 Spacer(modifier = Modifier.weight(1f))
             }
