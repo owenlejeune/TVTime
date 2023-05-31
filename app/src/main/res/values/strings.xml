@@ -207,4 +207,5 @@
     <string name="label_description">Description</string>
     <string name="label_public_list">Public list?</string>
     <string name="title_edit_list">Edit List</string>
+    <string name="search_all_title">All</string>
 </resources>
