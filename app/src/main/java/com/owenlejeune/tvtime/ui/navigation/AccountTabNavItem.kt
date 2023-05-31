@@ -7,6 +7,7 @@ import com.owenlejeune.tvtime.api.tmdb.api.v3.model.*
 import com.owenlejeune.tvtime.api.tmdb.api.v4.model.V4AccountList
 import com.owenlejeune.tvtime.ui.screens.main.MediaViewType
 import com.owenlejeune.tvtime.ui.screens.main.AccountTabContent
+import com.owenlejeune.tvtime.ui.screens.main.RecommendedAccountTabContent
 import com.owenlejeune.tvtime.utils.ResourceUtils
 import com.owenlejeune.tvtime.utils.SessionManager
 import org.koin.core.component.inject
@@ -34,7 +35,7 @@ sealed class AccountTabNavItem(
         val AuthorizedItems
             get() = listOf(
                 RatedMovies, RatedTvShows, RatedTvEpisodes, FavoriteMovies, FavoriteTvShows,
-                MovieWatchlist, TvWatchlist, UserLists
+                MovieWatchlist, TvWatchlist, UserLists, RecommendedMovies, RecommendedTv
             ).filter { it.ordinal > -1 }.sortedBy { it.ordinal }
     }
 
@@ -117,12 +118,48 @@ sealed class AccountTabNavItem(
         screenContent,
         { SessionManager.currentSession?.accountLists ?: emptyList() },
         V4AccountList::class,
-        0//7
+        7
+    )
+
+    object RecommendedMovies: AccountTabNavItem(
+        R.string.recommended_movies_title,
+        "recommended_movies_route",
+        R.string.no_recommended_movies,
+        MediaViewType.MOVIE,
+        recommendedScreenContent,
+        { emptyList() },
+        V4AccountList::class,
+        8
+    )
+
+    object RecommendedTv: AccountTabNavItem(
+        R.string.recommended_tv_title,
+        "recommended_tv_route",
+        R.string.no_recommended_tv,
+        MediaViewType.TV,
+        recommendedScreenContent,
+        { emptyList() },
+        V4AccountList::class,
+        9
     )
 }
 
 private val screenContent: AccountNavComposableFun = { noContentText, appNavController, mediaViewType, listFetchFun, clazz ->
-    AccountTabContent(noContentText = noContentText, appNavController = appNavController, mediaViewType = mediaViewType, listFetchFun = listFetchFun, clazz = clazz)
+    AccountTabContent(
+        noContentText = noContentText,
+        appNavController = appNavController,
+        mediaViewType = mediaViewType,
+        listFetchFun = listFetchFun,
+        clazz = clazz
+    )
+}
+
+private val recommendedScreenContent: AccountNavComposableFun = { noContentText, appNavController, mediaViewType, _, _ ->
+    RecommendedAccountTabContent(
+        noContentText = noContentText,
+        appNavController = appNavController,
+        mediaViewType = mediaViewType,
+    )
 }
 
 typealias ListFetchFun = () -> List<Any>

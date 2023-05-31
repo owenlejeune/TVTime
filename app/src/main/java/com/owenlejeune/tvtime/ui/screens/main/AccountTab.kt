@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import androidx.navigation.NavHostController
+import androidx.paging.compose.collectAsLazyPagingItems
 import coil.compose.AsyncImage
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
@@ -40,12 +41,14 @@ import com.owenlejeune.tvtime.api.tmdb.api.v3.model.*
 import com.owenlejeune.tvtime.api.tmdb.api.v4.model.V4AccountList
 import com.owenlejeune.tvtime.extensions.unlessEmpty
 import com.owenlejeune.tvtime.preferences.AppPreferences
+import com.owenlejeune.tvtime.ui.components.PagingPosterGrid
 import com.owenlejeune.tvtime.ui.components.RoundedLetterImage
 import com.owenlejeune.tvtime.ui.components.SignInDialog
 import com.owenlejeune.tvtime.ui.navigation.AccountTabNavItem
 import com.owenlejeune.tvtime.ui.navigation.ListFetchFun
 import com.owenlejeune.tvtime.ui.navigation.MainNavItem
 import com.owenlejeune.tvtime.ui.screens.main.tabs.top.ScrollableTabs
+import com.owenlejeune.tvtime.ui.viewmodel.RecommendedMediaViewModel
 import com.owenlejeune.tvtime.utils.SessionManager
 import com.owenlejeune.tvtime.utils.TmdbUtils
 import kotlinx.coroutines.CoroutineScope
@@ -259,7 +262,43 @@ fun <T: Any> AccountTabContent(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun RecommendedAccountTabContent(
+    noContentText: String,
+    appNavController: NavHostController,
+    mediaViewType: MediaViewType,
+) {
+    val viewModel = when (mediaViewType) {
+        MediaViewType.MOVIE -> RecommendedMediaViewModel.RecommendedMoviesVM
+        MediaViewType.TV -> RecommendedMediaViewModel.RecommendedTvVM
+        else -> throw IllegalArgumentException("Media type given: ${mediaViewType}, \n     expected one of MediaViewType.MOVIE, MediaViewType.TV") // shouldn't happen
+    }
+    val mediaListItems = viewModel.mediaItems.collectAsLazyPagingItems()
+
+    if (mediaListItems.itemCount < 1) {
+        Column {
+            Spacer(modifier = Modifier.weight(1f))
+            Text(
+                modifier = Modifier.fillMaxWidth(),
+                text = noContentText,
+                color = MaterialTheme.colorScheme.onBackground,
+                fontSize = 22.sp,
+                textAlign = TextAlign.Center
+            )
+            Spacer(modifier = Modifier.weight(1f))
+        }
+    } else {
+        PagingPosterGrid(
+            lazyPagingItems = mediaListItems,
+            onClick = { id ->
+                appNavController.navigate(
+                    "${MainNavItem.DetailView.route}/${mediaViewType}/${id}"
+                )
+            }
+        )
+    }
+}
+
 @Composable
 private fun MediaItemRow(
     appNavController: NavHostController,

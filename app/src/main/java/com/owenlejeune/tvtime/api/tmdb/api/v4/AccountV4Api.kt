@@ -2,6 +2,8 @@ package com.owenlejeune.tvtime.api.tmdb.api.v4
 
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.FavoriteMovie
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.FavoriteTvSeries
+import com.owenlejeune.tvtime.api.tmdb.api.v4.model.RecommendedMovie
+import com.owenlejeune.tvtime.api.tmdb.api.v4.model.RecommendedTv
 import com.owenlejeune.tvtime.api.tmdb.api.v4.model.V4AccountList
 import com.owenlejeune.tvtime.api.tmdb.api.v4.model.V4AccountResponse
 import com.owenlejeune.tvtime.api.tmdb.api.v4.model.V4RatedMovie
@@ -40,4 +42,9 @@ interface AccountV4Api {
     @GET("account/{account_id}/tv/rated")
     suspend fun getRatedTvShows(@Path("account_id") accountId: String, @Query("page") page: Int = 1): Response<V4AccountResponse<V4RatedTv>>
 
+    @GET("account/{account_id}/movie/recommendations")
+    suspend fun getRecommendedMovies(@Path("account_id") accountId: String, @Query("page") page: Int = 1): Response<V4AccountResponse<RecommendedMovie>>
+
+    @GET("account/{account_id}/tv/recommendations")
+    suspend fun getRecommendedTvSeries(@Path("account_id") accountId: String, @Query("page") page: Int = 1): Response<V4AccountResponse<RecommendedTv>>
 }

@@ -208,4 +208,8 @@
     <string name="label_public_list">Public list?</string>
     <string name="title_edit_list">Edit List</string>
     <string name="search_all_title">All</string>
+    <string name="recommended_movies_title">Recommended Movies</string>
+    <string name="no_recommended_movies">No Recommended Movies</string>
+    <string name="recommended_tv_title">Recommended TV</string>
+    <string name="no_recommended_tv">No Recommended TV</string>
 </resources>

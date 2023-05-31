@@ -3,6 +3,8 @@ package com.owenlejeune.tvtime.api.tmdb.api.v4
 import com.owenlejeune.tvtime.api.tmdb.TmdbClient
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.FavoriteMovie
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.FavoriteTvSeries
+import com.owenlejeune.tvtime.api.tmdb.api.v4.model.RecommendedMovie
+import com.owenlejeune.tvtime.api.tmdb.api.v4.model.RecommendedTv
 import com.owenlejeune.tvtime.api.tmdb.api.v4.model.V4AccountList
 import com.owenlejeune.tvtime.api.tmdb.api.v4.model.V4AccountResponse
 import com.owenlejeune.tvtime.api.tmdb.api.v4.model.V4RatedMovie
@@ -47,6 +49,14 @@ class AccountV4Service {
 
     suspend fun getRatedTvShows(accountId: String, page: Int = 1): Response<V4AccountResponse<V4RatedTv>> {
         return service.getRatedTvShows(accountId, page)
+    }
+
+    suspend fun getRecommendedMovies(accountId: String, page: Int = 1): Response<V4AccountResponse<RecommendedMovie>> {
+        return service.getRecommendedMovies(accountId, page)
+    }
+
+    suspend fun getRecommendedTvSeries(accountId: String, page: Int): Response<V4AccountResponse<RecommendedTv>> {
+        return service.getRecommendedTvSeries(accountId, page)
     }
 
 }

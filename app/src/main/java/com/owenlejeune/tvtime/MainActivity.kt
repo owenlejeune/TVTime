@@ -435,7 +435,10 @@ class MainActivity : MonetCompatActivity() {
             ) {
                 it.arguments?.let { arguments ->
                     val (type, title) = if (preferences.multiSearch) {
-                        Pair(MediaViewType.MIXED, stringResource(id = R.string.search_all_title))
+                        Pair(
+                            MediaViewType.MIXED,
+                            stringResource(id = R.string.search_all_title)
+                        )
                     } else {
                         Pair(
                             MediaViewType[arguments.getInt(NavConstants.SEARCH_ID_KEY)],
