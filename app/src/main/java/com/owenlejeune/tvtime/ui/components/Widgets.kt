@@ -16,15 +16,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.Card
-import androidx.compose.material.OutlinedTextField
-import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.ArrowDropUp
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.material.icons.outlined.ArrowDropDown
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -60,8 +58,6 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.*
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import androidx.core.text.HtmlCompat
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
@@ -73,9 +69,6 @@ import com.owenlejeune.tvtime.preferences.AppPreferences
 import com.owenlejeune.tvtime.ui.navigation.MainNavItem
 import com.owenlejeune.tvtime.ui.screens.main.MediaViewType
 import com.owenlejeune.tvtime.utils.TmdbUtils
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.intellij.markdown.flavours.commonmark.CommonMarkFlavourDescriptor
@@ -83,6 +76,7 @@ import org.intellij.markdown.html.HtmlGenerator
 import org.intellij.markdown.parser.MarkdownParser
 import org.koin.java.KoinJavaComponent
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TopLevelSwitch(
     text: String,
@@ -94,14 +88,16 @@ fun TopLevelSwitch(
         modifier = Modifier
             .fillMaxWidth()
             .height(100.dp)
-            .padding(12.dp),
-        shape = RoundedCornerShape(30.dp),
-        backgroundColor = when {
-            isSystemInDarkTheme() && checkedState.value -> MaterialTheme.colorScheme.primary
-            isSystemInDarkTheme() && !checkedState.value -> MaterialTheme.colorScheme.secondary
-            checkedState.value -> MaterialTheme.colorScheme.primaryContainer
-            else -> MaterialTheme.colorScheme.secondaryContainer
-        }
+            .padding(12.dp)
+            .background(
+                color = when {
+                    isSystemInDarkTheme() && checkedState.value -> MaterialTheme.colorScheme.primary
+                    isSystemInDarkTheme() && !checkedState.value -> MaterialTheme.colorScheme.secondary
+                    checkedState.value -> MaterialTheme.colorScheme.primaryContainer
+                    else -> MaterialTheme.colorScheme.secondaryContainer
+                }
+            ),
+        shape = RoundedCornerShape(30.dp)
     ) {
         Row(
             modifier = Modifier.fillMaxSize(),
@@ -962,17 +958,40 @@ fun <T> Spinner(
 
     Box(modifier = modifier) {
         Column {
-            OutlinedTextField(
-                value = selected.first,
-                onValueChange = { },
-                trailingIcon = { Icon(Icons.Outlined.ArrowDropDown, null) },
-                readOnly = true,
-                modifier = Modifier.clickable(
-                    onClick = {
-                        expanded = true
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .border(
+                        width = 1.dp,
+                        color = MaterialTheme.colorScheme.outline,
+                        shape = RoundedCornerShape(4.dp)
+                    )
+                    .clickable {
+                        expanded = !expanded
                     }
-                )
-            )
+            ) {
+                Row(
+                    modifier = Modifier.padding(start = 16.dp, end = 8.dp, top = 16.dp, bottom = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        modifier = Modifier.weight(1f),
+                        text = selected.first,
+                        fontSize = 14.sp,
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
+                    Icon(
+                        imageVector = if (expanded) Icons.Filled.ArrowDropUp else Icons.Filled.ArrowDropDown,
+                        contentDescription = null,
+                        modifier = Modifier.clickable(
+                            onClick = {
+                                expanded = !expanded
+                            }
+                        )
+                    )
+                }
+            }
             DropdownMenu(
                 expanded = expanded,
                 onDismissRequest = { expanded = false }

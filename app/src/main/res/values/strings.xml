@@ -193,8 +193,18 @@
     <string name="action_sort_by">Sort By</string>
     <string name="action_share">Share</string>
     <string name="remove_from_list_cd">Remove from list</string>
-    <string name="sort_order_original">Original</string>
-    <string name="sort_order_rating">Rating</string>
-    <string name="sort_order_release_date">Release Date</string>
-    <string name="sort_order_title">Title</string>
+    <string name="sort_order_original_ascending">Original (Ascending)</string>
+    <string name="sort_order_original_descending">Original (Descending)</string>
+    <string name="sort_order_rating_ascending">Rating (Ascending)</string>
+    <string name="sort_order_rating_descending">Rating (Descending)</string>
+    <string name="sort_order_release_date_ascending">Release Date (Ascending)</string>
+    <string name="sort_order_release_date_descending">Release Date (Ascending)</string>
+    <string name="sort_order_title_ascending">Title (A-Z)</string>
+    <string name="sort_order_title_descending">Title (Z-A)</string>
+    <string name="action_dismiss">Dismiss</string>
+    <string name="action_save">Save</string>
+    <string name="label_name">Name</string>
+    <string name="label_description">Description</string>
+    <string name="label_public_list">Public list?</string>
+    <string name="title_edit_list">Edit List</string>
 </resources>

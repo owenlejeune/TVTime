@@ -93,6 +93,9 @@ object TmdbUtils {
     }
 
     fun convertRuntimeToHoursMinutes(series: DetailedTv): String {
+        if (series.episodeRuntime.isEmpty()) {
+            return ""
+        }
         return convertRuntimeToHoursAndMinutes(series.episodeRuntime[0])
     }
 

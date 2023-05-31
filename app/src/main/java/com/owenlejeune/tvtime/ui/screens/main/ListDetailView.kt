@@ -42,6 +42,8 @@ import com.owenlejeune.tvtime.api.tmdb.api.v4.model.*
 import com.owenlejeune.tvtime.extensions.WindowSizeClass
 import com.owenlejeune.tvtime.extensions.unlessEmpty
 import com.owenlejeune.tvtime.preferences.AppPreferences
+import com.owenlejeune.tvtime.ui.components.Spinner
+import com.owenlejeune.tvtime.ui.components.SwitchPreference
 import com.owenlejeune.tvtime.ui.navigation.MainNavItem
 import com.owenlejeune.tvtime.ui.theme.*
 import com.owenlejeune.tvtime.utils.SessionManager
@@ -54,31 +56,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.koin.java.KoinJavaComponent
 import kotlin.math.roundToInt
-
-enum class SortOrder(val stringKey: Int) {
-    ORIGINAL(R.string.sort_order_original) {
-        override fun sort(listIn: List<ListItem>): List<ListItem> {
-            return listIn
-        }
-    },
-    RATING(R.string.sort_order_rating) {
-        override fun sort(listIn: List<ListItem>): List<ListItem> {
-            return listIn.sortedBy { it.voteAverage }.reversed()
-        }
-    },
-    RELEASE_DATE(R.string.sort_order_release_date) {
-        override fun sort(listIn: List<ListItem>): List<ListItem> {
-            return listIn.sortedBy { it.releaseDate }.reversed()
-        }
-    },
-    TITLE(R.string.sort_order_title) {
-        override fun sort(listIn: List<ListItem>): List<ListItem> {
-            return listIn.sortedBy { it.title }
-        }
-    };
-
-    abstract fun sort(listIn: List<ListItem>): List<ListItem>
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -136,10 +113,16 @@ fun ListDetailView(
                         .verticalScroll(state = rememberScrollState()),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    val selectedSortOrder = remember { mutableStateOf(SortOrder.ORIGINAL) }
-                    ListHeader(list = mediaList, selectedSortOrder = selectedSortOrder)
+                    val selectedSortOrder = remember { mutableStateOf(mediaList.sortBy) }
+                    ListHeader(
+                        list = mediaList,
+                        selectedSortOrder = selectedSortOrder,
+                        service = service,
+                        parentList = parentList
+                    )
 
-                    selectedSortOrder.value.sort(mediaList.results).forEach { listItem ->
+                    val sortedResults = selectedSortOrder.value.sort(mediaList.results)
+                    sortedResults.forEach { listItem ->
                         ListItemView(
                             appNavController = appNavController,
                             listItem = listItem,
@@ -152,11 +135,12 @@ fun ListDetailView(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ListHeader(
     list: MediaList,
-    selectedSortOrder: MutableState<SortOrder>
+    selectedSortOrder: MutableState<SortOrder>,
+    service: ListV4Service,
+    parentList: MutableState<MediaList?>
 ) {
     val context = LocalContext.current
 
@@ -222,14 +206,14 @@ private fun ListHeader(
         }
 
         val showSortByOrderDialog = remember { mutableStateOf(false) }
-
+        val showEditListDialog = remember { mutableStateOf(false) }
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Button(
                 modifier = Modifier.weight(1f),
                 shape = RoundedCornerShape(10.dp),
-                onClick = { Toast.makeText(context, "Edit", Toast.LENGTH_SHORT).show() }
+                onClick = { showEditListDialog.value = true }
             ) {
                 Text(text = stringResource(R.string.action_edit))
             }
@@ -250,7 +234,20 @@ private fun ListHeader(
         }
 
         if (showSortByOrderDialog.value) {
-            SortOrderDialog(showSortByOrderDialog = showSortByOrderDialog, selectedSortOrder = selectedSortOrder)
+            SortOrderDialog(
+                showSortByOrderDialog = showSortByOrderDialog,
+                selectedSortOrder = selectedSortOrder
+            )
+        }
+
+        if (showEditListDialog.value) {
+            EditListDialog(
+                showEditListDialog = showEditListDialog,
+                list = list,
+                service = service,
+                parentList = parentList,
+                selectedSortOrder = selectedSortOrder
+            )
         }
     }
 }
@@ -262,13 +259,19 @@ private fun SortOrderDialog(
     selectedSortOrder: MutableState<SortOrder>
 ) {
     AlertDialog(
+        modifier = Modifier.wrapContentSize(),
         onDismissRequest = { showSortByOrderDialog.value = false },
-        confirmButton = {},
-        title = { Text(text = "Sort By") },
-        dismissButton = { Text(text = "Dismiss") },
+        confirmButton = {
+            Button(
+                onClick = { showSortByOrderDialog.value = false }
+            ) {
+                Text(text = stringResource(id = R.string.action_dismiss))
+            }
+        },
+        title = { Text(text = stringResource(id = R.string.action_sort_by)) },
         text = {
             Column(
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 SortOrder.values().forEach {
                     Row(
@@ -280,18 +283,98 @@ private fun SortOrderDialog(
                             },
                             role = Role.RadioButton
                         ),
-                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         RadioButton(
                             selected = selectedSortOrder.value == it,
                             onClick = null
                         )
-                        Text(text = stringResource(id = it.stringKey), fontSize = 20.sp)
+                        Text(text = stringResource(id = it.stringKey), fontSize = 18.sp)
                     }
                 }
             }
         }
+    )
+}
+
+@Composable
+private fun EditListDialog(
+    showEditListDialog: MutableState<Boolean>,
+    list: MediaList,
+    service: ListV4Service,
+    parentList: MutableState<MediaList?>,
+    selectedSortOrder: MutableState<SortOrder>
+) {
+    val coroutineScope = rememberCoroutineScope()
+
+    var listTitle by remember { mutableStateOf(list.name) }
+    var listDescription by remember { mutableStateOf(list.description) }
+    var isPublicList by remember { mutableStateOf(list.isPublic) }
+    var editSelectedSortOrder by remember { mutableStateOf(list.sortBy) }
+
+    AlertDialog(
+        onDismissRequest = { },
+        dismissButton = {
+            Button(
+                onClick = { showEditListDialog.value = false }
+            ) {
+                Text(text = stringResource(id = R.string.action_dismiss))
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    val listUpdateBody = ListUpdateBody(listTitle, listDescription, isPublicList, editSelectedSortOrder)
+                    coroutineScope.launch {
+                        val response = service.updateList(list.id, listUpdateBody)
+                        if (response.isSuccessful) {
+                            fetchList(list.id, service, parentList)
+                            selectedSortOrder.value = editSelectedSortOrder
+                        }
+                        showEditListDialog.value = false
+                    }
+                }
+            ) {
+                Text(text = stringResource(id = R.string.action_save))
+            }
+        },
+        text = {
+           Column(
+               verticalArrangement = Arrangement.spacedBy(12.dp)
+           ) {
+               OutlinedTextField(
+                   value = listTitle,
+                   onValueChange = { listTitle = it },
+                   singleLine = true,
+                   label = { Text(text = stringResource(id = R.string.label_name)) }
+               )
+
+               OutlinedTextField(
+                   value = listDescription,
+                   onValueChange = { listDescription = it },
+                   modifier = Modifier.heightIn(min = 100.dp),
+                   label = { Text(text = stringResource(id = R.string.label_description)) }
+               )
+
+               SwitchPreference(
+                   titleText = stringResource(id = R.string.label_public_list),
+                   checkState = isPublicList,
+                   onCheckedChange = { isPublicList = it }
+               )
+
+               Text(
+                   text = stringResource(id = R.string.action_sort_by),
+                   fontSize = 16.sp
+               )
+               Spinner(
+                   list = SortOrder.values().map { stringResource(id = it.stringKey) to it },
+                   preselected = Pair(stringResource(id = editSelectedSortOrder.stringKey), editSelectedSortOrder),
+                   onSelectionChanged = { editSelectedSortOrder = it.second }
+               )
+           }
+        },
+        title = { Text(text = stringResource(id = R.string.title_edit_list)) }
     )
 }
 
