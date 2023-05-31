@@ -619,7 +619,12 @@ private fun RatingDialog(showDialog: MutableState<Boolean>, rating: Float, onVal
 }
 
 @Composable
-private fun OverviewCard(itemId: Int?, mediaItem: MutableState<DetailedItem?>, service: DetailService, modifier: Modifier = Modifier) {
+private fun OverviewCard(
+    modifier: Modifier = Modifier,
+    itemId: Int?,
+    mediaItem: MutableState<DetailedItem?>,
+    service: DetailService
+) {
     val keywordResponse = remember { mutableStateOf<KeywordsResponse?>(null) }
     if (itemId != null) {
         if (keywordResponse.value == null) {
@@ -639,12 +644,14 @@ private fun OverviewCard(itemId: Int?, mediaItem: MutableState<DetailedItem?>, s
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 mi.tagline?.let { tagline ->
-                    Text(
-                        text = tagline,
-                        color = MaterialTheme.colorScheme.primary,
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontStyle = FontStyle.Italic,
-                    )
+                    if (tagline.isNotEmpty()) {
+                        Text(
+                            text = tagline,
+                            color = MaterialTheme.colorScheme.primary,
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontStyle = FontStyle.Italic,
+                        )
+                    }
                 }
                 Text(
                     text = mi.overview ?: "",
@@ -718,7 +725,7 @@ private fun AdditionalDetailsCard(
                     subtext = mi.productionCountries.joinToString(separator = ", ") { it.name },
                 )
                 if (type == MediaViewType.MOVIE) {
-                    AdditionalTvItems(movie = mi as DetailedMovie)
+                    AdditionalMovieItems(movie = mi as DetailedMovie)
                 } else {
                     AdditionalTvItems(tv = mi as DetailedTv)
                 }
@@ -728,16 +735,16 @@ private fun AdditionalDetailsCard(
 }
 
 @Composable
-private fun AdditionalTvItems(
+private fun AdditionalMovieItems(
     movie: DetailedMovie
 ) {
     AdditionalDetailItem(
         title = stringResource(R.string.movie_budget_title),
-        subtext = "$${movie.budget}"
+        subtext = "$${"%,d".format(movie.budget)}"
     )
     AdditionalDetailItem(
         title = stringResource(R.string.movie_revenue_title),
-        subtext = "$${movie.revenue}",
+        subtext = "$${"%,d".format(movie.revenue)}",
         includeDivider = movie.collection != null
     )
     movie.collection?.let {

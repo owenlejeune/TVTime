@@ -49,10 +49,10 @@ fun ContentCard(
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .wrapContentHeight()
-            .background(color = backgroundColor),
+            .wrapContentHeight(),
         shape = RoundedCornerShape(10.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+        colors = CardDefaults.cardColors(containerColor = backgroundColor)
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             title?.let {
@@ -85,7 +85,6 @@ fun ExpandableContentCard(
         modifier = modifier
             .fillMaxWidth()
             .wrapContentHeight()
-            .background(color = backgroundColor)
             .animateContentSize(
                 animationSpec = tween(
                     durationMillis = 300,
@@ -93,7 +92,8 @@ fun ExpandableContentCard(
                 )
             ),
         shape = RoundedCornerShape(10.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+        colors = CardDefaults.cardColors(containerColor = backgroundColor)
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             title()
