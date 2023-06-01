@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import com.google.gson.annotations.SerializedName
 import com.owenlejeune.tvtime.R
@@ -17,6 +18,7 @@ import com.owenlejeune.tvtime.api.tmdb.api.v4.model.AuthDeleteBody
 import com.owenlejeune.tvtime.api.tmdb.api.v4.model.AuthRequestBody
 import com.owenlejeune.tvtime.api.tmdb.api.v4.model.V4AccountList
 import com.owenlejeune.tvtime.preferences.AppPreferences
+import com.owenlejeune.tvtime.ui.navigation.AccountTabNavItem
 import com.owenlejeune.tvtime.ui.screens.main.MediaViewType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -124,41 +126,51 @@ object SessionManager: KoinComponent {
     }
 
     abstract class Session(val sessionId: String, val isAuthorized: Boolean, val accessToken: String = "", val accountId: String = "") {
-        protected open var _ratedMovies: List<RatedMovie> = emptyList()
-        val ratedMovies: List<RatedMovie>
-            get() = _ratedMovies
+//        protected open var _ratedMovies: List<RatedMovie> = emptyList()
+//        val ratedMovies: List<RatedMovie>
+//            get() = _ratedMovies
 
-        protected open var _ratedTvShows: List<RatedTv> = emptyList()
-        val ratedTvShows: List<RatedTv>
-            get() = _ratedTvShows
+        val ratedMovies = mutableStateListOf<RatedMovie>()
 
-        protected open var _ratedTvEpisodes: List<RatedEpisode> = emptyList()
-        val ratedTvEpisodes: List<RatedEpisode>
-            get() = _ratedTvEpisodes
+//        protected open var _ratedTvShows: List<RatedTv> = emptyList()
+//        val ratedTvShows: List<RatedTv>
+//            get() = _ratedTvShows
+        val ratedTvShows = mutableStateListOf<RatedTv>()
 
-        protected open var _accountDetails: AccountDetails? = null
-        val accountDetails: AccountDetails?
-            get() = _accountDetails
+//        protected open var _ratedTvEpisodes: List<RatedEpisode> = emptyList()
+//        val ratedTvEpisodes: List<RatedEpisode>
+//            get() = _ratedTvEpisodes
+        val ratedTvEpisodes = mutableStateListOf<RatedEpisode>()
 
-        protected open var _accountLists: List<V4AccountList> = emptyList()
-        val accountLists: List<V4AccountList>
-            get() = _accountLists
+//        protected open var _accountDetails: AccountDetails? = null
+//        val accountDetails: AccountDetails?
+//            get() = _accountDetails
+        val accountDetails = mutableStateOf<AccountDetails?>(null)
 
-        protected open var _favoriteMovies: List<FavoriteMovie> = emptyList()
-        val favoriteMovies: List<FavoriteMovie>
-            get() = _favoriteMovies
+//        protected open var _accountLists: List<V4AccountList> = emptyList()
+//        val accountLists: List<V4AccountList>
+//            get() = _accountLists
+        val accountLists = mutableStateListOf<V4AccountList>()
 
-        protected open var _favoriteTvShows: List<FavoriteTvSeries> = emptyList()
-        val favoriteTvShows: List<FavoriteTvSeries>
-            get() = _favoriteTvShows
+//        protected open var _favoriteMovies: List<FavoriteMovie> = emptyList()
+//        val favoriteMovies: List<FavoriteMovie>
+//            get() = _favoriteMovies
+        val favoriteMovies = mutableStateListOf<FavoriteMovie>()
 
-        protected open var _movieWatchlist: List<WatchlistMovie> = emptyList()
-        val movieWatchlist: List<WatchlistMovie>
-            get() = _movieWatchlist
+//        protected open var _favoriteTvShows: List<FavoriteTvSeries> = emptyList()
+//        val favoriteTvShows: List<FavoriteTvSeries>
+//            get() = _favoriteTvShows
+        val favoriteTvShows = mutableStateListOf<FavoriteTvSeries>()
 
-        protected open var _tvWatchlist: List<WatchlistTvSeries> = emptyList()
-        val tvWatchlist: List<WatchlistTvSeries>
-            get() = _tvWatchlist
+//        protected open var _movieWatchlist: List<WatchlistMovie> = emptyList()
+//        val movieWatchlist: List<WatchlistMovie>
+//            get() = _movieWatchlist
+        val movieWatchlist = mutableStateListOf<WatchlistMovie>()
+
+//        protected open var _tvWatchlist: List<WatchlistTvSeries> = emptyList()
+//        val tvWatchlist: List<WatchlistTvSeries>
+//            get() = _tvWatchlist
+        val tvWatchlist = mutableStateListOf<WatchlistTvSeries>()
 
         fun hasRatedMovie(id: Int): Boolean {
             return ratedMovies.map { it.id }.contains(id)
@@ -249,13 +261,13 @@ object SessionManager: KoinComponent {
             if (changed.contains(Changed.AccountDetails)) {
                 val response = service.getAccountDetails()
                 if (response.isSuccessful) {
-                    _accountDetails = response.body() ?: _accountDetails
-                    accountDetails?.let {
+                    accountDetails.value = response.body()
+                    accountDetails.value?.let {
                         refreshWithAccountId(it.id, changed)
                     }
                 }
-            } else if (accountDetails != null) {
-                refreshWithAccountId(accountDetails!!.id, changed)
+            } else if (accountDetails.value != null) {
+                refreshWithAccountId(accountDetails.value!!.id, changed)
             }
         }
 
@@ -264,7 +276,10 @@ object SessionManager: KoinComponent {
                 serviceV4.getLists(preferences.authorizedSessionValues?.accountId ?: "").apply {
                     if (isSuccessful) {
                         withContext(Dispatchers.Main) {
-                            _accountLists = body()?.results ?: _accountLists
+                            body()?.results?.let {
+                                accountLists.clear()
+                                accountLists.addAll(it)
+                            }
                         }
                     }
                 }
@@ -273,7 +288,10 @@ object SessionManager: KoinComponent {
                 service.getFavoriteMovies(accountId).apply {
                     if (isSuccessful) {
                         withContext(Dispatchers.Main) {
-                            _favoriteMovies = body()?.results ?: _favoriteMovies
+                            body()?.results?.let {
+                                favoriteMovies.clear()
+                                favoriteMovies.addAll(it)
+                            }
                         }
                     }
                 }
@@ -282,7 +300,10 @@ object SessionManager: KoinComponent {
                 service.getFavoriteTvShows(accountId).apply {
                     if (isSuccessful) {
                         withContext(Dispatchers.Main) {
-                            _favoriteTvShows = body()?.results ?: _favoriteTvShows
+                            body()?.results?.let {
+                                favoriteTvShows.clear()
+                                favoriteTvShows.addAll(it)
+                            }
                         }
                     }
                 }
@@ -291,7 +312,10 @@ object SessionManager: KoinComponent {
                 service.getRatedMovies(accountId).apply {
                     if (isSuccessful) {
                         withContext(Dispatchers.Main) {
-                            _ratedMovies = body()?.results ?: _ratedMovies
+                            body()?.results?.let {
+                                ratedMovies.clear()
+                                ratedMovies.addAll(it)
+                            }
                         }
                     }
                 }
@@ -300,7 +324,10 @@ object SessionManager: KoinComponent {
                 service.getRatedTvShows(accountId).apply {
                     if (isSuccessful) {
                         withContext(Dispatchers.Main) {
-                            _ratedTvShows = body()?.results ?: _ratedTvShows
+                            body()?.results?.let {
+                                ratedTvShows.clear()
+                                ratedTvShows.addAll(it)
+                            }
                         }
                     }
                 }
@@ -309,7 +336,10 @@ object SessionManager: KoinComponent {
                 service.getRatedTvEpisodes(accountId).apply {
                     if (isSuccessful) {
                         withContext(Dispatchers.Main) {
-                            _ratedTvEpisodes = body()?.results ?: _ratedTvEpisodes
+                            body()?.results?.let {
+                                ratedTvEpisodes.clear()
+                                ratedTvEpisodes.addAll(it)
+                            }
                         }
                     }
                 }
@@ -318,7 +348,10 @@ object SessionManager: KoinComponent {
                 service.getMovieWatchlist(accountId).apply {
                     if (isSuccessful) {
                         withContext(Dispatchers.Main) {
-                            _movieWatchlist = body()?.results ?: _movieWatchlist
+                            body()?.results?.let {
+                                movieWatchlist.clear()
+                                movieWatchlist.addAll(it)
+                            }
                         }
                     }
                 }
@@ -327,7 +360,10 @@ object SessionManager: KoinComponent {
                 service.getTvWatchlist(accountId).apply {
                     if (isSuccessful) {
                         withContext(Dispatchers.Main) {
-                            _tvWatchlist = body()?.results ?: _tvWatchlist
+                            body()?.results?.let {
+                                tvWatchlist.clear()
+                                tvWatchlist.addAll(it)
+                            }
                         }
                     }
                 }

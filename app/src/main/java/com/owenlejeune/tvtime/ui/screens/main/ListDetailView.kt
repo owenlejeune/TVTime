@@ -607,7 +607,7 @@ private fun addToWatchlist(
     onWatchlistChanged: (Boolean) -> Unit
 ) {
     val currentSession = SessionManager.currentSession.value
-    val accountId = currentSession!!.accountDetails!!.id
+    val accountId = currentSession!!.accountDetails.value!!.id
     CoroutineScope(Dispatchers.IO).launch {
         val response = AccountService().addToWatchlist(accountId, WatchlistBody(type, itemId, !itemIsWatchlisted.value))
         if (response.isSuccessful) {
@@ -632,7 +632,7 @@ private fun addToFavorite(
     onFavoriteChanged: (Boolean) -> Unit
 ) {
     val currentSession = SessionManager.currentSession.value
-    val accountId = currentSession!!.accountDetails!!.id
+    val accountId = currentSession!!.accountDetails.value!!.id
     CoroutineScope(Dispatchers.IO).launch {
         val response = AccountService().markAsFavorite(accountId, MarkAsFavoriteBody(type, itemId, !itemIsFavorited.value))
         if (response.isSuccessful) {

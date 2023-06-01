@@ -64,10 +64,11 @@ fun AccountTab(
         }
     } else {
         if (currentSession?.isAuthorized == true) {
+            val accountDetails = remember { currentSession.accountDetails }
             appBarTitle.value =
                 stringResource(
                     id = R.string.account_header_title_formatted,
-                    getAccountName(currentSession.accountDetails)
+                    getAccountName(accountDetails.value)
                 )
         } else {
             appBarTitle.value = stringResource(id = R.string.account_not_logged_in)
@@ -127,7 +128,7 @@ fun <T: Any> AccountTabContent(
     listFetchFun: ListFetchFun,
     clazz: KClass<T>
 ) {
-    val contentItems = listFetchFun()
+    val contentItems = remember { listFetchFun() }
 
     if (contentItems.isEmpty()) {
         Column {
@@ -342,7 +343,7 @@ private fun signInPart2() {
 
 @Composable
 private fun AuthorizedSessionIcon() {
-    val accountDetails = SessionManager.currentSession.value?.accountDetails
+    val accountDetails = SessionManager.currentSession.value?.accountDetails?.value
     val avatarUrl = accountDetails?.let {
         when {
             accountDetails.avatar.tmdb?.avatarPath?.isNotEmpty() == true -> {
