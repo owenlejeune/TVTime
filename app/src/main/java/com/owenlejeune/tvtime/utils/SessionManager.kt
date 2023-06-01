@@ -1,19 +1,13 @@
 package com.owenlejeune.tvtime.utils
 
-import android.accounts.Account
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.widget.Toast
 import com.google.gson.annotations.SerializedName
 import com.owenlejeune.tvtime.R
-import com.owenlejeune.tvtime.api.tmdb.api.v3.AccountService
-import com.owenlejeune.tvtime.api.tmdb.api.v3.AuthenticationService
-import com.owenlejeune.tvtime.api.tmdb.api.v3.GuestSessionService
 import com.owenlejeune.tvtime.api.tmdb.TmdbClient
-import com.owenlejeune.tvtime.api.tmdb.api.v3.AccountApi
+import com.owenlejeune.tvtime.api.tmdb.api.v3.AccountService
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.*
-import com.owenlejeune.tvtime.api.tmdb.api.v4.AccountV4Api
 import com.owenlejeune.tvtime.api.tmdb.api.v4.AccountV4Service
 import com.owenlejeune.tvtime.api.tmdb.api.v4.AuthenticationV4Service
 import com.owenlejeune.tvtime.api.tmdb.api.v4.model.AuthAccessBody
@@ -48,22 +42,6 @@ object SessionManager: KoinComponent {
         @SerializedName("account_id") val accountId: String
     )
 
-    suspend fun clearSession(onResponse: (isSuccessful: Boolean) -> Unit) {
-        currentSession?.let { session ->
-            CoroutineScope(Dispatchers.IO).launch {
-                val deleteResponse = authenticationService.deleteSession(SessionBody(session.sessionId))
-                withContext(Dispatchers.Main) {
-                    if (deleteResponse.isSuccessful) {
-                        _currentSession = null
-                        preferences.guestSessionId = ""
-                        preferences.authorizedSessionValues = null
-                    }
-                    onResponse(deleteResponse.isSuccessful)
-                }
-            }
-        }
-    }
-
     fun clearSessionV4(onResponse: (isSuccessful: Boolean) -> Unit) {
         currentSession?.let { session ->
             CoroutineScope(Dispatchers.IO).launch {
@@ -81,66 +59,15 @@ object SessionManager: KoinComponent {
     }
 
     suspend fun initialize() {
-        if (preferences.guestSessionId.isNotEmpty()) {
-            val session = GuestSession()
-            session.initialize()
+        preferences.authorizedSessionValues?.let { values ->
+            val session = AuthorizedSession(
+                sessionId = values.sessionId,
+                accessToken = values.accessToken,
+                accountId = values.accountId
+            )
             _currentSession = session
-        } else if (preferences.authorizedSessionId.isNotEmpty()) {
-            val session = AuthorizedSession()
             session.initialize()
-            _currentSession = session
-        } else {
-            preferences.authorizedSessionValues?.let { values ->
-                val session = AuthorizedSession(
-                    sessionId = values.sessionId,
-                    accessToken = values.accessToken,
-                    accountId = values.accountId
-                )
-                _currentSession = session
-                session.initialize()
-            }
         }
-    }
-
-    suspend fun requestNewGuestSession(): Session? {
-        val response = authenticationService.getNewGuestSession()
-        if (response.isSuccessful) {
-            preferences.guestSessionId = response.body()?.guestSessionId ?: ""
-            _currentSession = GuestSession()
-        }
-        return _currentSession
-    }
-
-    suspend fun signInWithLogin(username: String, password: String): Boolean {
-        val service = AuthenticationService()
-        val createTokenResponse = service.createRequestToken()
-        if (createTokenResponse.isSuccessful) {
-            createTokenResponse.body()?.let { ctr ->
-                val body = TokenValidationBody(username, password, ctr.requestToken)
-                val loginResponse = service.validateTokenWithLogin(body)
-                if (loginResponse.isSuccessful) {
-                    loginResponse.body()?.let { lr ->
-                        if (lr.success) {
-                            val sessionBody = TokenSessionBody(lr.requestToken)
-                            val sessionResponse = service.createSession(sessionBody)
-                            if (sessionResponse.isSuccessful) {
-                                sessionResponse.body()?.let { sr ->
-                                    if (sr.isSuccess) {
-                                        preferences.authorizedSessionId = sr.sessionId
-                                        preferences.guestSessionId = ""
-                                        preferences.authorizedSessionValues = null
-                                        _currentSession = AuthorizedSession()
-                                        _currentSession?.initialize()
-                                        return true
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return false
     }
 
     suspend fun signInWithV4Part1(context: Context) {
@@ -402,44 +329,6 @@ object SessionManager: KoinComponent {
                     if (isSuccessful) {
                         withContext(Dispatchers.Main) {
                             _tvWatchlist = body()?.results ?: _tvWatchlist
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private class GuestSession: Session(preferences.guestSessionId, false) {
-        private val service by lazy { GuestSessionService() }
-
-        override suspend fun initialize() {
-            refresh()
-        }
-
-        override suspend fun refresh(changed: Array<Changed>) {
-            if (changed.contains(Changed.RatedMovies)) {
-                service.getRatedMovies(sessionId).apply {
-                    if (isSuccessful) {
-                        withContext(Dispatchers.Main) {
-                            _ratedMovies = body()?.results ?: _ratedMovies
-                        }
-                    }
-                }
-            }
-            if (changed.contains(Changed.RatedTv)) {
-                service.getRatedTvShows(sessionId).apply {
-                    if (isSuccessful) {
-                        withContext(Dispatchers.Main) {
-                            _ratedTvShows = body()?.results ?: _ratedTvShows
-                        }
-                    }
-                }
-            }
-            if (changed.contains(Changed.RatedEpisodes)) {
-                service.getRatedTvEpisodes(sessionId).apply {
-                    if (isSuccessful) {
-                        withContext(Dispatchers.Main) {
-                            _ratedTvEpisodes = body()?.results ?: _ratedTvEpisodes
                         }
                     }
                 }

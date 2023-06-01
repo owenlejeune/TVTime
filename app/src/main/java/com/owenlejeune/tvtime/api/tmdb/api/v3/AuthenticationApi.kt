@@ -9,21 +9,6 @@ import retrofit2.http.POST
 
 interface AuthenticationApi {
 
-    @GET("authentication/guest_session/new")
-    suspend fun getNewGuestSession(): Response<GuestSessionResponse>
-
-    @HTTP(method = "DELETE", path = "authentication/session", hasBody = true)
-    suspend fun deleteSession(@Body body: SessionBody): Response<DeleteSessionResponse>
-
-    @GET("authentication/token/new")
-    suspend fun createRequestToken(): Response<CreateTokenResponse>
-
-    @POST("authentication/session/new")
-    suspend fun createSession(@Body body: TokenSessionBody): Response<CreateSessionResponse>
-
-    @POST("authentication/token/validate_with_login")
-    suspend fun validateTokenWithLogin(@Body body: TokenValidationBody): Response<CreateTokenResponse>
-
     @POST("authentication/session/convert/4")
     suspend fun createSessionFromV4Token(@Body body: V4TokenBody): Response<CreateSessionResponse>
 }

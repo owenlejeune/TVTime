@@ -534,22 +534,6 @@ private fun CreateSessionDialog(showDialog: MutableState<Boolean>, onSessionRetu
                     Button(
                         modifier = Modifier.fillMaxWidth(),
                         onClick = {
-                            CoroutineScope(Dispatchers.IO).launch {
-                                SessionManager.requestNewGuestSession()?.let {
-                                    withContext(Dispatchers.Main) {
-                                        showDialog.value = false
-                                        onSessionReturned(true)
-                                    }
-                                }
-                            }
-                        }
-                    ) {
-                        Text(text = stringResource(R.string.action_continue_as_guest))
-                    }
-
-                    Button(
-                        modifier = Modifier.fillMaxWidth(),
-                        onClick = {
                             showDialog.value = false
                         }
                     ) {
@@ -1316,22 +1300,6 @@ private fun addToFavorite(
                 itemIsFavorited.value = !itemIsFavorited.value
                 onFavoriteChanged(itemIsFavorited.value)
             }
-        }
-    }
-}
-
-@Composable
-private fun ActionSnackBar(
-    message: String
-) {
-    val scope = rememberCoroutineScope()
-    val snackbarHostState = remember { SnackbarHostState() }
-
-    SnackbarHost(hostState = snackbarHostState)
-    
-    LaunchedEffect(Unit) {
-        scope.launch {
-            snackbarHostState.showSnackbar(message)
         }
     }
 }

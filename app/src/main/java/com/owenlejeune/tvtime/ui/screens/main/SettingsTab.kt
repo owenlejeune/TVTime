@@ -482,11 +482,6 @@ private fun DevPreferences(
                     onClick = {
                         preferences.guestSessionId = ""
                         coroutineScope.launch {
-                            SessionManager.clearSession {
-                                Toast
-                                    .makeText(context, "Cleared session: $it", Toast.LENGTH_SHORT)
-                                    .show()
-                            }
                             SessionManager.clearSessionV4 {
                                 Toast
                                     .makeText(
