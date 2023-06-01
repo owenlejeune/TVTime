@@ -267,7 +267,7 @@ private fun ActionsView(
     modifier: Modifier = Modifier
 ) {
     itemId?.let {
-        val session = SessionManager.currentSession
+        val session = SessionManager.currentSession.value
         Row(
             modifier = modifier
                 .wrapContentSize(),
@@ -359,7 +359,7 @@ private fun RateButton(
     service: DetailService,
     modifier: Modifier = Modifier
 ) {
-    val session = SessionManager.currentSession
+    val session = SessionManager.currentSession.value
     val context = LocalContext.current
 
     val itemIsRated = remember {
@@ -432,7 +432,7 @@ fun WatchlistButton(
     type: MediaViewType,
     modifier: Modifier = Modifier
 ) {
-    val session = SessionManager.currentSession
+    val session = SessionManager.currentSession.value
 
     val hasWatchlistedItem = if (type == MediaViewType.MOVIE) {
         session?.hasWatchlistedMovie(itemId) == true
@@ -492,7 +492,7 @@ fun FavoriteButton(
     type: MediaViewType,
     modifier: Modifier = Modifier
 ) {
-    val session = SessionManager.currentSession
+    val session = SessionManager.currentSession.value
     val isFavourited = if (type == MediaViewType.MOVIE) {
         session?.hasFavoritedMovie(itemId) == true
     } else {
@@ -993,7 +993,7 @@ private fun ReviewsCard(
                    color = MaterialTheme.colorScheme.onSurfaceVariant
                )
 
-               if (SessionManager.currentSession?.isAuthorized == true) {
+               if (SessionManager.currentSession.value?.isAuthorized == true) {
                    Row(
                        modifier = Modifier
                            .fillMaxWidth()
@@ -1230,7 +1230,7 @@ private fun postRating(context: Context, rating: Float, itemId: Int, service: De
     CoroutineScope(Dispatchers.IO).launch {
         val response = service.postRating(itemId, RatingBody(rating = rating))
         if (response.isSuccessful) {
-            SessionManager.currentSession?.refresh(changed = arrayOf(SessionManager.Session.Changed.RatedMovies, SessionManager.Session.Changed.RatedTv))
+            SessionManager.currentSession.value?.refresh(changed = arrayOf(SessionManager.Session.Changed.RatedMovies, SessionManager.Session.Changed.RatedTv))
             withContext(Dispatchers.Main) {
                 itemIsRated.value = true
             }
@@ -1247,7 +1247,7 @@ private fun deleteRating(context: Context, itemId: Int, service: DetailService, 
     CoroutineScope(Dispatchers.IO).launch {
         val response = service.deleteRating(itemId)
         if (response.isSuccessful) {
-            SessionManager.currentSession?.refresh(changed = SessionManager.Session.Changed.Rated)
+            SessionManager.currentSession.value?.refresh(changed = SessionManager.Session.Changed.Rated)
             withContext(Dispatchers.Main) {
                 itemIsRated.value = false
             }
@@ -1267,11 +1267,12 @@ private fun addToWatchlist(
     itemIsWatchlisted: MutableState<Boolean>,
     onWatchlistChanged: (Boolean) -> Unit
 ) {
-    val accountId = SessionManager.currentSession!!.accountDetails!!.id
+    val currentSession = SessionManager.currentSession.value
+    val accountId = currentSession!!.accountDetails!!.id
     CoroutineScope(Dispatchers.IO).launch {
         val response = AccountService().addToWatchlist(accountId, WatchlistBody(type, itemId, !itemIsWatchlisted.value))
         if (response.isSuccessful) {
-            SessionManager.currentSession?.refresh(changed = SessionManager.Session.Changed.Watchlist)
+            currentSession.refresh(changed = SessionManager.Session.Changed.Watchlist)
             withContext(Dispatchers.Main) {
                 itemIsWatchlisted.value = !itemIsWatchlisted.value
                 onWatchlistChanged(itemIsWatchlisted.value)
@@ -1291,11 +1292,12 @@ private fun addToFavorite(
     itemIsFavorited: MutableState<Boolean>,
     onFavoriteChanged: (Boolean) -> Unit
 ) {
-    val accountId = SessionManager.currentSession!!.accountDetails!!.id
+    val currentSession = SessionManager.currentSession.value
+    val accountId = currentSession!!.accountDetails!!.id
     CoroutineScope(Dispatchers.IO).launch {
         val response = AccountService().markAsFavorite(accountId, MarkAsFavoriteBody(type, itemId, !itemIsFavorited.value))
         if (response.isSuccessful) {
-            SessionManager.currentSession?.refresh(changed = SessionManager.Session.Changed.Favorites)
+            currentSession.refresh(changed = SessionManager.Session.Changed.Favorites)
             withContext(Dispatchers.Main) {
                 itemIsFavorited.value = !itemIsFavorited.value
                 onFavoriteChanged(itemIsFavorited.value)

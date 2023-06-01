@@ -544,7 +544,7 @@ private fun ListItemView(
 
 @Composable
 private fun ActionButtonRow(listItem: ListItem) {
-    val session = SessionManager.currentSession
+    val session = SessionManager.currentSession.value
 
     val (isFavourited, isWatchlisted, isRated) = if (listItem.mediaType == MediaViewType.MOVIE) {
         Triple(
@@ -606,11 +606,12 @@ private fun addToWatchlist(
     itemIsWatchlisted: MutableState<Boolean>,
     onWatchlistChanged: (Boolean) -> Unit
 ) {
-    val accountId = SessionManager.currentSession!!.accountDetails!!.id
+    val currentSession = SessionManager.currentSession.value
+    val accountId = currentSession!!.accountDetails!!.id
     CoroutineScope(Dispatchers.IO).launch {
         val response = AccountService().addToWatchlist(accountId, WatchlistBody(type, itemId, !itemIsWatchlisted.value))
         if (response.isSuccessful) {
-            SessionManager.currentSession?.refresh(changed = SessionManager.Session.Changed.Watchlist)
+            currentSession.refresh(changed = SessionManager.Session.Changed.Watchlist)
             withContext(Dispatchers.Main) {
                 itemIsWatchlisted.value = !itemIsWatchlisted.value
                 onWatchlistChanged(itemIsWatchlisted.value)
@@ -630,11 +631,12 @@ private fun addToFavorite(
     itemIsFavorited: MutableState<Boolean>,
     onFavoriteChanged: (Boolean) -> Unit
 ) {
-    val accountId = SessionManager.currentSession!!.accountDetails!!.id
+    val currentSession = SessionManager.currentSession.value
+    val accountId = currentSession!!.accountDetails!!.id
     CoroutineScope(Dispatchers.IO).launch {
         val response = AccountService().markAsFavorite(accountId, MarkAsFavoriteBody(type, itemId, !itemIsFavorited.value))
         if (response.isSuccessful) {
-            SessionManager.currentSession?.refresh(changed = SessionManager.Session.Changed.Favorites)
+            currentSession.refresh(changed = SessionManager.Session.Changed.Favorites)
             withContext(Dispatchers.Main) {
                 itemIsFavorited.value = !itemIsFavorited.value
                 onFavoriteChanged(itemIsFavorited.value)
@@ -682,7 +684,7 @@ private fun removeItemFromList(
         val removeItem = DeleteListItemsItem(itemId, itemType)
         val result = service.deleteListItems(listId, DeleteListItemsBody(listOf(removeItem)))
         if (result.isSuccessful) {
-            SessionManager.currentSession?.refresh(SessionManager.Session.Changed.List)
+            SessionManager.currentSession.value?.refresh(SessionManager.Session.Changed.List)
             service.getList(listId).body()?.let {
                 withContext(Dispatchers.Main) {
                     list.value = it

@@ -43,23 +43,10 @@ interface TvApi {
     suspend fun getKeywords(@Path("id") id: Int): Response<KeywordsResponse>
 
     @POST("tv/{id}/rating")
-    suspend fun postTvRatingAsGuest(
-        @Path("id") id: Int,
-        @Query("guest_session_id") guestSessionId: String,
-        @Body ratingBody: RatingBody
-    ): Response<StatusResponse>
-
-    @POST("tv/{id}/rating")
     suspend fun postTvRatingAsUser(
         @Path("id") id: Int,
         @Query("session_id") sessionId: String,
         @Body ratingBody: RatingBody
-    ): Response<StatusResponse>
-
-    @DELETE("tv/{id}/rating")
-    suspend fun deleteTvReviewAsGuest(
-        @Path("id") id: Int,
-        @Query("guest_session_id") guestSessionId: String
     ): Response<StatusResponse>
 
     @DELETE("tv/{id}/rating")

@@ -6,8 +6,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import com.owenlejeune.tvtime.ui.screens.main.MediaViewType
 import com.owenlejeune.tvtime.ui.screens.main.*
 
@@ -46,7 +48,20 @@ fun MainNavGraph(
             )
         }
         composable(BottomNavItem.Account.route) {
-            AccountTab(appBarTitle = appBarTitle, appNavController = appNavController, appBarActions = appBarActions)
+            AccountTab(
+                appBarTitle = appBarTitle,
+                appNavController = appNavController,
+                appBarActions = appBarActions
+            )
+            fab.value = {}
+        }
+        composable(BottomNavItem.SIGN_IN_PART_2_ROUTE) {
+            AccountTab(
+                appBarTitle = appBarTitle,
+                appNavController = appNavController,
+                appBarActions = appBarActions,
+                doSignInPartTwo = true
+            )
             fab.value = {}
         }
         composable(BottomNavItem.People.route) {

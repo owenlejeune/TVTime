@@ -3,10 +3,16 @@ package com.owenlejeune.tvtime.ui.navigation
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import com.owenlejeune.tvtime.R
-import com.owenlejeune.tvtime.api.tmdb.api.v3.model.*
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.FavoriteMovie
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.FavoriteTvSeries
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.RatedEpisode
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.RatedMovie
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.RatedTv
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.WatchlistMovie
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.WatchlistTvSeries
 import com.owenlejeune.tvtime.api.tmdb.api.v4.model.V4AccountList
-import com.owenlejeune.tvtime.ui.screens.main.MediaViewType
 import com.owenlejeune.tvtime.ui.screens.main.AccountTabContent
+import com.owenlejeune.tvtime.ui.screens.main.MediaViewType
 import com.owenlejeune.tvtime.ui.screens.main.RecommendedAccountTabContent
 import com.owenlejeune.tvtime.utils.ResourceUtils
 import com.owenlejeune.tvtime.utils.SessionManager
@@ -45,7 +51,7 @@ sealed class AccountTabNavItem(
         R.string.no_rated_movies,
         MediaViewType.MOVIE,
         screenContent,
-        { SessionManager.currentSession?.ratedMovies ?: emptyList() },
+        { SessionManager.currentSession.value?.ratedMovies ?: emptyList() },
         RatedMovie::class,
         0
     )
@@ -55,7 +61,7 @@ sealed class AccountTabNavItem(
         R.string.no_rated_tv,
         MediaViewType.TV,
         screenContent,
-        { SessionManager.currentSession?.ratedTvShows ?: emptyList() },
+        { SessionManager.currentSession.value?.ratedTvShows ?: emptyList() },
         RatedTv::class,
         1
     )
@@ -65,7 +71,7 @@ sealed class AccountTabNavItem(
         R.string.no_rated_episodes,
         MediaViewType.EPISODE,
         screenContent,
-        { SessionManager.currentSession?.ratedTvEpisodes ?: emptyList() },
+        { SessionManager.currentSession.value?.ratedTvEpisodes ?: emptyList() },
         RatedEpisode::class,
         -1 //2
     )
@@ -75,7 +81,7 @@ sealed class AccountTabNavItem(
         R.string.no_favorite_movies,
         MediaViewType.MOVIE,
         screenContent,
-        { SessionManager.currentSession?.favoriteMovies ?: emptyList() },
+        { SessionManager.currentSession.value?.favoriteMovies ?: emptyList() },
         FavoriteMovie::class,
         3
     )
@@ -85,7 +91,7 @@ sealed class AccountTabNavItem(
         R.string.no_favorite_tv,
         MediaViewType.TV,
         screenContent,
-        { SessionManager.currentSession?.favoriteTvShows ?: emptyList() },
+        { SessionManager.currentSession.value?.favoriteTvShows ?: emptyList() },
         FavoriteTvSeries::class,
         4
     )
@@ -95,7 +101,7 @@ sealed class AccountTabNavItem(
         R.string.no_watchlist_movies,
         MediaViewType.MOVIE,
         screenContent,
-        { SessionManager.currentSession?.movieWatchlist ?: emptyList() },
+        { SessionManager.currentSession.value?.movieWatchlist ?: emptyList() },
         WatchlistMovie::class,
         5
     )
@@ -105,7 +111,7 @@ sealed class AccountTabNavItem(
         R.string.no_watchlist_tv,
         MediaViewType.TV,
         screenContent,
-        { SessionManager.currentSession?.tvWatchlist ?: emptyList() },
+        { SessionManager.currentSession.value?.tvWatchlist ?: emptyList() },
         WatchlistTvSeries::class,
         6
     )
@@ -116,7 +122,7 @@ sealed class AccountTabNavItem(
         R.string.no_lists,
         MediaViewType.LIST,
         screenContent,
-        { SessionManager.currentSession?.accountLists ?: emptyList() },
+        { SessionManager.currentSession.value?.accountLists ?: emptyList() },
         V4AccountList::class,
         7
     )

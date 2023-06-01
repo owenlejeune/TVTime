@@ -3,6 +3,8 @@ package com.owenlejeune.tvtime.utils
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.widget.Toast
+import androidx.compose.runtime.mutableStateOf
 import com.google.gson.annotations.SerializedName
 import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.api.tmdb.TmdbClient
@@ -22,16 +24,13 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
+import org.koin.java.KoinJavaComponent.get
 
 object SessionManager: KoinComponent {
 
     private val preferences: AppPreferences by inject()
 
-    private var _currentSession: Session? = null
-    val currentSession: Session?
-        get() = _currentSession
-
-    var isV4SignInInProgress: Boolean = false
+    val currentSession = mutableStateOf<Session?>(null)
 
     private val authenticationService by lazy { TmdbClient().createAuthenticationService() }
     private val authenticationV4Service by lazy { TmdbClient().createV4AuthenticationService() }
@@ -42,17 +41,15 @@ object SessionManager: KoinComponent {
         @SerializedName("account_id") val accountId: String
     )
 
-    fun clearSessionV4(onResponse: (isSuccessful: Boolean) -> Unit) {
-        currentSession?.let { session ->
+    fun clearSession() {
+        currentSession.value?.let { session ->
             CoroutineScope(Dispatchers.IO).launch {
                 val deleteResponse = authenticationV4Service.deleteAccessToken(AuthDeleteBody(session.accessToken))
                 withContext(Dispatchers.Main) {
                     if (deleteResponse.isSuccessful) {
-                        _currentSession = null
-                        preferences.guestSessionId = ""
+                        currentSession.value = null
                         preferences.authorizedSessionValues = null
                     }
-                    onResponse(deleteResponse.isSuccessful)
                 }
             }
         }
@@ -65,19 +62,17 @@ object SessionManager: KoinComponent {
                 accessToken = values.accessToken,
                 accountId = values.accountId
             )
-            _currentSession = session
+            currentSession.value = session
             session.initialize()
         }
     }
 
-    suspend fun signInWithV4Part1(context: Context) {
-        isV4SignInInProgress = true
-
+    suspend fun signInPart1(context: Context) {
         val service = AuthenticationV4Service()
         val requestTokenResponse = service.createRequestToken(AuthRequestBody(redirect = "app://tvtime.auth.return"))
         if (requestTokenResponse.isSuccessful) {
             requestTokenResponse.body()?.let { ctr ->
-                _currentSession = InProgressSession(ctr.requestToken)
+                currentSession.value = InProgressSession(ctr.requestToken)
                 val browserIntent = Intent(
                     Intent.ACTION_VIEW,
                     Uri.parse(
@@ -89,9 +84,11 @@ object SessionManager: KoinComponent {
         }
     }
 
-    suspend fun signInWithV4Part2(): Boolean {
-        if (isV4SignInInProgress && _currentSession is InProgressSession) {
-            val requestToken = _currentSession!!.sessionId
+    suspend fun singInPart2(
+        context: Context = get(Context::class.java)
+    ) {
+        if (currentSession.value is InProgressSession) {
+            val requestToken = currentSession.value!!.sessionId
             val authResponse = authenticationV4Service.createAccessToken(AuthAccessBody(requestToken))
             if (authResponse.isSuccessful) {
                 authResponse.body()?.let { ar ->
@@ -104,23 +101,26 @@ object SessionManager: KoinComponent {
                                     accountId = ar.accountId,
                                     accessToken = ar.accessToken
                                 )
-                                preferences.authorizedSessionId = ""
-                                preferences.guestSessionId = ""
-                                _currentSession = AuthorizedSession(
+                                val session = AuthorizedSession(
                                     sessionId = sr.sessionId,
                                     accessToken = ar.accessToken,
                                     accountId = ar.accountId
                                 )
-                                _currentSession?.initialize()
-                                isV4SignInInProgress = false
-                                return true
+                                currentSession.value = session
+                                session.initialize()
                             }
                         }
+                    } else {
+                        currentSession.value = null
+                        Toast.makeText(
+                            context,
+                            "Error signing in",
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
                 }
             }
         }
-        return false
     }
 
     abstract class Session(val sessionId: String, val isAuthorized: Boolean, val accessToken: String = "", val accountId: String = "") {
@@ -217,7 +217,7 @@ object SessionManager: KoinComponent {
                 val Rated get() = arrayOf(RatedMovies, RatedTv, RatedEpisodes)
                 val Favorites get() = arrayOf(FavoriteMovies, FavoriteTv)
                 val Watchlist get() = arrayOf(WatchlistMovies, WatchlistTv)
-                val List get() = arrayOf(Changed.Lists)
+                val List get() = arrayOf(Lists)
             }
         }
     }
@@ -234,7 +234,7 @@ object SessionManager: KoinComponent {
     }
 
     private class AuthorizedSession(
-        sessionId: String = preferences.authorizedSessionId,
+        sessionId: String = "",
         accessToken: String = "",
         accountId: String = ""
     ): Session(sessionId, true, accessToken, accountId) {
@@ -247,12 +247,11 @@ object SessionManager: KoinComponent {
 
         override suspend fun refresh(changed: Array<Changed>) {
             if (changed.contains(Changed.AccountDetails)) {
-                service.getAccountDetails().apply {
-                    if (isSuccessful) {
-                        _accountDetails = body() ?: _accountDetails
-                        accountDetails?.let {
-                            refreshWithAccountId(it.id, changed)
-                        }
+                val response = service.getAccountDetails()
+                if (response.isSuccessful) {
+                    _accountDetails = response.body() ?: _accountDetails
+                    accountDetails?.let {
+                        refreshWithAccountId(it.id, changed)
                     }
                 }
             } else if (accountDetails != null) {
@@ -335,5 +334,4 @@ object SessionManager: KoinComponent {
             }
         }
     }
-
 }

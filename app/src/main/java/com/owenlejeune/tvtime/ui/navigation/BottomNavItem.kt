@@ -11,7 +11,8 @@ sealed class BottomNavItem(
     val icon: Int,
     val route: String,
     private val orderGetter: (AppPreferences) -> Int,
-    private val orderSetter: (AppPreferences, Int) -> Unit
+    private val orderSetter: (AppPreferences, Int) -> Unit,
+    val alternateRoutes: List<String> = emptyList()
 ): KoinComponent {
 
     private val appPreferences: AppPreferences by inject()
@@ -23,6 +24,9 @@ sealed class BottomNavItem(
         set(value) { orderSetter.invoke(appPreferences, value) }
 
     companion object {
+
+        const val SIGN_IN_PART_2_ROUTE = "sign_in_part_two_route"
+
         val SortedItems
             get() = Items.filter { it.order > -1 }.sortedBy { it.order }.ifEmpty { Items }
 
@@ -42,7 +46,7 @@ sealed class BottomNavItem(
 
     object Movies: BottomNavItem(R.string.nav_movies_title, R.drawable.ic_movie, "movies_route", { it.moviesTabPosition }, { p, i -> p.moviesTabPosition = i } )
     object TV: BottomNavItem(R.string.nav_tv_title, R.drawable.ic_tv, "tv_route", { it.tvTabPosition }, { p, i -> p.tvTabPosition = i } )
-    object Account: BottomNavItem(R.string.nav_account_title, R.drawable.ic_person, "account_route", { it.accountTabPosition }, { p, i -> p.accountTabPosition = i } )
+    object Account: BottomNavItem(R.string.nav_account_title, R.drawable.ic_person, "account_route", { it.accountTabPosition }, { p, i -> p.accountTabPosition = i }, listOf(SIGN_IN_PART_2_ROUTE) )
     object People: BottomNavItem(R.string.nav_people_title, R.drawable.ic_face, "people_route", { it.peopleTabPosition }, { p, i -> p.peopleTabPosition = i } )
 
 }

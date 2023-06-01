@@ -1,7 +1,6 @@
 package com.owenlejeune.tvtime
 
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.compose.setContent
 import androidx.compose.animation.rememberSplineBasedDecay
 import androidx.compose.foundation.layout.*
@@ -59,7 +58,7 @@ class MainActivity : MonetCompatActivity() {
         var mainNavStartRoute = BottomNavItem.SortedItems[0].route
         intent.data?.let {
             when (it.host) {
-                getString(R.string.intent_route_auth_return) -> mainNavStartRoute = BottomNavItem.Account.route
+                getString(R.string.intent_route_auth_return) -> mainNavStartRoute = BottomNavItem.SIGN_IN_PART_2_ROUTE
             }
         }
 
@@ -163,8 +162,8 @@ class MainActivity : MonetCompatActivity() {
                     scrolledContainerColor = MaterialTheme.colorScheme.background
                 ),
             actions = {
-                appBarActions.value(this)
                 defaultAppBarActions()
+                appBarActions.value(this)
             }
         )
     }
@@ -180,6 +179,7 @@ class MainActivity : MonetCompatActivity() {
 
         NavigationBar {
             BottomNavItem.SortedItems.forEach { item ->
+                val isSelected = currentRoute == item.route || item.alternateRoutes.contains(currentRoute ?: "")
                 NavigationBarItem(
                     modifier = Modifier
                         .padding(4.dp)
@@ -189,13 +189,15 @@ class MainActivity : MonetCompatActivity() {
                         val name = if (preferences.showBottomTabLabels) item.name else " "
                         Text(text = name)
                     },
-                    selected = currentRoute == item.route,
+                    selected = isSelected,
                     onClick = {
-                        onBottomAppBarItemClicked(
-                            navController = navController,
-                            appBarTitle = appBarTitle,
-                            item = item
-                        )
+                        if (!isSelected) {
+                            onBottomAppBarItemClicked(
+                                navController = navController,
+                                appBarTitle = appBarTitle,
+                                item = item
+                            )
+                        }
                     }
                 )
             }
@@ -293,16 +295,19 @@ class MainActivity : MonetCompatActivity() {
             NavigationRail {
                 Spacer(modifier = Modifier.weight(1f))
                 BottomNavItem.SortedItems.forEachIndexed { index, item ->
+                    val isSelected = currentRoute == item.route || item.alternateRoutes.contains(currentRoute ?: "")
                     NavigationRailItem(
                         icon = { Icon(painter = painterResource(id = item.icon), contentDescription = null) },
                         label = { if (preferences.showBottomTabLabels) Text(item.name) },
-                        selected = currentRoute == item.route,
+                        selected = isSelected,
                         onClick = {
-                            onBottomAppBarItemClicked(
-                                navController = navController,
-                                appBarTitle = appBarTitle,
-                                item = item
-                            )
+                            if (!isSelected) {
+                                onBottomAppBarItemClicked(
+                                    navController = navController,
+                                    appBarTitle = appBarTitle,
+                                    item = item
+                                )
+                            }
                         }
                     )
                     if (index < BottomNavItem.SortedItems.size - 1) {

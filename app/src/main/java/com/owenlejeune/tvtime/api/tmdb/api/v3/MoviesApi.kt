@@ -43,23 +43,10 @@ interface MoviesApi {
     suspend fun getKeywords(@Path("id") id: Int): Response<KeywordsResponse>
 
     @POST("movie/{id}/rating")
-    suspend fun postMovieRatingAsGuest(
-        @Path("id") id: Int,
-        @Query("guest_session_id") guestSessionId: String,
-        @Body ratingBody: RatingBody
-    ): Response<StatusResponse>
-
-    @POST("movie/{id}/rating")
     suspend fun postMovieRatingAsUser(
         @Path("id") id: Int,
         @Query("session_id") sessionId: String,
         @Body ratingBody: RatingBody
-    ): Response<StatusResponse>
-
-    @DELETE("movie/{id}/rating")
-    suspend fun deleteMovieReviewAsGuest(
-        @Path("id") id: Int,
-        @Query("guest_session_id") guestSessionId: String
     ): Response<StatusResponse>
 
     @DELETE("movie/{id}/rating")

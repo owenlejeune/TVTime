@@ -31,7 +31,6 @@ import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.*
 import com.owenlejeune.tvtime.api.tmdb.api.v4.model.V4AccountList
 import com.owenlejeune.tvtime.extensions.unlessEmpty
-import com.owenlejeune.tvtime.preferences.AppPreferences
 import com.owenlejeune.tvtime.ui.components.PagingPosterGrid
 import com.owenlejeune.tvtime.ui.components.RoundedLetterImage
 import com.owenlejeune.tvtime.ui.navigation.AccountTabNavItem
@@ -44,78 +43,54 @@ import com.owenlejeune.tvtime.utils.TmdbUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import org.koin.java.KoinJavaComponent.get
 import kotlin.reflect.KClass
-
-private const val GUEST_SIGN_IN = "guest_sign_in"
-private const val SIGN_OUT = "sign_out"
-private const val NO_SESSION_SIGN_IN = "no_session_sign_in"
-private const val NO_SESSION_SIGN_IN_GUEST = "no_session_sign_in_guest"
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
 fun AccountTab(
     appNavController: NavHostController,
     appBarTitle: MutableState<String>,
-    appBarActions: MutableState<@Composable (RowScope.() -> Unit)> = mutableStateOf({})
+    appBarActions: MutableState<@Composable (RowScope.() -> Unit)> = mutableStateOf({}),
+    doSignInPartTwo: Boolean = false
 ) {
-    val lastSelectedOption = remember { mutableStateOf("") }
+    val currentSessionState = remember { SessionManager.currentSession }
+    val currentSession = currentSessionState.value
 
-    val lso = lastSelectedOption.value
-    if (SessionManager.isV4SignInInProgress) {
+    if (currentSession?.isAuthorized == false) {
         appBarTitle.value = stringResource(id = R.string.account_not_logged_in)
-        AccountLoadingView()
-        v4SignInPart2(lastSelectedOption)
+        if (doSignInPartTwo) {
+            AccountLoadingView()
+            signInPart2()
+        }
     } else {
-        when (SessionManager.currentSession?.isAuthorized) {
-            false -> {
-                appBarTitle.value =
-                    stringResource(
-                        id = R.string.account_header_title_formatted,
-                        stringResource(id = R.string.account_name_guest)
-                    )
-            }
-            true -> {
-                appBarTitle.value =
-                    stringResource(
-                        id = R.string.account_header_title_formatted,
-                        getAccountName(SessionManager.currentSession?.accountDetails)
-                    )
-            }
-            else -> {
-                appBarTitle.value = stringResource(id = R.string.account_not_logged_in)
-            }
+        if (currentSession?.isAuthorized == true) {
+            appBarTitle.value =
+                stringResource(
+                    id = R.string.account_header_title_formatted,
+                    getAccountName(currentSession.accountDetails)
+                )
+        } else {
+            appBarTitle.value = stringResource(id = R.string.account_not_logged_in)
         }
 
         appBarActions.value = {
             AccountDropdownMenu(
-                session = SessionManager.currentSession,
-                lastSelectedOption = lastSelectedOption
+                session = currentSession
             )
         }
 
-        if (!SessionManager.isV4SignInInProgress) {
-            SessionManager.currentSession?.let { session ->
-                val tabs = if (session.isAuthorized) {
-                    AccountTabNavItem.AuthorizedItems
-                } else {
-                    AccountTabNavItem.GuestItems
-                }
+        currentSession?.let {
+            Column {
+                AuthorizedSessionIcon()
 
-                Column {
-                    if (session.isAuthorized) {
-                        AuthorizedSessionIcon()
-                    }
-
-                    val pagerState = rememberPagerState()
-                    ScrollableTabs(tabs = tabs, pagerState = pagerState)
-                    AccountTabs(
-                        appNavController = appNavController,
-                        tabs = tabs,
-                        pagerState = pagerState
-                    )
-                }
+                val tabs = AccountTabNavItem.AuthorizedItems
+                val pagerState = rememberPagerState()
+                ScrollableTabs(tabs = tabs, pagerState = pagerState)
+                AccountTabs(
+                    appNavController = appNavController,
+                    tabs = tabs,
+                    pagerState = pagerState
+                )
             }
         }
     }
@@ -309,10 +284,7 @@ private fun MediaItemRow(
 }
 
 @Composable
-private fun AccountDropdownMenu(
-    session: SessionManager.Session?,
-    lastSelectedOption: MutableState<String>
-) {
+private fun AccountDropdownMenu(session: SessionManager.Session?) {
     val expanded = remember { mutableStateOf(false) }
     
     IconButton(
@@ -325,73 +297,52 @@ private fun AccountDropdownMenu(
         expanded = expanded.value, 
         onDismissRequest = { expanded.value = false }
     ) {
-        when(session?.isAuthorized) {
-            true -> { AuthorizedSessionMenuItems(expanded = expanded, lastSelectedOption = lastSelectedOption) }
-//            false -> { GuestSessionMenuItems(expanded = expanded, lastSelectedOption = lastSelectedOption) }
-            false -> {}
-            null -> { NoSessionMenuItems(expanded = expanded, lastSelectedOption = lastSelectedOption) }
+        if(session?.isAuthorized == true) {
+            AuthorizedSessionMenuItems(expanded = expanded)
+        } else {
+            NoSessionMenuItems(expanded = expanded)
         }
     }
 }
 
 @Composable
-private fun AuthorizedSessionMenuItems(
-    expanded: MutableState<Boolean>,
-    lastSelectedOption: MutableState<String>,
-    preferences: AppPreferences = get(AppPreferences::class.java)
-) {
+private fun AuthorizedSessionMenuItems(expanded: MutableState<Boolean>) {
     DropdownMenuItem(
         text = { Text(text = stringResource(id = R.string.action_sign_out)) },
         onClick = {
-            if (preferences.useV4Api) {
-                signOutV4(lastSelectedOption)
-            } else {
-//                signOut(lastSelectedOption)
-            }
+            signOut()
             expanded.value = false
         }
     )
 }
 
 @Composable
-private fun NoSessionMenuItems(
-    expanded: MutableState<Boolean>,
-    lastSelectedOption: MutableState<String>,
-    preferences: AppPreferences = get(AppPreferences::class.java)
-) {
+private fun NoSessionMenuItems(expanded: MutableState<Boolean>) {
     val context = LocalContext.current
     DropdownMenuItem(
         text = { Text(text = stringResource(id = R.string.action_sign_in)) },
         onClick = {
-            if (preferences.useV4Api) {
-                v4SignInPart1(context)
-            } else {
-//                showSignInDialog.value = true
-            }
+            signInPart1(context)
+            expanded.value = false
         }
     )
 }
 
-private fun v4SignInPart1(context: Context) {
+private fun signInPart1(context: Context) {
     CoroutineScope(Dispatchers.IO).launch {
-        SessionManager.signInWithV4Part1(context)
+        SessionManager.signInPart1(context)
     }
 }
 
-private fun v4SignInPart2(lastSelectedOption: MutableState<String>) {
+private fun signInPart2() {
     CoroutineScope(Dispatchers.IO).launch {
-        val signIn = SessionManager.signInWithV4Part2()
-        if (signIn)  {
-            withContext(Dispatchers.Main) {
-                lastSelectedOption.value = NO_SESSION_SIGN_IN
-            }
-        }
+        SessionManager.singInPart2()
     }
 }
 
 @Composable
 private fun AuthorizedSessionIcon() {
-    val accountDetails = SessionManager.currentSession?.accountDetails
+    val accountDetails = SessionManager.currentSession.value?.accountDetails
     val avatarUrl = accountDetails?.let {
         when {
             accountDetails.avatar.tmdb?.avatarPath?.isNotEmpty() == true -> {
@@ -423,13 +374,9 @@ private fun AuthorizedSessionIcon() {
     }
 }
 
-private fun signOutV4(lastSelectedOption: MutableState<String>) {
+private fun signOut() {
     CoroutineScope(Dispatchers.IO).launch {
-        SessionManager.clearSessionV4 { isSuccessful ->
-            if (isSuccessful) {
-                lastSelectedOption.value = SIGN_OUT
-            }
-        }
+        SessionManager.clearSession()
     }
 }
 

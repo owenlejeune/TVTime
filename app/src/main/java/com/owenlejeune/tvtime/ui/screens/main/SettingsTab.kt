@@ -480,30 +480,11 @@ private fun DevPreferences(
                 .padding(horizontal = 8.dp, vertical = 12.dp)
                 .clickable(
                     onClick = {
-                        preferences.guestSessionId = ""
                         coroutineScope.launch {
-                            SessionManager.clearSessionV4 {
-                                Toast
-                                    .makeText(
-                                        context,
-                                        "Cleared session v4: $it",
-                                        Toast.LENGTH_SHORT
-                                    )
-                                    .show()
-                            }
+                            SessionManager.clearSession()
                         }
                     }
                 )
-        )
-
-        val useV4Api = remember { mutableStateOf(preferences.useV4Api) }
-        SwitchPreference(
-            titleText = "Use v4 API",
-            checkState = useV4Api.value,
-            onCheckedChange = { isChecked ->
-                useV4Api.value = isChecked
-                preferences.useV4Api = isChecked
-            }
         )
     }
 }
@@ -613,7 +594,6 @@ private fun resetDarkModePreferences(preferences: AppPreferences) {
 
 private fun resetDevModePreference(preferences: AppPreferences) {
     preferences.firstLaunchTesting = preferences.firstLaunchTestingDefault
-    preferences.useV4Api = preferences.useV4ApiDefault
     preferences.showBackdropGallery = preferences.showBackdropGalleryDefault
 }
 

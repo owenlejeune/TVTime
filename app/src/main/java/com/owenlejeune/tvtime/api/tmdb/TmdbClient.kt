@@ -107,20 +107,16 @@ class TmdbClient: KoinComponent {
         private fun sessionIdParam(urlSegments: List<String>): QueryParam? {
             var sessionIdParam: QueryParam? = null
             if (urlSegments.size > 1 && urlSegments[1] == "account") {
-                if (SessionManager.currentSession?.isAuthorized == true) {
-                    sessionIdParam = QueryParam("session_id", SessionManager.currentSession!!.sessionId)
-                } else if (preferences.authorizedSessionId.isNotEmpty()) {
-                    sessionIdParam = QueryParam("session_id", preferences.authorizedSessionId)
-                } else if (preferences.authorizedSessionValues != null) {
-                    val sessionId = preferences.authorizedSessionValues!!.sessionId
-                    sessionIdParam = QueryParam("session_id", sessionId)
+                val currentSession = SessionManager.currentSession.value
+                if (!currentSession?.sessionId.isNullOrEmpty()) {
+                    sessionIdParam = QueryParam("session_id", currentSession!!.sessionId)
                 }
             }
             return sessionIdParam
         }
 
         private fun shouldIncludeLanguageParam(urlSegments: List<String>): Boolean {
-            val ignoredRoutes = listOf("images")
+            val ignoredRoutes = listOf("images", "account")
             for (route in ignoredRoutes) {
                 if (urlSegments.contains(route)) {
                     return false
@@ -147,7 +143,7 @@ class TmdbClient: KoinComponent {
                 if (url.encodedPathSegments.contains("auth")) {
                     builder.header("Authorization", "Bearer ${BuildConfig.TMDB_Api_v4Key}")
                 } else {
-                    builder.header("Authorization", "Bearer ${SessionManager.currentSession!!.accessToken}")
+                    builder.header("Authorization", "Bearer ${SessionManager.currentSession.value!!.accessToken}")
                 }
                 if (shouldIncludeLanguageParam(url.encodedPathSegments)) {
                     val locale = Locale.current

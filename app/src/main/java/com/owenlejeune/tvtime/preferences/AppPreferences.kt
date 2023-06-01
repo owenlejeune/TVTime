@@ -18,15 +18,12 @@ class AppPreferences(context: Context) {
         private val PREF_FILE = "tvtime_shared_preferences"
 
         private val PERSISTENT_SEARCH = "persistent_search"
-        private val GUEST_SESSION = "guest_session_id"
-        private val AUTHORIZED_SESSION = "authorized_session_id"
         private val AUTHORIZED_SESSION_VALUES = "authorized_session_values"
         private val FIRST_LAUNCH = "first_launch"
         private val FIRST_LAUNCH_TESTING = "first_launch_testing"
         private val CHROMA_MULTIPLIER = "chroma_multiplier"
         private val USE_SYSTEM_COLORS = "use_system_colors"
         private val SELECTED_COLOR = "selected_color"
-        private val USE_V4_API = "use_v4_api"
         private val SHOW_BACKDROP_GALLERY = "show_backdrop_gallery"
         private val USE_WALLPAPER_COLORS = "use_wallpaper_colors"
         private val DARK_THEME = "dark_theme"
@@ -79,19 +76,11 @@ class AppPreferences(context: Context) {
         set(value) { preferences.put(SELECTED_COLOR, value) }
 
     /******* Session Tokens ********/
-    var guestSessionId: String
-        get() = preferences.getString(GUEST_SESSION, "") ?: ""
-        set(value) { preferences.put(GUEST_SESSION, value) }
-
     var authorizedSessionValues: SessionManager.AuthorizedSessionValues?
         get() = preferences.getString(AUTHORIZED_SESSION_VALUES, null)?.let {
             Gson().fromJson(it, SessionManager.AuthorizedSessionValues::class.java)
         }
         set(value) { preferences.putNullableString(AUTHORIZED_SESSION_VALUES, value?.let { Gson().toJson(value) }) }
-
-    var authorizedSessionId: String
-        get() = preferences.getString(AUTHORIZED_SESSION, "") ?: ""
-        set(value) { preferences.put(AUTHORIZED_SESSION, value) }
 
     /******** Home Screen Preferences ********/
     val moviesTabPositionDefault: Int = 0
@@ -133,11 +122,6 @@ class AppPreferences(context: Context) {
     var firstLaunch: Boolean
         get() = preferences.getBoolean(FIRST_LAUNCH, true)
         set(value) { preferences.put(FIRST_LAUNCH, value) }
-
-    val useV4ApiDefault: Boolean = true
-    var useV4Api: Boolean
-        get() = preferences.getBoolean(USE_V4_API, useV4ApiDefault)
-        set(value) { preferences.put(USE_V4_API, value) }
 
     val showBackdropGalleryDefault: Boolean = true
     var showBackdropGallery: Boolean
