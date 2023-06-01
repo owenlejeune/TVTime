@@ -1,6 +1,7 @@
 package com.owenlejeune.tvtime
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.compose.setContent
 import androidx.compose.animation.rememberSplineBasedDecay
 import androidx.compose.foundation.layout.*
@@ -39,6 +40,7 @@ import com.owenlejeune.tvtime.ui.screens.SearchScreen
 import com.owenlejeune.tvtime.ui.screens.main.*
 import com.owenlejeune.tvtime.ui.theme.TVTimeTheme
 import com.owenlejeune.tvtime.utils.KeyboardManager
+import com.owenlejeune.tvtime.utils.NavConstants
 import com.owenlejeune.tvtime.utils.SessionManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -55,12 +57,7 @@ class MainActivity : MonetCompatActivity() {
             SessionManager.initialize()
         }
 
-        var mainNavStartRoute = BottomNavItem.SortedItems[0].route
-        intent.data?.let {
-            when (it.host) {
-                getString(R.string.intent_route_auth_return) -> mainNavStartRoute = BottomNavItem.SIGN_IN_PART_2_ROUTE
-            }
-        }
+        val mainNavStartRoute = BottomNavItem.SortedItems[0].route
 
         lifecycleScope.launchWhenCreated {
             monet.awaitMonetReady()
@@ -179,7 +176,7 @@ class MainActivity : MonetCompatActivity() {
 
         NavigationBar {
             BottomNavItem.SortedItems.forEach { item ->
-                val isSelected = currentRoute == item.route || item.alternateRoutes.contains(currentRoute ?: "")
+                val isSelected = currentRoute == item.route
                 NavigationBarItem(
                     modifier = Modifier
                         .padding(4.dp)
@@ -215,11 +212,7 @@ class MainActivity : MonetCompatActivity() {
 
     private fun navigateToRoute(navController: NavController, route: String) {
         navController.navigate(route) {
-            navController.graph.startDestinationRoute?.let { screenRoute ->
-                popUpTo(screenRoute) {
-                    saveState = true
-                }
-            }
+            popUpTo(route)
             launchSingleTop = true
             restoreState = true
         }
@@ -295,7 +288,7 @@ class MainActivity : MonetCompatActivity() {
             NavigationRail {
                 Spacer(modifier = Modifier.weight(1f))
                 BottomNavItem.SortedItems.forEachIndexed { index, item ->
-                    val isSelected = currentRoute == item.route || item.alternateRoutes.contains(currentRoute ?: "")
+                    val isSelected = currentRoute == item.route
                     NavigationRailItem(
                         icon = { Icon(painter = painterResource(id = item.icon), contentDescription = null) },
                         label = { if (preferences.showBottomTabLabels) Text(item.name) },
@@ -358,14 +351,6 @@ class MainActivity : MonetCompatActivity() {
                 startDestination = mainNavStartRoute
             )
         }
-    }
-
-    private object NavConstants {
-        const val ID_KEY = "id_key"
-        const val TYPE_KEY = "type_key"
-        const val SETTINGS_KEY = "settings_key"
-        const val SEARCH_ID_KEY = "search_key"
-        const val SEARCH_TITLE_KEY = "search_title_key"
     }
 
     @Composable

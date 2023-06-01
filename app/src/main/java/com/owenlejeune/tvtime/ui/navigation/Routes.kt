@@ -1,5 +1,6 @@
 package com.owenlejeune.tvtime.ui.navigation
 
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.runtime.Composable
@@ -10,13 +11,10 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import androidx.navigation.navDeepLink
 import com.owenlejeune.tvtime.ui.screens.main.MediaViewType
 import com.owenlejeune.tvtime.ui.screens.main.*
-
-object NavConstants {
-    const val ID_KEY = "id_key"
-    const val TYPE_KEY = "type_key"
-}
+import com.owenlejeune.tvtime.utils.NavConstants
 
 @Composable
 fun MainNavGraph(
@@ -47,20 +45,18 @@ fun MainNavGraph(
                 fab = fab
             )
         }
-        composable(BottomNavItem.Account.route) {
-            AccountTab(
-                appBarTitle = appBarTitle,
-                appNavController = appNavController,
-                appBarActions = appBarActions
+        composable(
+            route = BottomNavItem.Account.route,
+            deepLinks = listOf(
+                navDeepLink { uriPattern = "app://tvtime.auth.{${NavConstants.ACCOUNT_KEY}}" }
             )
-            fab.value = {}
-        }
-        composable(BottomNavItem.SIGN_IN_PART_2_ROUTE) {
+        ) {
+            val deepLink = it.arguments?.getString(NavConstants.ACCOUNT_KEY)
             AccountTab(
                 appBarTitle = appBarTitle,
                 appNavController = appNavController,
                 appBarActions = appBarActions,
-                doSignInPartTwo = true
+                doSignInPartTwo = deepLink == NavConstants.AUTH_REDIRECT_PAGE
             )
             fab.value = {}
         }
