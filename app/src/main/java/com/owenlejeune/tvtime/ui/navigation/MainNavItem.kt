@@ -10,5 +10,6 @@ sealed class MainNavItem(val route: String) {
     object DetailView: MainNavItem("detail_route")
     object SettingsView: MainNavItem("settings_route")
     object SearchView: MainNavItem("search_route")
+    object WebLinkView: MainNavItem("web_link_route")
 
 }

@@ -1,6 +1,5 @@
 package com.owenlejeune.tvtime.ui.screens.main
 
-import android.content.Context
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
@@ -8,9 +7,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -56,11 +57,17 @@ fun AccountTab(
     val currentSessionState = remember { SessionManager.currentSession }
     val currentSession = currentSessionState.value
 
+    val scope = rememberCoroutineScope()
+
     if (currentSession?.isAuthorized == false) {
         appBarTitle.value = stringResource(id = R.string.account_not_logged_in)
         if (doSignInPartTwo) {
             AccountLoadingView()
-            signInPart2()
+            LaunchedEffect(Unit) {
+                scope.launch {
+                    SessionManager.singInPart2()
+                }
+            }
         }
     } else {
         if (currentSession?.isAuthorized == true) {
@@ -76,7 +83,8 @@ fun AccountTab(
 
         appBarActions.value = {
             AccountDropdownMenu(
-                session = currentSession
+                session = currentSession,
+                appNavController = appNavController
             )
         }
 
@@ -285,7 +293,7 @@ private fun MediaItemRow(
 }
 
 @Composable
-private fun AccountDropdownMenu(session: SessionManager.Session?) {
+private fun AccountDropdownMenu(session: SessionManager.Session?, appNavController: NavHostController) {
     val expanded = remember { mutableStateOf(false) }
     
     IconButton(
@@ -301,7 +309,7 @@ private fun AccountDropdownMenu(session: SessionManager.Session?) {
         if(session?.isAuthorized == true) {
             AuthorizedSessionMenuItems(expanded = expanded)
         } else {
-            NoSessionMenuItems(expanded = expanded)
+            NoSessionMenuItems(expanded = expanded, appNavController = appNavController)
         }
     }
 }
@@ -318,27 +326,19 @@ private fun AuthorizedSessionMenuItems(expanded: MutableState<Boolean>) {
 }
 
 @Composable
-private fun NoSessionMenuItems(expanded: MutableState<Boolean>) {
+private fun NoSessionMenuItems(expanded: MutableState<Boolean>, appNavController: NavHostController) {
     val context = LocalContext.current
     DropdownMenuItem(
         text = { Text(text = stringResource(id = R.string.action_sign_in)) },
         onClick = {
-            signInPart1(context)
+            CoroutineScope(Dispatchers.IO).launch {
+                SessionManager.signInPart1(context) {
+                    appNavController.navigate(MainNavItem.WebLinkView.route.plus("/$it"))
+                }
+            }
             expanded.value = false
         }
     )
-}
-
-private fun signInPart1(context: Context) {
-    CoroutineScope(Dispatchers.IO).launch {
-        SessionManager.signInPart1(context)
-    }
-}
-
-private fun signInPart2() {
-    CoroutineScope(Dispatchers.IO).launch {
-        SessionManager.singInPart2()
-    }
 }
 
 @Composable

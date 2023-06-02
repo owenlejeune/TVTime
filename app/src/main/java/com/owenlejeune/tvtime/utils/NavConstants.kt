@@ -8,4 +8,5 @@ object NavConstants {
     const val SEARCH_TITLE_KEY = "search_title_key"
     const val ACCOUNT_KEY = "account_key"
     const val AUTH_REDIRECT_PAGE = "return"
+    const val WEB_LINK_KEY = "web_link_key"
 }

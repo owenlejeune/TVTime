@@ -27,6 +27,8 @@ import kotlinx.coroutines.withContext
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.koin.java.KoinJavaComponent.get
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 
 object SessionManager: KoinComponent {
 
@@ -69,19 +71,20 @@ object SessionManager: KoinComponent {
         }
     }
 
-    suspend fun signInPart1(context: Context) {
+    suspend fun signInPart1(
+        context: Context,
+        onRedirect: (url: String) -> Unit
+    ) {
         val service = AuthenticationV4Service()
         val requestTokenResponse = service.createRequestToken(AuthRequestBody(redirect = "app://tvtime.auth.return"))
         if (requestTokenResponse.isSuccessful) {
             requestTokenResponse.body()?.let { ctr ->
                 currentSession.value = InProgressSession(ctr.requestToken)
-                val browserIntent = Intent(
-                    Intent.ACTION_VIEW,
-                    Uri.parse(
-                        context.getString(R.string.tmdb_auth_url, ctr.requestToken)
-                    )
-                )
-                context.startActivity(browserIntent)
+                val url = context.getString(R.string.tmdb_auth_url, ctr.requestToken)
+                val encodedUrl = URLEncoder.encode(url, StandardCharsets.UTF_8.toString())
+                withContext(Dispatchers.Main) {
+                    onRedirect(encodedUrl)
+                }
             }
         }
     }

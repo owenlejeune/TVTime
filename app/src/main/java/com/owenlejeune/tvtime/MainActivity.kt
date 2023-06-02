@@ -446,6 +446,17 @@ class MainActivity : MonetCompatActivity() {
                     )
                 }
             }
+            composable(
+                route = MainNavItem.WebLinkView.route.plus("/{${NavConstants.WEB_LINK_KEY}}"),
+                arguments = listOf(
+                    navArgument(NavConstants.WEB_LINK_KEY) { type = NavType.StringType }
+                )
+            ) {
+                val url = it.arguments?.getString(NavConstants.WEB_LINK_KEY)
+                url?.let { 
+                    WebLinkView(url = url, appNavController = appNavController)
+                }
+            }
         }
     }
 

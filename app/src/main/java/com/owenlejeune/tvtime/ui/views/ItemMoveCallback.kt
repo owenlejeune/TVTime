@@ -30,7 +30,7 @@ class ItemMoveCallback(private val mAdapter: ItemTouchHelperContract): ItemTouch
         viewHolder: RecyclerView.ViewHolder,
         target: RecyclerView.ViewHolder
     ): Boolean {
-        mAdapter.onRowMoved(viewHolder.bindingAdapterPosition, target.bindingAdapterPosition)
+        mAdapter.onRowMoved(viewHolder.adapterPosition, target.adapterPosition)
         return true
     }
 

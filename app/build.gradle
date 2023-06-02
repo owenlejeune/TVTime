@@ -90,6 +90,7 @@ dependencies {
     implementation "androidx.paging:paging-compose:$compose_paging"
     implementation "androidx.constraintlayout:constraintlayout-compose:$compose_constraint_layout"
     implementation "androidx.paging:paging-compose:$compose_paging"
+    implementation "com.google.accompanist:accompanist-webview:0.28.0"
 
     // material you
     def monet_compat = "0.4.1"
@@ -124,10 +125,10 @@ dependencies {
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutines"
 
     // youtube player
-    def player_core = "11.0.1"
-    def chromecast_sender = "0.26"
-    implementation "com.pierfrancescosoffritti.androidyoutubeplayer:core:$player_core"
-    implementation "com.pierfrancescosoffritti.androidyoutubeplayer:chromecast-sender:$chromecast_sender"
+//    def player_core = "11.0.1"
+//    def chromecast_sender = "0.26"
+//    implementation "com.pierfrancescosoffritti.androidyoutubeplayer:core:$player_core"
+//    implementation "com.pierfrancescosoffritti.androidyoutubeplayer:chromecast-sender:$chromecast_sender"
 
     // markdown
     def markdown = "0.2.1"
