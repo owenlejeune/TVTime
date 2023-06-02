@@ -34,7 +34,6 @@ class TvTimeApplication: Application() {
             )
         }
 
-        MonetCompat.enablePaletteCompat()
         MonetCompat.chromaMultiplier = preferences.chromaMultiplier
 
         MonetCompat.wallpaperColorPicker = {

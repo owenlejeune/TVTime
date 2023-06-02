@@ -2,6 +2,7 @@ package com.owenlejeune.tvtime
 
 import android.os.Bundle
 import android.util.Log
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.compose.animation.rememberSplineBasedDecay
 import androidx.compose.foundation.layout.*
@@ -22,6 +23,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -31,6 +33,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.kieronquinn.monetcompat.app.MonetCompatActivity
 import com.owenlejeune.tvtime.extensions.WindowSizeClass
+import com.owenlejeune.tvtime.extensions.navigateInBottomBar
 import com.owenlejeune.tvtime.extensions.rememberWindowSizeClass
 import com.owenlejeune.tvtime.preferences.AppPreferences
 import com.owenlejeune.tvtime.ui.navigation.BottomNavItem
@@ -206,16 +209,8 @@ class MainActivity : MonetCompatActivity() {
         appBarTitle: MutableState<String>,
         item: BottomNavItem
     ) {
-        navigateToRoute(navController, item.route)
+        navController.navigateInBottomBar(item.route)
         appBarTitle.value = item.name
-    }
-
-    private fun navigateToRoute(navController: NavController, route: String) {
-        navController.navigate(route) {
-            popUpTo(route)
-            launchSingleTop = true
-            restoreState = true
-        }
     }
 
     @Composable
@@ -338,8 +333,9 @@ class MainActivity : MonetCompatActivity() {
         mainNavStartRoute: String = BottomNavItem.SortedItems[0].route
     ) {
         Column {
-            val navBackStackEntry by navController.currentBackStackEntryAsState()
-            val currentRoute = navBackStackEntry?.destination?.route
+            BackHandler(enabled = true) {
+                finish()
+            }
 
             MainNavGraph(
                 activity = this@MainActivity,

@@ -71,7 +71,7 @@ dependencies {
     def compose = composeVersion
     def compose_material3 = "1.0.0-alpha13"
     def compose_accompanist = "0.24.10-beta"
-    def compose_navigation = "2.4.2"
+    def compose_navigation = "2.5.3"
     def compose_paging = "1.0.0-alpha16"
     def compose_constraint_layout = "1.0.1"
     def compose_activity = "1.4.0"
