@@ -14,19 +14,20 @@ import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.ui.components.PagingPeoplePosterGrid
 import com.owenlejeune.tvtime.ui.components.SearchView
 import com.owenlejeune.tvtime.ui.navigation.MainNavItem
-import com.owenlejeune.tvtime.ui.viewmodel.PeopleTabViewModel
+import com.owenlejeune.tvtime.api.tmdb.viewmodel.PeopleTabViewModel
 
 @Composable
 fun PeopleTab(
-    appBarTitle: MutableState<String>,
+    appBarTitle: MutableState<@Composable () -> Unit>,
     appNavController: NavHostController,
     fab: MutableState<@Composable () -> Unit>
 ) {
-    appBarTitle.value = stringResource(id = R.string.nav_people_title)
+    val titleText = stringResource(id = R.string.nav_people_title)
+    appBarTitle.value = { Text(text = titleText) }
 
     Column {
         SearchView(
-            title = appBarTitle.value,
+            title = titleText,
             appNavController = appNavController,
             mediaType = MediaViewType.PERSON,
             fab = fab

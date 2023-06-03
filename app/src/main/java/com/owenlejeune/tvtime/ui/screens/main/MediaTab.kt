@@ -1,6 +1,7 @@
 package com.owenlejeune.tvtime.ui.screens.main
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.res.stringResource
@@ -17,25 +18,26 @@ import com.owenlejeune.tvtime.ui.components.SearchView
 import com.owenlejeune.tvtime.ui.navigation.MainNavItem
 import com.owenlejeune.tvtime.ui.navigation.MediaTabNavItem
 import com.owenlejeune.tvtime.ui.screens.main.tabs.top.Tabs
-import com.owenlejeune.tvtime.ui.viewmodel.MediaTabViewModel
+import com.owenlejeune.tvtime.api.tmdb.viewmodel.MediaTabViewModel
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
 fun MediaTab(
-    appBarTitle: MutableState<String>,
+    appBarTitle: MutableState<@Composable () -> Unit>,
     appNavController: NavHostController,
     mediaType: MediaViewType,
     fab: MutableState<@Composable () -> Unit>
 ) {
-    appBarTitle.value = when (mediaType) {
+     val titleText = when (mediaType) {
         MediaViewType.MOVIE -> stringResource(id = R.string.nav_movies_title)
         MediaViewType.TV -> stringResource(id = R.string.nav_tv_title)
         else -> ""
     }
+    appBarTitle.value = @Composable { Text(text = titleText) }
 
     Column {
         SearchView(
-            title = appBarTitle.value,
+            title = titleText,
             appNavController = appNavController,
             mediaType = mediaType,
             fab = fab

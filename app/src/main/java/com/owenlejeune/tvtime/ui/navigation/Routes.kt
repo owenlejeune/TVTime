@@ -22,7 +22,7 @@ fun MainNavGraph(
     appNavController: NavHostController,
     navController: NavHostController,
     fab: MutableState<@Composable () -> Unit>,
-    appBarTitle: MutableState<String>,
+    appBarTitle: MutableState<@Composable () -> Unit>,
     appBarActions: MutableState<@Composable (RowScope.() -> Unit)> = mutableStateOf({}),
     startDestination: String = BottomNavItem.SortedItems[0].route
 ) {

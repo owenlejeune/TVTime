@@ -1,4 +1,4 @@
-package com.owenlejeune.tvtime.ui.viewmodel
+package com.owenlejeune.tvtime.api.tmdb.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.Flow
 
 class PeopleTabViewModel: ViewModel() {
 
-    val popularPeople: Flow<PagingData<HomePagePerson>> = Pager(PagingConfig(pageSize = Int.MAX_VALUE)) {
+    val popularPeople: Flow<PagingData<HomePagePerson>> = Pager(PagingConfig(pageSize = ViewModelConstants.PAGING_SIZE)) {
         HomePagePeoplePagingSource()
     }.flow.cachedIn(viewModelScope)
 

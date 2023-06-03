@@ -16,6 +16,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.FractionalThreshold
 import androidx.compose.material.ThresholdConfig
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.rememberSwipeableState
 import androidx.compose.material.swipeable
 import androidx.compose.material3.*
@@ -25,6 +27,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
@@ -187,8 +190,7 @@ fun TwoLineImageTextCard(
     modifier: Modifier = Modifier,
     subtitle: String? = null,
     imageUrl: String? = null,
-    noDataImage: Int = R.drawable.placeholder,
-    placeholder: Int = R.drawable.placeholder,
+    placeholder: ImageVector = Icons.Filled.Person,
     titleTextColor: Color = MaterialTheme.colorScheme.onSurfaceVariant,
     subtitleTextColor: Color = MaterialTheme.colorScheme.onSurfaceVariant,
     onItemClicked: () -> Unit = {}
@@ -198,7 +200,6 @@ fun TwoLineImageTextCard(
             width = 120.dp,
             onClick = onItemClicked,
             url = imageUrl,
-            noDataImage = noDataImage,
             placeholder = placeholder,
             title = title,
             elevation = 0.dp,

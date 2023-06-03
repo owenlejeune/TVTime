@@ -1,16 +1,24 @@
 package com.owenlejeune.tvtime.ui.components
 
 import android.util.Log
-import android.widget.Toast
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.magnifier
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Card
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.BrokenImage
+import androidx.compose.material.icons.filled.Movie
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -19,9 +27,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
@@ -118,7 +128,7 @@ fun PagingPeoplePosterGrid(
                 person?.let {
                     PosterItem(
                         url = TmdbUtils.getFullPersonImagePath(person.profilePath),
-                        noDataImage = R.drawable.no_person_photo,
+                        placeholder = Icons.Filled.Person,
                         modifier = Modifier.padding(5.dp),
                         onClick = {
                             onClick(person.id)
@@ -155,7 +165,7 @@ fun PeoplePosterGrid(
         listItems(peopleList.value) { person ->
             PosterItem(
                 url = TmdbUtils.getFullPersonImagePath(person.profilePath),
-                noDataImage = R.drawable.no_person_photo,
+                placeholder = Icons.Filled.Person,
                 modifier = Modifier.padding(5.dp),
                 onClick = {
                     onClick(person.id)
@@ -209,6 +219,7 @@ fun PosterItem(
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PosterItem(
     url: String?,
@@ -216,59 +227,68 @@ fun PosterItem(
     width: Dp = POSTER_WIDTH,
     onClick: () -> Unit = {},
     enabled: Boolean = true,
-    noDataImage: Int = R.drawable.placeholder,
-    placeholder: Int = R.drawable.placeholder,
+    placeholder: ImageVector = Icons.Filled.Movie,
     elevation: Dp = 8.dp,
     title: String?,
     overrideShowTitle: Boolean? = null,
     preferences: AppPreferences = get(AppPreferences::class.java)
 ) {
+    var sizeImage by remember { mutableStateOf(IntSize.Zero) }
     Card(
-        elevation = elevation,
+        elevation = CardDefaults.elevatedCardElevation(defaultElevation = elevation),
         modifier = modifier
             .width(width = width)
-            .wrapContentHeight(),
-        shape = RoundedCornerShape(5.dp)
-    ) {
-        Box(
-            modifier = Modifier.clickable(
-                enabled = true,
+            .wrapContentHeight()
+            .clickable(
+                enabled = enabled,
                 onClick = onClick
-            )
+            ),
+        shape = RoundedCornerShape(5.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.Transparent)
+    ) {
+        var backgroundColor by remember { mutableStateOf(Color.Gray) }
+        Box(
+            modifier = Modifier
+                .width(width = width)
+                .height(height = POSTER_HEIGHT)
+                .background(color = backgroundColor)
+                .clip(RoundedCornerShape(5.dp))
+                .onGloballyPositioned { sizeImage = it.size }
         ) {
-            var sizeImage by remember { mutableStateOf(IntSize.Zero) }
+            var bgIcon by remember { mutableStateOf(placeholder) }
+            Icon(
+                imageVector = bgIcon,
+                contentDescription = null,
+                modifier = Modifier
+                    .focusable(enabled = false)
+                    .size(36.dp)
+                    .align(Alignment.Center),
+                tint = MaterialTheme.colorScheme.background
+            )
+
             val gradient = Brush.verticalGradient(
                 colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.7f)),
                 startY = sizeImage.height.toFloat() / 3f,
                 endY = sizeImage.height.toFloat()
             )
 
-            if (url != null) {
-                AsyncImage(
-                    modifier = Modifier
-                        .width(width = width)
-                        .wrapContentHeight()
-                        .clip(RoundedCornerShape(5.dp))
-                        .onGloballyPositioned { sizeImage = it.size },
-                    onError = { Log.d("Poster", "Error loading: $url") },
-                    error = rememberAsyncImagePainter(model = noDataImage),
-                    model = url,
-                    placeholder = rememberAsyncImagePainter(model = placeholder),
-                    contentDescription = title,
-                    contentScale = ContentScale.FillWidth
-                )
-            } else {
-                Image(
-                    modifier = Modifier
-                        .width(width = width)
-                        .height(height = POSTER_HEIGHT)
-                        .clip(RoundedCornerShape(5.dp))
-                        .onGloballyPositioned { sizeImage = it.size },
-                    painter = rememberAsyncImagePainter(model = noDataImage),
-                    contentDescription = title,
-                    contentScale = ContentScale.FillBounds
-                )
-            }
+            AsyncImage(
+                modifier = Modifier
+                    .width(width = width)
+                    .wrapContentHeight()
+                    .clip(RoundedCornerShape(5.dp))
+                    .onGloballyPositioned { sizeImage = it.size },
+                onError = {
+                    if (url != null) {
+                        bgIcon = Icons.Filled.BrokenImage
+                        Log.d("Poster", "Error loading: $url")
+                    }
+                },
+                model = url,
+                contentDescription = title,
+                contentScale = ContentScale.FillWidth,
+                onSuccess = { backgroundColor = Color.Transparent }
+            )
 
             val showTitle = overrideShowTitle ?: preferences.showPosterTitles
             if (showTitle) {

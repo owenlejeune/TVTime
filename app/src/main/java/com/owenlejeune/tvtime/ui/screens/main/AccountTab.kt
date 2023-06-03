@@ -38,7 +38,7 @@ import com.owenlejeune.tvtime.ui.navigation.AccountTabNavItem
 import com.owenlejeune.tvtime.ui.navigation.ListFetchFun
 import com.owenlejeune.tvtime.ui.navigation.MainNavItem
 import com.owenlejeune.tvtime.ui.screens.main.tabs.top.ScrollableTabs
-import com.owenlejeune.tvtime.ui.viewmodel.RecommendedMediaViewModel
+import com.owenlejeune.tvtime.api.tmdb.viewmodel.RecommendedMediaViewModel
 import com.owenlejeune.tvtime.utils.SessionManager
 import com.owenlejeune.tvtime.utils.TmdbUtils
 import kotlinx.coroutines.CoroutineScope
@@ -50,7 +50,7 @@ import kotlin.reflect.KClass
 @Composable
 fun AccountTab(
     appNavController: NavHostController,
-    appBarTitle: MutableState<String>,
+    appBarTitle: MutableState<@Composable () -> Unit>,
     appBarActions: MutableState<@Composable (RowScope.() -> Unit)> = mutableStateOf({}),
     doSignInPartTwo: Boolean = false
 ) {
@@ -60,7 +60,7 @@ fun AccountTab(
     val scope = rememberCoroutineScope()
 
     if (currentSession?.isAuthorized == false) {
-        appBarTitle.value = stringResource(id = R.string.account_not_logged_in)
+        appBarTitle.value = { Text(text = stringResource(id = R.string.account_not_logged_in)) }
         if (doSignInPartTwo) {
             AccountLoadingView()
             LaunchedEffect(Unit) {
@@ -72,13 +72,9 @@ fun AccountTab(
     } else {
         if (currentSession?.isAuthorized == true) {
             val accountDetails = remember { currentSession.accountDetails }
-            appBarTitle.value =
-                stringResource(
-                    id = R.string.account_header_title_formatted,
-                    getAccountName(accountDetails.value)
-                )
+            appBarTitle.value = { Text(text = stringResource(id = R.string.account_header_title_formatted, getAccountName(accountDetails.value))) }
         } else {
-            appBarTitle.value = stringResource(id = R.string.account_not_logged_in)
+            appBarTitle.value = { Text(text = stringResource(id = R.string.account_not_logged_in)) }
         }
 
         appBarActions.value = {

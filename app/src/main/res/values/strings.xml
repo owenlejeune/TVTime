@@ -212,4 +212,5 @@
     <string name="no_recommended_movies">No Recommended Movies</string>
     <string name="recommended_tv_title">Recommended TV</string>
     <string name="no_recommended_tv">No Recommended TV</string>
+    <string name="no_result_found">No more results found</string>
 </resources>

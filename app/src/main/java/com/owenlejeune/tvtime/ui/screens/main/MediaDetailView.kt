@@ -11,6 +11,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Movie
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -849,7 +850,6 @@ private fun CastCrewCard(appNavController: NavController, person: Person) {
             else -> null
         },
         imageUrl = TmdbUtils.getFullPersonImagePath(person),
-        noDataImage = R.drawable.no_person_photo,
         titleTextColor = MaterialTheme.colorScheme.onPrimary,
         subtitleTextColor = MaterialTheme.colorScheme.onSecondary,
         onItemClicked = {
@@ -899,7 +899,8 @@ fun SimilarContentCard(
                         appNavController.navigate(
                             "${MainNavItem.DetailView.route}/${mediaType}/${content.id}"
                         )
-                    }
+                    },
+                    placeholder = Icons.Filled.Movie
                 )
             }
         }

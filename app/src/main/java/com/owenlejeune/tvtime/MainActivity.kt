@@ -92,13 +92,13 @@ class MainActivity : MonetCompatActivity() {
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentRoute = navBackStackEntry?.destination?.route
 
-        val appBarTitle = rememberSaveable { mutableStateOf(BottomNavItem.getByRoute(currentRoute)?.name ?: BottomNavItem.SortedItems[0].name) }
         val decayAnimationSpec = rememberSplineBasedDecay<Float>()
         val topAppBarScrollState = rememberTopAppBarScrollState()
         val scrollBehavior = remember(decayAnimationSpec) {
             TopAppBarDefaults.exitUntilCollapsedScrollBehavior(decayAnimationSpec, topAppBarScrollState)
         }
 
+        val appBarTitle = remember { mutableStateOf<@Composable () -> Unit>({}) }
         val appBarActions = remember { mutableStateOf<@Composable RowScope.() -> Unit>({}) }
         val fab = remember { mutableStateOf<@Composable () -> Unit>({}) }
 
@@ -108,7 +108,7 @@ class MainActivity : MonetCompatActivity() {
                 if (windowSize != WindowSizeClass.Expanded) {
                     TopBar(
                         appNavController = appNavController,
-                        title = appBarTitle,
+                        title = appBarTitle.value,
                         scrollBehavior = scrollBehavior,
                         appBarActions = appBarActions
                     )
@@ -119,7 +119,7 @@ class MainActivity : MonetCompatActivity() {
             },
             bottomBar = {
                 if (windowSize != WindowSizeClass.Expanded) {
-                    BottomNavBar(navController = navController, appBarTitle = appBarTitle)
+                    BottomNavBar(navController = navController)
                 }
             }
         ) { innerPadding ->
@@ -141,7 +141,7 @@ class MainActivity : MonetCompatActivity() {
     @Composable
     private fun TopBar(
         appNavController: NavHostController,
-        title: MutableState<String>,
+        title: @Composable () -> Unit,
         scrollBehavior: TopAppBarScrollBehavior,
         appBarActions: MutableState<@Composable (RowScope.() -> Unit)> = mutableStateOf({})
     ) {
@@ -155,7 +155,7 @@ class MainActivity : MonetCompatActivity() {
             }
         }
         LargeTopAppBar(
-            title = { Text(text = title.value) },
+            title = title,
             scrollBehavior = scrollBehavior,
             colors = TopAppBarDefaults
                 .largeTopAppBarColors(
@@ -171,7 +171,6 @@ class MainActivity : MonetCompatActivity() {
     @Composable
     private fun BottomNavBar(
         navController: NavController,
-        appBarTitle: MutableState<String>,
         preferences: AppPreferences = get(AppPreferences::class.java)
     ) {
         val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -192,25 +191,12 @@ class MainActivity : MonetCompatActivity() {
                     selected = isSelected,
                     onClick = {
                         if (!isSelected) {
-                            onBottomAppBarItemClicked(
-                                navController = navController,
-                                appBarTitle = appBarTitle,
-                                item = item
-                            )
+                            navController.navigateInBottomBar(item.route)
                         }
                     }
                 )
             }
         }
-    }
-
-    private fun onBottomAppBarItemClicked(
-        navController: NavController,
-        appBarTitle: MutableState<String>,
-        item: BottomNavItem
-    ) {
-        navController.navigateInBottomBar(item.route)
-        appBarTitle.value = item.name
     }
 
     @Composable
@@ -220,7 +206,7 @@ class MainActivity : MonetCompatActivity() {
         navController: NavHostController,
         fab: MutableState<@Composable () -> Unit>,
         topBarScrollBehaviour: TopAppBarScrollBehavior,
-        appBarTitle: MutableState<String>,
+        appBarTitle: MutableState<@Composable () -> Unit>,
         appBarActions: MutableState<@Composable (RowScope.() -> Unit)> = mutableStateOf({}),
         mainNavStartRoute: String = BottomNavItem.SortedItems[0].route
     ) {
@@ -251,7 +237,7 @@ class MainActivity : MonetCompatActivity() {
         appNavController: NavHostController,
         navController: NavHostController,
         fab: MutableState<@Composable () -> Unit>,
-        appBarTitle: MutableState<String>,
+        appBarTitle: MutableState<@Composable () -> Unit>,
         appBarActions: MutableState<@Composable (RowScope.() -> Unit)> = mutableStateOf({}),
         mainNavStartRoute: String = BottomNavItem.SortedItems[0].route
     ) {
@@ -271,7 +257,7 @@ class MainActivity : MonetCompatActivity() {
         navController: NavHostController,
         fab: MutableState<@Composable () -> Unit>,
         topBarScrollBehaviour: TopAppBarScrollBehavior,
-        appBarTitle: MutableState<String>,
+        appBarTitle: MutableState<@Composable () -> Unit>,
         appBarActions: MutableState<@Composable (RowScope.() -> Unit)> = mutableStateOf({}),
         mainNavStartRoute: String = BottomNavItem.SortedItems[0].route,
         preferences: AppPreferences = get(AppPreferences::class.java)
@@ -290,11 +276,7 @@ class MainActivity : MonetCompatActivity() {
                         selected = isSelected,
                         onClick = {
                             if (!isSelected) {
-                                onBottomAppBarItemClicked(
-                                    navController = navController,
-                                    appBarTitle = appBarTitle,
-                                    item = item
-                                )
+                                navController.navigateInBottomBar(item.route)
                             }
                         }
                     )
@@ -307,7 +289,7 @@ class MainActivity : MonetCompatActivity() {
             Column {
                 TopBar(
                     appNavController = appNavController,
-                    title = appBarTitle,
+                    title = appBarTitle.value,
                     scrollBehavior = topBarScrollBehaviour,
                     appBarActions = appBarActions
                 )
@@ -328,7 +310,7 @@ class MainActivity : MonetCompatActivity() {
         appNavController: NavHostController,
         navController: NavHostController,
         fab: MutableState<@Composable () -> Unit>,
-        appBarTitle: MutableState<String>,
+        appBarTitle: MutableState<@Composable () -> Unit>,
         appBarActions: MutableState<RowScope.() -> Unit> = mutableStateOf({}),
         mainNavStartRoute: String = BottomNavItem.SortedItems[0].route
     ) {

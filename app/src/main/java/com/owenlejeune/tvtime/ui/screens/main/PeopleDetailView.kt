@@ -49,7 +49,7 @@ fun PersonDetailView(
     val decayAnimationSpec = rememberSplineBasedDecay<Float>()
     val topAppBarScrollState = rememberTopAppBarScrollState()
     val scrollBehaviour = remember(decayAnimationSpec) {
-        TopAppBarDefaults.exitUntilCollapsedScrollBehavior(decayAnimationSpec, topAppBarScrollState)
+        TopAppBarDefaults.pinnedScrollBehavior(topAppBarScrollState)
     }
 
     Scaffold(
@@ -58,7 +58,7 @@ fun PersonDetailView(
             SmallTopAppBar(
                 scrollBehavior = scrollBehaviour,
                 colors = TopAppBarDefaults
-                    .largeTopAppBarColors(
+                    .smallTopAppBarColors(
                         scrolledContainerColor = MaterialTheme.colorScheme.background,
                         titleContentColor = MaterialTheme.colorScheme.primary
                     ),
