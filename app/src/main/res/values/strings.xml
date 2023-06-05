@@ -114,6 +114,7 @@
     <string name="account_header_title_formatted">Hello, %1$s!</string>
     <string name="account_name_guest">Guest</string>
     <string name="account_not_logged_in">Not logged in</string>
+    <string name="account_add">Add Account</string>
 
     <string name="no_rated_content_message">No rated content</string>
     <string name="rating_test">Rating: %1$d</string>

@@ -33,7 +33,7 @@ class HomeTabRecyclerAdapter: RecyclerView.Adapter<HomeTabRecyclerAdapter.TabVie
 
     init {
         val visiblePages = BottomNavItem.Items.filter { it.order > -1 }.sortedBy { it.order }
-        val hiddenPages = BottomNavItem.Items.filter { it.order < 0 }
+        val hiddenPages = BottomNavItem.Items.filter { it.order == -1 }
         pages = ArrayList<BottomNavItem?>().apply {
             addAll(visiblePages)
             add(null)

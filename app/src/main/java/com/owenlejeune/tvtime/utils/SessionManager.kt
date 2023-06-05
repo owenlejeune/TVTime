@@ -1,8 +1,6 @@
 package com.owenlejeune.tvtime.utils
 
 import android.content.Context
-import android.content.Intent
-import android.net.Uri
 import android.widget.Toast
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -18,7 +16,6 @@ import com.owenlejeune.tvtime.api.tmdb.api.v4.model.AuthDeleteBody
 import com.owenlejeune.tvtime.api.tmdb.api.v4.model.AuthRequestBody
 import com.owenlejeune.tvtime.api.tmdb.api.v4.model.V4AccountList
 import com.owenlejeune.tvtime.preferences.AppPreferences
-import com.owenlejeune.tvtime.ui.navigation.AccountTabNavItem
 import com.owenlejeune.tvtime.ui.screens.main.MediaViewType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -59,6 +56,12 @@ object SessionManager: KoinComponent {
         }
     }
 
+    fun cancelSignIn() {
+        if (currentSession.value is InProgressSession) {
+            currentSession.value = null
+        }
+    }
+
     suspend fun initialize() {
         preferences.authorizedSessionValues?.let { values ->
             val session = AuthorizedSession(
@@ -79,17 +82,17 @@ object SessionManager: KoinComponent {
         val requestTokenResponse = service.createRequestToken(AuthRequestBody(redirect = "app://tvtime.auth.return"))
         if (requestTokenResponse.isSuccessful) {
             requestTokenResponse.body()?.let { ctr ->
-                currentSession.value = InProgressSession(ctr.requestToken)
                 val url = context.getString(R.string.tmdb_auth_url, ctr.requestToken)
                 val encodedUrl = URLEncoder.encode(url, StandardCharsets.UTF_8.toString())
                 withContext(Dispatchers.Main) {
                     onRedirect(encodedUrl)
                 }
+                currentSession.value = InProgressSession(ctr.requestToken)
             }
         }
     }
 
-    suspend fun singInPart2(
+    suspend fun signInPart2(
         context: Context = get(Context::class.java)
     ) {
         if (currentSession.value is InProgressSession) {

@@ -22,6 +22,7 @@ import androidx.navigation.NavController
 import com.google.accompanist.web.AccompanistWebViewClient
 import com.google.accompanist.web.WebView
 import com.google.accompanist.web.rememberWebViewState
+import com.owenlejeune.tvtime.utils.SessionManager
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
@@ -37,7 +38,12 @@ fun WebLinkView(
                 title = {},
                 navigationIcon = {
                     IconButton(
-                        onClick = { appNavController.popBackStack() }
+                        onClick = {
+                            if (url.contains("auth")) {
+                                SessionManager.cancelSignIn()
+                            }
+                            appNavController.popBackStack()
+                        }
                     ) {
                         Icon(
                             imageVector = Icons.Filled.Close,
@@ -47,8 +53,8 @@ fun WebLinkView(
                 }
             )
         }
-    ) {
-        Box(modifier = Modifier.padding(it)) {
+    ) { paddingValues ->
+        Box(modifier = Modifier.padding(paddingValues)) {
             val webViewState = rememberWebViewState(url = url)
             WebView(
                 state = webViewState,

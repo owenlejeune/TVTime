@@ -115,13 +115,7 @@ fun TVTimeTheme(
             content = {
                 val systemUiController = rememberSystemUiController()
                 systemUiController.setStatusBarColor(color = androidx.compose.material3.MaterialTheme.colorScheme.background)
-                systemUiController.setNavigationBarColor(
-                    color = androidx.compose.material3.MaterialTheme.colorScheme.primary.copy(
-                        alpha = 0.08f
-                    ).compositeOver(
-                        background = androidx.compose.material3.MaterialTheme.colorScheme.surface
-                    )
-                )
+                systemUiController.setNavigationBarColor(color = androidx.compose.material3.MaterialTheme.colorScheme.background)
 
                 content()
             }

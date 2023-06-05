@@ -247,13 +247,16 @@ fun PosterItem(
         colors = CardDefaults.cardColors(containerColor = Color.Transparent)
     ) {
         var backgroundColor by remember { mutableStateOf(Color.Gray) }
+        val m = if (backgroundColor == Color.Transparent) {
+            Modifier.wrapContentHeight()
+        } else {
+            Modifier.height(POSTER_HEIGHT)
+        }
         Box(
-            modifier = Modifier
+            modifier = m
                 .width(width = width)
-                .height(height = POSTER_HEIGHT)
                 .background(color = backgroundColor)
                 .clip(RoundedCornerShape(5.dp))
-                .onGloballyPositioned { sizeImage = it.size }
         ) {
             var bgIcon by remember { mutableStateOf(placeholder) }
             Icon(
@@ -286,7 +289,7 @@ fun PosterItem(
                 },
                 model = url,
                 contentDescription = title,
-                contentScale = ContentScale.FillWidth,
+                contentScale = ContentScale.FillBounds,
                 onSuccess = { backgroundColor = Color.Transparent }
             )
 

@@ -1,20 +1,18 @@
 package com.owenlejeune.tvtime
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.compose.animation.rememberSplineBasedDecay
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Scaffold
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
@@ -23,7 +21,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
-import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -31,11 +28,17 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import androidx.navigation.navDeepLink
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.kieronquinn.monetcompat.app.MonetCompatActivity
 import com.owenlejeune.tvtime.extensions.WindowSizeClass
 import com.owenlejeune.tvtime.extensions.navigateInBottomBar
 import com.owenlejeune.tvtime.extensions.rememberWindowSizeClass
 import com.owenlejeune.tvtime.preferences.AppPreferences
+import com.owenlejeune.tvtime.ui.components.AccountIcon
+import com.owenlejeune.tvtime.ui.components.ProfileMenuContainer
+import com.owenlejeune.tvtime.ui.components.ProfileMenuDefaults
+import com.owenlejeune.tvtime.ui.components.ProfileMenuOverlay
 import com.owenlejeune.tvtime.ui.navigation.BottomNavItem
 import com.owenlejeune.tvtime.ui.navigation.MainNavGraph
 import com.owenlejeune.tvtime.ui.navigation.MainNavItem
@@ -89,8 +92,6 @@ class MainActivity : MonetCompatActivity() {
         preferences: AppPreferences = get(AppPreferences::class.java)
     ) {
         val navController = rememberNavController()
-        val navBackStackEntry by navController.currentBackStackEntryAsState()
-        val currentRoute = navBackStackEntry?.destination?.route
 
         val decayAnimationSpec = rememberSplineBasedDecay<Float>()
         val topAppBarScrollState = rememberTopAppBarScrollState()
@@ -102,38 +103,58 @@ class MainActivity : MonetCompatActivity() {
         val appBarActions = remember { mutableStateOf<@Composable RowScope.() -> Unit>({}) }
         val fab = remember { mutableStateOf<@Composable () -> Unit>({}) }
 
-        Scaffold (
-            modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-            topBar = {
-                if (windowSize != WindowSizeClass.Expanded) {
-                    TopBar(
+        val showProfileMenuOverlay = remember { mutableStateOf(false) }
+        val navigationIcon = @Composable {
+            AccountIcon(
+                modifier = Modifier.padding(horizontal = 12.dp),
+                size = 32.dp,
+                onClick = { showProfileMenuOverlay.value = true }
+            )
+        }
+
+        val defaultNavBarColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f).compositeOver(background = MaterialTheme.colorScheme.surface)
+
+        ProfileMenuContainer(
+            appNavController = appNavController,
+            visible = showProfileMenuOverlay.value,
+            onDismissRequest = { showProfileMenuOverlay.value = false },
+            colors = ProfileMenuDefaults.systemBarColors(navBarColor = defaultNavBarColor)
+        ) {
+            Scaffold(
+                modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+                topBar = {
+                    if (windowSize != WindowSizeClass.Expanded) {
+                        TopBar(
+                            appNavController = appNavController,
+                            title = appBarTitle.value,
+                            scrollBehavior = scrollBehavior,
+                            appBarActions = appBarActions,
+                            navigationIcon = navigationIcon
+                        )
+                    }
+                },
+                floatingActionButton = {
+                    fab.value()
+                },
+                bottomBar = {
+                    if (windowSize != WindowSizeClass.Expanded) {
+                        BottomNavBar(navController = navController)
+                    }
+                }
+            ) { innerPadding ->
+                Box(modifier = Modifier.padding(innerPadding)) {
+                    MainContent(
+                        windowSize = windowSize,
                         appNavController = appNavController,
-                        title = appBarTitle.value,
-                        scrollBehavior = scrollBehavior,
-                        appBarActions = appBarActions
+                        navController = navController,
+                        fab = fab,
+                        appBarTitle = appBarTitle,
+                        appBarActions = appBarActions,
+                        topBarScrollBehaviour = scrollBehavior,
+                        mainNavStartRoute = mainNavStartRoute,
+                        navigationIcon = navigationIcon
                     )
                 }
-            },
-            floatingActionButton = {
-                fab.value()
-            },
-            bottomBar = {
-                if (windowSize != WindowSizeClass.Expanded) {
-                    BottomNavBar(navController = navController)
-                }
-            }
-        ) { innerPadding ->
-            Box(modifier = Modifier.padding(innerPadding)) {
-                MainContent(
-                    windowSize = windowSize,
-                    appNavController = appNavController,
-                    navController = navController,
-                    fab = fab,
-                    appBarTitle = appBarTitle,
-                    appBarActions = appBarActions,
-                    topBarScrollBehaviour = scrollBehavior,
-                    mainNavStartRoute = mainNavStartRoute
-                )
             }
         }
     }
@@ -143,17 +164,9 @@ class MainActivity : MonetCompatActivity() {
         appNavController: NavHostController,
         title: @Composable () -> Unit,
         scrollBehavior: TopAppBarScrollBehavior,
-        appBarActions: MutableState<@Composable (RowScope.() -> Unit)> = mutableStateOf({})
+        appBarActions: MutableState<@Composable (RowScope.() -> Unit)> = mutableStateOf({}),
+        navigationIcon: @Composable () -> Unit = {}
     ) {
-        val defaultAppBarActions: @Composable RowScope.() -> Unit = {
-            IconButton(
-                onClick = {
-                    appNavController.navigate(MainNavItem.SettingsView.route)
-                }
-            ) {
-                Icon(imageVector = Icons.Filled.Settings, contentDescription = stringResource(id = R.string.nav_settings_title))
-            }
-        }
         LargeTopAppBar(
             title = title,
             scrollBehavior = scrollBehavior,
@@ -162,9 +175,9 @@ class MainActivity : MonetCompatActivity() {
                     scrolledContainerColor = MaterialTheme.colorScheme.background
                 ),
             actions = {
-                defaultAppBarActions()
                 appBarActions.value(this)
-            }
+            },
+            navigationIcon = navigationIcon
         )
     }
 
@@ -208,6 +221,7 @@ class MainActivity : MonetCompatActivity() {
         topBarScrollBehaviour: TopAppBarScrollBehavior,
         appBarTitle: MutableState<@Composable () -> Unit>,
         appBarActions: MutableState<@Composable (RowScope.() -> Unit)> = mutableStateOf({}),
+        navigationIcon: @Composable () -> Unit = {},
         mainNavStartRoute: String = BottomNavItem.SortedItems[0].route
     ) {
         if (windowSize == WindowSizeClass.Expanded) {
@@ -218,7 +232,8 @@ class MainActivity : MonetCompatActivity() {
                 appBarTitle = appBarTitle,
                 appBarActions = appBarActions,
                 topBarScrollBehaviour = topBarScrollBehaviour,
-                mainNavStartRoute = mainNavStartRoute
+                mainNavStartRoute = mainNavStartRoute,
+                navigationIcon = navigationIcon
             )
         } else {
             SingleColumnMainContent(
@@ -259,6 +274,7 @@ class MainActivity : MonetCompatActivity() {
         topBarScrollBehaviour: TopAppBarScrollBehavior,
         appBarTitle: MutableState<@Composable () -> Unit>,
         appBarActions: MutableState<@Composable (RowScope.() -> Unit)> = mutableStateOf({}),
+        navigationIcon: @Composable () -> Unit = {},
         mainNavStartRoute: String = BottomNavItem.SortedItems[0].route,
         preferences: AppPreferences = get(AppPreferences::class.java)
     ) {
@@ -291,7 +307,8 @@ class MainActivity : MonetCompatActivity() {
                     appNavController = appNavController,
                     title = appBarTitle.value,
                     scrollBehavior = topBarScrollBehaviour,
-                    appBarActions = appBarActions
+                    appBarActions = appBarActions,
+                    navigationIcon = navigationIcon
                 )
                 MainMediaView(
                     appNavController = appNavController,
@@ -434,6 +451,18 @@ class MainActivity : MonetCompatActivity() {
                 url?.let { 
                     WebLinkView(url = url, appNavController = appNavController)
                 }
+            }
+            composable(
+                route = MainNavItem.AccountView.route,
+                deepLinks = listOf(
+                    navDeepLink { uriPattern = "app://tvtime.auth.{${NavConstants.ACCOUNT_KEY}}" }
+                )
+            ) {
+                val deepLink = it.arguments?.getString(NavConstants.ACCOUNT_KEY)
+                AccountView(
+                    appNavController = appNavController,
+                    doSignInPartTwo = deepLink == NavConstants.AUTH_REDIRECT_PAGE
+                )
             }
         }
     }

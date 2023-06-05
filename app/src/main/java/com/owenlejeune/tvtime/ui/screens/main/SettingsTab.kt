@@ -382,7 +382,7 @@ private fun HomeScreenPreferences(
     SwitchPreference(
         titleText = stringResource(R.string.preference_show_poster_titles_title),
         subtitleText = stringResource(R.string.preference_show_poster_titles_subtitle),
-        checkState = showTabLabels.value,
+        checkState = showPosterTitles.value,
         onCheckedChange = { isChecked ->
             showPosterTitles.value = isChecked
             preferences.showPosterTitles = isChecked

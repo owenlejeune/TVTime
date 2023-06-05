@@ -17,12 +17,14 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ArrowDropUp
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material.icons.outlined.AccountCircle
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -65,9 +67,11 @@ import coil.compose.rememberAsyncImagePainter
 import com.google.accompanist.flowlayout.FlowRow
 import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.AuthorDetails
+import com.owenlejeune.tvtime.extensions.unlessEmpty
 import com.owenlejeune.tvtime.preferences.AppPreferences
 import com.owenlejeune.tvtime.ui.navigation.MainNavItem
 import com.owenlejeune.tvtime.ui.screens.main.MediaViewType
+import com.owenlejeune.tvtime.utils.SessionManager
 import com.owenlejeune.tvtime.utils.TmdbUtils
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -696,34 +700,90 @@ fun AvatarImage(
             contentDescription = ""
         )
     } else {
-        val text = if (author.name.isNotEmpty()) author.name[0] else author.username[0]
-        RoundedLetterImage(
-            size = size,
-            character = text
+        val name = author.name.unlessEmpty(author.username)
+        UserInitials(size = size, name = name)
+    }
+}
+
+@Composable
+fun UserInitials(
+    size: Dp,
+    name: String,
+    fontSize: TextUnit = 16.sp
+) {
+    val sanitizedName = name.replace("\\s+".toRegex(), " ")
+    val userName = if(sanitizedName.contains(" ")) {
+        sanitizedName.split(" ")[0][0].toString() + sanitizedName.split(" ")[1][0].toString()
+    } else {
+        if (sanitizedName.length < 3) name else { sanitizedName.substring(0, 2) }
+    }
+    Box(
+        modifier = Modifier
+            .clip(CircleShape)
+            .size(size)
+            .background(color = MaterialTheme.colorScheme.secondary)
+    ) {
+        Text(
+            modifier = Modifier.align(Alignment.Center),
+            text = userName.uppercase(),
+            textAlign = TextAlign.Center,
+            style = TextStyle(
+                color = MaterialTheme.colorScheme.background,
+                fontSize = fontSize
+            )
         )
     }
 }
 
 @Composable
-fun RoundedLetterImage(
-    size: Dp,
-    character: Char,
-    modifier: Modifier = Modifier
+fun AccountIcon(
+    modifier: Modifier = Modifier,
+    size: Dp = 60.dp,
+    onClick: () -> Unit = {},
+    enabled: Boolean = true
 ) {
-    Box(
-        modifier = modifier
-            .clip(CircleShape)
-            .size(size)
-            .background(color = MaterialTheme.colorScheme.tertiary)
-    ) {
-        Text(
-            modifier = Modifier
-                .align(Alignment.Center),
-            text = character.uppercase(),
-            color = MaterialTheme.colorScheme.onTertiary,
-            textAlign = TextAlign.Center,
-            style = MaterialTheme.typography.titleLarge
+    val accountDetails = SessionManager.currentSession.value?.accountDetails?.value
+    val avatarUrl = accountDetails?.let {
+        when {
+            accountDetails.avatar.tmdb?.avatarPath?.isNotEmpty() == true -> {
+                TmdbUtils.getAccountAvatarUrl(accountDetails)
+            }
+            accountDetails.avatar.gravatar?.isDefault() == false -> {
+                TmdbUtils.getAccountGravatarUrl(accountDetails)
+            }
+            else -> null
+        }
+    }
+
+    Box(modifier = modifier
+        .clip(CircleShape)
+        .clickable(
+            enabled = enabled,
+            onClick = onClick
         )
+    ) {
+        if (accountDetails == null) {
+            Icon(
+                imageVector = Icons.Outlined.AccountCircle,
+                contentDescription = null,
+                modifier = Modifier.size(size),
+                tint = MaterialTheme.colorScheme.secondary
+            )
+        } else if (avatarUrl == null) {
+            val name = accountDetails.name.ifEmpty { accountDetails.username }
+            UserInitials(size = size, name = name)
+        } else {
+            Box(modifier = Modifier.size(size)) {
+                AsyncImage(
+                    model = avatarUrl,
+                    contentDescription = "",
+                    modifier = Modifier
+                        .size(60.dp)
+                        .clip(CircleShape),
+                    contentScale = ContentScale.Fit
+                )
+            }
+        }
     }
 }
 
@@ -1035,4 +1095,9 @@ fun SearchBar(
             )
         }
     )
+}
+
+@Composable
+fun MyDivider(modifier: Modifier = Modifier) {
+    Divider(thickness = 0.5.dp, modifier = modifier, color = MaterialTheme.colorScheme.secondaryContainer)
 }

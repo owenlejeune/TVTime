@@ -2,7 +2,7 @@ package com.owenlejeune.tvtime.ui.screens.main
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.Text
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Modifier
@@ -22,7 +22,7 @@ fun PeopleTab(
     appNavController: NavHostController,
     fab: MutableState<@Composable () -> Unit>
 ) {
-    val titleText = stringResource(id = R.string.nav_people_title)
+    val titleText = stringResource(id = R.string.popular_today_header)
     appBarTitle.value = { Text(text = titleText) }
 
     Column {
@@ -38,10 +38,10 @@ fun PeopleTab(
         PagingPeoplePosterGrid(
             lazyPagingItems = peopleList,
             header = {
-                Text(
-                    text = stringResource(R.string.popular_today_header),
-                    modifier = Modifier.padding(start = 8.dp)
-                )
+//                Text(
+//                    text = stringResource(R.string.popular_today_header),
+//                    modifier = Modifier.padding(start = 8.dp)
+//                )
             },
             onClick = { id ->
                 appNavController.navigate(

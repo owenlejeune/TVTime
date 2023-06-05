@@ -1,29 +1,25 @@
 package com.owenlejeune.tvtime.ui.screens.main
 
+import androidx.compose.animation.rememberSplineBasedDecay
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import androidx.paging.compose.collectAsLazyPagingItems
-import coil.compose.AsyncImage
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.PagerState
@@ -31,63 +27,104 @@ import com.google.accompanist.pager.rememberPagerState
 import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.*
 import com.owenlejeune.tvtime.api.tmdb.api.v4.model.V4AccountList
+import com.owenlejeune.tvtime.api.tmdb.viewmodel.RecommendedMediaViewModel
 import com.owenlejeune.tvtime.extensions.unlessEmpty
+import com.owenlejeune.tvtime.ui.components.AccountIcon
 import com.owenlejeune.tvtime.ui.components.PagingPosterGrid
-import com.owenlejeune.tvtime.ui.components.RoundedLetterImage
+import com.owenlejeune.tvtime.ui.components.ProfileMenuContainer
+import com.owenlejeune.tvtime.ui.components.ProfileMenuOverlay
 import com.owenlejeune.tvtime.ui.navigation.AccountTabNavItem
 import com.owenlejeune.tvtime.ui.navigation.ListFetchFun
 import com.owenlejeune.tvtime.ui.navigation.MainNavItem
 import com.owenlejeune.tvtime.ui.screens.main.tabs.top.ScrollableTabs
-import com.owenlejeune.tvtime.api.tmdb.viewmodel.RecommendedMediaViewModel
 import com.owenlejeune.tvtime.utils.SessionManager
 import com.owenlejeune.tvtime.utils.TmdbUtils
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlin.reflect.KClass
 
-@OptIn(ExperimentalPagerApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AccountTab(
+fun AccountView(
     appNavController: NavHostController,
-    appBarTitle: MutableState<@Composable () -> Unit>,
-    appBarActions: MutableState<@Composable (RowScope.() -> Unit)> = mutableStateOf({}),
     doSignInPartTwo: Boolean = false
 ) {
     val currentSessionState = remember { SessionManager.currentSession }
     val currentSession = currentSessionState.value
 
+    val showProfileMenuOverlay = remember { mutableStateOf(false) }
+
+    ProfileMenuContainer(
+        appNavController = appNavController,
+        visible = showProfileMenuOverlay.value,
+        onDismissRequest = { showProfileMenuOverlay.value = false }
+    ) {
+        val decayAnimationSpec = rememberSplineBasedDecay<Float>()
+        val topAppBarScrollState = rememberTopAppBarScrollState()
+        val scrollBehavior = remember(decayAnimationSpec) {
+            TopAppBarDefaults.exitUntilCollapsedScrollBehavior(decayAnimationSpec, topAppBarScrollState)
+        }
+        Scaffold(
+            modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+            topBar = {
+                LargeTopAppBar(
+                    scrollBehavior = scrollBehavior,
+                    navigationIcon = {
+                        IconButton(
+                            onClick = { appNavController.popBackStack() }
+                        ) {
+                            Icon(
+                                Icons.Filled.ArrowBack,
+                                contentDescription = null
+                            )
+                        }
+                    },
+                    title = {
+                        if (currentSession?.isAuthorized == false) {
+                            Text(text = stringResource(id = R.string.account_not_logged_in))
+                        } else {
+                            val accountDetails = remember { currentSession!!.accountDetails }
+                            Text(text = getAccountName(accountDetails.value))
+                        }
+                    },
+                    colors = TopAppBarDefaults.largeTopAppBarColors(scrolledContainerColor = MaterialTheme.colorScheme.background),
+                    actions = {
+                        AccountIcon(
+                            modifier = Modifier.padding(start = 12.dp),
+                            size = 32.dp,
+                            onClick = { showProfileMenuOverlay.value = true }
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                    }
+                )
+            }
+        ) {
+            Box(modifier = Modifier.padding(it)) {
+                AccountViewContent(appNavController = appNavController, doSignInPartTwo = doSignInPartTwo)
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalPagerApi::class)
+@Composable
+fun AccountViewContent(
+    appNavController: NavHostController,
+    doSignInPartTwo: Boolean = false
+) {
+    val currentSessionState = remember { SessionManager.currentSession }
+    val currentSession = currentSessionState.value
     val scope = rememberCoroutineScope()
 
-    if (currentSession?.isAuthorized == false) {
-        appBarTitle.value = { Text(text = stringResource(id = R.string.account_not_logged_in)) }
-        if (doSignInPartTwo) {
-            AccountLoadingView()
-            LaunchedEffect(Unit) {
-                scope.launch {
-                    SessionManager.singInPart2()
-                }
+    if (currentSession?.isAuthorized != true && doSignInPartTwo) {
+        AccountLoadingView()
+        LaunchedEffect(Unit) {
+            scope.launch {
+                SessionManager.signInPart2()
             }
         }
     } else {
-        if (currentSession?.isAuthorized == true) {
-            val accountDetails = remember { currentSession.accountDetails }
-            appBarTitle.value = { Text(text = stringResource(id = R.string.account_header_title_formatted, getAccountName(accountDetails.value))) }
-        } else {
-            appBarTitle.value = { Text(text = stringResource(id = R.string.account_not_logged_in)) }
-        }
-
-        appBarActions.value = {
-            AccountDropdownMenu(
-                session = currentSession,
-                appNavController = appNavController
-            )
-        }
-
         currentSession?.let {
             Column {
-                AuthorizedSessionIcon()
-
                 val tabs = AccountTabNavItem.AuthorizedItems
                 val pagerState = rememberPagerState()
                 ScrollableTabs(tabs = tabs, pagerState = pagerState)
@@ -286,95 +323,6 @@ private fun MediaItemRow(
         additionalDetails = listOf(description),
         rating = rating
     )
-}
-
-@Composable
-private fun AccountDropdownMenu(session: SessionManager.Session?, appNavController: NavHostController) {
-    val expanded = remember { mutableStateOf(false) }
-    
-    IconButton(
-        onClick = { expanded.value = true }
-    ) {
-        Icon(imageVector = Icons.Filled.AccountCircle, contentDescription = stringResource(id = R.string.nav_account_title))
-    }
-    
-    DropdownMenu(
-        expanded = expanded.value, 
-        onDismissRequest = { expanded.value = false }
-    ) {
-        if(session?.isAuthorized == true) {
-            AuthorizedSessionMenuItems(expanded = expanded)
-        } else {
-            NoSessionMenuItems(expanded = expanded, appNavController = appNavController)
-        }
-    }
-}
-
-@Composable
-private fun AuthorizedSessionMenuItems(expanded: MutableState<Boolean>) {
-    DropdownMenuItem(
-        text = { Text(text = stringResource(id = R.string.action_sign_out)) },
-        onClick = {
-            signOut()
-            expanded.value = false
-        }
-    )
-}
-
-@Composable
-private fun NoSessionMenuItems(expanded: MutableState<Boolean>, appNavController: NavHostController) {
-    val context = LocalContext.current
-    DropdownMenuItem(
-        text = { Text(text = stringResource(id = R.string.action_sign_in)) },
-        onClick = {
-            CoroutineScope(Dispatchers.IO).launch {
-                SessionManager.signInPart1(context) {
-                    appNavController.navigate(MainNavItem.WebLinkView.route.plus("/$it"))
-                }
-            }
-            expanded.value = false
-        }
-    )
-}
-
-@Composable
-private fun AuthorizedSessionIcon() {
-    val accountDetails = SessionManager.currentSession.value?.accountDetails?.value
-    val avatarUrl = accountDetails?.let {
-        when {
-            accountDetails.avatar.tmdb?.avatarPath?.isNotEmpty() == true -> {
-                TmdbUtils.getAccountAvatarUrl(accountDetails)
-            }
-            accountDetails.avatar.gravatar?.isDefault() == false -> {
-                TmdbUtils.getAccountGravatarUrl(accountDetails)
-            }
-            else -> null
-        }
-    }
-
-    Box(modifier = Modifier.padding(start = 12.dp)) {
-        if (accountDetails == null || avatarUrl == null) {
-            val accLetter = (accountDetails?.name?.ifEmpty { accountDetails.username } ?: " ")[0]
-            RoundedLetterImage(size = 60.dp, character = accLetter)
-        } else {
-            Box(modifier = Modifier.size(60.dp)) {
-                AsyncImage(
-                    model = avatarUrl,
-                    contentDescription = "",
-                    modifier = Modifier
-                        .size(60.dp)
-                        .clip(CircleShape),
-                    contentScale = ContentScale.Fit
-                )
-            }
-        }
-    }
-}
-
-private fun signOut() {
-    CoroutineScope(Dispatchers.IO).launch {
-        SessionManager.clearSession()
-    }
 }
 
 
