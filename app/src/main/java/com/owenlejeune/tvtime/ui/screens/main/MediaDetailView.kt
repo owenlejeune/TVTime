@@ -1,6 +1,7 @@
 package com.owenlejeune.tvtime.ui.screens.main
 
 import android.content.Context
+import android.media.MediaActionSound
 import android.widget.Toast
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
@@ -31,6 +32,9 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.google.accompanist.pager.ExperimentalPagerApi
+import com.google.accompanist.pager.PagerState
+import com.google.accompanist.pager.rememberPagerState
 import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.api.tmdb.api.v3.AccountService
 import com.owenlejeune.tvtime.api.tmdb.api.v3.DetailService
@@ -51,16 +55,17 @@ import com.owenlejeune.tvtime.utils.TmdbUtils
 import kotlinx.coroutines.*
 import org.json.JSONObject
 import org.koin.java.KoinJavaComponent
+import org.koin.java.KoinJavaComponent.get
 import java.text.DecimalFormat
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalPagerApi::class)
 @Composable
 fun MediaDetailView(
     appNavController: NavController,
     itemId: Int?,
     type: MediaViewType,
     windowSize: WindowSizeClass,
-    preferences: AppPreferences = KoinJavaComponent.get(AppPreferences::class.java)
+    preferences: AppPreferences = get(AppPreferences::class.java)
 ) {
     val service = when (type) {
         MediaViewType.MOVIE -> MoviesService()
@@ -75,107 +80,152 @@ fun MediaDetailView(
         }
     }
 
+    val images = remember { mutableStateOf<ImageCollection?>(null) }
+    itemId?.let {
+        if (preferences.showBackdropGallery && images.value == null) {
+            fetchImages(itemId, service, images)
+        }
+    }
+
     val decayAnimationSpec = rememberSplineBasedDecay<Float>()
     val topAppBarScrollState = rememberTopAppBarScrollState()
     val scrollBehavior = remember(decayAnimationSpec) {
         TopAppBarDefaults.pinnedScrollBehavior(topAppBarScrollState)
     }
 
-    Scaffold(
-        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-        topBar = {
-            SmallTopAppBar(
-                scrollBehavior = scrollBehavior,
-                colors = TopAppBarDefaults
-                    .smallTopAppBarColors(
-                        scrolledContainerColor = MaterialTheme.colorScheme.background,
-                        titleContentColor = MaterialTheme.colorScheme.primary
-                    ),
-                title = { Text(text = mediaItem.value?.title ?: "") },
-                navigationIcon = {
-                    IconButton(
-                        onClick = { appNavController.popBackStack() }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.ArrowBack,
-                            contentDescription = stringResource(id = R.string.content_description_back_button),
-                            tint = MaterialTheme.colorScheme.primary
-                        )
+    val pagerState = rememberPagerState(initialPage = 0)
+
+    Box(
+        modifier = Modifier.fillMaxSize()
+    ) {
+        val showGalleryOverlay = remember { mutableStateOf(false) }
+        Scaffold(
+            modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+            topBar = {
+                SmallTopAppBar(
+                    scrollBehavior = scrollBehavior,
+                    colors = TopAppBarDefaults
+                        .smallTopAppBarColors(
+                            scrolledContainerColor = MaterialTheme.colorScheme.background,
+                            titleContentColor = MaterialTheme.colorScheme.primary
+                        ),
+                    title = { Text(text = mediaItem.value?.title ?: "") },
+                    navigationIcon = {
+                        IconButton(
+                            onClick = { appNavController.popBackStack() }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.ArrowBack,
+                                contentDescription = stringResource(id = R.string.content_description_back_button),
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
                     }
-                }
-            )
+                )
+            }
+        ) { innerPadding ->
+            Box(modifier = Modifier.padding(innerPadding)) {
+                MediaViewContent(
+                    appNavController = appNavController,
+                    itemId = itemId,
+                    mediaItem = mediaItem,
+                    images = images,
+                    service = service,
+                    type = type,
+                    windowSize = windowSize,
+                    showImageGallery = showGalleryOverlay,
+                    pagerState = pagerState
+                )
+            }
         }
-    ) { innerPadding ->
-        Box(modifier = Modifier.padding(innerPadding)) {
-            Row(
-                modifier = Modifier
-                    .background(color = MaterialTheme.colorScheme.background),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+
+        if (showGalleryOverlay.value) {
+            images.value?.let {
+                ImageGalleryOverlay(
+                    imageCollection = it,
+                    selectedImage = pagerState.currentPage,
+                    onDismissRequest = { showGalleryOverlay.value = false }
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalPagerApi::class)
+@Composable
+private fun MediaViewContent(
+    appNavController: NavController,
+    itemId: Int?,
+    mediaItem: MutableState<DetailedItem?>,
+    images: MutableState<ImageCollection?>,
+    service: DetailService,
+    type: MediaViewType,
+    windowSize: WindowSizeClass,
+    showImageGallery: MutableState<Boolean>,
+    pagerState: PagerState
+) {
+    Row(
+        modifier = Modifier
+            .background(color = MaterialTheme.colorScheme.background),
+        horizontalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .background(color = MaterialTheme.colorScheme.background)
+                .weight(1f)
+                .verticalScroll(state = rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            DetailHeader(
+                posterUrl = TmdbUtils.getFullPosterPath(mediaItem.value?.posterPath),
+                posterContentDescription = mediaItem.value?.title,
+                backdropUrl = TmdbUtils.getFullBackdropPath(mediaItem.value?.backdropPath),
+                rating = mediaItem.value?.voteAverage?.let { it / 10 },
+                imageCollection = images.value,
+                showGalleryOverlay = showImageGallery,
+                pagerState = pagerState
+            )
+
+            Column(
+                modifier = Modifier.padding(horizontal = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Column(
-                    modifier = Modifier
-                        .background(color = MaterialTheme.colorScheme.background)
-                        .weight(1f)
-                        .verticalScroll(state = rememberScrollState()),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    val images = remember { mutableStateOf<ImageCollection?>(null) }
-                    itemId?.let {
-                        if (preferences.showBackdropGallery && images.value == null) {
-                            fetchImages(itemId, service, images)
-                        }
-                    }
-
-                    DetailHeader(
-                        posterUrl = TmdbUtils.getFullPosterPath(mediaItem.value?.posterPath),
-                        posterContentDescription = mediaItem.value?.title,
-                        backdropUrl = TmdbUtils.getFullBackdropPath(mediaItem.value?.backdropPath),
-                        rating = mediaItem.value?.voteAverage?.let { it / 10 },
-                        imageCollection = images.value
-                    )
-
-                    Column(
-                        modifier = Modifier.padding(horizontal = 16.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        if (type == MediaViewType.MOVIE) {
-                            MiscMovieDetails(mediaItem = mediaItem, service as MoviesService)
-                        } else {
-                            MiscTvDetails(mediaItem = mediaItem, service as TvService)
-                        }
-
-                        ActionsView(itemId = itemId, type = type, service = service)
-
-                        OverviewCard(itemId = itemId, mediaItem = mediaItem, service = service)
-
-                        CastCard(itemId = itemId, service = service, appNavController = appNavController)
-
-                        SimilarContentCard(itemId = itemId, service = service, mediaType = type, appNavController = appNavController)
-
-                        VideosCard(itemId = itemId, service = service)
-
-                        AdditionalDetailsCard(itemId = itemId, mediaItem = mediaItem, service = service, type = type)
-
-                        if (windowSize != WindowSizeClass.Expanded) {
-                            ReviewsCard(itemId = itemId, service = service)
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(16.dp))
+                if (type == MediaViewType.MOVIE) {
+                    MiscMovieDetails(mediaItem = mediaItem, service as MoviesService)
+                } else {
+                    MiscTvDetails(mediaItem = mediaItem, service as TvService)
                 }
 
-                if (windowSize == WindowSizeClass.Expanded) {
-                    Column(
-                        modifier = Modifier
-                            .background(color = MaterialTheme.colorScheme.background)
-                            .weight(1f)
-                            .verticalScroll(state = rememberScrollState())
-                    ) {
-                        ReviewsCard(itemId = itemId, service = service)
+                ActionsView(itemId = itemId, type = type, service = service)
 
-                        Spacer(modifier = Modifier.height(16.dp))
-                    }
+                OverviewCard(itemId = itemId, mediaItem = mediaItem, service = service)
+
+                CastCard(itemId = itemId, service = service, appNavController = appNavController)
+
+                SimilarContentCard(itemId = itemId, service = service, mediaType = type, appNavController = appNavController)
+
+                VideosCard(itemId = itemId, service = service)
+
+                AdditionalDetailsCard(itemId = itemId, mediaItem = mediaItem, service = service, type = type)
+
+                if (windowSize != WindowSizeClass.Expanded) {
+                    ReviewsCard(itemId = itemId, service = service)
                 }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+
+        if (windowSize == WindowSizeClass.Expanded) {
+            Column(
+                modifier = Modifier
+                    .background(color = MaterialTheme.colorScheme.background)
+                    .weight(1f)
+                    .verticalScroll(state = rememberScrollState())
+            ) {
+                ReviewsCard(itemId = itemId, service = service)
+
+                Spacer(modifier = Modifier.height(16.dp))
             }
         }
     }
@@ -616,53 +666,55 @@ private fun OverviewCard(
     }
 
     mediaItem.value?.let { mi ->
-        ContentCard(
-            modifier = modifier
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .wrapContentHeight()
-                    .padding(vertical = 12.dp, horizontal = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+        if (!mi.tagline.isNullOrEmpty() || keywordResponse.value?.keywords?.isNotEmpty() == true || !mi.overview.isNullOrEmpty()) {
+            ContentCard(
+                modifier = modifier
             ) {
-                mi.tagline?.let { tagline ->
-                    if (tagline.isNotEmpty()) {
-                        Text(
-                            text = tagline,
-                            color = MaterialTheme.colorScheme.primary,
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontStyle = FontStyle.Italic,
-                        )
-                    }
-                }
-                Text(
-                    text = mi.overview ?: "",
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    style = MaterialTheme.typography.bodyMedium
-                )
-
-
-                keywordResponse.value?.keywords?.let { keywords ->
-                    val keywordsChipInfo = keywords.map { ChipInfo(it.name, false) }
-                    Row(
-                        modifier = Modifier.horizontalScroll(rememberScrollState()),
-                        horizontalArrangement = Arrangement.spacedBy(ChipStyle.Rounded.mainAxisSpacing)
-                    ) {
-                        keywordsChipInfo.forEach { keywordChipInfo ->
-                            RoundedChip(
-                                text = keywordChipInfo.text,
-                                enabled = keywordChipInfo.enabled,
-                                colors = ChipDefaults.roundedChipColors(
-                                    unselectedContainerColor = MaterialTheme.colorScheme.primary,
-                                    unselectedContentColor = MaterialTheme.colorScheme.primary
-                                ),
-                                onSelectionChanged = { chip ->
-                                    if (service is MoviesService) {
-                                        // Toast.makeText(context, chip, Toast.LENGTH_SHORT).show()
-                                    }
-                                }
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight()
+                        .padding(vertical = 12.dp, horizontal = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    mi.tagline?.let { tagline ->
+                        if (tagline.isNotEmpty()) {
+                            Text(
+                                text = tagline,
+                                color = MaterialTheme.colorScheme.primary,
+                                style = MaterialTheme.typography.bodyLarge,
+                                fontStyle = FontStyle.Italic,
                             )
+                        }
+                    }
+                    Text(
+                        text = mi.overview ?: "",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+
+
+                    keywordResponse.value?.keywords?.let { keywords ->
+                        val keywordsChipInfo = keywords.map { ChipInfo(it.name, false) }
+                        Row(
+                            modifier = Modifier.horizontalScroll(rememberScrollState()),
+                            horizontalArrangement = Arrangement.spacedBy(ChipStyle.Rounded.mainAxisSpacing)
+                        ) {
+                            keywordsChipInfo.forEach { keywordChipInfo ->
+                                RoundedChip(
+                                    text = keywordChipInfo.text,
+                                    enabled = keywordChipInfo.enabled,
+                                    colors = ChipDefaults.roundedChipColors(
+                                        unselectedContainerColor = MaterialTheme.colorScheme.primary,
+                                        unselectedContentColor = MaterialTheme.colorScheme.primary
+                                    ),
+                                    onSelectionChanged = { chip ->
+                                        if (service is MoviesService) {
+                                            // Toast.makeText(context, chip, Toast.LENGTH_SHORT).show()
+                                        }
+                                    }
+                                )
+                            }
                         }
                     }
                 }

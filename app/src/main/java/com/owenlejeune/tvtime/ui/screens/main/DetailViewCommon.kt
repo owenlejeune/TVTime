@@ -2,6 +2,7 @@ package com.owenlejeune.tvtime.ui.screens.main
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
@@ -20,6 +21,7 @@ import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
+import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.rememberPagerState
 import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.ImageCollection
@@ -31,15 +33,18 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+@OptIn(ExperimentalPagerApi::class)
 @Composable
 fun DetailHeader(
     modifier: Modifier = Modifier,
+    showGalleryOverlay: MutableState<Boolean>? = null,
     imageCollection: ImageCollection? = null,
     backdropUrl: String? = null,
     posterUrl: String? = null,
     backdropContentDescription: String? = null,
     posterContentDescription: String? = null,
-    rating: Float? = null
+    rating: Float? = null,
+    pagerState: PagerState? = null
 ) {
     ConstraintLayout(modifier = modifier
         .fillMaxWidth()
@@ -56,8 +61,12 @@ fun DetailHeader(
                         top.linkTo(parent.top)
                         start.linkTo(parent.start)
                         end.linkTo(parent.end)
+                    }
+                    .clickable {
+                        showGalleryOverlay?.value = true
                     },
-                imageCollection = imageCollection
+                imageCollection = imageCollection,
+                state = pagerState
             )
         } else {
             Backdrop(
@@ -148,15 +157,17 @@ private fun Backdrop(
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
-private fun BackdropGallery(
+fun BackdropGallery(
     modifier: Modifier,
-    imageCollection: ImageCollection?
+    imageCollection: ImageCollection?,
+    delayMillis: Long = 5000,
+    state: PagerState? = null
 ) {
     BackdropContainer(
         modifier = modifier
     ) { sizeImage ->
         if (imageCollection != null) {
-            val pagerState = rememberPagerState()
+            val pagerState = state ?: rememberPagerState(initialPage = 0)
             HorizontalPager(
                 count = imageCollection.backdrops.size,
                 state = pagerState,
@@ -173,14 +184,16 @@ private fun BackdropGallery(
             }
 
             // fixes an issue where using pagerState.current page breaks paging animations
-            var key by remember { mutableStateOf(false) }
-            LaunchedEffect(key1 = key) {
-                launch {
-                    delay(5000)
-                    with(pagerState) {
-                        val target = if (currentPage < pageCount - 1) currentPage + 1 else 0
-                        animateScrollToPage(target)
-                        key = !key
+            if (delayMillis > 0) {
+                var key by remember { mutableStateOf(false) }
+                LaunchedEffect(key1 = key) {
+                    launch {
+                        delay(delayMillis)
+                        with(pagerState) {
+                            val target = if (currentPage < pageCount - 1) currentPage + 1 else 0
+                            animateScrollToPage(target)
+                            key = !key
+                        }
                     }
                 }
             }
