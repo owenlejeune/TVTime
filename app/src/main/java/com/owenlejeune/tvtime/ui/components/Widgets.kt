@@ -336,7 +336,7 @@ fun BoxyChip(
     colors: ChipColors = ChipDefaults.boxyChipColors()
 ) {
     Surface(
-        shadowElevation = 8.dp,
+        shadowElevation = 2.dp,
         shape = RoundedCornerShape(5.dp),
         color = if (isSelected) colors.selectedContainerColor() else colors.unselectedContainerColor()
     ) {

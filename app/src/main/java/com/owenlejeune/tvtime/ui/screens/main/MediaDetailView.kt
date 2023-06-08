@@ -4,6 +4,7 @@ import android.content.Context
 import android.media.MediaActionSound
 import android.widget.Toast
 import androidx.compose.animation.*
+import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -32,6 +33,7 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.google.accompanist.flowlayout.FlowRow
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.rememberPagerState
@@ -673,13 +675,14 @@ private fun OverviewCard(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .wrapContentHeight()
-                        .padding(vertical = 12.dp, horizontal = 16.dp),
+                        .wrapContentHeight(),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
+                    Spacer(modifier = Modifier.height(12.dp))
                     mi.tagline?.let { tagline ->
                         if (tagline.isNotEmpty()) {
                             Text(
+                                modifier = Modifier.padding(horizontal = 16.dp),
                                 text = tagline,
                                 color = MaterialTheme.colorScheme.primary,
                                 style = MaterialTheme.typography.bodyLarge,
@@ -688,6 +691,7 @@ private fun OverviewCard(
                         }
                     }
                     Text(
+                        modifier = Modifier.padding(horizontal = 16.dp),
                         text = mi.overview ?: "",
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         style = MaterialTheme.typography.bodyMedium
@@ -700,6 +704,7 @@ private fun OverviewCard(
                             modifier = Modifier.horizontalScroll(rememberScrollState()),
                             horizontalArrangement = Arrangement.spacedBy(ChipStyle.Rounded.mainAxisSpacing)
                         ) {
+                            Spacer(modifier = Modifier.width(8.dp))
                             keywordsChipInfo.forEach { keywordChipInfo ->
                                 RoundedChip(
                                     text = keywordChipInfo.text,
@@ -709,14 +714,17 @@ private fun OverviewCard(
                                         unselectedContentColor = MaterialTheme.colorScheme.primary
                                     ),
                                     onSelectionChanged = { chip ->
-                                        if (service is MoviesService) {
-                                            // Toast.makeText(context, chip, Toast.LENGTH_SHORT).show()
-                                        }
+//                                        if (service is MoviesService) {
+//                                            // Toast.makeText(context, chip, Toast.LENGTH_SHORT).show()
+//                                        }
                                     }
                                 )
                             }
+                            Spacer(modifier = Modifier.width(8.dp))
                         }
                     }
+
+                    Spacer(modifier = Modifier.height(12.dp))
                 }
             }
         }
@@ -878,12 +886,18 @@ private fun CastCard(itemId: Int?, service: DetailService, appNavController: Nav
         LazyRow(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(vertical = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
+            item {
+                Spacer(modifier = Modifier.width(8.dp))
+            }
             items(castAndCrew.value?.cast?.size ?: 0) { i ->
                 val castMember = castAndCrew.value!!.cast[i]
                 CastCrewCard(appNavController = appNavController, person = castMember)
+            }
+            item {
+                Spacer(modifier = Modifier.width(8.dp))
             }
         }
     }
@@ -935,9 +949,12 @@ fun SimilarContentCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .wrapContentHeight()
-                .padding(16.dp),
+                .padding(vertical = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
+            item {
+                Spacer(modifier = Modifier.width(8.dp))
+            }
             items(similarContent.value?.results?.size ?: 0) { i ->
                 val content = similarContent.value!!.results[i]
 
@@ -954,6 +971,9 @@ fun SimilarContentCard(
                     },
                     placeholder = Icons.Filled.Movie
                 )
+            }
+            item {
+                Spacer(modifier = Modifier.width(8.dp))
             }
         }
     }
@@ -976,17 +996,25 @@ fun VideosCard(itemId: Int?, service: DetailService, modifier: Modifier = Modifi
                 Text(
                     text = stringResource(id = R.string.videos_label),
                     style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.padding(start = 16.dp, top = 8.dp),
+                    modifier = Modifier.padding(start = 8.dp, top = 8.dp),
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             },
             toggleTextColor = MaterialTheme.colorScheme.primary
         ) { isExpanded ->
-            VideoGroup(results = results, type = Video.Type.TRAILER, title = stringResource(id = Video.Type.TRAILER.stringRes))
+            VideoGroup(
+                results = results,
+                type = Video.Type.TRAILER,
+                title = stringResource(id = Video.Type.TRAILER.stringRes)
+            )
 
             if (isExpanded) {
-                Video.Type.values().filter { it != Video.Type.TRAILER}.forEach { type ->
-                    VideoGroup(results = results, type = type, title = stringResource(id = type.stringRes))
+                Video.Type.values().filter { it != Video.Type.TRAILER }.forEach { type ->
+                    VideoGroup(
+                        results = results,
+                        type = type,
+                        title = stringResource(id = type.stringRes)
+                    )
                 }
             }
         }
@@ -1000,14 +1028,17 @@ private fun VideoGroup(results: List<Video>, type: Video.Type, title: String) {
         Text(
             text = title,
             color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.padding(start = 16.dp, top = 8.dp)
+            modifier = Modifier.padding(start = 8.dp, top = 8.dp)
         )
 
         val posterWidth = 120.dp
         LazyRow(modifier = Modifier
-                .padding(horizontal = 12.dp, vertical = 8.dp),
+                .padding(vertical = 8.dp),
             horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
+            item {
+                Spacer(modifier = Modifier.width(8.dp))
+            }
             listItems(videos) { video ->
                 FullScreenThumbnailVideoPlayer(
                     key = video.key,
@@ -1016,6 +1047,9 @@ private fun VideoGroup(results: List<Video>, type: Video.Type, title: String) {
                         .width(posterWidth)
                         .wrapContentHeight()
                 )
+            }
+            item {
+                Spacer(modifier = Modifier.width(8.dp))
             }
         }
     }
@@ -1101,33 +1135,10 @@ private fun ReviewsCard(
                    verticalAlignment = Alignment.Top,
                    horizontalArrangement = Arrangement.spacedBy(16.dp)
                ) {
-                   Column(
-                       verticalArrangement = Arrangement.spacedBy(8.dp),
-                       horizontalAlignment = Alignment.CenterHorizontally
-                   ) {
-                       AvatarImage(
-                           size = 50.dp,
-                           author = review.authorDetails
-                       )
-
-//                       if (review.authorDetails.username == SessionManager.currentSession?.accountDetails?.username) {
-                       if (false) { // currently doesn't appear deleting reviews is possible
-                           CircleBackgroundColorImage(
-                               image = Icons.Filled.Delete,
-                               size = 30.dp,
-                               backgroundColor = MaterialTheme.colorScheme.error,
-                               contentDescription = "",
-                               imageSize = DpSize(width = 20.dp, height = 15.dp),
-                               colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.surfaceVariant),
-                               modifier = Modifier
-                                   .clickable(
-                                       onClick = {
-
-                                       }
-                                   )
-                           )
-                       }
-                   }
+                   AvatarImage(
+                       size = 50.dp,
+                       author = review.authorDetails
+                   )
 
                    Column(
                        verticalArrangement = Arrangement.spacedBy(4.dp)

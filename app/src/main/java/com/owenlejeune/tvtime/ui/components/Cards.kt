@@ -85,22 +85,24 @@ fun ExpandableContentCard(
     var expandedState by remember { mutableStateOf(false) }
 
     Card(
-        modifier = modifier
-            .animateContentSize(
-                animationSpec = tween(
-                    durationMillis = 300,
-                    easing = LinearOutSlowInEasing
-                )
-            ),
+        modifier = modifier,
         shape = RoundedCornerShape(10.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
         colors = CardDefaults.cardColors(containerColor = backgroundColor)
     ) {
-        Column(
-            modifier = Modifier.fillMaxSize()
-        ) {
+        Column {
             title()
-            content(expandedState)
+            Column(
+                modifier = Modifier
+                    .animateContentSize(
+                        animationSpec = tween(
+                            durationMillis = 300,
+                            easing = LinearOutSlowInEasing
+                        )
+                    )
+            ) {
+                content(expandedState)
+            }
             Text(
                 text = if (expandedState) expandedText else collapsedText,
                 color = toggleTextColor,
