@@ -464,6 +464,11 @@ class MainActivity : MonetCompatActivity() {
                     doSignInPartTwo = deepLink == NavConstants.AUTH_REDIRECT_PAGE
                 )
             }
+            composable(
+                route = MainNavItem.AboutView.route
+            ) {
+               AboutView(appNavController = appNavController) 
+            }
         }
     }
 

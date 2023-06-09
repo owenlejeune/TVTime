@@ -23,6 +23,7 @@
     <string name="nav_movie_watchlist_title">Movie Watchlist</string>
     <string name="nav_tv_watchlist_title">TV Watchlist</string>
     <string name="nav_user_lists_title">Lists</string>
+    <string name="nav_about_title">About</string>
 
     <!-- Headings -->
     <string name="cast_label">Cast</string>

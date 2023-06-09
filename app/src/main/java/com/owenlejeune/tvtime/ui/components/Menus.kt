@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Login
 import androidx.compose.material.icons.outlined.Logout
 import androidx.compose.material.icons.outlined.Person
@@ -151,6 +152,22 @@ fun ProfileMenuOverlay(
                         )
                         Text(
                             text = stringResource(id = R.string.nav_settings_title),
+                            fontSize = 16.sp
+                        )
+                    }
+
+                    ProfileMenuItem(
+                        onClick = {
+                            onDismissRequest()
+                            appNavController.navigate(MainNavItem.AboutView.route)
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Info,
+                            contentDescription = null
+                        )
+                        Text(
+                            text = stringResource(id = R.string.nav_about_title),
                             fontSize = 16.sp
                         )
                     }
