@@ -29,6 +29,7 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.debug
         }
     }
     compileOptions {
@@ -135,6 +136,8 @@ dependencies {
     implementation "org.jetbrains:markdown:$markdown"
 
     implementation 'de.charlex.compose:revealswipe:1.0.0'
+
+    implementation 'com.github.jeziellago:compose-markdown:0.3.3'
 
     // testing
     def junit = "4.13.2"

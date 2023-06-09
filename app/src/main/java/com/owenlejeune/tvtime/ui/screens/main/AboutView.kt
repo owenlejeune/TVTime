@@ -14,11 +14,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Drafts
 import androidx.compose.material.icons.outlined.Description
-import androidx.compose.material.icons.outlined.Drafts
-import androidx.compose.material.icons.outlined.FileCopy
 import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -29,7 +28,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarScrollState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -41,7 +43,8 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.owenlejeune.tvtime.BuildConfig
 import com.owenlejeune.tvtime.R
-import com.owenlejeune.tvtime.ui.navigation.MainNavItem
+import com.owenlejeune.tvtime.utils.FileUtils
+import dev.jeziellago.compose.markdowntext.MarkdownText
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -91,9 +94,15 @@ fun AboutView(
                     }
                 )
 
+                var showChangeLog by remember { mutableStateOf(false) }
                 AboutItem(
                     title = "Changelog",
-                    icon = Icons.Outlined.Description
+                    icon = Icons.Outlined.Description,
+                    onClick = { showChangeLog = true }
+                )
+                ChangeLogDialog(
+                    visible = showChangeLog,
+                    onDismissRequest = { showChangeLog = false }
                 )
             }
         }
@@ -135,5 +144,29 @@ private fun AboutItem(
                 Text(text = subtitle, style = MaterialTheme.typography.bodyMedium, color = subtitleColor)
             }
         }
+    }
+}
+
+@Composable
+private fun ChangeLogDialog(
+    visible: Boolean,
+    onDismissRequest: () -> Unit
+) {
+    if (visible) {
+        val changeLog = FileUtils.getRawResourceFileAsString(LocalContext.current, R.raw.changelog)
+
+        AlertDialog(
+            onDismissRequest = onDismissRequest,
+            confirmButton = {
+                Button(
+                    onClick = onDismissRequest
+                ) {
+                    Text(text = "Close")
+                }
+            },
+            text = {
+                MarkdownText(markdown = changeLog)
+            }
+        )
     }
 }
