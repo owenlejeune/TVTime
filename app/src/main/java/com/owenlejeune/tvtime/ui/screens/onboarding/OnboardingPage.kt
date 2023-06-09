@@ -4,8 +4,16 @@ import android.os.Build
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Brightness6
 import androidx.compose.material.icons.filled.Search
@@ -13,13 +21,19 @@ import androidx.compose.material.icons.outlined.DarkMode
 import androidx.compose.material.icons.outlined.LightMode
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.kieronquinn.monetcompat.core.MonetCompat
 import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.preferences.AppPreferences
@@ -34,7 +48,8 @@ sealed class OnboardingPage(
     @StringRes val title: Int,
     @StringRes val description: Int,
     @DrawableRes val image: Int? = null,
-    val additionalContent: @Composable (AppCompatActivity, MutableState<Boolean>) -> Unit = { a, e -> }
+    val additionalContent: @Composable ColumnScope.(AppCompatActivity, MutableState<Boolean>) -> Unit = { _, _ -> },
+    val footer: @Composable ColumnScope.() -> Unit = {}
 ) {
 
     companion object: KoinComponent {
@@ -49,7 +64,29 @@ sealed class OnboardingPage(
         order = 0,
         title = R.string.app_name,
         description = R.string.intro_page_desc,
-        image = R.drawable.ic_launcher_foreground
+        image = R.drawable.ic_launcher_foreground,
+        footer = {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .wrapContentWidth()
+                    .padding(all = 24.dp)
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.tmdb_logo),
+                    contentDescription = null,
+                    modifier = Modifier.size(32.dp),
+                    tint = Color.Unspecified
+                )
+                Text(
+                    text = stringResource(id = R.string.attribution_text),
+                    fontSize = 12.sp,
+                    textAlign = TextAlign.Center
+                )
+            }
+        }
     )
 
     object SignInPage: OnboardingPage(

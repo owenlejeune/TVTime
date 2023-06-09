@@ -20,6 +20,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.google.accompanist.pager.ExperimentalPagerApi
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.api.tmdb.api.v3.PeopleService
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.DetailPerson
@@ -40,6 +41,10 @@ fun PersonDetailView(
     appNavController: NavController,
     personId: Int?
 ) {
+    val systemUiController = rememberSystemUiController()
+    systemUiController.setStatusBarColor(color = MaterialTheme.colorScheme.background)
+    systemUiController.setNavigationBarColor(color = MaterialTheme.colorScheme.background)
+
     val person = remember { mutableStateOf<DetailPerson?>(null) }
     personId?.let {
         if (person.value == null) {

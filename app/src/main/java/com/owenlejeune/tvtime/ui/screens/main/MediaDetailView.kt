@@ -37,6 +37,7 @@ import com.google.accompanist.flowlayout.FlowRow
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.rememberPagerState
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.api.tmdb.api.v3.AccountService
 import com.owenlejeune.tvtime.api.tmdb.api.v3.DetailService
@@ -69,6 +70,10 @@ fun MediaDetailView(
     windowSize: WindowSizeClass,
     preferences: AppPreferences = get(AppPreferences::class.java)
 ) {
+    val systemUiController = rememberSystemUiController()
+    systemUiController.setStatusBarColor(color = MaterialTheme.colorScheme.background)
+    systemUiController.setNavigationBarColor(color = MaterialTheme.colorScheme.background)
+
     val service = when (type) {
         MediaViewType.MOVIE -> MoviesService()
         MediaViewType.TV -> TvService()

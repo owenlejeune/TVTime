@@ -8,9 +8,11 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -24,6 +26,7 @@ import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.rememberPagerState
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.*
 import com.owenlejeune.tvtime.api.tmdb.api.v4.model.V4AccountList
@@ -48,59 +51,67 @@ fun AccountView(
     appNavController: NavHostController,
     doSignInPartTwo: Boolean = false
 ) {
+    val systemUiController = rememberSystemUiController()
+    systemUiController.setStatusBarColor(color = MaterialTheme.colorScheme.background)
+    systemUiController.setNavigationBarColor(color = MaterialTheme.colorScheme.background)
+
     val currentSessionState = remember { SessionManager.currentSession }
     val currentSession = currentSessionState.value
 
-    val showProfileMenuOverlay = remember { mutableStateOf(false) }
-
-    ProfileMenuContainer(
-        appNavController = appNavController,
-        visible = showProfileMenuOverlay.value,
-        onDismissRequest = { showProfileMenuOverlay.value = false }
-    ) {
-        val decayAnimationSpec = rememberSplineBasedDecay<Float>()
-        val topAppBarScrollState = rememberTopAppBarScrollState()
-        val scrollBehavior = remember(decayAnimationSpec) {
-            TopAppBarDefaults.exitUntilCollapsedScrollBehavior(decayAnimationSpec, topAppBarScrollState)
-        }
-        Scaffold(
-            modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-            topBar = {
-                LargeTopAppBar(
-                    scrollBehavior = scrollBehavior,
-                    navigationIcon = {
-                        IconButton(
-                            onClick = { appNavController.popBackStack() }
-                        ) {
-                            Icon(
-                                Icons.Filled.ArrowBack,
-                                contentDescription = null
-                            )
-                        }
-                    },
-                    title = {
-                        if (currentSession?.isAuthorized == false) {
-                            Text(text = stringResource(id = R.string.account_not_logged_in))
-                        } else {
-                            val accountDetails = remember { currentSession!!.accountDetails }
-                            Text(text = getAccountName(accountDetails.value))
-                        }
-                    },
-                    colors = TopAppBarDefaults.largeTopAppBarColors(scrolledContainerColor = MaterialTheme.colorScheme.background),
-                    actions = {
-                        AccountIcon(
-                            modifier = Modifier.padding(start = 12.dp),
-                            size = 32.dp,
-                            onClick = { showProfileMenuOverlay.value = true }
+    val decayAnimationSpec = rememberSplineBasedDecay<Float>()
+    val topAppBarScrollState = rememberTopAppBarScrollState()
+    val scrollBehavior = remember(decayAnimationSpec) {
+        TopAppBarDefaults.exitUntilCollapsedScrollBehavior(decayAnimationSpec, topAppBarScrollState)
+    }
+    Scaffold(
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        topBar = {
+            LargeTopAppBar(
+                scrollBehavior = scrollBehavior,
+                navigationIcon = {
+                    IconButton(
+                        onClick = { appNavController.popBackStack() }
+                    ) {
+                        Icon(
+                            Icons.Filled.ArrowBack,
+                            contentDescription = null
                         )
-                        Spacer(modifier = Modifier.width(8.dp))
                     }
-                )
-            }
-        ) {
-            Box(modifier = Modifier.padding(it)) {
-                AccountViewContent(appNavController = appNavController, doSignInPartTwo = doSignInPartTwo)
-            }
+                },
+                title = {
+                    if (currentSession?.isAuthorized == false) {
+                        Text(text = stringResource(id = R.string.account_not_logged_in))
+                    } else {
+                        val accountDetails = remember { currentSession!!.accountDetails }
+                        Text(text = getAccountName(accountDetails.value))
+                    }
+                },
+                colors = TopAppBarDefaults.largeTopAppBarColors(scrolledContainerColor = MaterialTheme.colorScheme.background),
+                actions = {
+                    var showDropDownMenu by remember { mutableStateOf(false) }
+                    AccountIcon(
+                        modifier = Modifier.padding(end = 8.dp),
+                        size = 32.dp,
+                        onClick = { showDropDownMenu = true }
+                    )
+                    DropdownMenu(
+                        expanded = showDropDownMenu,
+                        onDismissRequest = { showDropDownMenu = false}
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text(text = stringResource(id = R.string.action_sign_out)) },
+                            onClick = {
+                                SessionManager.clearSession()
+                                appNavController.popBackStack()
+                            }
+                        )
+                    }
+                }
+            )
+        }
+    ) {
+        Box(modifier = Modifier.padding(it)) {
+            AccountViewContent(appNavController = appNavController, doSignInPartTwo = doSignInPartTwo)
         }
     }
 }

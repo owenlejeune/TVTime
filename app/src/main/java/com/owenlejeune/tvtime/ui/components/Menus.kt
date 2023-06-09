@@ -12,7 +12,9 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Login
@@ -30,9 +32,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -213,12 +217,27 @@ fun ProfileMenuOverlay(
 
                     MenuDivider()
 
-                    Text(
-                        text = "${stringResource(id = R.string.app_name)} v${BuildConfig.VERSION_NAME}",
-                        fontSize = 10.sp,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth()
-                    )
+                    Row(
+                        modifier = Modifier.align(Alignment.CenterHorizontally),
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "${stringResource(id = R.string.app_name)} v${BuildConfig.VERSION_NAME}",
+                            fontSize = 10.sp
+                        )
+                        Text(text = "•")
+                        Icon(
+                            painter = painterResource(id = R.drawable.tmdb_logo),
+                            tint = Color.Unspecified,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Text(
+                            text = stringResource(R.string.powered_by_tmdb),
+                            fontSize = 10.sp
+                        )
+                    }
                 }
             }
         }
@@ -237,6 +256,8 @@ private fun ProfileMenuItem(
 ) {
     Box(
         modifier = Modifier
+            .clip(RoundedCornerShape(10.dp))
+            .padding(horizontal = 4.dp)
             .clickable(
                 enabled = onClick != null,
                 onClick = onClick ?: {}

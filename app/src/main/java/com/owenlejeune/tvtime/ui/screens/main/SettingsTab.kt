@@ -30,8 +30,10 @@ import androidx.navigation.NavController
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.kieronquinn.monetcompat.core.MonetCompat
 import com.owenlejeune.tvtime.BuildConfig
+import com.owenlejeune.tvtime.OnboardingActivity
 import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.preferences.AppPreferences
 import com.owenlejeune.tvtime.ui.components.*
@@ -53,6 +55,10 @@ fun SettingsTab(
     route: String? = null,
     preferences: AppPreferences = get(AppPreferences::class.java)
 ) {
+    val systemUiController = rememberSystemUiController()
+    systemUiController.setStatusBarColor(color = MaterialTheme.colorScheme.background)
+    systemUiController.setNavigationBarColor(color = MaterialTheme.colorScheme.background)
+
     val decayAnimationSpec = rememberSplineBasedDecay<Float>()
     val topAppBarScrollState = rememberTopAppBarScrollState()
     val scrollBehavior = remember(decayAnimationSpec) {
@@ -444,6 +450,15 @@ private fun DevPreferences(
                 firstLaunchTesting.value = isChecked
                 preferences.firstLaunchTesting = isChecked
             }
+        )
+        Text(
+            text = "Show onboarding UI",
+            color = MaterialTheme.colorScheme.onBackground,
+            modifier = Modifier
+                .padding(horizontal = 8.dp, vertical = 12.dp)
+                .clickable {
+                    OnboardingActivity.showActivity(context)
+                }
         )
 
         val shouldShowPalette = remember { mutableStateOf(false) }

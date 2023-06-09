@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.api.tmdb.api.v3.DetailService
 import com.owenlejeune.tvtime.api.tmdb.api.v3.MoviesService
@@ -47,6 +48,10 @@ fun SearchScreen(
     title: String,
     mediaViewType: MediaViewType
 ) {
+    val systemUiController = rememberSystemUiController()
+    systemUiController.setStatusBarColor(color = MaterialTheme.colorScheme.background)
+    systemUiController.setNavigationBarColor(color = MaterialTheme.colorScheme.background)
+
     Column(
         modifier = Modifier
             .fillMaxSize()

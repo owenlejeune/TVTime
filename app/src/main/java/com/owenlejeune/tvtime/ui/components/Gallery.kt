@@ -47,27 +47,6 @@ import kotlin.time.Duration.Companion.seconds
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
-fun Gallery(
-    pagerState: PagerState,
-    models: List<Any?>,
-    modifier: Modifier = Modifier,
-    contentDescriptions: List<String> = emptyList()
-) {
-    HorizontalPager(
-        count = models.size,
-        state = pagerState,
-        modifier = modifier
-    ) { page ->
-        AsyncImage(
-            model = models[page],
-            contentDescription = contentDescriptions[page],
-            contentScale = ContentScale.FillWidth
-        )
-    }
-}
-
-@OptIn(ExperimentalPagerApi::class)
-@Composable
 fun TapGallery(
     pagerState: PagerState,
     models: List<Any?>,
@@ -145,7 +124,7 @@ fun TapGallery(
                         imageVector = Icons.Outlined.ChevronLeft,
                         contentDescription = null,
                         modifier = Modifier.align(Alignment.Center),
-                        tint = MaterialTheme.colorScheme.surface
+                        tint = Color.White
                     )
                 }
 
@@ -160,114 +139,10 @@ fun TapGallery(
                         imageVector = Icons.Outlined.ChevronRight,
                         contentDescription = null,
                         modifier = Modifier.align(Alignment.Center),
-                        tint = MaterialTheme.colorScheme.surface
+                        tint = Color.White
                     )
                 }
-//                Box(
-//                    modifier = Modifier
-//                        .background(brush = leftGradient)
-//                        .height(height = sizeImage.value.height.toDp())
-//                        .width((sizeImage.value.width/2).toDp())
-//                        .align(Alignment.CenterStart)
-//                        .onGloballyPositioned { leftSizeImage.value = it.size }
-//                        .clickable {
-//                            val target =
-//                                if (pagerState.currentPage == 0) models.size - 1 else pagerState.currentPage - 1
-//                            scope.launch { pagerState.animateScrollToPage(target) }
-//                        }
-//                ) {
-//                    Icon(
-//                        imageVector = Icons.Outlined.ChevronLeft,
-//                        contentDescription = null,
-//                        modifier = Modifier
-//                            .size(48.dp)
-//                            .padding(start = 24.dp)
-//                            .align(Alignment.CenterStart),
-//                        tint = MaterialTheme.colorScheme.surface
-//                    )
-//                }
-//                Box(
-//                    modifier = Modifier
-//                        .background(brush = rightGradient)
-//                        .height(height = sizeImage.value.height.toDp())
-//                        .width((sizeImage.value.width/2).toDp())
-//                        .align(Alignment.CenterEnd)
-//                        .onGloballyPositioned { rightSizeImage.value = it.size }
-//                        .clickable {
-//                            val target =
-//                                if (pagerState.currentPage == models.size - 1) 0 else pagerState.currentPage + 1
-//                            scope.launch { pagerState.animateScrollToPage(target) }
-//                        }
-//                ) {
-//                    Icon(
-//                        imageVector = Icons.Outlined.ChevronRight,
-//                        contentDescription = null,
-//                        modifier = Modifier
-//                            .size(48.dp)
-//                            .padding(end = 24.dp)
-//                            .align(Alignment.CenterEnd),
-//                        tint = MaterialTheme.colorScheme.surface
-//                    )
-//                }
             }
         }
-
-//        AnimatedVisibility(
-//            visible = showControls.value,
-//            enter = fadeIn(),
-//            exit = fadeOut()
-//        ) {
-//            val leftSizeImage = remember { mutableStateOf(IntSize.Zero) }
-//            val leftGradient = Brush.horizontalGradient(
-//                colors = listOf(Color.Black, Color.Transparent),
-//                startX = 0f,
-//                endX = leftSizeImage.value.width.toFloat()
-//            )
-//            Box(
-//                modifier = Modifier
-//                    .background(brush = leftGradient)
-//                    .fillMaxHeight()
-//                    .width(100.dp)
-//                    .align(Alignment.CenterStart)
-//                    .onGloballyPositioned { leftSizeImage.value = it.size }
-//                    .clickable {
-//                        val target =
-//                            if (pagerState.currentPage == 0) models.size - 1 else pagerState.currentPage + 1
-//                        scope.launch { pagerState.animateScrollToPage(target) }
-//                    }
-//            ) {
-//                Icon(
-//                    imageVector = Icons.Outlined.ChevronLeft,
-//                    contentDescription = null,
-//                    modifier = Modifier.size(48.dp)
-//                )
-//            }
-//
-//            val rightSizeImage = remember { mutableStateOf(IntSize.Zero) }
-//            val rightGradient = Brush.horizontalGradient(
-//                colors = listOf(Color.Black, Color.Transparent),
-//                startX = leftSizeImage.value.width.toFloat(),
-//                endX = 0f
-//            )
-//            Box(
-//                modifier = Modifier
-//                    .background(brush = rightGradient)
-//                    .fillMaxHeight()
-//                    .width(100.dp)
-//                    .align(Alignment.CenterEnd)
-//                    .onGloballyPositioned { rightSizeImage.value = it.size }
-//                    .clickable {
-//                        val target =
-//                            if (pagerState.currentPage == models.size - 1) 0 else pagerState.currentPage - 1
-//                        scope.launch { pagerState.animateScrollToPage(target) }
-//                    }
-//            ) {
-//                Icon(
-//                    imageVector = Icons.Outlined.ChevronRight,
-//                    contentDescription = null,
-//                    modifier = Modifier.size(48.dp)
-//                )
-//            }
-//        }
     }
 }

@@ -33,6 +33,7 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.api.tmdb.api.v3.AccountService
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.MarkAsFavoriteBody
@@ -65,6 +66,10 @@ fun ListDetailView(
     windowSize: WindowSizeClass,
     preferences: AppPreferences = KoinJavaComponent.get(AppPreferences::class.java)
 ) {
+    val systemUiController = rememberSystemUiController()
+    systemUiController.setStatusBarColor(color = MaterialTheme.colorScheme.background)
+    systemUiController.setNavigationBarColor(color = MaterialTheme.colorScheme.background)
+
     val service = ListV4Service()
 
     val parentList = remember { mutableStateOf<MediaList?>(null) }

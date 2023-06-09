@@ -1,6 +1,8 @@
 package com.owenlejeune.tvtime
 
 import android.annotation.SuppressLint
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.window.OnBackInvokedDispatcher
 import androidx.activity.OnBackPressedCallback
@@ -39,6 +41,14 @@ import org.koin.android.ext.android.inject
 
 @OptIn(ExperimentalPagerApi::class)
 class OnboardingActivity: MonetCompatActivity() {
+
+    companion object {
+        fun showActivity(sourceActivity: Context) {
+            val intent = Intent(sourceActivity, OnboardingActivity::class.java)
+//            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK
+            sourceActivity.startActivity(intent)
+        }
+    }
 
     private val preferences: AppPreferences by inject()
 
@@ -104,53 +114,56 @@ class OnboardingActivity: MonetCompatActivity() {
                 }
             }
 
-            Box(
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(all = 12.dp)
             ) {
-                Button(
-                    modifier = Modifier.align(Alignment.CenterStart),
-                    enabled = true,
-                    onClick = {
-                        preferences.firstLaunch = false
-                        launchActivity(MainActivity::class.java)
-                    }
+                OnboardingPage[pagerState.currentPage].footer.invoke(this@Column)
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    val skipText = if (preferences.firstLaunchTesting)
-                        stringResource(id = R.string.action_skip_testing)
-                    else
-                        stringResource(id = R.string.action_skip)
-                    Text(text = skipText)
-                }
-
-                HorizontalPagerIndicator(
-                    pagerState = pagerState,
-                    modifier = Modifier
-                        .align(Alignment.Center)
-                        .padding(16.dp),
-                    activeColor = MaterialTheme.colorScheme.secondary
-                )
-
-                Button(
-                    modifier = Modifier.align(Alignment.CenterEnd),
-                    shape = CircleShape,
-                    enabled = nextButtonEnabled.value,
-                    onClick = {
-                        if (isLastPage) {
+                    Button(
+                        enabled = true,
+                        onClick = {
                             preferences.firstLaunch = false
                             launchActivity(MainActivity::class.java)
-                        } else {
-                            coroutineScope.launch {
-                                pagerState.animateScrollToPage(pagerState.currentPage + 1)
+                        }
+                    ) {
+                        val skipText = if (preferences.firstLaunchTesting)
+                            stringResource(id = R.string.action_skip_testing)
+                        else
+                            stringResource(id = R.string.action_skip)
+                        Text(text = skipText)
+                    }
+
+                    HorizontalPagerIndicator(
+                        pagerState = pagerState,
+                        modifier = Modifier
+                            .padding(16.dp),
+                        activeColor = MaterialTheme.colorScheme.secondary
+                    )
+
+                    Button(
+                        shape = CircleShape,
+                        enabled = nextButtonEnabled.value,
+                        onClick = {
+                            if (isLastPage) {
+                                preferences.firstLaunch = false
+                                launchActivity(MainActivity::class.java)
+                            } else {
+                                coroutineScope.launch {
+                                    pagerState.animateScrollToPage(pagerState.currentPage + 1)
+                                }
                             }
                         }
-                    }
-                ) {
-                    if (!isLastPage) {
-                        Text(stringResource(id = R.string.get_started))
-                    } else {
-                        Icon(imageVector = Icons.Filled.ArrowForward, contentDescription = null)
+                    ) {
+                        if (!isLastPage) {
+                            Text(stringResource(id = R.string.get_started))
+                        } else {
+                            Icon(imageVector = Icons.Filled.ArrowForward, contentDescription = null)
+                        }
                     }
                 }
             }
@@ -185,7 +198,7 @@ class OnboardingActivity: MonetCompatActivity() {
                 color = MaterialTheme.colorScheme.onBackground
             )
             Spacer(modifier = Modifier.height(50.dp))
-            page.additionalContent(this@OnboardingActivity, nextButtonEnabled)
+            page.additionalContent(this@Column, this@OnboardingActivity, nextButtonEnabled)
         }
     }
 
