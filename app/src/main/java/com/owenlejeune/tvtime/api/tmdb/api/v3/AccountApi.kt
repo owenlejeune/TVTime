@@ -9,12 +9,6 @@ interface AccountApi {
     @GET("account")
     suspend fun getAccountDetails(): Response<AccountDetails>
 
-    @GET("account/{id}/lists")
-    suspend fun getLists(
-        @Path("id") id: Int,
-        @Query("page") page: Int
-    ): Response<AccountListResponse>
-
     @GET("account/{id}/favorite/movies")
     suspend fun getFavoriteMovies(
         @Path("id") id: Int,
@@ -27,7 +21,6 @@ interface AccountApi {
         @Query("page") page: Int
     ): Response<FavoriteMediaResponse<FavoriteTvSeries>>
 
-//    @Headers("Content-Type: application/json;charset=utf-8")
     @POST("account/{id}/favorite")
     suspend fun markAsFavorite(
         @Path("id") id: Int,
@@ -64,7 +57,6 @@ interface AccountApi {
         @Query("page") page: Int
     ): Response<WatchlistResponse<WatchlistTvSeries>>
 
-//    @Headers("Content-Type: application/json;charset=utf-8")
     @POST("account/{id}/watchlist")
     suspend fun addToWatchlist(
         @Path("id") id: Int,

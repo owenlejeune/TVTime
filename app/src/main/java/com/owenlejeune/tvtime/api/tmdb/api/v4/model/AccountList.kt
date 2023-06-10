@@ -2,7 +2,7 @@ package com.owenlejeune.tvtime.api.tmdb.api.v4.model
 
 import com.google.gson.annotations.SerializedName
 
-class V4AccountList(
+class AccountList(
     @SerializedName("iso_639_1") val languageCode: String,
     @SerializedName("id") val id: Int,
     @SerializedName("featured") val featured: Int,

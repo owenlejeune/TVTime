@@ -14,7 +14,7 @@ import com.owenlejeune.tvtime.api.tmdb.api.v4.AuthenticationV4Service
 import com.owenlejeune.tvtime.api.tmdb.api.v4.model.AuthAccessBody
 import com.owenlejeune.tvtime.api.tmdb.api.v4.model.AuthDeleteBody
 import com.owenlejeune.tvtime.api.tmdb.api.v4.model.AuthRequestBody
-import com.owenlejeune.tvtime.api.tmdb.api.v4.model.V4AccountList
+import com.owenlejeune.tvtime.api.tmdb.api.v4.model.AccountList
 import com.owenlejeune.tvtime.preferences.AppPreferences
 import com.owenlejeune.tvtime.ui.screens.main.MediaViewType
 import kotlinx.coroutines.CoroutineScope
@@ -156,7 +156,7 @@ object SessionManager: KoinComponent {
 //        protected open var _accountLists: List<V4AccountList> = emptyList()
 //        val accountLists: List<V4AccountList>
 //            get() = _accountLists
-        val accountLists = mutableStateListOf<V4AccountList>()
+        val accountLists = mutableStateListOf<AccountList>()
 
 //        protected open var _favoriteMovies: List<FavoriteMovie> = emptyList()
 //        val favoriteMovies: List<FavoriteMovie>

@@ -10,7 +10,7 @@ import com.owenlejeune.tvtime.api.tmdb.api.v3.model.RatedMovie
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.RatedTv
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.WatchlistMovie
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.WatchlistTvSeries
-import com.owenlejeune.tvtime.api.tmdb.api.v4.model.V4AccountList
+import com.owenlejeune.tvtime.api.tmdb.api.v4.model.AccountList
 import com.owenlejeune.tvtime.ui.screens.main.AccountTabContent
 import com.owenlejeune.tvtime.ui.screens.main.MediaViewType
 import com.owenlejeune.tvtime.ui.screens.main.RecommendedAccountTabContent
@@ -123,7 +123,7 @@ sealed class AccountTabNavItem(
         MediaViewType.LIST,
         screenContent,
         { SessionManager.currentSession.value?.accountLists ?: emptyList() },
-        V4AccountList::class,
+        AccountList::class,
         7
     )
 
@@ -134,7 +134,7 @@ sealed class AccountTabNavItem(
         MediaViewType.MOVIE,
         recommendedScreenContent,
         { emptyList() },
-        V4AccountList::class,
+        AccountList::class,
         8
     )
 
@@ -145,7 +145,7 @@ sealed class AccountTabNavItem(
         MediaViewType.TV,
         recommendedScreenContent,
         { emptyList() },
-        V4AccountList::class,
+        AccountList::class,
         9
     )
 }

@@ -29,13 +29,11 @@ import com.google.accompanist.pager.rememberPagerState
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.*
-import com.owenlejeune.tvtime.api.tmdb.api.v4.model.V4AccountList
+import com.owenlejeune.tvtime.api.tmdb.api.v4.model.AccountList
 import com.owenlejeune.tvtime.api.tmdb.viewmodel.RecommendedMediaViewModel
 import com.owenlejeune.tvtime.extensions.unlessEmpty
 import com.owenlejeune.tvtime.ui.components.AccountIcon
 import com.owenlejeune.tvtime.ui.components.PagingPosterGrid
-import com.owenlejeune.tvtime.ui.components.ProfileMenuContainer
-import com.owenlejeune.tvtime.ui.components.ProfileMenuOverlay
 import com.owenlejeune.tvtime.ui.navigation.AccountTabNavItem
 import com.owenlejeune.tvtime.ui.navigation.ListFetchFun
 import com.owenlejeune.tvtime.ui.navigation.MainNavItem
@@ -256,8 +254,8 @@ fun <T: Any> AccountTabContent(
                             description = item.overview
                         )
                     }
-                    V4AccountList::class -> {
-                        val item = contentItems[i] as V4AccountList
+                    AccountList::class -> {
+                        val item = contentItems[i] as AccountList
                         MediaItemRow(
                             appNavController = appNavController,
                             mediaViewType = mediaViewType,
