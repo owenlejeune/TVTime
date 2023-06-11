@@ -43,7 +43,7 @@ fun PeopleTab(
             },
             onClick = { id ->
                 appNavController.navigate(
-                    "${AppNavItem.DetailView.route}/${MediaViewType.PERSON}/${id}"
+                    AppNavItem.DetailView.withArgs(MediaViewType.PERSON, id)
                 )
             }
         )

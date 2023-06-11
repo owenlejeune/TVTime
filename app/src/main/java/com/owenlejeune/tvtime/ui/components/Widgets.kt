@@ -210,7 +210,7 @@ fun SearchView(
     fab: MutableState<@Composable () -> Unit>,
     preferences: AppPreferences = KoinJavaComponent.get(AppPreferences::class.java)
 ) {
-    val route = "${AppNavItem.SearchView.route}/${mediaType.ordinal}/$title"
+    val route = AppNavItem.SearchView.withArgs(mediaType, title)
     if (preferences.showSearchBar) {
         SearchBar(
             placeholder = title

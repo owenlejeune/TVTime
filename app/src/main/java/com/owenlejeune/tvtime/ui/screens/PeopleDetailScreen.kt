@@ -127,7 +127,7 @@ fun PersonDetailScreen(
                                 onItemClicked = {
                                     personId?.let {
                                         appNavController.navigate(
-                                            "${AppNavItem.DetailView.route}/${content.mediaType}/${content.id}"
+                                            AppNavItem.DetailView.withArgs(content.mediaType, content.id)
                                         )
                                     }
                                 }
@@ -173,7 +173,7 @@ fun PersonDetailScreen(
                                             onItemClicked = {
                                                 personId?.let {
                                                     appNavController.navigate(
-                                                        "${AppNavItem.DetailView.route}/${content.mediaType}/${content.id}"
+                                                        AppNavItem.DetailView.withArgs(content.mediaType, content.id)
                                                     )
                                                 }
                                             }

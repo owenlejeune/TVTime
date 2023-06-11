@@ -45,7 +45,7 @@ fun MediaResultCard(
             .clickable(
                 onClick = {
                     appNavController.navigate(
-                        "${AppNavItem.DetailView.route}/${mediaViewType}/${id}"
+                        AppNavItem.DetailView.withArgs(mediaViewType, id)
                     )
                 }
             )

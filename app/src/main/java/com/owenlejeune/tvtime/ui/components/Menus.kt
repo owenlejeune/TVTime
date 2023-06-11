@@ -186,7 +186,7 @@ fun ProfileMenuOverlay(
                                 } else {
                                     SessionManager.signInPart1(context) {
                                         appNavController.navigate(
-                                            AppNavItem.WebLinkView.route.plus("/$it")
+                                            AppNavItem.WebLinkView.withArgs(it)
                                         )
                                     }
                                 }

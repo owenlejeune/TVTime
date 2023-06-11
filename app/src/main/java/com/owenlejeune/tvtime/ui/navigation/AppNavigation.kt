@@ -90,9 +90,9 @@ fun AppNavigationHost(
             SettingsScreen(appNavController = appNavController)
         }
         composable(
-            route = AppNavItem.SearchView.route.plus("/{${NavConstants.SEARCH_ID_KEY}}/{${NavConstants.SEARCH_TITLE_KEY}}"),
+            route = AppNavItem.SearchView.route.plus("?searchType={${NavConstants.SEARCH_ID_KEY}}&pageTitle={${NavConstants.SEARCH_TITLE_KEY}}"),
             arguments = listOf(
-                navArgument(NavConstants.SEARCH_ID_KEY) { type = NavType.IntType },
+                navArgument(NavConstants.SEARCH_ID_KEY) { type = NavType.EnumType(MediaViewType::class.java) },
                 navArgument(NavConstants.SEARCH_TITLE_KEY) { type = NavType.StringType }
             )
         ) {
@@ -104,7 +104,7 @@ fun AppNavigationHost(
                     )
                 } else {
                     Pair(
-                        MediaViewType[arguments.getInt(NavConstants.SEARCH_ID_KEY)],
+                        arguments.getSerializable(NavConstants.SEARCH_ID_KEY) as MediaViewType,
                         arguments.getString(NavConstants.SEARCH_TITLE_KEY) ?: ""
                     )
                 }
@@ -152,10 +152,18 @@ sealed class AppNavItem(val route: String) {
     }
 
     object MainView: AppNavItem("main_route")
-    object DetailView: AppNavItem("detail_route")
-    object SettingsView: AppNavItem("settings_route")
-    object SearchView: AppNavItem("search_route")
-    object WebLinkView: AppNavItem("web_link_route")
+    object DetailView: AppNavItem("detail_route") {
+        fun withArgs(type: MediaViewType, id: Int) = route.plus("/${type}/${id}")
+    }
+    object SettingsView: AppNavItem("settings_route") {
+        fun withArgs(page: String) = route.plus("/$page")
+    }
+    object SearchView: AppNavItem("search_route") {
+        fun withArgs(searchType: MediaViewType, pageTitle: String) = route.plus("?searchType=$searchType&pageTitle=$pageTitle")
+    }
+    object WebLinkView: AppNavItem("web_link_route") {
+        fun withArgs(url: String) = route.plus("/$url")
+    }
     object AccountView: AppNavItem("account_route")
     object AboutView: AppNavItem("about_route")
 

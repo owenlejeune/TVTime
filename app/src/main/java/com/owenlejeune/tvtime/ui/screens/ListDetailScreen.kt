@@ -459,7 +459,7 @@ private fun ListItemView(
                 .clickable(
                     onClick = {
                         appNavController.navigate(
-                            "${AppNavItem.DetailView.route}/${listItem.mediaType}/${listItem.id}"
+                            AppNavItem.DetailView.withArgs(listItem.mediaType, listItem.id)
                         )
                     }
                 )

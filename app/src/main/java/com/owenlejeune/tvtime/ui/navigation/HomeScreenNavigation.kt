@@ -10,7 +10,7 @@ import androidx.navigation.compose.composable
 import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.preferences.AppPreferences
 import com.owenlejeune.tvtime.ui.screens.AccountViewContent
-import com.owenlejeune.tvtime.ui.screens.new.tabs.MediaTab
+import com.owenlejeune.tvtime.ui.screens.tabs.MediaTab
 import com.owenlejeune.tvtime.utils.types.MediaViewType
 import com.owenlejeune.tvtime.ui.screens.tabs.PeopleTab
 import com.owenlejeune.tvtime.utils.ResourceUtils

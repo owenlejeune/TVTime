@@ -73,7 +73,7 @@ fun MediaTabContent(appNavController: NavHostController, mediaType: MediaViewTyp
         lazyPagingItems = mediaListItems,
         onClick = { id ->
             appNavController.navigate(
-                "${AppNavItem.DetailView.route}/${mediaType}/${id}"
+                AppNavItem.DetailView.withArgs(mediaType, id)
             )
         }
     )

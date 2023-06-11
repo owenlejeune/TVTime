@@ -1138,7 +1138,7 @@ private fun CastCrewCard(appNavController: NavController, person: Person) {
         subtitleTextColor = MaterialTheme.colorScheme.onSecondary,
         onItemClicked = {
             appNavController.navigate(
-                "${AppNavItem.DetailView.route}/${MediaViewType.PERSON}/${person.id}"
+                AppNavItem.DetailView.withArgs(MediaViewType.PERSON, person.id)
             )
         }
     )
@@ -1184,7 +1184,7 @@ fun SimilarContentCard(
                     imageUrl = TmdbUtils.getFullPosterPath(content),
                     onItemClicked = {
                         appNavController.navigate(
-                            "${AppNavItem.DetailView.route}/${mediaType}/${content.id}"
+                            AppNavItem.DetailView.withArgs(mediaType, content.id)
                         )
                     },
                     placeholder = Icons.Filled.Movie

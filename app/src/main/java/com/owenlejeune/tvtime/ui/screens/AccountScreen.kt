@@ -305,7 +305,7 @@ fun RecommendedAccountTabContent(
             lazyPagingItems = mediaListItems,
             onClick = { id ->
                 appNavController.navigate(
-                    "${AppNavItem.DetailView.route}/${mediaViewType}/${id}"
+                    AppNavItem.DetailView.withArgs(mediaViewType, id)
                 )
             }
         )

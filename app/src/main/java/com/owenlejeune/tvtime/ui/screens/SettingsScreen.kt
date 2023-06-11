@@ -188,7 +188,7 @@ private fun TopLevelSettingsCard(
             .wrapContentHeight()
             .clickable(
                 onClick = {
-                    appNavController.navigate("${AppNavItem.SettingsView.route}/${settingsView.route}")
+                    appNavController.navigate(AppNavItem.SettingsView.withArgs(settingsView.route))
                 }
             )
     ) {
