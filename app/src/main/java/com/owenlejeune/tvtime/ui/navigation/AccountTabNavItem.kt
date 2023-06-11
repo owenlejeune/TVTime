@@ -11,11 +11,12 @@ import com.owenlejeune.tvtime.api.tmdb.api.v3.model.RatedTv
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.WatchlistMovie
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.WatchlistTvSeries
 import com.owenlejeune.tvtime.api.tmdb.api.v4.model.AccountList
-import com.owenlejeune.tvtime.ui.screens.main.AccountTabContent
-import com.owenlejeune.tvtime.ui.screens.main.MediaViewType
-import com.owenlejeune.tvtime.ui.screens.main.RecommendedAccountTabContent
+import com.owenlejeune.tvtime.ui.screens.AccountTabContent
+import com.owenlejeune.tvtime.utils.types.MediaViewType
+import com.owenlejeune.tvtime.ui.screens.RecommendedAccountTabContent
 import com.owenlejeune.tvtime.utils.ResourceUtils
 import com.owenlejeune.tvtime.utils.SessionManager
+import com.owenlejeune.tvtime.utils.types.TabNavItem
 import org.koin.core.component.inject
 import kotlin.reflect.KClass
 

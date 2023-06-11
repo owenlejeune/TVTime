@@ -1,13 +1,12 @@
 package com.owenlejeune.tvtime.api.tmdb.api.v3.deserializer
 
-import com.google.gson.Gson
 import com.google.gson.JsonObject
 import com.google.gson.JsonParseException
 import com.owenlejeune.tvtime.api.tmdb.api.BaseDeserializer
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.KnownFor
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.KnownForMovie
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.KnownForTv
-import com.owenlejeune.tvtime.ui.screens.main.MediaViewType
+import com.owenlejeune.tvtime.utils.types.MediaViewType
 
 class KnownForDeserializer: BaseDeserializer<KnownFor>() {
 

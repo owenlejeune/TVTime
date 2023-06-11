@@ -17,7 +17,6 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ArrowDropUp
 import androidx.compose.material.icons.filled.Error
@@ -69,8 +68,8 @@ import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.AuthorDetails
 import com.owenlejeune.tvtime.extensions.unlessEmpty
 import com.owenlejeune.tvtime.preferences.AppPreferences
-import com.owenlejeune.tvtime.ui.navigation.MainNavItem
-import com.owenlejeune.tvtime.ui.screens.main.MediaViewType
+import com.owenlejeune.tvtime.ui.navigation.AppNavItem
+import com.owenlejeune.tvtime.utils.types.MediaViewType
 import com.owenlejeune.tvtime.utils.SessionManager
 import com.owenlejeune.tvtime.utils.TmdbUtils
 import kotlinx.coroutines.delay
@@ -211,7 +210,7 @@ fun SearchView(
     fab: MutableState<@Composable () -> Unit>,
     preferences: AppPreferences = KoinJavaComponent.get(AppPreferences::class.java)
 ) {
-    val route = "${MainNavItem.SearchView.route}/${mediaType.ordinal}/$title"
+    val route = "${AppNavItem.SearchView.route}/${mediaType.ordinal}/$title"
     if (preferences.showSearchBar) {
         SearchBar(
             placeholder = title

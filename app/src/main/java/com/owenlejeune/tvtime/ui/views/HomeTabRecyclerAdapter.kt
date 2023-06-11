@@ -17,7 +17,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.recyclerview.widget.RecyclerView
-import com.owenlejeune.tvtime.ui.navigation.BottomNavItem
+import com.owenlejeune.tvtime.ui.navigation.HomeScreenNavItem
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
 
@@ -27,14 +27,14 @@ class HomeTabRecyclerAdapter: RecyclerView.Adapter<HomeTabRecyclerAdapter.TabVie
 
     class TabViewHolder(itemView: ComposeView): RecyclerView.ViewHolder(itemView)
 
-    private val pages: MutableList<BottomNavItem?>
+    private val pages: MutableList<HomeScreenNavItem?>
     private val indexOfDivider
         get() = pages.indexOf(null)
 
     init {
-        val visiblePages = BottomNavItem.Items.filter { it.order > -1 }.sortedBy { it.order }
-        val hiddenPages = BottomNavItem.Items.filter { it.order == -1 }
-        pages = ArrayList<BottomNavItem?>().apply {
+        val visiblePages = HomeScreenNavItem.Items.filter { it.order > -1 }.sortedBy { it.order }
+        val hiddenPages = HomeScreenNavItem.Items.filter { it.order == -1 }
+        pages = ArrayList<HomeScreenNavItem?>().apply {
             addAll(visiblePages)
             add(null)
             addAll(hiddenPages)
@@ -67,7 +67,7 @@ class HomeTabRecyclerAdapter: RecyclerView.Adapter<HomeTabRecyclerAdapter.TabVie
     }
     
     @Composable
-    private fun ItemRow(page: BottomNavItem) {
+    private fun ItemRow(page: HomeScreenNavItem) {
         Row(
             modifier = Modifier
                 .height(50.dp),

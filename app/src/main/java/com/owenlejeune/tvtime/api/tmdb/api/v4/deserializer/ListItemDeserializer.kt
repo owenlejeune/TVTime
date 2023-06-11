@@ -5,7 +5,7 @@ import com.owenlejeune.tvtime.api.tmdb.api.BaseDeserializer
 import com.owenlejeune.tvtime.api.tmdb.api.v4.model.ListItem
 import com.owenlejeune.tvtime.api.tmdb.api.v4.model.ListMovie
 import com.owenlejeune.tvtime.api.tmdb.api.v4.model.ListTv
-import com.owenlejeune.tvtime.ui.screens.main.MediaViewType
+import com.owenlejeune.tvtime.utils.types.MediaViewType
 
 class ListItemDeserializer: BaseDeserializer<ListItem>() {
 

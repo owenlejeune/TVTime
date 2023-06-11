@@ -1,4 +1,4 @@
-package com.owenlejeune.tvtime.ui.screens.main
+package com.owenlejeune.tvtime.ui.screens
 
 import androidx.compose.animation.rememberSplineBasedDecay
 import androidx.compose.foundation.layout.*
@@ -36,8 +36,10 @@ import com.owenlejeune.tvtime.ui.components.AccountIcon
 import com.owenlejeune.tvtime.ui.components.PagingPosterGrid
 import com.owenlejeune.tvtime.ui.navigation.AccountTabNavItem
 import com.owenlejeune.tvtime.ui.navigation.ListFetchFun
-import com.owenlejeune.tvtime.ui.navigation.MainNavItem
-import com.owenlejeune.tvtime.ui.screens.main.tabs.top.ScrollableTabs
+import com.owenlejeune.tvtime.ui.navigation.AppNavItem
+import com.owenlejeune.tvtime.ui.components.MediaResultCard
+import com.owenlejeune.tvtime.utils.types.MediaViewType
+import com.owenlejeune.tvtime.ui.components.ScrollableTabs
 import com.owenlejeune.tvtime.utils.SessionManager
 import com.owenlejeune.tvtime.utils.TmdbUtils
 import kotlinx.coroutines.launch
@@ -45,7 +47,7 @@ import kotlin.reflect.KClass
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AccountView(
+fun AccountScreen(
     appNavController: NavHostController,
     doSignInPartTwo: Boolean = false
 ) {
@@ -303,7 +305,7 @@ fun RecommendedAccountTabContent(
             lazyPagingItems = mediaListItems,
             onClick = { id ->
                 appNavController.navigate(
-                    "${MainNavItem.DetailView.route}/${mediaViewType}/${id}"
+                    "${AppNavItem.DetailView.route}/${mediaViewType}/${id}"
                 )
             }
         )

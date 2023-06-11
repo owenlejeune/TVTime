@@ -39,14 +39,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.owenlejeune.tvtime.BuildConfig
 import com.owenlejeune.tvtime.R
-import com.owenlejeune.tvtime.ui.navigation.MainNavItem
+import com.owenlejeune.tvtime.ui.navigation.AppNavItem
 import com.owenlejeune.tvtime.utils.SessionManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -130,7 +129,7 @@ fun ProfileMenuOverlay(
                         ProfileMenuItem(
                             onClick = {
                                 onDismissRequest()
-                                appNavController.navigate(MainNavItem.AccountView.route)
+                                appNavController.navigate(AppNavItem.AccountView.route)
                             }
                         ) {
                             Icon(
@@ -147,7 +146,7 @@ fun ProfileMenuOverlay(
                     ProfileMenuItem(
                         onClick = {
                             onDismissRequest()
-                            appNavController.navigate(MainNavItem.SettingsView.route)
+                            appNavController.navigate(AppNavItem.SettingsView.route)
                         }
                     ) {
                         Icon(
@@ -163,7 +162,7 @@ fun ProfileMenuOverlay(
                     ProfileMenuItem(
                         onClick = {
                             onDismissRequest()
-                            appNavController.navigate(MainNavItem.AboutView.route)
+                            appNavController.navigate(AppNavItem.AboutView.route)
                         }
                     ) {
                         Icon(
@@ -187,7 +186,7 @@ fun ProfileMenuOverlay(
                                 } else {
                                     SessionManager.signInPart1(context) {
                                         appNavController.navigate(
-                                            MainNavItem.WebLinkView.route.plus("/$it")
+                                            AppNavItem.WebLinkView.route.plus("/$it")
                                         )
                                     }
                                 }

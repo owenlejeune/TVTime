@@ -4,7 +4,7 @@ import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import com.owenlejeune.tvtime.api.tmdb.api.v4.AccountV4Service
 import com.owenlejeune.tvtime.preferences.AppPreferences
-import com.owenlejeune.tvtime.ui.screens.main.MediaViewType
+import com.owenlejeune.tvtime.utils.types.MediaViewType
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 

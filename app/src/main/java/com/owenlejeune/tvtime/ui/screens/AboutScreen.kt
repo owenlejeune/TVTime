@@ -1,4 +1,4 @@
-package com.owenlejeune.tvtime.ui.screens.main
+package com.owenlejeune.tvtime.ui.screens
 
 import android.content.Intent
 import android.net.Uri
@@ -58,7 +58,7 @@ import dev.jeziellago.compose.markdowntext.MarkdownText
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AboutView(
+fun AboutScreen(
     appNavController: NavController
 ) {
     val systemUiController = rememberSystemUiController()

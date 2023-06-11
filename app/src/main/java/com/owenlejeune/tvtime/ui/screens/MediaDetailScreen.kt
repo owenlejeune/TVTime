@@ -1,11 +1,9 @@
-package com.owenlejeune.tvtime.ui.screens.main
+package com.owenlejeune.tvtime.ui.screens
 
 import android.content.Context
 import android.widget.Toast
 import androidx.compose.animation.*
 import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -16,7 +14,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Movie
 import androidx.compose.material.icons.filled.Send
-import androidx.compose.material.icons.outlined.ExpandLess
 import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -31,7 +28,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -55,9 +51,11 @@ import com.owenlejeune.tvtime.extensions.WindowSizeClass
 import com.owenlejeune.tvtime.extensions.listItems
 import com.owenlejeune.tvtime.preferences.AppPreferences
 import com.owenlejeune.tvtime.ui.components.*
-import com.owenlejeune.tvtime.ui.navigation.MainNavItem
-import com.owenlejeune.tvtime.ui.navigation.TabNavItem
-import com.owenlejeune.tvtime.ui.screens.main.tabs.top.Tabs
+import com.owenlejeune.tvtime.ui.navigation.AppNavItem
+import com.owenlejeune.tvtime.utils.types.TabNavItem
+import com.owenlejeune.tvtime.ui.components.DetailHeader
+import com.owenlejeune.tvtime.utils.types.MediaViewType
+import com.owenlejeune.tvtime.ui.components.Tabs
 import com.owenlejeune.tvtime.ui.theme.FavoriteSelected
 import com.owenlejeune.tvtime.ui.theme.RatingSelected
 import com.owenlejeune.tvtime.ui.theme.WatchlistSelected
@@ -71,7 +69,7 @@ import java.text.DecimalFormat
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPagerApi::class)
 @Composable
-fun MediaDetailView(
+fun MediaDetailScreen(
     appNavController: NavController,
     itemId: Int?,
     type: MediaViewType,
@@ -780,7 +778,7 @@ fun FavoriteButton(
         contentDescription = "",
         isSelected = isFavourited,
         filledIconColor = FavoriteSelected,
-        onClick = ::addToFavorite
+        onClick = ::mediaAddToFavorite
     )
 }
 
@@ -1140,7 +1138,7 @@ private fun CastCrewCard(appNavController: NavController, person: Person) {
         subtitleTextColor = MaterialTheme.colorScheme.onSecondary,
         onItemClicked = {
             appNavController.navigate(
-                "${MainNavItem.DetailView.route}/${MediaViewType.PERSON}/${person.id}"
+                "${AppNavItem.DetailView.route}/${MediaViewType.PERSON}/${person.id}"
             )
         }
     )
@@ -1186,7 +1184,7 @@ fun SimilarContentCard(
                     imageUrl = TmdbUtils.getFullPosterPath(content),
                     onItemClicked = {
                         appNavController.navigate(
-                            "${MainNavItem.DetailView.route}/${mediaType}/${content.id}"
+                            "${AppNavItem.DetailView.route}/${mediaType}/${content.id}"
                         )
                     },
                     placeholder = Icons.Filled.Movie
@@ -1573,7 +1571,7 @@ private fun addToWatchlist(
     }
 }
 
-private fun addToFavorite(
+private fun mediaAddToFavorite(
     context: Context,
     itemId: Int,
     type: MediaViewType,

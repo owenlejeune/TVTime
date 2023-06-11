@@ -1,4 +1,4 @@
-package com.owenlejeune.tvtime.ui.screens.main
+package com.owenlejeune.tvtime.ui.screens.tabs
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.Text
@@ -15,10 +15,11 @@ import com.google.accompanist.pager.rememberPagerState
 import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.ui.components.PagingPosterGrid
 import com.owenlejeune.tvtime.ui.components.SearchView
-import com.owenlejeune.tvtime.ui.navigation.MainNavItem
+import com.owenlejeune.tvtime.ui.navigation.AppNavItem
 import com.owenlejeune.tvtime.ui.navigation.MediaTabNavItem
-import com.owenlejeune.tvtime.ui.screens.main.tabs.top.Tabs
+import com.owenlejeune.tvtime.ui.components.Tabs
 import com.owenlejeune.tvtime.api.tmdb.viewmodel.MediaTabViewModel
+import com.owenlejeune.tvtime.utils.types.MediaViewType
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
@@ -72,7 +73,7 @@ fun MediaTabContent(appNavController: NavHostController, mediaType: MediaViewTyp
         lazyPagingItems = mediaListItems,
         onClick = { id ->
             appNavController.navigate(
-                "${MainNavItem.DetailView.route}/${mediaType}/${id}"
+                "${AppNavItem.DetailView.route}/${mediaType}/${id}"
             )
         }
     )

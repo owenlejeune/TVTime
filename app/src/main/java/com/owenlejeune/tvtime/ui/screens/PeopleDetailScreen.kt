@@ -1,4 +1,4 @@
-package com.owenlejeune.tvtime.ui.screens.main
+package com.owenlejeune.tvtime.ui.screens
 
 import androidx.compose.animation.rememberSplineBasedDecay
 import androidx.compose.foundation.background
@@ -28,7 +28,9 @@ import com.owenlejeune.tvtime.api.tmdb.api.v3.model.PersonCreditsResponse
 import com.owenlejeune.tvtime.ui.components.ContentCard
 import com.owenlejeune.tvtime.ui.components.ExpandableContentCard
 import com.owenlejeune.tvtime.ui.components.TwoLineImageTextCard
-import com.owenlejeune.tvtime.ui.navigation.MainNavItem
+import com.owenlejeune.tvtime.ui.navigation.AppNavItem
+import com.owenlejeune.tvtime.ui.components.DetailHeader
+import com.owenlejeune.tvtime.utils.types.MediaViewType
 import com.owenlejeune.tvtime.utils.TmdbUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -37,7 +39,7 @@ import kotlinx.coroutines.withContext
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPagerApi::class)
 @Composable
-fun PersonDetailView(
+fun PersonDetailScreen(
     appNavController: NavController,
     personId: Int?
 ) {
@@ -125,7 +127,7 @@ fun PersonDetailView(
                                 onItemClicked = {
                                     personId?.let {
                                         appNavController.navigate(
-                                            "${MainNavItem.DetailView.route}/${content.mediaType}/${content.id}"
+                                            "${AppNavItem.DetailView.route}/${content.mediaType}/${content.id}"
                                         )
                                     }
                                 }
@@ -171,7 +173,7 @@ fun PersonDetailView(
                                             onItemClicked = {
                                                 personId?.let {
                                                     appNavController.navigate(
-                                                        "${MainNavItem.DetailView.route}/${content.mediaType}/${content.id}"
+                                                        "${AppNavItem.DetailView.route}/${content.mediaType}/${content.id}"
                                                     )
                                                 }
                                             }

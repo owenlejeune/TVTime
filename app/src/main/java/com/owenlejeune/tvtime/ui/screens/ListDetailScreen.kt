@@ -1,4 +1,4 @@
-package com.owenlejeune.tvtime.ui.screens.main
+package com.owenlejeune.tvtime.ui.screens
 import android.content.Context
 import android.content.Intent
 import android.util.Log
@@ -45,7 +45,9 @@ import com.owenlejeune.tvtime.extensions.unlessEmpty
 import com.owenlejeune.tvtime.preferences.AppPreferences
 import com.owenlejeune.tvtime.ui.components.Spinner
 import com.owenlejeune.tvtime.ui.components.SwitchPreference
-import com.owenlejeune.tvtime.ui.navigation.MainNavItem
+import com.owenlejeune.tvtime.ui.navigation.AppNavItem
+import com.owenlejeune.tvtime.utils.types.MediaViewType
+import com.owenlejeune.tvtime.ui.components.RatingView
 import com.owenlejeune.tvtime.ui.theme.*
 import com.owenlejeune.tvtime.utils.SessionManager
 import com.owenlejeune.tvtime.utils.TmdbUtils
@@ -60,7 +62,7 @@ import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ListDetailView(
+fun ListDetailScreen(
     appNavController: NavController,
     itemId: Int?,
     windowSize: WindowSizeClass,
@@ -457,7 +459,7 @@ private fun ListItemView(
                 .clickable(
                     onClick = {
                         appNavController.navigate(
-                            "${MainNavItem.DetailView.route}/${listItem.mediaType}/${listItem.id}"
+                            "${AppNavItem.DetailView.route}/${listItem.mediaType}/${listItem.id}"
                         )
                     }
                 )
@@ -575,7 +577,7 @@ private fun ActionButtonRow(listItem: ListItem) {
             contentDescription = stringResource(id = R.string.favourite_label),
             isSelected = isFavourited,
             filledIconColor = FavoriteSelected,
-            onClick = ::addToFavorite
+            onClick = ::listAddToFavorite
         )
 
         ActionButton(
@@ -585,7 +587,7 @@ private fun ActionButtonRow(listItem: ListItem) {
             contentDescription = "",
             isSelected = isWatchlisted,
             filledIconColor = WatchlistSelected,
-            onClick = ::addToWatchlist
+            onClick = ::listAddToWatchlist
         )
 
         val context = LocalContext.current
@@ -604,7 +606,7 @@ private fun ActionButtonRow(listItem: ListItem) {
     }
 }
 
-private fun addToWatchlist(
+private fun listAddToWatchlist(
     context: Context,
     itemId: Int,
     type: MediaViewType,
@@ -629,7 +631,7 @@ private fun addToWatchlist(
     }
 }
 
-private fun addToFavorite(
+private fun listAddToFavorite(
     context: Context,
     itemId: Int,
     type: MediaViewType,

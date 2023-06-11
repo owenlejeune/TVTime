@@ -8,7 +8,7 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.RecommendedMediaPagingSource
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.TmdbItem
-import com.owenlejeune.tvtime.ui.screens.main.MediaViewType
+import com.owenlejeune.tvtime.utils.types.MediaViewType
 import kotlinx.coroutines.flow.Flow
 import org.koin.core.component.KoinComponent
 

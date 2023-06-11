@@ -1,20 +1,18 @@
-package com.owenlejeune.tvtime.ui.screens.main
+package com.owenlejeune.tvtime.ui.screens.tabs
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.ui.components.PagingPeoplePosterGrid
 import com.owenlejeune.tvtime.ui.components.SearchView
-import com.owenlejeune.tvtime.ui.navigation.MainNavItem
+import com.owenlejeune.tvtime.ui.navigation.AppNavItem
 import com.owenlejeune.tvtime.api.tmdb.viewmodel.PeopleTabViewModel
+import com.owenlejeune.tvtime.utils.types.MediaViewType
 
 @Composable
 fun PeopleTab(
@@ -45,7 +43,7 @@ fun PeopleTab(
             },
             onClick = { id ->
                 appNavController.navigate(
-                    "${MainNavItem.DetailView.route}/${MediaViewType.PERSON}/${id}"
+                    "${AppNavItem.DetailView.route}/${MediaViewType.PERSON}/${id}"
                 )
             }
         )

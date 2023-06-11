@@ -16,7 +16,7 @@ import com.owenlejeune.tvtime.api.tmdb.api.v4.model.AuthDeleteBody
 import com.owenlejeune.tvtime.api.tmdb.api.v4.model.AuthRequestBody
 import com.owenlejeune.tvtime.api.tmdb.api.v4.model.AccountList
 import com.owenlejeune.tvtime.preferences.AppPreferences
-import com.owenlejeune.tvtime.ui.screens.main.MediaViewType
+import com.owenlejeune.tvtime.utils.types.MediaViewType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

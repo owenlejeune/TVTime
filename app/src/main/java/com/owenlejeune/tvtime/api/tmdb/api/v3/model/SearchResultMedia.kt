@@ -1,7 +1,7 @@
 package com.owenlejeune.tvtime.api.tmdb.api.v3.model
 
 import com.google.gson.annotations.SerializedName
-import com.owenlejeune.tvtime.ui.screens.main.MediaViewType
+import com.owenlejeune.tvtime.utils.types.MediaViewType
 
 abstract class SearchResultMedia(
     @SerializedName("overview") val overview: String,

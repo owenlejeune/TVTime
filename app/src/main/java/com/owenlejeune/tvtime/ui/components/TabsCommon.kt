@@ -1,4 +1,4 @@
-package com.owenlejeune.tvtime.ui.screens.main.tabs.top
+package com.owenlejeune.tvtime.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Spacer
@@ -17,14 +17,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.pagerTabIndicatorOffset
-import com.google.accompanist.pager.rememberPagerState
-import com.owenlejeune.tvtime.ui.navigation.MediaTabNavItem
-import com.owenlejeune.tvtime.ui.navigation.TabNavItem
+import com.owenlejeune.tvtime.utils.types.TabNavItem
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalPagerApi::class)

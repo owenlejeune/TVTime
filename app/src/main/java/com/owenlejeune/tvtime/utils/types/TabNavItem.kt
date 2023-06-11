@@ -1,4 +1,4 @@
-package com.owenlejeune.tvtime.ui.navigation
+package com.owenlejeune.tvtime.utils.types
 
 import org.koin.core.component.KoinComponent
 

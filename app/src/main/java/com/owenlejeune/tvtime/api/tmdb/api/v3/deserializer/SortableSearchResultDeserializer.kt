@@ -1,6 +1,5 @@
 package com.owenlejeune.tvtime.api.tmdb.api.v3.deserializer
 
-import com.google.gson.Gson
 import com.google.gson.JsonObject
 import com.google.gson.JsonParseException
 import com.owenlejeune.tvtime.api.tmdb.api.BaseDeserializer
@@ -8,7 +7,7 @@ import com.owenlejeune.tvtime.api.tmdb.api.v3.model.SearchResultMovie
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.SearchResultPerson
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.SearchResultTv
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.SortableSearchResult
-import com.owenlejeune.tvtime.ui.screens.main.MediaViewType
+import com.owenlejeune.tvtime.utils.types.MediaViewType
 
 class SortableSearchResultDeserializer: BaseDeserializer<SortableSearchResult>() {
 

@@ -1,4 +1,4 @@
-package com.owenlejeune.tvtime.ui.screens.main
+package com.owenlejeune.tvtime.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -12,7 +12,6 @@ import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -22,7 +21,8 @@ import androidx.constraintlayout.compose.Dimension
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.owenlejeune.tvtime.R
-import com.owenlejeune.tvtime.ui.navigation.MainNavItem
+import com.owenlejeune.tvtime.ui.navigation.AppNavItem
+import com.owenlejeune.tvtime.utils.types.MediaViewType
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,7 +45,7 @@ fun MediaResultCard(
             .clickable(
                 onClick = {
                     appNavController.navigate(
-                        "${MainNavItem.DetailView.route}/${mediaViewType}/${id}"
+                        "${AppNavItem.DetailView.route}/${mediaViewType}/${id}"
                     )
                 }
             )

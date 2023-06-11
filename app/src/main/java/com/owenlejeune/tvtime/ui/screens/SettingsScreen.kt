@@ -1,4 +1,4 @@
-package com.owenlejeune.tvtime.ui.screens.main
+package com.owenlejeune.tvtime.ui.screens
 
 import android.os.Build
 import android.widget.Toast
@@ -37,7 +37,7 @@ import com.owenlejeune.tvtime.OnboardingActivity
 import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.preferences.AppPreferences
 import com.owenlejeune.tvtime.ui.components.*
-import com.owenlejeune.tvtime.ui.navigation.MainNavItem
+import com.owenlejeune.tvtime.ui.navigation.AppNavItem
 import com.owenlejeune.tvtime.ui.views.HomeTabRecyclerAdapter
 import com.owenlejeune.tvtime.ui.views.ItemMoveCallback
 import com.owenlejeune.tvtime.utils.ResourceUtils
@@ -49,9 +49,8 @@ import org.koin.java.KoinJavaComponent.get
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsTab(
+fun SettingsScreen(
     appNavController: NavController,
-    activity: AppCompatActivity,
     route: String? = null,
     preferences: AppPreferences = get(AppPreferences::class.java)
 ) {
@@ -110,6 +109,7 @@ fun SettingsTab(
                         .padding(all = 24.dp),
                     verticalArrangement = Arrangement.spacedBy(18.dp)
                 ) {
+                    val activity = LocalContext.current as AppCompatActivity
                     SettingsPage.getByRoute(route).apply {
                         appBarTitle.value = name
                         restoreAction.value = resetPreferencesHandler
@@ -188,7 +188,7 @@ private fun TopLevelSettingsCard(
             .wrapContentHeight()
             .clickable(
                 onClick = {
-                    appNavController.navigate("${MainNavItem.SettingsView.route}/${settingsView.route}")
+                    appNavController.navigate("${AppNavItem.SettingsView.route}/${settingsView.route}")
                 }
             )
     ) {

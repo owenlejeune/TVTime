@@ -1,4 +1,4 @@
-package com.owenlejeune.tvtime.ui.screens.main
+package com.owenlejeune.tvtime.ui.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -25,13 +25,9 @@ import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.rememberPagerState
 import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.ImageCollection
-import com.owenlejeune.tvtime.ui.components.PosterItem
-import com.owenlejeune.tvtime.ui.components.RatingRing
 import com.owenlejeune.tvtime.utils.TmdbUtils
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable

@@ -1,4 +1,4 @@
-package com.owenlejeune.tvtime.ui.screens.main
+package com.owenlejeune.tvtime.utils.types
 
 import com.google.gson.annotations.SerializedName
 

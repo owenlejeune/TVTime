@@ -1,4 +1,4 @@
-package com.owenlejeune.tvtime.ui.screens.main
+package com.owenlejeune.tvtime.ui.screens
 
 import android.content.Context
 import android.content.Intent
@@ -30,7 +30,7 @@ import org.koin.core.component.inject
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun WebLinkView(
+fun WebLinkScreen(
     url: String,
     appNavController: NavController
 ) {
