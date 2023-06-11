@@ -75,9 +75,9 @@ sealed class OnboardingPage(
                     .padding(all = 24.dp)
             ) {
                 Icon(
-                    painter = painterResource(id = R.drawable.tmdb_logo),
+                    painter = painterResource(id = R.drawable.tmdb_logo_long),
                     contentDescription = null,
-                    modifier = Modifier.size(32.dp),
+                    modifier = Modifier.height(height = 16.dp),
                     tint = Color.Unspecified
                 )
                 Text(

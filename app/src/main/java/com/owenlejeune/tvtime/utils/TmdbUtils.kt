@@ -11,6 +11,7 @@ object TmdbUtils {
     private const val PERSON_BASE = "https://www.themoviedb.org/t/p/w600_and_h900_bestv2"
     private const val GRAVATAR_BASE = "https://www.gravatar.com/avatar/"
     private const val AVATAR_BASE = "https://www.themoviedb.org/t/p/w150_and_h150_face"
+    private const val STILL_BASE = "https://www.themoviedb.org/t/p/w454_and_h254_bestv2/"
 
     private const val DEF_REGION = "US"
 
@@ -61,6 +62,16 @@ object TmdbUtils {
 
     fun getFullAvatarPath(author: AuthorDetails): String? {
         return getFullAvatarPath(author.avatarPath)
+    }
+
+    fun getFullEpisodeStillPath(path: String?): String? {
+        return path?.let {
+            "${STILL_BASE}${path}"
+        }
+    }
+
+    fun getFullEpisodeStillPath(episode: Episode): String? {
+        return getFullEpisodeStillPath(episode.stillPath)
     }
 
     fun getMovieReleaseYear(movie: DetailedMovie): String {
@@ -206,6 +217,17 @@ object TmdbUtils {
             return "$${ms}M"
         }
         return "$${thousands}"
+    }
+
+    fun convertEpisodeDate(inDate: String?): String? {
+        if (inDate == null) {
+            return null
+        }
+
+        val origFormat = SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
+        val outFormat = SimpleDateFormat("MMMM dd, yyyy", java.util.Locale.getDefault())
+
+        return origFormat.parse(inDate)?.let { outFormat.format(it) }
     }
 
 }

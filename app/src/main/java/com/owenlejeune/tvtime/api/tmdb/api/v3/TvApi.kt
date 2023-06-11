@@ -55,4 +55,7 @@ interface TvApi {
         @Query("session_id") sessionId: String
     ): Response<StatusResponse>
 
+    @GET("tv/{id}/season/{season}")
+    suspend fun getSeason(@Path("id") seriesId: Int, @Path("season") seasonNumber: Int): Response<Season>
+
 }

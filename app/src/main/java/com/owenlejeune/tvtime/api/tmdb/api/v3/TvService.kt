@@ -8,6 +8,7 @@ import com.owenlejeune.tvtime.api.tmdb.api.v3.model.ImageCollection
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.KeywordsResponse
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.RatingBody
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.ReviewResponse
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.Season
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.StatusResponse
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.TvContentRatings
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.VideoResponse
@@ -75,6 +76,10 @@ class TvService: KoinComponent, DetailService, HomePageService {
 
     override suspend fun getKeywords(id: Int): Response<KeywordsResponse> {
         return service.getKeywords(id)
+    }
+
+    suspend fun getSeason(seriesId: Int, seasonId: Int): Response<Season> {
+        return service.getSeason(seriesId, seasonId)
     }
 
 }
