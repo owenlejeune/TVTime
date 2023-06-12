@@ -61,6 +61,10 @@ class TmdbClient: KoinComponent {
         return client.create(AccountApi::class.java)
     }
 
+    fun createConfigurationService(): ConfigurationApi {
+        return client.create(ConfigurationApi::class.java)
+    }
+
     fun createV4AccountService(): AccountV4Api {
         return clientV4.create(AccountV4Api::class.java)
     }

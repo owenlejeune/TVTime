@@ -8,12 +8,14 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
 import com.kieronquinn.monetcompat.app.MonetCompatActivity
 import com.owenlejeune.tvtime.extensions.rememberWindowSizeClass
 import com.owenlejeune.tvtime.ui.navigation.AppNavigationHost
 import com.owenlejeune.tvtime.ui.navigation.HomeScreenNavItem
 import com.owenlejeune.tvtime.ui.theme.TVTimeTheme
+import com.owenlejeune.tvtime.ui.viewmodel.ConfigurationViewModel
 import com.owenlejeune.tvtime.utils.KeyboardManager
 import com.owenlejeune.tvtime.utils.SessionManager
 import kotlinx.coroutines.CoroutineScope
@@ -34,6 +36,9 @@ class MainActivity : MonetCompatActivity() {
         lifecycleScope.launchWhenCreated {
             monet.awaitMonetReady()
             setContent {
+                val configurationViewModel = viewModel<ConfigurationViewModel>()
+                configurationViewModel.getConfigurations()
+
                 AppKeyboardFocusManager()
                 TVTimeTheme(monetCompat = monet) {
                     val windowSize = rememberWindowSizeClass()

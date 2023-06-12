@@ -33,6 +33,7 @@ val networkModule = module {
     single { get<TmdbClient>().createPeopleService() }
     single { get<TmdbClient>().createSearchService() }
     single { get<TmdbClient>().createTvService() }
+    single { get<TmdbClient>().createConfigurationService() }
 
     single { AccountService() }
     single { AccountV4Service() }
