@@ -18,7 +18,7 @@ import com.owenlejeune.tvtime.ui.components.SearchView
 import com.owenlejeune.tvtime.ui.navigation.AppNavItem
 import com.owenlejeune.tvtime.ui.navigation.MediaTabNavItem
 import com.owenlejeune.tvtime.ui.components.Tabs
-import com.owenlejeune.tvtime.api.tmdb.viewmodel.MediaTabViewModel
+import com.owenlejeune.tvtime.ui.viewmodel.MediaTabViewModel
 import com.owenlejeune.tvtime.utils.types.MediaViewType
 
 @OptIn(ExperimentalPagerApi::class)

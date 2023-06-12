@@ -26,6 +26,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -38,6 +39,7 @@ import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.preferences.AppPreferences
 import com.owenlejeune.tvtime.ui.components.*
 import com.owenlejeune.tvtime.ui.navigation.AppNavItem
+import com.owenlejeune.tvtime.ui.viewmodel.SettingsViewModel
 import com.owenlejeune.tvtime.ui.views.HomeTabRecyclerAdapter
 import com.owenlejeune.tvtime.ui.views.ItemMoveCallback
 import com.owenlejeune.tvtime.utils.ResourceUtils
@@ -66,7 +68,11 @@ fun SettingsScreen(
 
     val appBarTitle = remember { mutableStateOf("") }
     val defaultRestoreAction = ::resetAllPreferences
-    val restoreAction = remember { mutableStateOf<(AppPreferences) -> Unit>(defaultRestoreAction) }
+    val restoreAction = remember { mutableStateOf<SettingsResetHandler>(defaultRestoreAction) }
+
+    val settingsViewModel = viewModel<SettingsViewModel>()
+
+    val activity = LocalContext.current as AppCompatActivity
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -89,9 +95,11 @@ fun SettingsScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = {
-                        restoreAction.value(preferences)
-                    }) {
+                    IconButton(
+                        onClick = {
+                            restoreAction.value(preferences, settingsViewModel, activity)
+                        }
+                    ) {
                         Icon(
                             imageVector = Icons.Filled.SettingsBackupRestore,
                             contentDescription = stringResource(R.string.preferences_restore_content_description)
@@ -109,11 +117,10 @@ fun SettingsScreen(
                         .padding(all = 24.dp),
                     verticalArrangement = Arrangement.spacedBy(18.dp)
                 ) {
-                    val activity = LocalContext.current as AppCompatActivity
                     SettingsPage.getByRoute(route).apply {
                         appBarTitle.value = name
                         restoreAction.value = resetPreferencesHandler
-                        settingsPageRenderer(appNavController, activity, preferences)
+                        settingsPageRenderer(appNavController, activity)
                     }
                 }
             } else {
@@ -216,28 +223,24 @@ private fun TopLevelSettingsCard(
 }
 
 @Composable
-private fun SearchPreferences(
-    preferences: AppPreferences = get(AppPreferences::class.java)
-) {
-    val persistentSearch = remember { mutableStateOf(preferences.showSearchBar) }
+private fun SearchPreferences() {
+    val settingsViewModel = viewModel<SettingsViewModel>()
+
     SwitchPreference(
         titleText = stringResource(R.string.preferences_persistent_search_title),
         subtitleText = stringResource(R.string.preferences_persistent_search_subtitle),
-        checkState = persistentSearch.value,
-        onCheckedChange = { isChecked ->
-            persistentSearch.value = isChecked
-            preferences.showSearchBar = isChecked
+        checkState = settingsViewModel.showSearchBar.collectAsState(),
+        onCheckedChange = {
+            settingsViewModel.toggleShowSearchBar()
         }
     )
 
-    val multiSearch = remember { mutableStateOf(preferences.multiSearch) }
     SwitchPreference(
         titleText = stringResource(R.string.preference_multi_search_title),
         subtitleText = stringResource(R.string.preference_multi_search_subtitle),
-        checkState = multiSearch.value,
-        onCheckedChange = { isChecked ->
-            multiSearch.value = isChecked
-            preferences.multiSearch = isChecked
+        checkState = settingsViewModel.useMultiSearch.collectAsState(),
+        onCheckedChange = {
+            settingsViewModel.toggleMultiSearch()
         }
     )
 }
@@ -245,9 +248,10 @@ private fun SearchPreferences(
 @Composable
 private fun DesignPreferences(
     appNavController: NavController,
-    activity: AppCompatActivity,
-    preferences: AppPreferences = get(AppPreferences::class.java)
+    activity: AppCompatActivity
 ) {
+    val settingsViewModel = viewModel<SettingsViewModel>()
+
     TopLevelSettingsCard(
         title = stringResource(id = R.string.preference_heading_dark_mode),
         subtitle = stringResource(R.string.preference_subtitle_dark_mode),
@@ -256,53 +260,48 @@ private fun DesignPreferences(
         appNavController = appNavController
     )
 
-    val useWallpaperColors = remember { mutableStateOf(preferences.useWallpaperColors) }
     SwitchPreference(
         titleText = stringResource(R.string.preferences_use_wallpaper_colors_title),
         subtitleText = stringResource(R.string.preferences_use_wallpaper_colors_subtitle),
-        checkState = useWallpaperColors.value,
-        onCheckedChange = { isChecked ->
-            useWallpaperColors.value = isChecked
-            preferences.useWallpaperColors = isChecked
+        checkState = settingsViewModel.useWallpaperColors.collectAsState(),
+        onCheckedChange = {
+            settingsViewModel.toggleUseWallpaperColors()
             activity.recreate()
         }
     )
 
     val isSystemColorsSupported = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
     if (isSystemColorsSupported) {
-        val useSystemColors = remember { mutableStateOf(preferences.useSystemColors) }
         SwitchPreference(
             titleText = stringResource(id = R.string.preference_system_colors_heading),
             subtitleText = stringResource(R.string.preference_system_colors_subtitle),
-            checkState = useSystemColors.value,
+            checkState = settingsViewModel.useSystemColors.collectAsState(),
             onCheckedChange = { isChecked ->
-                useSystemColors.value = isChecked
-                preferences.useSystemColors = isChecked
+                settingsViewModel.toggleUseSystemColors()
                 MonetCompat.useSystemColorsOnAndroid12 = isChecked
                 MonetCompat.getInstance().updateMonetColors()
             },
-            enabled = useWallpaperColors.value
+            enabled = settingsViewModel.useSystemColors.collectAsState().value
         )
     }
 
     SliderPreference(
         titleText = stringResource(id = R.string.preference_chroma_factor_heading),
-        value = preferences.chromaMultiplier.toFloat() * 50f,
+        value = settingsViewModel.chromaMultiplier.collectAsState(),
         onValueChangeFinished = { value ->
-            with((value / 50f).toDouble()) {
-                preferences.chromaMultiplier = this
+            with((value / 50f)) {
+                settingsViewModel.setChromaMultiplier(value)
                 MonetCompat.chromaMultiplier = this
             }
             MonetCompat.getInstance().updateMonetColors()
         },
-        enabled = (if (isSystemColorsSupported) !preferences.useSystemColors else true).and(
-            useWallpaperColors.value
-        )
+        enabled = (if (isSystemColorsSupported) !settingsViewModel.useSystemColors.collectAsState().value else true)
+            .and(settingsViewModel.useWallpaperColors.collectAsState().value)
     )
 
     val showWallpaperPicker = remember { mutableStateOf(false) }
     val wallpaperPickerModifier =
-        if (isSystemColorsSupported && preferences.useSystemColors && useWallpaperColors.value) {
+        if (isSystemColorsSupported && settingsViewModel.useSystemColors.collectAsState().value && settingsViewModel.useWallpaperColors.collectAsState().value) {
             Modifier
         } else {
             Modifier.clickable { showWallpaperPicker.value = true }
@@ -311,7 +310,7 @@ private fun DesignPreferences(
         text = stringResource(id = R.string.preference_wallpaper_color_heading),
         style = MaterialTheme.typography.titleLarge,
         fontSize = 20.sp,
-        color = if (isSystemColorsSupported && preferences.useSystemColors) {
+        color = if (isSystemColorsSupported && settingsViewModel.useSystemColors.collectAsState().value) {//preferences.useSystemColors) {
             MaterialTheme.colorScheme.outline
         } else {
             MaterialTheme.colorScheme.onBackground
@@ -326,15 +325,13 @@ private fun DesignPreferences(
 
 @Composable
 private fun DarkModePreferences(
-    activity: AppCompatActivity,
-    preferences: AppPreferences = get(AppPreferences::class.java)
+    activity: AppCompatActivity
 ) {
-    val selectedValue = remember { mutableStateOf(preferences.darkTheme) }
+    val settingsViewModel = viewModel<SettingsViewModel>()
 
-    val isSelected: (Int) -> Boolean = { selectedValue.value == it }
+    val isSelected: (Int) -> Boolean = { settingsViewModel.darkTheme.value == it }
     val onChangeState: (Int) -> Unit = {
-        selectedValue.value = it
-        preferences.darkTheme = it
+        settingsViewModel.setDarkMode(it)
         activity.recreate()
     }
 
@@ -368,30 +365,26 @@ private fun DarkModePreferences(
 }
 
 @Composable
-private fun HomeScreenPreferences(
-    preferences: AppPreferences = get(AppPreferences::class.java)
-) {
+private fun HomeScreenPreferences() {
+    val settingsViewModel = viewModel<SettingsViewModel>()
+
     PreferenceHeading(text = stringResource(R.string.preference_look_and_feel_heading))
 
-    val showTabLabels = remember { mutableStateOf(preferences.showBottomTabLabels) }
     SwitchPreference(
         titleText = stringResource(R.string.preference_show_text_labels_title),
         subtitleText = stringResource(R.string.preference_show_text_labels_subtitle),
-        checkState = showTabLabels.value,
-        onCheckedChange = { isChecked ->
-            showTabLabels.value = isChecked
-            preferences.showBottomTabLabels = isChecked
+        checkState = settingsViewModel.showBottomTabLabels.collectAsState(),
+        onCheckedChange = {
+            settingsViewModel.toggleShowBottomTabLabels()
         }
     )
 
-    val showPosterTitles = remember { mutableStateOf(preferences.showPosterTitles) }
     SwitchPreference(
         titleText = stringResource(R.string.preference_show_poster_titles_title),
         subtitleText = stringResource(R.string.preference_show_poster_titles_subtitle),
-        checkState = showPosterTitles.value,
-        onCheckedChange = { isChecked ->
-            showPosterTitles.value = isChecked
-            preferences.showPosterTitles = isChecked
+        checkState = settingsViewModel.showPosterTitles.collectAsState(),
+        onCheckedChange = {
+            settingsViewModel.toggleShowPosterTitles()
         }
     )
     
@@ -423,32 +416,28 @@ private fun HomeScreenPreferences(
 }
 
 @Composable
-private fun DevPreferences(
-    preferences: AppPreferences = get(AppPreferences::class.java)
-) {
+private fun DevPreferences() {
     if (BuildConfig.DEBUG) {
+        val settingsViewModel = viewModel<SettingsViewModel>()
+
         val context = LocalContext.current
         val coroutineScope = rememberCoroutineScope()
 
-        val showBackdropGallery = remember { mutableStateOf(preferences.showBackdropGallery) }
         SwitchPreference(
             titleText = "Show backdrop gallery",
             subtitleText = "Show galleries for movies/tv backdrops",
-            checkState = showBackdropGallery.value,
-            onCheckedChange = { isChecked ->
-                showBackdropGallery.value = isChecked
-                preferences.showBackdropGallery = isChecked
+            checkState = settingsViewModel.showBackdropGallery.collectAsState(),
+            onCheckedChange = {
+                settingsViewModel.toggleShowBackdropGallery()
             }
         )
 
-        val firstLaunchTesting = remember { mutableStateOf(preferences.firstLaunchTesting) }
         SwitchPreference(
             titleText = "Always show onboarding flow",
             subtitleText = "Show onboarding flow on each launch",
-            checkState = firstLaunchTesting.value,
-            onCheckedChange = { isChecked ->
-                firstLaunchTesting.value = isChecked
-                preferences.firstLaunchTesting = isChecked
+            checkState = settingsViewModel.firstLaunchTesting.collectAsState(),
+            onCheckedChange = {
+                settingsViewModel.toggleFirstLaunchTesting()
             }
         )
         Text(
@@ -506,10 +495,11 @@ private fun DevPreferences(
 
 @Composable
 private fun WallpaperPicker(
-    showPopup: MutableState<Boolean>,
-    preference: AppPreferences = get(AppPreferences::class.java)
+    showPopup: MutableState<Boolean>
 ) {
     val context = LocalContext.current
+
+    val settingsViewModel = viewModel<SettingsViewModel>()
 
     val wallpaperColors = remember { mutableStateOf<List<Int>>(emptyList()) }
     val selectedWallpaperColor = remember { mutableStateOf(0) }
@@ -546,7 +536,7 @@ private fun WallpaperPicker(
                             showIcon = it == selectedWallpaperColor.value,
                             onClick = {
                                 if (it != selectedWallpaperColor.value) {
-                                    preference.selectedColor = it
+                                    settingsViewModel.setSelectedColor(it)
                                     MonetCompat
                                         .getInstance()
                                         .updateMonetColors()
@@ -562,8 +552,8 @@ private fun WallpaperPicker(
                         icon = Icons.Filled.RestartAlt,
                         contentDescription = null,
                         onClick = {
-                            if (preference.selectedColor != Int.MAX_VALUE) {
-                                preference.selectedColor = Int.MAX_VALUE
+                            if (settingsViewModel.selectedColor.value != Int.MAX_VALUE) {
+                                settingsViewModel.setSelectedColor(Int.MAX_VALUE)
                                 MonetCompat.getInstance().updateMonetColors()
                             } else {
                                 Toast.makeText(context, context.getString(R.string.preference_wallpaper_color_default_selected), Toast.LENGTH_SHORT).show()
@@ -583,50 +573,99 @@ private fun WallpaperPicker(
     }
 }
 
-private fun resetAllPreferences(preferences: AppPreferences) {
-    resetSearchPreferences(preferences = preferences)
-    resetDesignPreferences(preferences = preferences)
-    resetHomeScreenPreferences(preferences = preferences)
-    resetDevModePreference(preferences = preferences)
+private fun resetAllPreferences(
+    preferences: AppPreferences,
+    settingsViewModel: SettingsViewModel,
+    activity: AppCompatActivity
+) {
+    resetSearchPreferences(preferences = preferences, settingsViewModel = settingsViewModel, activity = activity, skipRecreate = true)
+    resetDesignPreferences(preferences = preferences, settingsViewModel = settingsViewModel, activity = activity, skipRecreate = true)
+    resetHomeScreenPreferences(preferences = preferences, settingsViewModel = settingsViewModel, activity = activity, skipRecreate = true)
+    resetDevModePreference(preferences = preferences, settingsViewModel = settingsViewModel, activity = activity, skipRecreate = true)
+    activity.recreate()
+    Toast.makeText(activity, "All settings reset successfully", Toast.LENGTH_SHORT).show()
 }
 
-private fun resetSearchPreferences(preferences: AppPreferences) {
-    preferences.showSearchBar = preferences.showSearchBarDefault
-    preferences.multiSearch = preferences.multiSearchDefault
+private fun resetSearchPreferences(
+    preferences: AppPreferences,
+    settingsViewModel: SettingsViewModel,
+    activity: AppCompatActivity,
+    skipRecreate: Boolean = false
+) {
+    settingsViewModel.setShowSearchBar(preferences.showSearchBarDefault)
+    settingsViewModel.setMultiSearch(preferences.multiSearchDefault)
+    if (!skipRecreate) {
+        activity.recreate()
+    }
 }
 
-private fun resetDesignPreferences(preferences: AppPreferences) {
-    preferences.useWallpaperColors = preferences.useWallpaperColorsDefault
-    preferences.useSystemColors = preferences.useSystemColorsDefault
-    preferences.chromaMultiplier = preferences.chromeMultiplyerDefault
-    preferences.selectedColor = preferences.selectedColorDefault
-    resetDarkModePreferences(preferences = preferences)
+private fun resetDesignPreferences(
+    preferences: AppPreferences,
+    settingsViewModel: SettingsViewModel,
+    activity: AppCompatActivity,
+    skipRecreate: Boolean = false
+) {
+    settingsViewModel.setUseSystemColors(preferences.useSystemColorsDefault)
+    settingsViewModel.setUseWallpaperColors(preferences.useWallpaperColorsDefault)
+    settingsViewModel.setChromaMultiplier(preferences.chromaMultiplierDefault)
+    settingsViewModel.setSelectedColor(preferences.selectedColorDefault)
+    resetDarkModePreferences(preferences = preferences, settingsViewModel = settingsViewModel, activity = activity, skipRecreate = true)
+    if (!skipRecreate) {
+        activity.recreate()
+    }
 }
 
-private fun resetDarkModePreferences(preferences: AppPreferences) {
-    preferences.darkTheme = preferences.darkThemeDefault
+private fun resetDarkModePreferences(
+    preferences: AppPreferences,
+    settingsViewModel: SettingsViewModel,
+    activity: AppCompatActivity,
+    skipRecreate: Boolean = false
+) {
+    settingsViewModel.setDarkMode(preferences.darkThemeDefault)
+    if (!skipRecreate) {
+        activity.recreate()
+    }
 }
 
-private fun resetDevModePreference(preferences: AppPreferences) {
-    preferences.firstLaunchTesting = preferences.firstLaunchTestingDefault
-    preferences.showBackdropGallery = preferences.showBackdropGalleryDefault
+private fun resetDevModePreference(
+    preferences: AppPreferences,
+    settingsViewModel: SettingsViewModel,
+    activity: AppCompatActivity,
+    skipRecreate: Boolean = false
+) {
+    settingsViewModel.setFirstLaunchTesting(preferences.firstLaunchTestingDefault)
+    settingsViewModel.setShowBackdropGallery(preferences.showBackdropGalleryDefault)
+    if (!skipRecreate) {
+        activity.recreate()
+    }
 }
 
-private fun resetHomeScreenPreferences(preferences: AppPreferences) {
+private fun resetHomeScreenPreferences(
+    preferences: AppPreferences,
+    settingsViewModel: SettingsViewModel,
+    activity: AppCompatActivity,
+    skipRecreate: Boolean = false
+) {
+    settingsViewModel.setShowBottomTabLabels(preferences.showBottomTabLabelsDefault)
+    settingsViewModel.setShowPosterTitles(preferences.showPosterTitlesDefault)
     preferences.moviesTabPosition = preferences.moviesTabPositionDefault
     preferences.tvTabPosition = preferences.tvTabPositionDefault
     preferences.peopleTabPosition = preferences.peopleTabPositionDefault
     preferences.accountTabPosition = preferences.accountTabPositionDefault
     preferences.showBottomTabLabels = preferences.showBottomTabLabelsDefault
+    if (!skipRecreate) {
+        activity.recreate()
+    }
 }
 
-private typealias SettingsPageRenderer = @Composable (NavController, AppCompatActivity, AppPreferences) -> Unit
+private typealias SettingsResetHandler = (AppPreferences, SettingsViewModel, AppCompatActivity) -> Unit
+private typealias SettingsPageRenderer = @Composable (NavController, AppCompatActivity) -> Unit
 
 private sealed class SettingsPage(
     stringRes: Int,
     val route: String,
     val settingsPageRenderer: SettingsPageRenderer,
-    val resetPreferencesHandler: (AppPreferences) -> Unit
+    val resetPreferencesHandler: SettingsResetHandler
 ): KoinComponent {
     private val resources: ResourceUtils by inject()
 
@@ -654,31 +693,31 @@ private sealed class SettingsPage(
     object SearchSettings: SettingsPage(
         R.string.preference_heading_search,
         "search",
-        @Composable { _, _, p -> SearchPreferences(p) },
+        @Composable { _, _ -> SearchPreferences() },
         ::resetSearchPreferences
     )
     object DesignSettings: SettingsPage(
         R.string.preference_heading_design,
         "design",
-        @Composable { n, a, p -> DesignPreferences(n, a, p) },
+        @Composable { n, a -> DesignPreferences(n, a) },
         ::resetDesignPreferences
     )
     object HomeScreenSettings: SettingsPage(
         R.string.preference_heading_home_screen,
         "home",
-        @Composable { _, _, p -> HomeScreenPreferences(p) },
+        @Composable { _, _ -> HomeScreenPreferences() },
         ::resetHomeScreenPreferences
     )
     object DeveloperSettings: SettingsPage(
         R.string.preferences_debug_title,
         "dev",
-        @Composable { _, _, p -> DevPreferences(p) },
+        @Composable { _, _ -> DevPreferences() },
         ::resetDevModePreference
     )
     object DarkModeSettings: SettingsPage(
         R.string.preference_heading_dark_mode,
         "darkmode",
-        @Composable { _, a, p -> DarkModePreferences(a, p) },
+        @Composable { _, a -> DarkModePreferences(a) },
         ::resetDarkModePreferences
     )
 }

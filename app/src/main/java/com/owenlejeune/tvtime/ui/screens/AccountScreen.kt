@@ -30,7 +30,7 @@ import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.*
 import com.owenlejeune.tvtime.api.tmdb.api.v4.model.AccountList
-import com.owenlejeune.tvtime.api.tmdb.viewmodel.RecommendedMediaViewModel
+import com.owenlejeune.tvtime.ui.viewmodel.RecommendedMediaViewModel
 import com.owenlejeune.tvtime.extensions.unlessEmpty
 import com.owenlejeune.tvtime.ui.components.AccountIcon
 import com.owenlejeune.tvtime.ui.components.PagingPosterGrid

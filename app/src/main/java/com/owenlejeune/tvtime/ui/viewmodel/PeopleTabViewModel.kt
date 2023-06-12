@@ -1,4 +1,4 @@
-package com.owenlejeune.tvtime.api.tmdb.viewmodel
+package com.owenlejeune.tvtime.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

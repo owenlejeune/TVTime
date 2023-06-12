@@ -65,9 +65,9 @@ class AppPreferences(context: Context) {
         get() = preferences.getBoolean(USE_SYSTEM_COLORS, useSystemColorsDefault)
         set(value) { preferences.put(USE_SYSTEM_COLORS, value) }
 
-    val chromeMultiplyerDefault: Double = MonetCompat.chromaMultiplier.toFloat().toDouble()
+    val chromaMultiplierDefault: Double = MonetCompat.chromaMultiplier.toFloat().toDouble()
     var chromaMultiplier: Double
-        get() = preferences.getFloat(CHROMA_MULTIPLIER, chromeMultiplyerDefault.toFloat()).toDouble()
+        get() = preferences.getFloat(CHROMA_MULTIPLIER, chromaMultiplierDefault.toFloat()).toDouble()
         set(value) { preferences.put(CHROMA_MULTIPLIER, value) }
 
     val selectedColorDefault: Int = Int.MAX_VALUE

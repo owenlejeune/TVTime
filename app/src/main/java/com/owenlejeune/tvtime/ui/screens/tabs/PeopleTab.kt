@@ -11,7 +11,7 @@ import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.ui.components.PagingPeoplePosterGrid
 import com.owenlejeune.tvtime.ui.components.SearchView
 import com.owenlejeune.tvtime.ui.navigation.AppNavItem
-import com.owenlejeune.tvtime.api.tmdb.viewmodel.PeopleTabViewModel
+import com.owenlejeune.tvtime.ui.viewmodel.PeopleTabViewModel
 import com.owenlejeune.tvtime.utils.types.MediaViewType
 
 @Composable

@@ -6,7 +6,7 @@ import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.api.tmdb.api.v3.HomePageService
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.HomePageResponse
 import com.owenlejeune.tvtime.utils.types.MediaViewType
-import com.owenlejeune.tvtime.api.tmdb.viewmodel.MediaTabViewModel
+import com.owenlejeune.tvtime.ui.viewmodel.MediaTabViewModel
 import com.owenlejeune.tvtime.ui.screens.tabs.MediaTabContent
 import com.owenlejeune.tvtime.utils.ResourceUtils
 import com.owenlejeune.tvtime.utils.types.TabNavItem

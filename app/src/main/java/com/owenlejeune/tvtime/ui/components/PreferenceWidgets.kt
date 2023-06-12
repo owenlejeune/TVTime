@@ -29,7 +29,7 @@ fun PreferenceHeading(
 @Composable
 fun SwitchPreference(
     titleText: String,
-    checkState: Boolean,
+    checkState: State<Boolean>,
     modifier: Modifier = Modifier,
     subtitleText: String = "",
     onCheckedChange: (Boolean) -> Unit = {},
@@ -62,6 +62,52 @@ fun SwitchPreference(
         CustomSwitch(
             modifier = Modifier
                 .align(Alignment.CenterVertically),
+            checked = checkState.value,
+            onCheckedChange = onCheckedChange,
+            width = 30.dp,
+            height = 15.dp,
+            colors = CustomSwitchColors.standardColors(),
+            enabled = enabled
+        )
+    }
+}
+
+@Composable
+fun SwitchPreference(
+    titleText: String,
+    checkState: Boolean,
+    modifier: Modifier = Modifier,
+    subtitleText: String = "",
+    onCheckedChange: (Boolean) -> Unit = {},
+    titleTextColor: Color = MaterialTheme.colorScheme.onBackground,
+    subtitleTextColor: Color = MaterialTheme.colorScheme.onSurfaceVariant,
+    disabledTextColor: Color = MaterialTheme.colorScheme.outline,
+    enabled: Boolean = true
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .wrapContentHeight()
+            .padding(all = 8.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .align(Alignment.CenterVertically)
+                .weight(1f)
+        ) {
+            val titleColor = if (enabled) titleTextColor else disabledTextColor
+            val subtitleColor = if (enabled) subtitleTextColor else disabledTextColor
+            Text(text = titleText, style = MaterialTheme.typography.titleLarge, color = titleColor, fontSize = 20.sp)
+            if (subtitleText.isNotEmpty()) {
+                Text(text = subtitleText, style = MaterialTheme.typography.bodyMedium, color = subtitleColor)
+            }
+        }
+
+        Spacer(modifier = Modifier.width(32.dp))
+
+        CustomSwitch(
+            modifier = Modifier
+                .align(Alignment.CenterVertically),
             checked = checkState,
             onCheckedChange = onCheckedChange,
             width = 30.dp,
@@ -76,8 +122,8 @@ fun SwitchPreference(
 fun SliderPreference(
     modifier: Modifier = Modifier,
     titleText: String,
-    value: Float,
-    onValueChangeFinished: (Float) -> Unit ,
+    value: State<Double>,
+    onValueChangeFinished: (Double) -> Unit ,
     titleTextColor: Color = MaterialTheme.colorScheme.onBackground,
     disabledTextColor: Color = MaterialTheme.colorScheme.outline,
     enabled: Boolean = true
@@ -90,14 +136,14 @@ fun SliderPreference(
         val titleColor = if (enabled) titleTextColor else disabledTextColor
         Text(text = titleText, style = MaterialTheme.typography.titleLarge, color = titleColor, fontSize = 20.sp)
 
-        var sliderValue by remember { mutableStateOf(value) }
+        var sliderValue by remember { mutableStateOf(value.value) }
 
         Slider(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(start = 8.dp),
-            value = sliderValue,
-            onValueChange = { sliderValue = it },
+            value = sliderValue.toFloat(),
+            onValueChange = { sliderValue = it.toDouble() },
             enabled = enabled,
             valueRange = 0f..100f,
             onValueChangeFinished = {

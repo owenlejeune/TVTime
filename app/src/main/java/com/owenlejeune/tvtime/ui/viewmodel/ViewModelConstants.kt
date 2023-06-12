@@ -1,4 +1,4 @@
-package com.owenlejeune.tvtime.api.tmdb.viewmodel
+package com.owenlejeune.tvtime.ui.viewmodel
 
 object ViewModelConstants {
 
