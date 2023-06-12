@@ -87,15 +87,9 @@ class TmdbClient: KoinComponent {
                 val locale = Locale.current
                 val languageCode = "${locale.language}-${locale.region}"
                 val languageParam = QueryParam("language", languageCode)
-
-                builder.addQueryParams(languageParam)
-            }
-
-            if (shouldIncludeRegionParam(segments)) {
-                val locale = Locale.current
                 val regionParam = QueryParam("region", locale.region)
 
-                builder.addQueryParams(regionParam)
+                builder.addQueryParams(languageParam, regionParam)
             }
 
             val requestBuilder = chain.request().newBuilder().url(builder.build())
@@ -125,15 +119,6 @@ class TmdbClient: KoinComponent {
             return true
         }
 
-        private fun shouldIncludeRegionParam(urlSegments: List<String>): Boolean {
-            val includedRoutes = listOf("search")
-            for (route in includedRoutes) {
-                if (urlSegments.contains(route)) {
-                    return true
-                }
-            }
-            return false
-        }
     }
 
     private inner class V4Interceptor: Interceptor {
