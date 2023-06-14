@@ -1,15 +1,13 @@
 package com.owenlejeune.tvtime.ui.navigation
 
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Face
 import androidx.compose.material.icons.outlined.Movie
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Tv
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -17,9 +15,10 @@ import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.preferences.AppPreferences
 import com.owenlejeune.tvtime.ui.screens.AccountViewContent
 import com.owenlejeune.tvtime.ui.screens.tabs.MediaTab
-import com.owenlejeune.tvtime.utils.types.MediaViewType
 import com.owenlejeune.tvtime.ui.screens.tabs.PeopleTab
+import com.owenlejeune.tvtime.ui.viewmodel.HomeScreenViewModel
 import com.owenlejeune.tvtime.utils.ResourceUtils
+import com.owenlejeune.tvtime.utils.types.MediaViewType
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
@@ -27,40 +26,33 @@ import org.koin.core.component.inject
 fun HomeScreenNavHost(
     appNavController: NavHostController,
     navController: NavHostController,
-    fab: MutableState<@Composable () -> Unit>,
-    appBarTitle: MutableState<@Composable () -> Unit>,
-    appBarActions: MutableState<@Composable (RowScope.() -> Unit)> = mutableStateOf({}),
     startDestination: String = HomeScreenNavItem.SortedItems[0].route
 ) {
+    val homeScreenViewModel = viewModel<HomeScreenViewModel>()
+
     NavHost(navController = navController, startDestination = startDestination) {
         composable(HomeScreenNavItem.Movies.route) {
-            appBarActions.value = {}
+            homeScreenViewModel.appBarActions.value = {}
             MediaTab(
-                appBarTitle = appBarTitle,
                 appNavController = appNavController,
                 mediaType = MediaViewType.MOVIE,
-                fab = fab
             )
         }
         composable(HomeScreenNavItem.TV.route) {
-            appBarActions.value = {}
+            homeScreenViewModel.appBarActions.value = {}
             MediaTab(
-                appBarTitle = appBarTitle,
                 appNavController = appNavController,
                 mediaType = MediaViewType.TV,
-                fab = fab
             )
         }
         composable(route = HomeScreenNavItem.Account.route) {
             AccountViewContent(appNavController = appNavController)
-            fab.value = {}
+            homeScreenViewModel.fab.value = {}
         }
         composable(HomeScreenNavItem.People.route) {
-            appBarActions.value = {}
+            homeScreenViewModel.appBarActions.value = {}
             PeopleTab(
-                appBarTitle = appBarTitle,
                 appNavController = appNavController,
-                fab = fab
             )
         }
     }

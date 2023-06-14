@@ -39,6 +39,7 @@ import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -51,6 +52,7 @@ import com.owenlejeune.tvtime.ui.components.ProfileMenuContainer
 import com.owenlejeune.tvtime.ui.components.ProfileMenuDefaults
 import com.owenlejeune.tvtime.ui.navigation.HomeScreenNavItem
 import com.owenlejeune.tvtime.ui.navigation.HomeScreenNavHost
+import com.owenlejeune.tvtime.ui.viewmodel.HomeScreenViewModel
 import org.koin.java.KoinJavaComponent
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -68,9 +70,7 @@ fun HomeScreen(
         TopAppBarDefaults.exitUntilCollapsedScrollBehavior(decayAnimationSpec, topAppBarScrollState)
     }
 
-    val appBarTitle = remember { mutableStateOf<@Composable () -> Unit>({}) }
-    val appBarActions = remember { mutableStateOf<@Composable RowScope.() -> Unit>({}) }
-    val fab = remember { mutableStateOf<@Composable () -> Unit>({}) }
+    val homeScreenViewModel = viewModel<HomeScreenViewModel>()
 
     val showProfileMenuOverlay = remember { mutableStateOf(false) }
     val navigationIcon = @Composable {
@@ -94,14 +94,13 @@ fun HomeScreen(
             topBar = {
                 if (windowSize != WindowSizeClass.Expanded) {
                     TopBar(
-                        title = appBarTitle.value,
                         scrollBehavior = scrollBehavior,
-                        appBarActions = appBarActions,
                         navigationIcon = navigationIcon
                     )
                 }
             },
             floatingActionButton = {
+                val fab = remember { homeScreenViewModel.fab }
                 fab.value()
             },
             bottomBar = {
@@ -115,9 +114,6 @@ fun HomeScreen(
                     windowSize = windowSize,
                     appNavController = appNavController,
                     navController = navController,
-                    fab = fab,
-                    appBarTitle = appBarTitle,
-                    appBarActions = appBarActions,
                     topBarScrollBehaviour = scrollBehavior,
                     mainNavStartRoute = mainNavStartRoute,
                     navigationIcon = navigationIcon
@@ -129,21 +125,21 @@ fun HomeScreen(
 
 @Composable
 private fun TopBar(
-    title: @Composable () -> Unit,
     scrollBehavior: TopAppBarScrollBehavior,
-    appBarActions: MutableState<@Composable (RowScope.() -> Unit)> = mutableStateOf({}),
     navigationIcon: @Composable () -> Unit = {}
 ) {
+    val homeScreenViewModel = viewModel<HomeScreenViewModel>()
+    val title = remember { homeScreenViewModel.appBarTitle }
+    val actions = remember { homeScreenViewModel.appBarActions }
+
     LargeTopAppBar(
-        title = title,
+        title = { Text(text = title.value) },
         scrollBehavior = scrollBehavior,
         colors = TopAppBarDefaults
             .largeTopAppBarColors(
                 scrolledContainerColor = MaterialTheme.colorScheme.background
             ),
-        actions = {
-            appBarActions.value(this)
-        },
+        actions = actions.value,
         navigationIcon = navigationIcon
     )
 }
@@ -188,10 +184,7 @@ private fun MainContent(
     windowSize: WindowSizeClass,
     appNavController: NavHostController,
     navController: NavHostController,
-    fab: MutableState<@Composable () -> Unit>,
     topBarScrollBehaviour: TopAppBarScrollBehavior,
-    appBarTitle: MutableState<@Composable () -> Unit>,
-    appBarActions: MutableState<@Composable (RowScope.() -> Unit)> = mutableStateOf({}),
     navigationIcon: @Composable () -> Unit = {},
     mainNavStartRoute: String = HomeScreenNavItem.SortedItems[0].route
 ) {
@@ -199,9 +192,6 @@ private fun MainContent(
         DualColumnMainContent(
             appNavController = appNavController,
             navController = navController,
-            fab = fab,
-            appBarTitle = appBarTitle,
-            appBarActions = appBarActions,
             topBarScrollBehaviour = topBarScrollBehaviour,
             mainNavStartRoute = mainNavStartRoute,
             navigationIcon = navigationIcon
@@ -210,9 +200,6 @@ private fun MainContent(
         SingleColumnMainContent(
             appNavController = appNavController,
             navController = navController,
-            fab = fab,
-            appBarTitle = appBarTitle,
-            appBarActions = appBarActions,
             mainNavStartRoute = mainNavStartRoute
         )
     }
@@ -222,17 +209,11 @@ private fun MainContent(
 private fun SingleColumnMainContent(
     appNavController: NavHostController,
     navController: NavHostController,
-    fab: MutableState<@Composable () -> Unit>,
-    appBarTitle: MutableState<@Composable () -> Unit>,
-    appBarActions: MutableState<@Composable (RowScope.() -> Unit)> = mutableStateOf({}),
     mainNavStartRoute: String = HomeScreenNavItem.SortedItems[0].route
 ) {
     MainMediaView(
         appNavController = appNavController,
         navController = navController,
-        fab = fab,
-        appBarTitle = appBarTitle,
-        appBarActions = appBarActions,
         mainNavStartRoute = mainNavStartRoute
     )
 }
@@ -241,10 +222,7 @@ private fun SingleColumnMainContent(
 private fun DualColumnMainContent(
     appNavController: NavHostController,
     navController: NavHostController,
-    fab: MutableState<@Composable () -> Unit>,
     topBarScrollBehaviour: TopAppBarScrollBehavior,
-    appBarTitle: MutableState<@Composable () -> Unit>,
-    appBarActions: MutableState<@Composable (RowScope.() -> Unit)> = mutableStateOf({}),
     navigationIcon: @Composable () -> Unit = {},
     mainNavStartRoute: String = HomeScreenNavItem.SortedItems[0].route,
     preferences: AppPreferences = KoinJavaComponent.get(AppPreferences::class.java)
@@ -276,17 +254,12 @@ private fun DualColumnMainContent(
         }
         Column {
             TopBar(
-                title = appBarTitle.value,
                 scrollBehavior = topBarScrollBehaviour,
-                appBarActions = appBarActions,
                 navigationIcon = navigationIcon
             )
             MainMediaView(
                 appNavController = appNavController,
                 navController = navController,
-                fab = fab,
-                appBarTitle = appBarTitle,
-                appBarActions = appBarActions,
                 mainNavStartRoute = mainNavStartRoute
             )
         }
@@ -297,9 +270,6 @@ private fun DualColumnMainContent(
 private fun MainMediaView(
     appNavController: NavHostController,
     navController: NavHostController,
-    fab: MutableState<@Composable () -> Unit>,
-    appBarTitle: MutableState<@Composable () -> Unit>,
-    appBarActions: MutableState<RowScope.() -> Unit> = mutableStateOf({}),
     mainNavStartRoute: String = HomeScreenNavItem.SortedItems[0].route
 ) {
     val activity = LocalContext.current as Activity
@@ -311,9 +281,6 @@ private fun MainMediaView(
         HomeScreenNavHost(
             appNavController = appNavController,
             navController = navController,
-            fab = fab,
-            appBarTitle = appBarTitle,
-            appBarActions = appBarActions,
             startDestination = mainNavStartRoute
         )
     }

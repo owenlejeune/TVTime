@@ -5,6 +5,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import androidx.paging.compose.collectAsLazyPagingItems
@@ -18,30 +19,29 @@ import com.owenlejeune.tvtime.ui.components.SearchView
 import com.owenlejeune.tvtime.ui.navigation.AppNavItem
 import com.owenlejeune.tvtime.ui.navigation.MediaTabNavItem
 import com.owenlejeune.tvtime.ui.components.Tabs
+import com.owenlejeune.tvtime.ui.viewmodel.HomeScreenViewModel
 import com.owenlejeune.tvtime.ui.viewmodel.MediaTabViewModel
 import com.owenlejeune.tvtime.utils.types.MediaViewType
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
 fun MediaTab(
-    appBarTitle: MutableState<@Composable () -> Unit>,
     appNavController: NavHostController,
-    mediaType: MediaViewType,
-    fab: MutableState<@Composable () -> Unit>
+    mediaType: MediaViewType
 ) {
-     val titleText = when (mediaType) {
+    val homeScreenViewModel = viewModel<HomeScreenViewModel>()
+    val titleText = when (mediaType) {
         MediaViewType.MOVIE -> stringResource(id = R.string.nav_movies_title)
         MediaViewType.TV -> stringResource(id = R.string.nav_tv_title)
         else -> ""
     }
-    appBarTitle.value = @Composable { Text(text = titleText) }
+    homeScreenViewModel.appBarTitle.value = titleText
 
     Column {
         SearchView(
             title = titleText,
             appNavController = appNavController,
-            mediaType = mediaType,
-            fab = fab
+            mediaType = mediaType
         )
 
         val tabs = when (mediaType) {

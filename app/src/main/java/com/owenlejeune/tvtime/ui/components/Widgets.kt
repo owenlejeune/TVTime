@@ -61,6 +61,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.*
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.text.HtmlCompat
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
@@ -71,6 +72,7 @@ import com.owenlejeune.tvtime.extensions.toDp
 import com.owenlejeune.tvtime.extensions.unlessEmpty
 import com.owenlejeune.tvtime.preferences.AppPreferences
 import com.owenlejeune.tvtime.ui.navigation.AppNavItem
+import com.owenlejeune.tvtime.ui.viewmodel.HomeScreenViewModel
 import com.owenlejeune.tvtime.utils.types.MediaViewType
 import com.owenlejeune.tvtime.utils.SessionManager
 import com.owenlejeune.tvtime.utils.TmdbUtils
@@ -209,7 +211,6 @@ fun SearchView(
     title: String,
     appNavController: NavHostController,
     mediaType: MediaViewType,
-    fab: MutableState<@Composable () -> Unit>,
     preferences: AppPreferences = KoinJavaComponent.get(AppPreferences::class.java)
 ) {
     val route = AppNavItem.SearchView.withArgs(mediaType, title)
@@ -220,7 +221,8 @@ fun SearchView(
             appNavController.navigate(route)
         }
     } else {
-        fab.value = @Composable {
+        val homeScreenViewModel = viewModel<HomeScreenViewModel>()
+        homeScreenViewModel.fab.value = @Composable {
             FloatingActionButton(
                 onClick = {
                     appNavController.navigate(route)
