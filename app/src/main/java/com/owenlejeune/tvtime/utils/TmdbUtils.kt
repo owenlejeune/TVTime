@@ -14,28 +14,31 @@ import com.owenlejeune.tvtime.api.tmdb.api.v3.model.Status
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.TmdbItem
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.TvContentRatings
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.Video
+import com.owenlejeune.tvtime.ui.viewmodel.ConfigurationViewModel
 import java.text.SimpleDateFormat
 
 object TmdbUtils {
 
-    private const val POSTER_BASE = "https://image.tmdb.org/t/p/original"
-//    private const val BACKDROP_BASE = "https://www.themoviedb.org/t/p/original"
-//    private const val PERSON_BASE = "https://www.themoviedb.org/t/p/w600_and_h900_bestv2"
     private const val GRAVATAR_BASE = "https://www.gravatar.com/avatar/"
-//    private const val AVATAR_BASE = "https://www.themoviedb.org/t/p/w150_and_h150_face"
-//    private const val STILL_BASE = "https://www.themoviedb.org/t/p/w454_and_h254_bestv2/"
-    private const val BACKDROP_BASE = POSTER_BASE
-    private const val PERSON_BASE = POSTER_BASE
-    private const val AVATAR_BASE = POSTER_BASE
-    private const val STILL_BASE = POSTER_BASE
 
     private const val DEF_REGION = "US"
 
-    fun fullImagePath(sourcePath: String) = POSTER_BASE.plus(sourcePath)
+    private var IMAGE_BASE = ""
+    private var BACKDROP_SIZE = "original"
+    private var LOGO_SIZE = "original"
+    private var POSTER_SIZE = "original"
+    private var PROFILE_SIZE = "original"
+    private var STILL_SIZE = "original"
+
+    fun setup(configurationViewModel: ConfigurationViewModel) {
+        IMAGE_BASE = configurationViewModel.detailsConfiguration.value.images.secureBaseUrl
+    }
+
+    fun fullLogoPath(sourcePath: String) = IMAGE_BASE.plus(LOGO_SIZE).plus(sourcePath)
 
     fun getFullPosterPath(posterPath: String?): String? {
         return posterPath?.let {
-            if (posterPath.isEmpty()) null else "${POSTER_BASE}${posterPath}"
+            if (posterPath.isEmpty()) null else IMAGE_BASE.plus(POSTER_SIZE).plus(posterPath)
         }
     }
 
@@ -49,7 +52,7 @@ object TmdbUtils {
 
     fun getFullBackdropPath(backdropPath: String?): String? {
         return backdropPath?.let {
-            if (backdropPath.isEmpty()) null else "${BACKDROP_BASE}${backdropPath}"
+            if (backdropPath.isEmpty()) null else IMAGE_BASE.plus(BACKDROP_SIZE).plus(backdropPath)
         }
     }
 
@@ -62,7 +65,7 @@ object TmdbUtils {
     }
 
     fun getFullPersonImagePath(path: String?): String? {
-        return path?.let { "${PERSON_BASE}${path}" }
+        return path?.let { IMAGE_BASE.plus(PROFILE_SIZE).plus(it) }
     }
 
     fun getFullPersonImagePath(person: Person): String? {
@@ -74,7 +77,7 @@ object TmdbUtils {
             if (path.contains("http")) {
                 return path.substring(startIndex = 1)
             }
-            "${AVATAR_BASE}${path}"
+            IMAGE_BASE.plus(LOGO_SIZE).plus(path)
         }
     }
 
@@ -84,7 +87,7 @@ object TmdbUtils {
 
     fun getFullEpisodeStillPath(path: String?): String? {
         return path?.let {
-            "${STILL_BASE}${path}"
+            IMAGE_BASE.plus(STILL_SIZE).plus(path)
         }
     }
 
@@ -211,7 +214,7 @@ object TmdbUtils {
 
     fun getAccountAvatarUrl(accountDetails: AccountDetails): String {
         val path = accountDetails.avatar.tmdb?.avatarPath
-        return "${AVATAR_BASE}${path}"
+        return IMAGE_BASE.plus(LOGO_SIZE).plus(path)
     }
 
     fun releaseYearFromData(releaseDate: String): String {

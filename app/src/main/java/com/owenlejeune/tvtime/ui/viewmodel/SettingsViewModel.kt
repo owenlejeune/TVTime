@@ -7,41 +7,34 @@ import kotlinx.coroutines.flow.asStateFlow
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
-class SettingsViewModel: ViewModel(), KoinComponent {
+class SettingsViewModel: ViewModel() {
 
-    private val preferences: AppPreferences by inject()
+    private companion object Backer: KoinComponent {
+        private val preferences: AppPreferences by inject()
 
-    private val _showSearchBar = MutableStateFlow(preferences.showSearchBar)
+        private val _showSearchBar = MutableStateFlow(preferences.showSearchBar)
+        private val _useMultiSearch = MutableStateFlow(preferences.multiSearch)
+        private val _useWallpaperColor = MutableStateFlow(preferences.useWallpaperColors)
+        private val _darkTheme = MutableStateFlow(preferences.darkTheme)
+        private val _useSystemColors = MutableStateFlow(preferences.useSystemColors)
+        private val _chromaMultiplier = MutableStateFlow(preferences.chromaMultiplier)
+        private val _selectedColor = MutableStateFlow(preferences.selectedColor)
+        private val _showBottomTabLabels = MutableStateFlow(preferences.showBottomTabLabels)
+        private val _showPosterTitles = MutableStateFlow(preferences.showPosterTitles)
+        private val _firstLaunchTesting = MutableStateFlow(preferences.firstLaunchTesting)
+        private val _showBackdropGallery = MutableStateFlow(preferences.showBackdropGallery)
+    }
+
     val showSearchBar = _showSearchBar.asStateFlow()
-
-    private val _useMultiSearch = MutableStateFlow(preferences.multiSearch)
     val useMultiSearch = _useMultiSearch.asStateFlow()
-
-    private val _useWallpaperColor = MutableStateFlow(preferences.useWallpaperColors)
     val useWallpaperColors = _useWallpaperColor.asStateFlow()
-
-    private val _darkTheme = MutableStateFlow(preferences.darkTheme)
     val darkTheme = _darkTheme.asStateFlow()
-
-    private val _useSystemColors = MutableStateFlow(preferences.useSystemColors)
     val useSystemColors = _useSystemColors.asStateFlow()
-
-    private val _chromaMultiplier = MutableStateFlow(preferences.chromaMultiplier)
     val chromaMultiplier = _chromaMultiplier.asStateFlow()
-
-    private val _selectedColor = MutableStateFlow(preferences.selectedColor)
     val selectedColor = _selectedColor.asStateFlow()
-
-    private val _showBottomTabLabels = MutableStateFlow(preferences.showBottomTabLabels)
     val showBottomTabLabels = _showBottomTabLabels.asStateFlow()
-
-    private val _showPosterTitles = MutableStateFlow(preferences.showPosterTitles)
     val showPosterTitles = _showPosterTitles.asStateFlow()
-
-    private val _firstLaunchTesting = MutableStateFlow(preferences.firstLaunchTesting)
     val firstLaunchTesting = _firstLaunchTesting.asStateFlow()
-
-    private val _showBackdropGallery = MutableStateFlow(preferences.showBackdropGallery)
     val showBackdropGallery = _showBackdropGallery.asStateFlow()
 
     fun toggleShowSearchBar() {

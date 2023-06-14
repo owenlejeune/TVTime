@@ -36,9 +36,6 @@ class MainActivity : MonetCompatActivity() {
         lifecycleScope.launchWhenCreated {
             monet.awaitMonetReady()
             setContent {
-                val configurationViewModel = viewModel<ConfigurationViewModel>()
-                configurationViewModel.getConfigurations()
-
                 AppKeyboardFocusManager()
                 TVTimeTheme(monetCompat = monet) {
                     val windowSize = rememberWindowSizeClass()

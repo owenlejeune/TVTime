@@ -10,7 +10,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -19,7 +18,6 @@ import androidx.compose.material.icons.filled.Movie
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material3.*
-import androidx.compose.material.TabRow
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.List
@@ -35,7 +33,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -44,14 +41,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.util.fastForEachIndexed
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.google.accompanist.flowlayout.FlowRow
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.PagerState
-import com.google.accompanist.pager.pagerTabIndicatorOffset
 import com.google.accompanist.pager.rememberPagerState
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.owenlejeune.tvtime.R
@@ -73,13 +68,10 @@ import com.owenlejeune.tvtime.ui.theme.FavoriteSelected
 import com.owenlejeune.tvtime.ui.theme.RatingSelected
 import com.owenlejeune.tvtime.ui.theme.WatchlistSelected
 import com.owenlejeune.tvtime.ui.theme.actionButtonColor
-import com.owenlejeune.tvtime.ui.viewmodel.ConfigurationViewModel
 import com.owenlejeune.tvtime.utils.SessionManager
 import com.owenlejeune.tvtime.utils.TmdbUtils
 import kotlinx.coroutines.*
-import okhttp3.internal.notify
 import org.json.JSONObject
-import org.koin.androidx.compose.koinViewModel
 import org.koin.java.KoinJavaComponent.get
 import java.text.DecimalFormat
 
@@ -1425,7 +1417,7 @@ private fun WatchProviderContainer(
                         }
                 ) {
                     AsyncImage(
-                        model = TmdbUtils.fullImagePath(item.logoPath),
+                        model = TmdbUtils.fullLogoPath(item.logoPath),
                         contentDescription = null,
                         modifier = Modifier
                             .size(48.dp)

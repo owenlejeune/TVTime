@@ -2,9 +2,13 @@ package com.owenlejeune.tvtime
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.owenlejeune.tvtime.extensions.launchActivity
 import com.owenlejeune.tvtime.preferences.AppPreferences
+import com.owenlejeune.tvtime.ui.viewmodel.ConfigurationViewModel
+import com.owenlejeune.tvtime.utils.TmdbUtils
 import org.koin.android.ext.android.inject
+import org.koin.androidx.viewmodel.ext.android.getViewModel
 
 class AppRoutingActivity: AppCompatActivity() {
 
@@ -13,10 +17,16 @@ class AppRoutingActivity: AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        if (preferences.firstLaunchTesting || preferences.firstLaunch) {
-            launchActivity(OnboardingActivity::class.java)
-        } else {
-            launchActivity(MainActivity::class.java)
+        lifecycleScope.launchWhenCreated {
+            val configurationViewModel = getViewModel<ConfigurationViewModel>()
+            configurationViewModel.getConfigurations()
+            TmdbUtils.setup(configurationViewModel)
+
+            if (preferences.firstLaunchTesting || preferences.firstLaunch) {
+                launchActivity(OnboardingActivity::class.java)
+            } else {
+                launchActivity(MainActivity::class.java)
+            }
         }
     }
 

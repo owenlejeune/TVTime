@@ -23,16 +23,25 @@ class ConfigurationViewModel: ViewModel(), KoinComponent {
         private const val TAG = "ConfigurationViewModel"
     }
 
+    private object Backer {
+        val detailsConfiguration = mutableStateOf(ConfigurationDetails.Empty)
+        val countriesConfiguration = mutableStateListOf<ConfigurationCountry>()
+        val jobsConfiguration = mutableStateListOf<ConfigurationJob>()
+        val languagesConfiguration = mutableStateListOf<ConfigurationLanguage>()
+        val primaryTranslationsConfiguration = mutableStateListOf<String>()
+        val timezonesConfiguration = mutableStateListOf<ConfigurationTimezone>()
+    }
+
     private val service: ConfigurationApi by inject()
 
-    val detailsConfiguration = mutableStateOf(ConfigurationDetails.Empty)
-    val countriesConfiguration = mutableStateListOf<ConfigurationCountry>()
-    val jobsConfiguration = mutableStateListOf<ConfigurationJob>()
-    val languagesConfiguration = mutableStateListOf<ConfigurationLanguage>()
-    val primaryTranslationsConfiguration = mutableStateListOf<String>()
-    val timezonesConfiguration = mutableStateListOf<ConfigurationTimezone>()
+    val detailsConfiguration = Backer.detailsConfiguration
+    val countriesConfiguration = Backer.countriesConfiguration
+    val jobsConfiguration = Backer.jobsConfiguration
+    val languagesConfiguration = Backer.languagesConfiguration
+    val primaryTranslationsConfiguration = Backer.primaryTranslationsConfiguration
+    val timezonesConfiguration = Backer.timezonesConfiguration
 
-    fun getConfigurations() {
+    suspend fun getConfigurations() {
         getDetailsConfiguration()
         getCountriesConfiguration()
         getJobsConfiguration()
@@ -41,14 +50,14 @@ class ConfigurationViewModel: ViewModel(), KoinComponent {
         getTimezonesConfiguration()
     }
 
-    fun getDetailsConfiguration() {
+    suspend fun getDetailsConfiguration() {
         getConfiguration(
             { service.getDetailsConfiguration() },
             { detailsConfiguration.value = it }
         )
     }
 
-    fun getCountriesConfiguration() {
+    suspend fun getCountriesConfiguration() {
         getConfiguration(
             { service.getCountriesConfiguration() },
             {
@@ -58,7 +67,7 @@ class ConfigurationViewModel: ViewModel(), KoinComponent {
         )
     }
 
-    fun getJobsConfiguration() {
+    suspend fun getJobsConfiguration() {
         getConfiguration(
             { service.getJobsConfiguration() },
             {
@@ -68,7 +77,7 @@ class ConfigurationViewModel: ViewModel(), KoinComponent {
         )
     }
 
-    fun getLanguagesConfiguration() {
+    suspend fun getLanguagesConfiguration() {
         getConfiguration(
             { service.getLanguagesConfiguration() },
             {
@@ -78,7 +87,7 @@ class ConfigurationViewModel: ViewModel(), KoinComponent {
         )
     }
 
-    fun getPrimaryTranslationsConfiguration() {
+    suspend fun getPrimaryTranslationsConfiguration() {
         getConfiguration(
             { service.getPrimaryTranslationsConfiguration() },
             {
@@ -88,7 +97,7 @@ class ConfigurationViewModel: ViewModel(), KoinComponent {
         )
     }
 
-    fun getTimezonesConfiguration() {
+    suspend fun getTimezonesConfiguration() {
         getConfiguration(
             { service.getTimezonesConfiguration() },
             {
@@ -98,20 +107,18 @@ class ConfigurationViewModel: ViewModel(), KoinComponent {
         )
     }
 
-    private fun <T> getConfiguration(
+    private suspend fun <T> getConfiguration(
         fetcher: suspend () -> Response<T>,
         bodyHandler: (T) -> Unit
     ) {
-        CoroutineScope(Dispatchers.IO).launch {
-            val response = fetcher()
-            if (response.isSuccessful) {
-                response.body()?.let {
-                    Log.d(TAG, "Successfully got configuration: $it")
-                    bodyHandler(it)
-                }
-            } else {
-                Log.e(TAG, "Issue getting configuration")
+        val response = fetcher()
+        if (response.isSuccessful) {
+            response.body()?.let {
+                Log.d(TAG, "Successfully got configuration: $it")
+                bodyHandler(it)
             }
+        } else {
+            Log.e(TAG, "Issue getting configuration")
         }
     }
 
