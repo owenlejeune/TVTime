@@ -16,7 +16,7 @@ object FileUtils {
             // char in that case. So we make it 4K to cover most, if not all, cases...
             val buffer = ByteArray(4096)
             val sb = java.lang.StringBuilder()
-            var bytesRead = 0
+            var bytesRead: Int
             while (bis.read(buffer).also { bytesRead = it } > 0) {
                 val text = String(buffer, 0, bytesRead)
                 sb.append(text)

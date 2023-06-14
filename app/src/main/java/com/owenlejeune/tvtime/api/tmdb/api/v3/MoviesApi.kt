@@ -58,4 +58,7 @@ interface MoviesApi {
     @GET("movie/{id}/watch/providers")
     suspend fun getWatchProviders(@Path("id") id: Int): Response<WatchProviderResponse>
 
+    @GET("movie/{id}/external_ids")
+    suspend fun getExternalIds(@Path("id") id: Int): Response<ExternalIds>
+
 }

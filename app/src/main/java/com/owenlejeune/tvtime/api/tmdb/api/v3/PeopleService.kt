@@ -2,6 +2,7 @@ package com.owenlejeune.tvtime.api.tmdb.api.v3
 
 import com.owenlejeune.tvtime.api.tmdb.TmdbClient
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.DetailPerson
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.ExternalIds
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.HomePagePeopleResponse
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.PersonCreditsResponse
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.PersonImageCollection
@@ -26,6 +27,10 @@ class PeopleService: KoinComponent {
 
     suspend fun getPopular(page: Int = 1): Response<HomePagePeopleResponse> {
         return service.getPopular(page)
+    }
+
+    suspend fun getExternalIds(id: Int): Response<ExternalIds> {
+        return service.getExternalIds(id)
     }
 
 }

@@ -1,6 +1,7 @@
 package com.owenlejeune.tvtime.api.tmdb.api.v3
 
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.DetailPerson
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.ExternalIds
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.HomePagePeopleResponse
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.PersonCreditsResponse
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.PersonImageCollection
@@ -31,5 +32,8 @@ interface PeopleApi {
 
 //    @GET("persons/{id}/tagged_images")
 //    suspend fun getTaggedImages(@Path("id") id: Int, @Query("page") page: Int = 1): Response<PersonImageCollection>
+
+    @GET("person/{id}/external_ids")
+    suspend fun getExternalIds(@Path("id") id: Int): Response<ExternalIds>
 
 }

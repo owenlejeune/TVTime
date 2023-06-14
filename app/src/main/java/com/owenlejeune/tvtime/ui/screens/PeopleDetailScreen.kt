@@ -10,9 +10,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
@@ -24,10 +26,12 @@ import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.api.tmdb.api.v3.PeopleService
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.DetailPerson
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.ExternalIds
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.PersonCreditsResponse
 import com.owenlejeune.tvtime.ui.components.ContentCard
 import com.owenlejeune.tvtime.ui.components.DetailHeader
 import com.owenlejeune.tvtime.ui.components.ExpandableContentCard
+import com.owenlejeune.tvtime.ui.components.ExternalIdsArea
 import com.owenlejeune.tvtime.ui.components.TwoLineImageTextCard
 import com.owenlejeune.tvtime.ui.navigation.AppNavItem
 import com.owenlejeune.tvtime.utils.TmdbUtils
@@ -83,6 +87,8 @@ fun PersonDetailScreen(
             )
         }
     ) { innerPadding ->
+        val scope = rememberCoroutineScope()
+
         Box(modifier = Modifier.padding(innerPadding)) {
             Column(
                 modifier = Modifier
@@ -97,6 +103,22 @@ fun PersonDetailScreen(
                 )
 
                 BiographyCard(person = person.value)
+
+                val externalIds = remember { mutableStateOf<ExternalIds?>(null) }
+                LaunchedEffect(Unit) {
+                    scope.launch {
+                        val response = PeopleService().getExternalIds(personId!!)
+                        if (response.isSuccessful) {
+                            externalIds.value = response.body()!!
+                        }
+                    }
+                }
+                externalIds.value?.let {
+                    ExternalIdsArea(
+                        externalIds = it,
+                        modifier = Modifier.padding(start = 4.dp)
+                    )
+                }
 
                 val credits = remember { mutableStateOf<PersonCreditsResponse?>(null) }
                 personId?.let {

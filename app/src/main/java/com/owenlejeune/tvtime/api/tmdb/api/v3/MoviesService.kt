@@ -3,6 +3,7 @@ package com.owenlejeune.tvtime.api.tmdb.api.v3
 import com.owenlejeune.tvtime.api.tmdb.TmdbClient
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.CastAndCrew
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.DetailedItem
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.ExternalIds
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.HomePageResponse
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.ImageCollection
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.KeywordsResponse
@@ -80,6 +81,10 @@ class MoviesService: KoinComponent, DetailService, HomePageService {
 
     override suspend fun getWatchProviders(id: Int): Response<WatchProviderResponse> {
         return movieService.getWatchProviders(id)
+    }
+
+    override suspend fun getExternalIds(id: Int): Response<ExternalIds> {
+        return movieService.getExternalIds(id)
     }
 
 }

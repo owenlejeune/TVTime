@@ -623,40 +623,6 @@ fun HtmlText(text: String, modifier: Modifier = Modifier, color: Color = Color.U
 fun CircleBackgroundColorImage(
     size: Dp,
     backgroundColor: Color,
-    painter: Painter,
-    modifier: Modifier = Modifier,
-    imageSize: DpSize? = null,
-    imageAlignment: Alignment = Alignment.Center,
-    contentDescription: String? = null,
-    colorFilter: ColorFilter? = null
-) {
-    Box(
-        modifier = modifier
-            .clip(CircleShape)
-            .size(size)
-            .background(color = backgroundColor)
-    ) {
-        val mod = if (imageSize != null) {
-            Modifier
-                .align(imageAlignment)
-                .size(size = imageSize)
-        } else {
-            Modifier.align(imageAlignment)
-        }
-        Image(
-            contentDescription = contentDescription,
-            modifier = mod,
-            colorFilter = colorFilter,
-            painter = painter,
-            contentScale = ContentScale.FillBounds
-        )
-    }
-}
-
-@Composable
-fun CircleBackgroundColorImage(
-    size: Dp,
-    backgroundColor: Color,
     image: ImageVector,
     modifier: Modifier = Modifier,
     imageSize: DpSize? = null,
@@ -1090,7 +1056,7 @@ fun SearchBar(
         placeHolder = stringResource(id = R.string.search_placeholder, placeholder),
         leadingIcon = {
             Image(
-                painter = painterResource(id = R.drawable.ic_search),
+                imageVector = Icons.Filled.Search,
                 contentDescription = stringResource(R.string.search_icon_content_descriptor),
                 colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.primary)
             )

@@ -61,4 +61,7 @@ interface TvApi {
     @GET("tv/{id}/watch/providers")
     suspend fun getWatchProviders(@Path("id") seriesId: Int): Response<WatchProviderResponse>
 
+    @GET("tv/{id}/external_ids")
+    suspend fun getExternalIds(@Path("id") id: Int): Response<ExternalIds>
+
 }

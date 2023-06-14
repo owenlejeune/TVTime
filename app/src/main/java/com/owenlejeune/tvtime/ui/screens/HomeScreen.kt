@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.NavigationRailDefaults
 import androidx.compose.material.Scaffold
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -19,8 +20,10 @@ import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.NavigationRail
 import androidx.compose.material3.NavigationRailItem
+import androidx.compose.material3.NavigationRailItemDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
@@ -35,7 +38,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
@@ -161,7 +163,7 @@ private fun BottomNavBar(
                 modifier = Modifier
                     .padding(4.dp)
                     .clip(RoundedCornerShape(24.dp)),
-                icon = { Icon(painter = painterResource(id = item.icon), contentDescription = null) },
+                icon = { Icon(imageVector = item.icon, contentDescription = null) },
                 label = {
                     val name = if (preferences.showBottomTabLabels) item.name else " "
                     Text(text = name)
@@ -171,7 +173,11 @@ private fun BottomNavBar(
                     if (!isSelected) {
                         navController.navigateInBottomBar(item.route)
                     }
-                }
+                },
+                colors = NavigationBarItemDefaults.colors(
+                    indicatorColor = MaterialTheme.colorScheme.secondary,
+                    selectedIconColor = MaterialTheme.colorScheme.onSecondary
+                )
             )
         }
     }
@@ -252,14 +258,15 @@ private fun DualColumnMainContent(
             HomeScreenNavItem.SortedItems.forEachIndexed { index, item ->
                 val isSelected = currentRoute == item.route
                 NavigationRailItem(
-                    icon = { Icon(painter = painterResource(id = item.icon), contentDescription = null) },
+                    icon = { Icon(imageVector = item.icon, contentDescription = null) },
                     label = { if (preferences.showBottomTabLabels) Text(item.name) },
                     selected = isSelected,
                     onClick = {
                         if (!isSelected) {
                             navController.navigateInBottomBar(item.route)
                         }
-                    }
+                    },
+                    colors = NavigationRailItemDefaults.colors(indicatorColor = MaterialTheme.colorScheme.secondary)
                 )
                 if (index < HomeScreenNavItem.SortedItems.size - 1) {
                     Spacer(modifier = Modifier.height(20.dp))

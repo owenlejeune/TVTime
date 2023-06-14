@@ -12,7 +12,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Book
+import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -573,7 +577,7 @@ private fun ActionButtonRow(listItem: ListItem) {
         ActionButton(
             itemId = listItem.id,
             type = listItem.mediaType,
-            iconRes = R.drawable.ic_favorite,
+            imageVector = Icons.Filled.Favorite,
             contentDescription = stringResource(id = R.string.favourite_label),
             isSelected = isFavourited,
             filledIconColor = FavoriteSelected,
@@ -583,7 +587,7 @@ private fun ActionButtonRow(listItem: ListItem) {
         ActionButton(
             itemId = listItem.id,
             type = listItem.mediaType,
-            iconRes = R.drawable.ic_watchlist,
+            imageVector = Icons.Filled.Bookmark,
             contentDescription = "",
             isSelected = isWatchlisted,
             filledIconColor = WatchlistSelected,
@@ -594,7 +598,7 @@ private fun ActionButtonRow(listItem: ListItem) {
         ActionButton(
             itemId = listItem.id,
             type = listItem.mediaType,
-            iconRes = R.drawable.ic_rating_star,
+            imageVector = Icons.Filled.Star,
             contentDescription = "",
             isSelected = isRated,
             filledIconColor = RatingSelected,

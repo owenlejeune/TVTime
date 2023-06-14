@@ -25,4 +25,6 @@ interface DetailService {
 
     suspend fun getWatchProviders(id: Int): Response<WatchProviderResponse>
 
+    suspend fun getExternalIds(id: Int): Response<ExternalIds>
+
 }

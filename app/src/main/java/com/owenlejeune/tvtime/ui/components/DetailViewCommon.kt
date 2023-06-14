@@ -1,18 +1,26 @@
 package com.owenlejeune.tvtime.ui.components
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -24,6 +32,7 @@ import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.rememberPagerState
 import com.owenlejeune.tvtime.R
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.ExternalIds
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.ImageCollection
 import com.owenlejeune.tvtime.ui.viewmodel.ConfigurationViewModel
 import com.owenlejeune.tvtime.utils.TmdbUtils
@@ -218,6 +227,58 @@ fun RatingView(
             ringColor = MaterialTheme.colorScheme.primary,
             ringStrokeWidth = 4.dp,
             size = 50.dp
+        )
+    }
+}
+
+@Composable
+fun ExternalIdsArea(
+    externalIds: ExternalIds,
+    modifier: Modifier = Modifier
+) {
+    if (externalIds.hasExternalIds()) {
+        Row(
+            modifier = modifier,
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            externalIds.twitter?.let {
+                ExternalIdLogo(url = "https://twitter.com/$it", logoPainter = painterResource(id = R.drawable.twitter_logo))
+            }
+            externalIds.facebook?.let {
+                ExternalIdLogo(url = "https://facebook.com/$it", logoPainter = painterResource(id = R.drawable.facebook_logo))
+            }
+            externalIds.instagram?.let {
+                ExternalIdLogo(url = "https://instagram.com/$it", logoPainter = painterResource(id = R.drawable.instagram_logo))
+            }
+            externalIds.tiktok?.let {
+                ExternalIdLogo(url = "https://tiktok.com/@$it", logoPainter = painterResource(id = R.drawable.tiktok_logo))
+            }
+            externalIds.youtube?.let {
+                ExternalIdLogo(url = "https://youtube.com/$it", logoPainter = painterResource(id = R.drawable.youtube_logo))
+            }
+        }
+    }
+}
+
+@Composable
+private fun ExternalIdLogo(
+    logoPainter: Painter,
+    url: String,
+) {
+    val context = LocalContext.current
+
+    IconButton(
+        onClick = {
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+            context.startActivity(intent)
+        },
+        modifier = Modifier.size(28.dp)
+    ) {
+        Icon(
+            painter = logoPainter,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.secondary
         )
     }
 }

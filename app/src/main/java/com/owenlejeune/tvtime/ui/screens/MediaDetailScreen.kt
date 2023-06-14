@@ -20,6 +20,10 @@ import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material3.*
 import androidx.compose.material.TabRow
+import androidx.compose.material.icons.filled.Bookmark
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,6 +31,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -188,6 +193,8 @@ private fun MediaViewContent(
     showImageGallery: MutableState<Boolean>,
     pagerState: PagerState
 ) {
+    val scope = rememberCoroutineScope()
+
     Row(
         modifier = Modifier
             .background(color = MaterialTheme.colorScheme.background),
@@ -217,6 +224,22 @@ private fun MediaViewContent(
                     MiscMovieDetails(mediaItem = mediaItem, service as MoviesService)
                 } else {
                     MiscTvDetails(mediaItem = mediaItem, service as TvService)
+                }
+
+                val externalIds = remember { mutableStateOf<ExternalIds?>(null) }
+                LaunchedEffect(Unit) {
+                    scope.launch {
+                        val response = service.getExternalIds(itemId!!)
+                        if (response.isSuccessful) {
+                            externalIds.value = response.body()!!
+                        }
+                    }
+                }
+                externalIds.value?.let {
+                    ExternalIdsArea(
+                        externalIds = it,
+                        modifier = Modifier.padding(start = 20.dp)
+                    )
                 }
 
                 ActionsView(itemId = itemId, type = type, service = service)
@@ -587,7 +610,7 @@ fun ActionButton(
     modifier: Modifier = Modifier,
     itemId: Int,
     type: MediaViewType,
-    iconRes: Int,
+    imageVector: ImageVector,
     contentDescription: String,
     isSelected: Boolean,
     filledIconColor: Color,
@@ -628,7 +651,7 @@ fun ActionButton(
             modifier = Modifier
                 .clip(CircleShape)
                 .align(Alignment.Center),
-            painter = painterResource(id = iconRes),
+            imageVector = imageVector,
             contentDescription = contentDescription,
             tint = tintColor.value
         )
@@ -685,7 +708,7 @@ private fun RateButton(
             modifier = Modifier
                 .clip(CircleShape)
                 .align(Alignment.Center),
-            painter = painterResource(id = R.drawable.ic_rating_star),
+            imageVector = Icons.Filled.Star,
             contentDescription = "",
             tint = tintColor.value
         )
@@ -727,7 +750,7 @@ fun WatchlistButton(
         modifier = modifier,
         itemId = itemId,
         type = type,
-        iconRes = R.drawable.ic_watchlist,
+        imageVector = Icons.Filled.Bookmark,
         contentDescription = "",
         isSelected = hasWatchlistedItem,
         filledIconColor = WatchlistSelected,
@@ -760,7 +783,7 @@ fun ListButton(
         ),
         size = 40.dp,
         backgroundColor = MaterialTheme.colorScheme.actionButtonColor,
-        painter = painterResource(id = R.drawable.ic_add_to_list),
+        image = Icons.Filled.List,
         colorFilter = ColorFilter.tint(color = /*if (hasWatchlistedItem.value) WatchlistSelected else*/ MaterialTheme.colorScheme.background),
         contentDescription = ""
     )
@@ -786,7 +809,7 @@ fun FavoriteButton(
         modifier = modifier,
         itemId = itemId,
         type = type,
-        iconRes = R.drawable.ic_favorite,
+        imageVector = Icons.Filled.Favorite,
         contentDescription = "",
         isSelected = isFavourited,
         filledIconColor = FavoriteSelected,

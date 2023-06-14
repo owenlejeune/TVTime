@@ -13,7 +13,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.recyclerview.widget.RecyclerView
@@ -75,7 +74,7 @@ class HomeTabRecyclerAdapter: RecyclerView.Adapter<HomeTabRecyclerAdapter.TabVie
         ) {
             Icon(
                 modifier = Modifier.size(24.dp),
-                painter = painterResource(id = page.icon),
+                imageVector = page.icon,
                 contentDescription = page.name
             )
             Text(

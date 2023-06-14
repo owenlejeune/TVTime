@@ -1,9 +1,15 @@
 package com.owenlejeune.tvtime.ui.navigation
 
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Face
+import androidx.compose.material.icons.outlined.Movie
+import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.Tv
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -62,7 +68,7 @@ fun HomeScreenNavHost(
 
 sealed class HomeScreenNavItem(
     stringRes: Int,
-    val icon: Int,
+    val icon: ImageVector,
     val route: String,
     private val orderGetter: (AppPreferences) -> Int,
     private val orderSetter: (AppPreferences, Int) -> Unit
@@ -97,21 +103,21 @@ sealed class HomeScreenNavItem(
 
     object Movies: HomeScreenNavItem(
         R.string.nav_movies_title,
-        R.drawable.ic_movie,
+        Icons.Outlined.Movie,
         "movies_route",
         { it.moviesTabPosition },
         { p, i -> p.moviesTabPosition = i }
     )
     object TV: HomeScreenNavItem(
         R.string.nav_tv_title,
-        R.drawable.ic_tv,
+        Icons.Outlined.Tv,
         "tv_route",
         { it.tvTabPosition },
         { p, i -> p.tvTabPosition = i }
     )
     object Account: HomeScreenNavItem(
         R.string.nav_account_title,
-        R.drawable.ic_person,
+        Icons.Outlined.Person,
         "account_route",
         {
 //            if (SessionManager.currentSession.value?.isAuthorized == true) {
@@ -124,7 +130,7 @@ sealed class HomeScreenNavItem(
     )
     object People: HomeScreenNavItem(
         R.string.nav_people_title,
-        R.drawable.ic_face,
+        Icons.Outlined.Face,
         "people_route",
         { it.peopleTabPosition },
         { p, i -> p.peopleTabPosition = i }
