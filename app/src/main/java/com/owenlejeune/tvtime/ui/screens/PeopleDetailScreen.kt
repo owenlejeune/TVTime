@@ -26,12 +26,12 @@ import com.owenlejeune.tvtime.api.tmdb.api.v3.PeopleService
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.DetailPerson
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.PersonCreditsResponse
 import com.owenlejeune.tvtime.ui.components.ContentCard
+import com.owenlejeune.tvtime.ui.components.DetailHeader
 import com.owenlejeune.tvtime.ui.components.ExpandableContentCard
 import com.owenlejeune.tvtime.ui.components.TwoLineImageTextCard
 import com.owenlejeune.tvtime.ui.navigation.AppNavItem
-import com.owenlejeune.tvtime.ui.components.DetailHeader
-import com.owenlejeune.tvtime.utils.types.MediaViewType
 import com.owenlejeune.tvtime.utils.TmdbUtils
+import com.owenlejeune.tvtime.utils.types.MediaViewType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -105,7 +105,9 @@ fun PersonDetailScreen(
                     }
                 }
 
-                ContentCard(title = stringResource(R.string.known_for_label)) {
+                ContentCard(
+                    title = stringResource(R.string.known_for_label)
+                ) {
                     LazyRow(
                         modifier = Modifier
                             .fillMaxWidth()

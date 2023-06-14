@@ -43,14 +43,14 @@ import com.owenlejeune.tvtime.api.tmdb.api.v4.model.*
 import com.owenlejeune.tvtime.extensions.WindowSizeClass
 import com.owenlejeune.tvtime.extensions.unlessEmpty
 import com.owenlejeune.tvtime.preferences.AppPreferences
+import com.owenlejeune.tvtime.ui.components.RatingView
 import com.owenlejeune.tvtime.ui.components.Spinner
 import com.owenlejeune.tvtime.ui.components.SwitchPreference
 import com.owenlejeune.tvtime.ui.navigation.AppNavItem
-import com.owenlejeune.tvtime.utils.types.MediaViewType
-import com.owenlejeune.tvtime.ui.components.RatingView
 import com.owenlejeune.tvtime.ui.theme.*
 import com.owenlejeune.tvtime.utils.SessionManager
 import com.owenlejeune.tvtime.utils.TmdbUtils
+import com.owenlejeune.tvtime.utils.types.MediaViewType
 import de.charlex.compose.RevealDirection
 import de.charlex.compose.RevealSwipe
 import kotlinx.coroutines.CoroutineScope

@@ -122,7 +122,7 @@ fun ScrollableTabs(
 }
 
 @Composable
-private fun SmallTabIndicator(
+fun SmallTabIndicator(
     modifier: Modifier = Modifier,
     color: Color = MaterialTheme.colorScheme.primary
 ) {

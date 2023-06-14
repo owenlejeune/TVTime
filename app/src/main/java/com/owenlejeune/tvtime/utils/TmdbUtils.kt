@@ -1,19 +1,37 @@
 package com.owenlejeune.tvtime.utils
 
 import androidx.compose.ui.text.intl.Locale
-import com.owenlejeune.tvtime.api.tmdb.api.v3.model.*
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.AccountDetails
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.AuthorDetails
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.DetailedItem
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.DetailedMovie
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.DetailedTv
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.Episode
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.Image
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.MovieReleaseResults
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.Person
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.Status
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.TmdbItem
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.TvContentRatings
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.Video
 import java.text.SimpleDateFormat
 
 object TmdbUtils {
 
     private const val POSTER_BASE = "https://image.tmdb.org/t/p/original"
-    private const val BACKDROP_BASE = "https://www.themoviedb.org/t/p/original"
-    private const val PERSON_BASE = "https://www.themoviedb.org/t/p/w600_and_h900_bestv2"
+//    private const val BACKDROP_BASE = "https://www.themoviedb.org/t/p/original"
+//    private const val PERSON_BASE = "https://www.themoviedb.org/t/p/w600_and_h900_bestv2"
     private const val GRAVATAR_BASE = "https://www.gravatar.com/avatar/"
-    private const val AVATAR_BASE = "https://www.themoviedb.org/t/p/w150_and_h150_face"
-    private const val STILL_BASE = "https://www.themoviedb.org/t/p/w454_and_h254_bestv2/"
+//    private const val AVATAR_BASE = "https://www.themoviedb.org/t/p/w150_and_h150_face"
+//    private const val STILL_BASE = "https://www.themoviedb.org/t/p/w454_and_h254_bestv2/"
+    private const val BACKDROP_BASE = POSTER_BASE
+    private const val PERSON_BASE = POSTER_BASE
+    private const val AVATAR_BASE = POSTER_BASE
+    private const val STILL_BASE = POSTER_BASE
 
     private const val DEF_REGION = "US"
+
+    fun fullImagePath(sourcePath: String) = POSTER_BASE.plus(sourcePath)
 
     fun getFullPosterPath(posterPath: String?): String? {
         return posterPath?.let {
@@ -203,7 +221,7 @@ object TmdbUtils {
         return ""
     }
 
-    fun formatRevenue(revenue: Int): String {
+    fun formatRevenue(revenue: Long): String {
         val decFormat = "%.1f"
         val thousands = revenue.toFloat() / 1000f
         if (thousands > 1000) {

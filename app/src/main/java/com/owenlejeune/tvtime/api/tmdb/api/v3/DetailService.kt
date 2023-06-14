@@ -23,4 +23,6 @@ interface DetailService {
 
     suspend fun getKeywords(id: Int): Response<KeywordsResponse>
 
+    suspend fun getWatchProviders(id: Int): Response<WatchProviderResponse>
+
 }

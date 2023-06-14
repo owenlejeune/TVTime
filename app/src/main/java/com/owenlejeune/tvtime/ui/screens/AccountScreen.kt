@@ -30,18 +30,18 @@ import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.*
 import com.owenlejeune.tvtime.api.tmdb.api.v4.model.AccountList
-import com.owenlejeune.tvtime.ui.viewmodel.RecommendedMediaViewModel
 import com.owenlejeune.tvtime.extensions.unlessEmpty
 import com.owenlejeune.tvtime.ui.components.AccountIcon
-import com.owenlejeune.tvtime.ui.components.PagingPosterGrid
-import com.owenlejeune.tvtime.ui.navigation.AccountTabNavItem
-import com.owenlejeune.tvtime.ui.navigation.ListFetchFun
-import com.owenlejeune.tvtime.ui.navigation.AppNavItem
 import com.owenlejeune.tvtime.ui.components.MediaResultCard
-import com.owenlejeune.tvtime.utils.types.MediaViewType
+import com.owenlejeune.tvtime.ui.components.PagingPosterGrid
 import com.owenlejeune.tvtime.ui.components.ScrollableTabs
+import com.owenlejeune.tvtime.ui.navigation.AccountTabNavItem
+import com.owenlejeune.tvtime.ui.navigation.AppNavItem
+import com.owenlejeune.tvtime.ui.navigation.ListFetchFun
+import com.owenlejeune.tvtime.ui.viewmodel.RecommendedMediaViewModel
 import com.owenlejeune.tvtime.utils.SessionManager
 import com.owenlejeune.tvtime.utils.TmdbUtils
+import com.owenlejeune.tvtime.utils.types.MediaViewType
 import kotlinx.coroutines.launch
 import kotlin.reflect.KClass
 

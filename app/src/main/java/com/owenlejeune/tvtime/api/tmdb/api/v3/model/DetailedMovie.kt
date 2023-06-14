@@ -22,7 +22,7 @@ class DetailedMovie(
     @SerializedName("adult") val isAdult: Boolean,
     @SerializedName("budget") val budget: Int,
     @SerializedName("release_date") val releaseDate: String,
-    @SerializedName("revenue") val revenue: Int,
+    @SerializedName("revenue") val revenue: Long,
     @SerializedName("runtime") val runtime: Int?,
     @SerializedName("imdb_id") val imdbId: String?,
     @SerializedName("belongs_to_collection") val collection: Collection?

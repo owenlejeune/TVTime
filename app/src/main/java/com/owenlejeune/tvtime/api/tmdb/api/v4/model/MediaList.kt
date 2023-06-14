@@ -18,7 +18,7 @@ class MediaList(
     @SerializedName("average_rating") val averageRating: Float,
     @SerializedName("runtime") val runtime: Int,
     @SerializedName("name") val name: String,
-    @SerializedName("revenue") val revenue: Int,
+    @SerializedName("revenue") val revenue: Long,
     @SerializedName("sort_by") val sortBy: SortOrder
 )
 

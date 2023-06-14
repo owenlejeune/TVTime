@@ -45,6 +45,7 @@ import com.owenlejeune.tvtime.ui.views.ItemMoveCallback
 import com.owenlejeune.tvtime.utils.ResourceUtils
 import com.owenlejeune.tvtime.utils.SessionManager
 import kotlinx.coroutines.launch
+import org.koin.androidx.compose.koinViewModel
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.koin.java.KoinJavaComponent.get
@@ -224,7 +225,7 @@ private fun TopLevelSettingsCard(
 
 @Composable
 private fun SearchPreferences() {
-    val settingsViewModel = viewModel<SettingsViewModel>()
+    val settingsViewModel = koinViewModel<SettingsViewModel>()
 
     SwitchPreference(
         titleText = stringResource(R.string.preferences_persistent_search_title),

@@ -11,6 +11,7 @@ import com.owenlejeune.tvtime.api.tmdb.api.v3.model.RatingBody
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.ReviewResponse
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.StatusResponse
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.VideoResponse
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.WatchProviderResponse
 import com.owenlejeune.tvtime.utils.SessionManager
 import org.koin.core.component.KoinComponent
 import retrofit2.Response
@@ -75,6 +76,10 @@ class MoviesService: KoinComponent, DetailService, HomePageService {
 
     override suspend fun getKeywords(id: Int): Response<KeywordsResponse> {
         return movieService.getKeywords(id)
+    }
+
+    override suspend fun getWatchProviders(id: Int): Response<WatchProviderResponse> {
+        return movieService.getWatchProviders(id)
     }
 
 }

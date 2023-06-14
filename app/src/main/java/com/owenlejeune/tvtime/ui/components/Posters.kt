@@ -2,14 +2,12 @@ package com.owenlejeune.tvtime.ui.components
 
 import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.magnifier
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BrokenImage
@@ -28,10 +26,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
@@ -39,8 +35,6 @@ import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import coil.compose.AsyncImage
-import coil.compose.rememberAsyncImagePainter
-import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.HomePagePerson
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.Person
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.TmdbItem
@@ -48,34 +42,13 @@ import com.owenlejeune.tvtime.extensions.header
 import com.owenlejeune.tvtime.extensions.lazyPagingItems
 import com.owenlejeune.tvtime.extensions.listItems
 import com.owenlejeune.tvtime.preferences.AppPreferences
+import com.owenlejeune.tvtime.ui.viewmodel.ConfigurationViewModel
 import com.owenlejeune.tvtime.utils.TmdbUtils
+import org.koin.androidx.compose.koinViewModel
 import org.koin.java.KoinJavaComponent.get
 
 private val POSTER_WIDTH = 120.dp
 private val POSTER_HEIGHT = 180.dp
-
-@Composable
-fun PosterGrid(
-    fetchMedia: (MutableState<List<TmdbItem>>) -> Unit = {},
-    onClick: (Int) -> Unit = {}
-) {
-    val mediaList = remember { mutableStateOf(emptyList<TmdbItem>()) }
-    fetchMedia(mediaList)
-
-    LazyVerticalGrid(
-        columns = GridCells.Adaptive(minSize = POSTER_WIDTH),
-        contentPadding = PaddingValues(8.dp),
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        listItems(mediaList.value) { item ->
-            PosterItem(
-                modifier = Modifier.padding(5.dp),
-                mediaItem = item,
-                onClick = onClick
-            )
-        }
-    }
-}
 
 @Composable
 fun PagingPosterGrid(
@@ -148,34 +121,6 @@ fun PagingPeoplePosterGrid(
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-fun PeoplePosterGrid(
-    fetchPeople: (MutableState<List<HomePagePerson>>) -> Unit = {},
-    onClick: (Int) -> Unit = {}
-) {
-    val peopleList = remember { mutableStateOf(emptyList<HomePagePerson>()) }
-    fetchPeople(peopleList)
-
-    LazyVerticalGrid(
-        columns = GridCells.Adaptive(minSize = POSTER_WIDTH),
-        contentPadding = PaddingValues(8.dp),
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        listItems(peopleList.value) { person ->
-            PosterItem(
-                url = TmdbUtils.getFullPersonImagePath(person.profilePath),
-                placeholder = Icons.Filled.Person,
-                modifier = Modifier.padding(5.dp),
-                onClick = {
-                    onClick(person.id)
-                },
-                title = person.name
-            )
-        }
-    }
-}
-
 @Composable
 fun PosterItem(
     modifier: Modifier = Modifier,
@@ -195,27 +140,6 @@ fun PosterItem(
         url = mediaItem?.let { TmdbUtils.getFullPosterPath(mediaItem) },
         elevation = elevation,
         title = mediaItem?.title
-    )
-}
-
-@Composable
-fun PosterItem(
-    modifier: Modifier = Modifier,
-    width: Dp = POSTER_WIDTH,
-    onClick: (id: Int) -> Unit = {},
-    person: Person?
-) {
-    PosterItem(
-        modifier = modifier,
-        width = width,
-        onClick = {
-            person?.let {
-                onClick(person.id)
-            }
-        },
-        url = person?.let { TmdbUtils.getFullPersonImagePath(person) },
-        elevation = 8.dp,
-        title = person?.name
     )
 }
 

@@ -55,4 +55,7 @@ interface MoviesApi {
         @Query("session_id") sessionId: String
     ): Response<StatusResponse>
 
+    @GET("movie/{id}/watch/providers")
+    suspend fun getWatchProviders(@Path("id") id: Int): Response<WatchProviderResponse>
+
 }

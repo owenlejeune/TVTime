@@ -58,4 +58,7 @@ interface TvApi {
     @GET("tv/{id}/season/{season}")
     suspend fun getSeason(@Path("id") seriesId: Int, @Path("season") seasonNumber: Int): Response<Season>
 
+    @GET("tv/{id}/watch/providers")
+    suspend fun getWatchProviders(@Path("id") seriesId: Int): Response<WatchProviderResponse>
+
 }

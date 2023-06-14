@@ -6,6 +6,7 @@ import com.kieronquinn.monetcompat.core.MonetCompat
 import com.owenlejeune.tvtime.di.modules.appModule
 import com.owenlejeune.tvtime.di.modules.networkModule
 import com.owenlejeune.tvtime.di.modules.preferencesModule
+import com.owenlejeune.tvtime.di.modules.viewModelModule
 import com.owenlejeune.tvtime.preferences.AppPreferences
 import dev.kdrag0n.monet.factory.ColorSchemeFactory
 import org.koin.android.ext.android.inject
@@ -30,7 +31,8 @@ class TvTimeApplication: Application() {
             modules(
                 networkModule,
                 preferencesModule,
-                appModule
+                appModule,
+                viewModelModule
             )
         }
 

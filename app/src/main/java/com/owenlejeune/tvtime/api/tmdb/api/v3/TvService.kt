@@ -12,6 +12,7 @@ import com.owenlejeune.tvtime.api.tmdb.api.v3.model.Season
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.StatusResponse
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.TvContentRatings
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.VideoResponse
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.WatchProviderResponse
 import com.owenlejeune.tvtime.utils.SessionManager
 import org.koin.core.component.KoinComponent
 import retrofit2.Response
@@ -76,6 +77,10 @@ class TvService: KoinComponent, DetailService, HomePageService {
 
     override suspend fun getKeywords(id: Int): Response<KeywordsResponse> {
         return service.getKeywords(id)
+    }
+
+    override suspend fun getWatchProviders(id: Int): Response<WatchProviderResponse> {
+        return service.getWatchProviders(id)
     }
 
     suspend fun getSeason(seriesId: Int, seasonId: Int): Response<Season> {

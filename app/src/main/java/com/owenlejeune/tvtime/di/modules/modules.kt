@@ -14,7 +14,10 @@ import com.owenlejeune.tvtime.api.tmdb.api.v4.AccountV4Service
 import com.owenlejeune.tvtime.api.tmdb.api.v4.deserializer.ListItemDeserializer
 import com.owenlejeune.tvtime.api.tmdb.api.v4.model.ListItem
 import com.owenlejeune.tvtime.preferences.AppPreferences
+import com.owenlejeune.tvtime.ui.viewmodel.ConfigurationViewModel
+import com.owenlejeune.tvtime.ui.viewmodel.SettingsViewModel
 import com.owenlejeune.tvtime.utils.ResourceUtils
+import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
 
 val networkModule = module {
@@ -61,4 +64,9 @@ val preferencesModule = module {
 
 val appModule = module {
     factory { ResourceUtils(get()) }
+}
+
+val viewModelModule = module {
+    viewModel { ConfigurationViewModel() }
+    viewModel { SettingsViewModel() }
 }

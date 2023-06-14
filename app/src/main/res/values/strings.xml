@@ -221,4 +221,8 @@
     <string name="app_info_label">App Info</string>
     <string name="changelog_label">Changelog</string>
     <string name="powered_by_tmdb">Powered by TMDB</string>
+    <string name="watch_providers_title">Watch Providers</string>
+    <string name="streaming_label">Streaming</string>
+    <string name="rent_label">Rent</string>
+    <string name="buy_label">Buy</string>
 </resources>

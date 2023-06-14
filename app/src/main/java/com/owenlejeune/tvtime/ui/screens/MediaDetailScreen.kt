@@ -1,6 +1,8 @@
 package com.owenlejeune.tvtime.ui.screens
 
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.widget.Toast
 import androidx.compose.animation.*
 import androidx.compose.animation.core.LinearEasing
@@ -8,6 +10,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -16,6 +19,7 @@ import androidx.compose.material.icons.filled.Movie
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material3.*
+import androidx.compose.material.TabRow
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -30,15 +34,19 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.util.fastForEachIndexed
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.google.accompanist.flowlayout.FlowRow
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.PagerState
+import com.google.accompanist.pager.pagerTabIndicatorOffset
 import com.google.accompanist.pager.rememberPagerState
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.owenlejeune.tvtime.R
@@ -60,10 +68,13 @@ import com.owenlejeune.tvtime.ui.theme.FavoriteSelected
 import com.owenlejeune.tvtime.ui.theme.RatingSelected
 import com.owenlejeune.tvtime.ui.theme.WatchlistSelected
 import com.owenlejeune.tvtime.ui.theme.actionButtonColor
+import com.owenlejeune.tvtime.ui.viewmodel.ConfigurationViewModel
 import com.owenlejeune.tvtime.utils.SessionManager
 import com.owenlejeune.tvtime.utils.TmdbUtils
 import kotlinx.coroutines.*
+import okhttp3.internal.notify
 import org.json.JSONObject
+import org.koin.androidx.compose.koinViewModel
 import org.koin.java.KoinJavaComponent.get
 import java.text.DecimalFormat
 
@@ -200,7 +211,6 @@ private fun MediaViewContent(
             )
 
             Column(
-//                modifier = Modifier.padding(horizontal = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 if (type == MediaViewType.MOVIE) {
@@ -442,6 +452,8 @@ private fun MainContent(
     VideosCard(itemId = itemId, service = service, modifier = Modifier.fillMaxWidth())
 
     AdditionalDetailsCard(itemId = itemId, mediaItem = mediaItem, service = service, type = type)
+    
+    WatchProvidersCard(itemId = itemId, service = service)
 
     if (windowSize != WindowSizeClass.Expanded) {
         ReviewsCard(itemId = itemId, service = service)
@@ -966,7 +978,7 @@ private fun AdditionalDetailsCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .wrapContentHeight()
-                    .padding(vertical = 12.dp, horizontal = 16.dp),
+                    .padding(vertical = 12.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 AdditionalDetailItem(
@@ -1072,12 +1084,14 @@ private fun AdditionalDetailItem(
         Text(
             text = title,
             fontSize = 16.sp,
-            color = MaterialTheme.colorScheme.onSurface
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.padding(horizontal = 16.dp)
         )
         Text(
             text = subtext,
             fontSize = 14.sp,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(horizontal = 16.dp)
         )
         if (includeDivider) {
             Divider()
@@ -1218,7 +1232,7 @@ fun VideosCard(
                 Text(
                     text = stringResource(id = R.string.videos_label),
                     style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.padding(start = 8.dp, top = 8.dp),
+                    modifier = Modifier.padding(start = 12.dp, top = 8.dp),
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             },
@@ -1250,7 +1264,7 @@ private fun VideoGroup(results: List<Video>, type: Video.Type, title: String) {
         Text(
             text = title,
             color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.padding(start = 8.dp, top = 8.dp)
+            modifier = Modifier.padding(start = 12.dp, top = 8.dp)
         )
 
         val posterWidth = 120.dp
@@ -1274,6 +1288,136 @@ private fun VideoGroup(results: List<Video>, type: Video.Type, title: String) {
                 Spacer(modifier = Modifier.width(8.dp))
             }
         }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun WatchProvidersCard(
+    itemId: Int?,
+    service: DetailService,
+    modifier: Modifier = Modifier
+) {
+    val watchProviders = remember { mutableStateOf<WatchProviders?>(null) }
+    itemId?.let {
+        if (watchProviders.value == null) {
+            CoroutineScope(Dispatchers.IO).launch {
+                val response = service.getWatchProviders(it)
+                if (response.isSuccessful) {
+                    val results = response.body()?.results
+                    results?.get(Locale.current.region)?.let { watchProviders.value = it }
+                }
+            }
+        }
+    }
+
+    watchProviders.value?.let { providers ->
+        if (providers.buy?.isNotEmpty() == true || providers.rent?.isNotEmpty() == true || providers.flaterate?.isNotEmpty() == true) {
+            Card(
+                modifier = modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight(),
+                shape = RoundedCornerShape(10.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+            ) {
+                Text(
+                    text = stringResource(R.string.watch_providers_title),
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier.padding(start = 16.dp, top = 12.dp),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+
+                var selectedIndex by remember { mutableStateOf(
+                    when {
+                        providers.flaterate != null -> 0
+                        providers.rent != null -> 1
+                        providers.buy != null -> 2
+                        else -> -1
+                    }
+                ) }
+                Row(
+                    modifier = Modifier.padding(start = 16.dp, top = 12.dp, bottom = 12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    providers.flaterate?.let {
+                        SelectableTextChip(
+                            selected = selectedIndex == 0,
+                            onSelected = { selectedIndex = 0 },
+                            text = stringResource(R.string.streaming_label)
+                        )
+                    }
+                    providers.rent?.let {
+                        SelectableTextChip(
+                            selected = selectedIndex == 1,
+                            onSelected = { selectedIndex = 1 },
+                            text = stringResource(R.string.rent_label)
+                        )
+                    }
+                    providers.buy?.let {
+                        SelectableTextChip(
+                            selected = selectedIndex == 2,
+                            onSelected = { selectedIndex = 2 },
+                            text = stringResource(R.string.buy_label)
+                        )
+                    }
+                }
+                Crossfade(
+                    modifier = modifier.padding(top = 4.dp, bottom = 12.dp),
+                    targetState = selectedIndex
+                ) { index ->
+                    when (index) {
+                        0 -> WatchProviderContainer(watchProviders = providers.flaterate!!, link = providers.link)
+                        1 -> WatchProviderContainer(watchProviders = providers.rent!!, link = providers.link)
+                        2 -> WatchProviderContainer(watchProviders = providers.buy!!, link = providers.link)
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun WatchProviderContainer(
+    watchProviders: List<WatchProviderDetails>,
+    link: String
+) {
+    val context = LocalContext.current
+    FlowRow(
+        modifier = Modifier.padding(horizontal = 16.dp),
+        mainAxisSpacing = 8.dp,
+        crossAxisSpacing = 4.dp
+    ) {
+        watchProviders
+            .sortedBy { it.displayPriority }
+            .forEach { item ->
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(10.dp))
+                        .clickable {
+                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(link))
+                            context.startActivity(intent)
+                        }
+                ) {
+                    AsyncImage(
+                        model = TmdbUtils.fullImagePath(item.logoPath),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(48.dp)
+                            .clip(RoundedCornerShape(10.dp))
+                    )
+                    Text(
+                        text = item.providerName,
+                        fontSize = 10.sp,
+                        modifier = Modifier.width(48.dp),
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                        textAlign = TextAlign.Center
+                    )
+                }
+            }
     }
 }
 

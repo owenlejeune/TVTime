@@ -42,6 +42,7 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
@@ -66,6 +67,7 @@ import coil.compose.rememberAsyncImagePainter
 import com.google.accompanist.flowlayout.FlowRow
 import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.AuthorDetails
+import com.owenlejeune.tvtime.extensions.toDp
 import com.owenlejeune.tvtime.extensions.unlessEmpty
 import com.owenlejeune.tvtime.preferences.AppPreferences
 import com.owenlejeune.tvtime.ui.navigation.AppNavItem
@@ -1099,4 +1101,69 @@ fun SearchBar(
 @Composable
 fun MyDivider(modifier: Modifier = Modifier) {
     Divider(thickness = 0.5.dp, modifier = modifier, color = MaterialTheme.colorScheme.secondaryContainer)
+}
+
+@Composable
+fun SelectableTextItem(
+    selected: Boolean,
+    onSelected: () -> Unit,
+    text: String,
+    selectedColor: Color = MaterialTheme.colorScheme.secondary,
+    unselectedColor: Color = MaterialTheme.colorScheme.onSurfaceVariant
+) {
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(10.dp))
+            .clickable(onClick = onSelected)
+    ) {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(6.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.padding(8.dp)
+        ) {
+            val size = remember { mutableStateOf(IntSize.Zero) }
+            val color = if (selected) selectedColor else unselectedColor
+            Text(
+                text = text,
+                fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
+                color = color,
+                modifier = Modifier
+                    .padding(horizontal = 4.dp)
+                    .onGloballyPositioned { size.value = it.size }
+            )
+            Box(
+                modifier = Modifier
+                    .height(height = if (selected) 3.dp else 1.dp)
+                    .width(width = size.value.width.toDp().plus(8.dp))
+                    .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
+                    .background(color = color)
+            )
+        }
+    }
+}
+
+@Composable
+fun SelectableTextChip(
+    selected: Boolean,
+    onSelected: () -> Unit,
+    text: String,
+    selectedColor: Color = MaterialTheme.colorScheme.secondary,
+    unselectedColor: Color = MaterialTheme.colorScheme.surfaceVariant
+) {
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(percent = 25))
+            .border(width = 1.dp, color = selectedColor, shape = RoundedCornerShape(percent = 25))
+            .background(color = if(selected) selectedColor else unselectedColor)
+            .clickable(onClick = onSelected)
+    ) {
+        Text(
+            text = text,
+            color = if (selected) unselectedColor else selectedColor,
+            fontSize = 16.sp,
+            modifier = Modifier
+                .align(Alignment.Center)
+                .padding(12.dp)
+        )
+    }
 }
