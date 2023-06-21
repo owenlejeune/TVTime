@@ -265,8 +265,9 @@ private fun SeasonsTab(
     mediaItem: DetailedItem?,
     mainViewModel: MainViewModel
 ) {
-    LaunchedEffect(Unit) {
-        for (i in 0..(mediaItem as DetailedTv).numberOfSeasons) {
+    LaunchedEffect(mediaItem) {
+        val numSeasons = (mediaItem as DetailedTv?)?.numberOfSeasons ?: 0
+        for (i in 0..numSeasons) {
             mainViewModel.getSeason(itemId, i)
         }
     }
@@ -526,7 +527,7 @@ private fun OverviewCard(
                         .wrapContentHeight(),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
                     mi.tagline?.let { tagline ->
                         if (tagline.isNotEmpty()) {
                             Text(
@@ -572,7 +573,7 @@ private fun OverviewCard(
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
                 }
             }
         }
