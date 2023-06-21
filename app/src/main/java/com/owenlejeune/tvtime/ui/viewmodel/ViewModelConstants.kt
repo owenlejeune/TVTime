@@ -2,6 +2,6 @@ package com.owenlejeune.tvtime.ui.viewmodel
 
 object ViewModelConstants {
 
-    const val PAGING_SIZE = 6
+    const val PAGING_SIZE = 3
 
 }

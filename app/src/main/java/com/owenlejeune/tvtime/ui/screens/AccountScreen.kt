@@ -20,7 +20,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
@@ -30,6 +32,10 @@ import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.*
 import com.owenlejeune.tvtime.api.tmdb.api.v4.model.AccountList
+import com.owenlejeune.tvtime.api.tmdb.api.v4.model.RatedMedia
+import com.owenlejeune.tvtime.api.tmdb.api.v4.model.RatedMovie
+import com.owenlejeune.tvtime.api.tmdb.api.v4.model.RatedTv
+import com.owenlejeune.tvtime.extensions.lazyPagingItems
 import com.owenlejeune.tvtime.extensions.unlessEmpty
 import com.owenlejeune.tvtime.ui.components.AccountIcon
 import com.owenlejeune.tvtime.ui.components.MediaResultCard
@@ -37,8 +43,7 @@ import com.owenlejeune.tvtime.ui.components.PagingPosterGrid
 import com.owenlejeune.tvtime.ui.components.ScrollableTabs
 import com.owenlejeune.tvtime.ui.navigation.AccountTabNavItem
 import com.owenlejeune.tvtime.ui.navigation.AppNavItem
-import com.owenlejeune.tvtime.ui.navigation.ListFetchFun
-import com.owenlejeune.tvtime.ui.viewmodel.RecommendedMediaViewModel
+import com.owenlejeune.tvtime.ui.viewmodel.AccountViewModel
 import com.owenlejeune.tvtime.utils.SessionManager
 import com.owenlejeune.tvtime.utils.TmdbUtils
 import com.owenlejeune.tvtime.utils.types.MediaViewType
@@ -177,12 +182,13 @@ fun <T: Any> AccountTabContent(
     noContentText: String,
     appNavController: NavHostController,
     mediaViewType: MediaViewType,
-    listFetchFun: ListFetchFun,
+    accountTabType: AccountTabNavItem.AccountTabType,
     clazz: KClass<T>
 ) {
-    val contentItems = remember { listFetchFun() }
+    val accountViewModel = viewModel<AccountViewModel>()
+    val contentItems = accountViewModel.getPagingFlowFor(mediaViewType, accountTabType).collectAsLazyPagingItems()
 
-    if (contentItems.isEmpty()) {
+    if (contentItems.itemCount == 0) {
         Column {
             Spacer(modifier = Modifier.weight(1f))
             Text(
@@ -195,6 +201,15 @@ fun <T: Any> AccountTabContent(
             )
             Spacer(modifier = Modifier.weight(1f))
         }
+    } else if (accountTabType == AccountTabNavItem.AccountTabType.RECOMMENDED) {
+        PagingPosterGrid(
+            lazyPagingItems = contentItems as LazyPagingItems<TmdbItem>,
+            onClick = { id ->
+                appNavController.navigate(
+                    AppNavItem.DetailView.withArgs(mediaViewType, id)
+                )
+            }
+        )
     } else {
         LazyColumn(
             modifier = Modifier
@@ -202,10 +217,10 @@ fun <T: Any> AccountTabContent(
                 .padding(12.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            items(contentItems.size) { i ->
+            lazyPagingItems(contentItems) { i ->
                 when (clazz) {
                     RatedTv::class, RatedMovie::class -> {
-                        val item = contentItems[i] as RatedTopLevelMedia
+                        val item = i as RatedMedia
                         MediaItemRow(
                             appNavController = appNavController,
                             mediaViewType = mediaViewType,
@@ -214,24 +229,12 @@ fun <T: Any> AccountTabContent(
                             backdropPath = TmdbUtils.getFullBackdropPath(item.backdropPath),
                             name = item.name,
                             date = item.releaseDate,
-                            rating = item.rating,
-                            description = item.overview
-                        )
-                    }
-                    RatedEpisode::class -> {
-                        val item = contentItems[i] as RatedMedia
-                        MediaItemRow(
-                            appNavController = appNavController,
-                            mediaViewType = mediaViewType,
-                            id = item.id,
-                            name = item.name,
-                            date = item.releaseDate,
-                            rating = item.rating,
+                            rating = item.rating.value,
                             description = item.overview
                         )
                     }
                     FavoriteMovie::class, FavoriteTvSeries::class -> {
-                        val item = contentItems[i] as FavoriteMedia
+                        val item = i as FavoriteMedia
                         MediaItemRow(
                             appNavController = appNavController,
                             mediaViewType = mediaViewType,
@@ -244,7 +247,7 @@ fun <T: Any> AccountTabContent(
                         )
                     }
                     WatchlistMovie::class, WatchlistTvSeries::class -> {
-                        val item = contentItems[i] as WatchlistMedia
+                        val item = i as WatchlistMedia
                         MediaItemRow(
                             appNavController = appNavController,
                             mediaViewType = mediaViewType,
@@ -257,7 +260,7 @@ fun <T: Any> AccountTabContent(
                         )
                     }
                     AccountList::class -> {
-                        val item = contentItems[i] as AccountList
+                        val item = i as AccountList
                         MediaItemRow(
                             appNavController = appNavController,
                             mediaViewType = mediaViewType,
@@ -272,43 +275,6 @@ fun <T: Any> AccountTabContent(
                 }
             }
         }
-    }
-}
-
-@Composable
-fun RecommendedAccountTabContent(
-    noContentText: String,
-    appNavController: NavHostController,
-    mediaViewType: MediaViewType,
-) {
-    val viewModel = when (mediaViewType) {
-        MediaViewType.MOVIE -> RecommendedMediaViewModel.RecommendedMoviesVM
-        MediaViewType.TV -> RecommendedMediaViewModel.RecommendedTvVM
-        else -> throw IllegalArgumentException("Media type given: ${mediaViewType}, \n     expected one of MediaViewType.MOVIE, MediaViewType.TV") // shouldn't happen
-    }
-    val mediaListItems = viewModel.mediaItems.collectAsLazyPagingItems()
-
-    if (mediaListItems.itemCount < 1) {
-        Column {
-            Spacer(modifier = Modifier.weight(1f))
-            Text(
-                modifier = Modifier.fillMaxWidth(),
-                text = noContentText,
-                color = MaterialTheme.colorScheme.onBackground,
-                fontSize = 22.sp,
-                textAlign = TextAlign.Center
-            )
-            Spacer(modifier = Modifier.weight(1f))
-        }
-    } else {
-        PagingPosterGrid(
-            lazyPagingItems = mediaListItems,
-            onClick = { id ->
-                appNavController.navigate(
-                    AppNavItem.DetailView.withArgs(mediaViewType, id)
-                )
-            }
-        )
     }
 }
 
@@ -345,6 +311,6 @@ fun AccountTabs(
     appNavController: NavHostController
 ) {
     HorizontalPager(count = tabs.size, state = pagerState) { page ->
-        tabs[page].screen(tabs[page].noContentText, appNavController, tabs[page].mediaType, tabs[page].listFetchFun, tabs[page].listType)
+        tabs[page].screen(tabs[page].noContentText, appNavController, tabs[page].mediaType, tabs[page].type, tabs[page].contentType)
     }
 }

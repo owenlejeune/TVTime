@@ -90,7 +90,6 @@ fun ListDetailScreen(
     val listMap = remember { accountViewModel.listMap }
     val parentList = listMap[itemId]
 
-
     val decayAnimationSpec = rememberSplineBasedDecay<Float>()
     val topAppBarScrollState = rememberTopAppBarScrollState()
     val scrollBehavior = remember(decayAnimationSpec) {
@@ -133,9 +132,7 @@ fun ListDetailScreen(
                     val selectedSortOrder = remember { mutableStateOf(mediaList.sortBy) }
                     ListHeader(
                         list = mediaList,
-                        selectedSortOrder = selectedSortOrder,
-                        service = service,
-                        parentList = parentList
+                        selectedSortOrder = selectedSortOrder
                     )
 
                     val sortedResults = selectedSortOrder.value.sort(mediaList.results)
@@ -155,9 +152,7 @@ fun ListDetailScreen(
 @Composable
 private fun ListHeader(
     list: MediaList,
-    selectedSortOrder: MutableState<SortOrder>,
-    service: ListV4Service,
-    parentList: MediaList?
+    selectedSortOrder: MutableState<SortOrder>
 ) {
     val context = LocalContext.current
 

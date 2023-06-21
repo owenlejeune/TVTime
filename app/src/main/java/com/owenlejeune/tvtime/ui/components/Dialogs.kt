@@ -1,7 +1,6 @@
 package com.owenlejeune.tvtime.ui.components
 
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -34,7 +33,13 @@ fun RatingDialog(
         AlertDialog(
             modifier = Modifier.wrapContentHeight(),
             onDismissRequest = { showDialog.value = false },
-            title = { Text(text = stringResource(R.string.rating_dialog_title)) },
+            title = {
+                if (rating > 0f) {
+                    Text(text = stringResource(id = R.string.my_rating_dialog_title))
+                } else {
+                    Text(text = stringResource(R.string.rating_dialog_title))
+                }
+            },
             confirmButton = {
                 Button(
                     modifier = Modifier.height(40.dp),

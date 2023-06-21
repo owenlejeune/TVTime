@@ -204,7 +204,7 @@ private fun MediaViewContent(
 
                 val currentSession = remember { SessionManager.currentSession }
                 currentSession.value?.let {
-                    ActionsView(itemId = itemId, type = type)
+                    ActionsView(itemId = itemId, type = type, modifier = Modifier.padding(start = 20.dp))
                 }
 
                 if (type == MediaViewType.MOVIE) {

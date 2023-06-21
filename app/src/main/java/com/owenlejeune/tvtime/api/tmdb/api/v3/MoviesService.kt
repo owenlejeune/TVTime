@@ -106,7 +106,6 @@ class MoviesService: KoinComponent, DetailService, HomePageService {
         } else {
             Log.d(TAG, "Issue getting account states: $response")
         }
-//        movieService.getAccountStates(id) storedIn { accountStates[id] = it }
     }
 
     suspend fun getReleaseDates(id: Int) {
@@ -118,7 +117,6 @@ class MoviesService: KoinComponent, DetailService, HomePageService {
         val response = movieService.postMovieRatingAsUser(id, session.sessionId, ratingBody)
         if (response.isSuccessful) {
             Log.d(TAG, "Successfully rated")
-            SessionManager.currentSession.value?.refresh(SessionManager.Session.Changed.Rated)
             getAccountStates(id)
         } else {
             Log.w(TAG, "Issue posting rating")
@@ -130,7 +128,6 @@ class MoviesService: KoinComponent, DetailService, HomePageService {
         val response = movieService.deleteMovieReviewAsUser(id, session.sessionId)
         if (response.isSuccessful) {
             Log.d(TAG, "Successfully deleted rated")
-            SessionManager.currentSession.value?.refresh(SessionManager.Session.Changed.Rated)
             getAccountStates(id)
         } else {
             Log.w(TAG, "Issue deleting rating")
@@ -157,42 +154,4 @@ class MoviesService: KoinComponent, DetailService, HomePageService {
     override suspend fun getUpcoming(page: Int): Response<out HomePageResponse> {
         return movieService.getUpcomingMovies(page)
     }
-}
-
-class SimilarMoviesSource(private val movieId: Int): PagingSource<Int, TmdbItem>(), KoinComponent {
-
-    private val service: MoviesService by inject()
-
-    override fun getRefreshKey(state: PagingState<Int, TmdbItem>): Int? {
-        return state.anchorPosition
-    }
-
-    override suspend fun load(params: LoadParams<Int>): LoadResult<Int, TmdbItem> {
-        return try {
-            val nextPage = params.key ?: 1
-            val response = service.getSimilar(movieId, nextPage)
-            if (response.isSuccessful) {
-                val responseBody = response.body()
-                val result = responseBody?.results ?: emptyList()
-                LoadResult.Page(
-                    data = result,
-                    prevKey = if (nextPage == 1) {
-                        null
-                    } else {
-                        nextPage - 1
-                    },
-                    nextKey = if (result.isEmpty()) {
-                        null
-                    } else {
-                        responseBody?.page?.plus(1) ?: (nextPage + 1)
-                    }
-                )
-            } else {
-                LoadResult.Invalid()
-            }
-        } catch (e: Exception) {
-            return LoadResult.Error(e)
-        }
-    }
-
 }

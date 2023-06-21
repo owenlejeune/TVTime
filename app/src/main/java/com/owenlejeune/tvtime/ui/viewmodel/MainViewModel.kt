@@ -1,15 +1,10 @@
 package com.owenlejeune.tvtime.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import androidx.paging.Pager
-import androidx.paging.PagingConfig
 import androidx.paging.PagingData
-import androidx.paging.cachedIn
+import com.owenlejeune.tvtime.api.tmdb.api.createPagingFlow
 import com.owenlejeune.tvtime.api.tmdb.api.v3.MoviesService
 import com.owenlejeune.tvtime.api.tmdb.api.v3.PeopleService
-import com.owenlejeune.tvtime.api.tmdb.api.v3.SimilarMoviesSource
-import com.owenlejeune.tvtime.api.tmdb.api.v3.SimilarTvSource
 import com.owenlejeune.tvtime.api.tmdb.api.v3.TvService
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.AccountStates
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.CastMember
@@ -23,6 +18,7 @@ import com.owenlejeune.tvtime.api.tmdb.api.v3.model.Review
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.TmdbItem
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.Video
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.WatchProviders
+import com.owenlejeune.tvtime.ui.navigation.MediaTabNavItem
 import com.owenlejeune.tvtime.utils.types.MediaViewType
 import com.owenlejeune.tvtime.utils.types.ViewableMediaTypeException
 import kotlinx.coroutines.flow.Flow
@@ -48,6 +44,23 @@ class MainViewModel: ViewModel(), KoinComponent {
     val similarMovies = movieService.similar
     val movieAccountStates = movieService.accountStates
 
+    val popularMovies = createPagingFlow(
+        fetcher = { p -> movieService.getPopular(p) },
+        processor = { it.results }
+    )
+    val topRatedMovies = createPagingFlow(
+        fetcher = { p -> movieService.getTopRated(p) },
+        processor = { it.results }
+    )
+    val nowPlayingMovies = createPagingFlow(
+        fetcher = { p -> movieService.getNowPlaying(p) },
+        processor = { it.results }
+    )
+    val upcomingMovies = createPagingFlow(
+        fetcher = { p -> movieService.getUpcoming(p) },
+        processor = { it.results }
+    )
+
     val detailedTv = tvService.detailTv
     val tvImages = tvService.images
     val tvCast = tvService.cast
@@ -62,11 +75,33 @@ class MainViewModel: ViewModel(), KoinComponent {
     val similarTv = tvService.similar
     val tvAccountStates = tvService.accountStates
 
+    val popularTv = createPagingFlow(
+        fetcher = { p -> tvService.getPopular(p) },
+        processor = { it.results }
+    )
+    val topRatedTv = createPagingFlow(
+        fetcher = { p -> tvService.getTopRated(p) },
+        processor = { it.results }
+    )
+    val airingTodayTv = createPagingFlow(
+        fetcher = { p -> tvService.getNowPlaying(p) },
+        processor = { it.results }
+    )
+    val onTheAirTv = createPagingFlow(
+        fetcher = { p -> tvService.getUpcoming(p) },
+        processor = { it.results }
+    )
+
     val peopleMap = peopleService.peopleMap
     val peopleCastMap = peopleService.castMap
     val peopleCrewMap = peopleService.crewMap
     val peopleImagesMap = peopleService.imagesMap
     val peopleExternalIdsMap = peopleService.externalIdsMap
+
+    val popularPeople = createPagingFlow(
+        fetcher = { p -> peopleService.getPopular(p) },
+        processor = { it.results }
+    )
 
     private fun <T> providesForType(type: MediaViewType, movies: () -> T, tv: () -> T): T {
         return when (type) {
@@ -118,6 +153,28 @@ class MainViewModel: ViewModel(), KoinComponent {
 
     fun produceAccountStatesFor(type: MediaViewType): Map<Int, AccountStates> {
         return providesForType(type, { movieAccountStates }, { tvAccountStates} )
+    }
+
+    fun produceFlowFor(mediaType: MediaViewType, contentType: MediaTabNavItem.Type): Flow<PagingData<TmdbItem>> {
+        return providesForType(
+            mediaType,
+            {
+                when (contentType) {
+                    MediaTabNavItem.Type.UPCOMING -> upcomingMovies
+                    MediaTabNavItem.Type.TOP_RATED -> topRatedMovies
+                    MediaTabNavItem.Type.NOW_PLAYING -> nowPlayingMovies
+                    MediaTabNavItem.Type.POPULAR -> popularMovies
+                }
+            },
+            {
+                when (contentType) {
+                    MediaTabNavItem.Type.UPCOMING -> onTheAirTv
+                    MediaTabNavItem.Type.TOP_RATED -> topRatedTv
+                    MediaTabNavItem.Type.NOW_PLAYING -> airingTodayTv
+                    MediaTabNavItem.Type.POPULAR -> popularTv
+                }
+            }
+        )
     }
 
     suspend fun getById(id: Int, type: MediaViewType) {
@@ -215,14 +272,16 @@ class MainViewModel: ViewModel(), KoinComponent {
     fun getSimilar(id: Int, type: MediaViewType) {
         when (type) {
             MediaViewType.MOVIE -> {
-                similarMovies[id] = Pager(PagingConfig(pageSize = 1)) {
-                    SimilarMoviesSource(id)
-                }.flow.cachedIn(viewModelScope)
+                similarMovies[id] = createPagingFlow(
+                    fetcher = { p -> movieService.getSimilar(id, p) },
+                    processor = { it.results }
+                )
             }
             MediaViewType.TV -> {
-                similarTv[id] = Pager(PagingConfig(pageSize = 1)) {
-                    SimilarTvSource(id)
-                }.flow.cachedIn(viewModelScope)
+                similarTv[id] = createPagingFlow(
+                    fetcher = { p -> tvService.getSimilar(id, p) },
+                    processor = { it.results }
+                )
             }
             else -> {}
         }

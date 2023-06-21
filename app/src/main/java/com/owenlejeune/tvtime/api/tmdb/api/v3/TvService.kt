@@ -122,7 +122,6 @@ class TvService: KoinComponent, DetailService, HomePageService {
         val response = service.postTvRatingAsUser(id, session.sessionId, ratingBody)
         if (response.isSuccessful) {
             Log.d(TAG, "Successfully posted rating")
-            SessionManager.currentSession.value?.refresh(SessionManager.Session.Changed.Rated)
         } else {
             Log.w(TAG, "Issue posting rating")
         }
@@ -133,13 +132,11 @@ class TvService: KoinComponent, DetailService, HomePageService {
         val response = service.deleteTvReviewAsUser(id, session.sessionId)
         if (response.isSuccessful) {
             Log.d(TAG, "Successfully deleted rating")
-            SessionManager.currentSession.value?.refresh(SessionManager.Session.Changed.Rated)
         } else {
             Log.w(TAG, "Issue deleting rating")
         }
     }
 
-    //todo - turn this into paging
     override suspend fun getSimilar(id: Int, page: Int): Response<out HomePageResponse> {
         return service.getSimilarTvShows(id, page)
     }
@@ -158,44 +155,6 @@ class TvService: KoinComponent, DetailService, HomePageService {
 
     override suspend fun getUpcoming(page: Int): Response<out HomePageResponse> {
         return service.getTvOnTheAir(page)
-    }
-
-}
-
-class SimilarTvSource(private val tvId: Int): PagingSource<Int, TmdbItem>(), KoinComponent {
-
-    private val service: TvService by inject()
-
-    override fun getRefreshKey(state: PagingState<Int, TmdbItem>): Int? {
-        return state.anchorPosition
-    }
-
-    override suspend fun load(params: LoadParams<Int>): LoadResult<Int, TmdbItem> {
-        return try {
-            val nextPage = params.key ?: 1
-            val response = service.getSimilar(tvId, nextPage)
-            if (response.isSuccessful) {
-                val responseBody = response.body()
-                val result = responseBody?.results ?: emptyList()
-                LoadResult.Page(
-                    data = result,
-                    prevKey = if (nextPage == 1) {
-                        null
-                    } else {
-                        nextPage - 1
-                    },
-                    nextKey = if (result.isEmpty()) {
-                        null
-                    } else {
-                        responseBody?.page?.plus(1) ?: (nextPage + 1)
-                    }
-                )
-            } else {
-                LoadResult.Invalid()
-            }
-        } catch (e: Exception) {
-            return LoadResult.Error(e)
-        }
     }
 
 }

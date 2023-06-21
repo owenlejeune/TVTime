@@ -74,9 +74,7 @@ fun ActionsView(
     }
 
     Row(
-        modifier = modifier
-            .wrapContentSize()
-            .padding(horizontal = 16.dp),
+        modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         if (actions.contains(Actions.RATE)) {

@@ -5,17 +5,14 @@ import androidx.navigation.NavHostController
 import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.FavoriteMovie
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.FavoriteTvSeries
-import com.owenlejeune.tvtime.api.tmdb.api.v3.model.RatedEpisode
-import com.owenlejeune.tvtime.api.tmdb.api.v3.model.RatedMovie
-import com.owenlejeune.tvtime.api.tmdb.api.v3.model.RatedTv
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.WatchlistMovie
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.WatchlistTvSeries
 import com.owenlejeune.tvtime.api.tmdb.api.v4.model.AccountList
+import com.owenlejeune.tvtime.api.tmdb.api.v4.model.RatedMovie
+import com.owenlejeune.tvtime.api.tmdb.api.v4.model.RatedTv
 import com.owenlejeune.tvtime.ui.screens.AccountTabContent
-import com.owenlejeune.tvtime.utils.types.MediaViewType
-import com.owenlejeune.tvtime.ui.screens.RecommendedAccountTabContent
 import com.owenlejeune.tvtime.utils.ResourceUtils
-import com.owenlejeune.tvtime.utils.SessionManager
+import com.owenlejeune.tvtime.utils.types.MediaViewType
 import com.owenlejeune.tvtime.utils.types.TabNavItem
 import org.koin.core.component.inject
 import kotlin.reflect.KClass
@@ -26,8 +23,8 @@ sealed class AccountTabNavItem(
     noContentStringRes: Int,
     val mediaType: MediaViewType,
     val screen: AccountNavComposableFun,
-    val listFetchFun: ListFetchFun,
-    val listType: KClass<*>,
+    val type: AccountTabType,
+    val contentType: KClass<*>,
     val ordinal: Int
 ): TabNavItem(route) {
     private val resourceUtils: ResourceUtils by inject()
@@ -35,10 +32,18 @@ sealed class AccountTabNavItem(
     override val name = resourceUtils.getString(stringRes)
     val noContentText = resourceUtils.getString(noContentStringRes)
 
+    enum class AccountTabType {
+        RATED,
+        FAVORITE,
+        WATCHLIST,
+        LIST,
+        RECOMMENDED
+    }
+
     companion object {
         val AuthorizedItems
             get() = listOf(
-                RatedMovies, RatedTvShows, RatedTvEpisodes, FavoriteMovies, FavoriteTvShows,
+                RatedMovies, RatedTvShows, /*RatedTvEpisodes, */FavoriteMovies, FavoriteTvShows,
                 MovieWatchlist, TvWatchlist, UserLists, RecommendedMovies, RecommendedTv
             ).filter { it.ordinal > -1 }.sortedBy { it.ordinal }
     }
@@ -49,7 +54,7 @@ sealed class AccountTabNavItem(
         R.string.no_rated_movies,
         MediaViewType.MOVIE,
         screenContent,
-        { SessionManager.currentSession.value?.ratedMovies ?: emptyList() },
+        AccountTabType.RATED,
         RatedMovie::class,
         0
     )
@@ -59,27 +64,27 @@ sealed class AccountTabNavItem(
         R.string.no_rated_tv,
         MediaViewType.TV,
         screenContent,
-        { SessionManager.currentSession.value?.ratedTvShows ?: emptyList() },
+        AccountTabType.RATED,
         RatedTv::class,
         1
     )
-    object RatedTvEpisodes: AccountTabNavItem(
-        R.string.nav_rated_episodes_title,
-        "rated_episodes_route",
-        R.string.no_rated_episodes,
-        MediaViewType.EPISODE,
-        screenContent,
-        { SessionManager.currentSession.value?.ratedTvEpisodes ?: emptyList() },
-        RatedEpisode::class,
-        -1 //2
-    )
+//    object RatedTvEpisodes: AccountTabNavItem(
+//        R.string.nav_rated_episodes_title,
+//        "rated_episodes_route",
+//        R.string.no_rated_episodes,
+//        MediaViewType.EPISODE,
+//        screenContent,
+//        AccountTabType.RATED,
+//        RatedEpisode::class,
+//        -1 //2
+//    )
     object FavoriteMovies: AccountTabNavItem(
         R.string.nav_favorite_movies_title,
         "favorite_movies_route",
         R.string.no_favorite_movies,
         MediaViewType.MOVIE,
         screenContent,
-        { SessionManager.currentSession.value?.favoriteMovies ?: emptyList() },
+        AccountTabType.FAVORITE,
         FavoriteMovie::class,
         3
     )
@@ -89,7 +94,7 @@ sealed class AccountTabNavItem(
         R.string.no_favorite_tv,
         MediaViewType.TV,
         screenContent,
-        { SessionManager.currentSession.value?.favoriteTvShows ?: emptyList() },
+        AccountTabType.FAVORITE,
         FavoriteTvSeries::class,
         4
     )
@@ -99,7 +104,7 @@ sealed class AccountTabNavItem(
         R.string.no_watchlist_movies,
         MediaViewType.MOVIE,
         screenContent,
-        { SessionManager.currentSession.value?.movieWatchlist ?: emptyList() },
+        AccountTabType.WATCHLIST,
         WatchlistMovie::class,
         5
     )
@@ -109,7 +114,7 @@ sealed class AccountTabNavItem(
         R.string.no_watchlist_tv,
         MediaViewType.TV,
         screenContent,
-        { SessionManager.currentSession.value?.tvWatchlist ?: emptyList() },
+        AccountTabType.WATCHLIST,
         WatchlistTvSeries::class,
         6
     )
@@ -120,7 +125,7 @@ sealed class AccountTabNavItem(
         R.string.no_lists,
         MediaViewType.LIST,
         screenContent,
-        { SessionManager.currentSession.value?.accountLists ?: emptyList() },
+        AccountTabType.LIST,
         AccountList::class,
         7
     )
@@ -130,8 +135,8 @@ sealed class AccountTabNavItem(
         "recommended_movies_route",
         R.string.no_recommended_movies,
         MediaViewType.MOVIE,
-        recommendedScreenContent,
-        { emptyList() },
+        screenContent,
+        AccountTabType.RECOMMENDED,
         AccountList::class,
         8
     )
@@ -141,31 +146,21 @@ sealed class AccountTabNavItem(
         "recommended_tv_route",
         R.string.no_recommended_tv,
         MediaViewType.TV,
-        recommendedScreenContent,
-        { emptyList() },
+        screenContent,
+        AccountTabType.RECOMMENDED,
         AccountList::class,
         9
     )
 }
 
-private val screenContent: AccountNavComposableFun = { noContentText, appNavController, mediaViewType, listFetchFun, clazz ->
+private val screenContent: AccountNavComposableFun = { noContentText, appNavController, mediaViewType, atType, clazz ->
     AccountTabContent(
         noContentText = noContentText,
         appNavController = appNavController,
         mediaViewType = mediaViewType,
-        listFetchFun = listFetchFun,
+        accountTabType = atType,
         clazz = clazz
     )
 }
 
-private val recommendedScreenContent: AccountNavComposableFun = { noContentText, appNavController, mediaViewType, _, _ ->
-    RecommendedAccountTabContent(
-        noContentText = noContentText,
-        appNavController = appNavController,
-        mediaViewType = mediaViewType,
-    )
-}
-
-typealias ListFetchFun = () -> List<Any>
-
-typealias AccountNavComposableFun = @Composable (String, NavHostController, MediaViewType, ListFetchFun, KClass<*>) -> Unit
+typealias AccountNavComposableFun = @Composable (String, NavHostController, MediaViewType, AccountTabNavItem.AccountTabType, KClass<*>) -> Unit

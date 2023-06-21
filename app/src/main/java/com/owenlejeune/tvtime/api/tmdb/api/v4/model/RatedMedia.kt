@@ -2,14 +2,14 @@ package com.owenlejeune.tvtime.api.tmdb.api.v4.model
 
 import com.google.gson.annotations.SerializedName
 
-abstract class V4RatedMedia(
+abstract class RatedMedia(
     var type: RatedType,
     @SerializedName("id") val id: Int,
     @SerializedName("overview") val overview: String,
     @SerializedName("name", alternate = ["title"]) val name: String,
     @SerializedName("vote_average") val voteAverage: Float,
     @SerializedName("vote_count") val voteCount: Int,
-    @SerializedName("rating") val rating: AccountRating,
+    @SerializedName("account_rating") val rating: AccountRating,
     @SerializedName("release_date", alternate = ["first_air_date", "air_date"]) val releaseDate: String,
     @SerializedName("backdrop_path") val backdropPath: String?,
     @SerializedName("genre_ids") val genreIds: List<Int>,
@@ -25,7 +25,7 @@ abstract class V4RatedMedia(
     }
 
     inner class AccountRating(
-        @SerializedName("value") val rating: Int,
+        @SerializedName("value") val value: Float,
         @SerializedName("created_at") val createdAt: String
     )
 }

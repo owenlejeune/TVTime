@@ -2,14 +2,14 @@ package com.owenlejeune.tvtime.api.tmdb.api.v4
 
 import android.util.Log
 import androidx.compose.runtime.mutableStateMapOf
-import com.owenlejeune.tvtime.BuildConfig
-import com.owenlejeune.tvtime.api.tmdb.TmdbClient
-import com.owenlejeune.tvtime.api.tmdb.api.v4.model.*
-import com.owenlejeune.tvtime.preferences.AppPreferences
-import com.owenlejeune.tvtime.utils.SessionManager
+import com.owenlejeune.tvtime.api.tmdb.api.v4.model.AddToListBody
+import com.owenlejeune.tvtime.api.tmdb.api.v4.model.CreateListBody
+import com.owenlejeune.tvtime.api.tmdb.api.v4.model.DeleteListItemsBody
+import com.owenlejeune.tvtime.api.tmdb.api.v4.model.ListUpdateBody
+import com.owenlejeune.tvtime.api.tmdb.api.v4.model.MediaList
+import com.owenlejeune.tvtime.api.tmdb.api.v4.model.UpdateListItemBody
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import retrofit2.Response
 
 class ListV4Service: KoinComponent {
 
@@ -47,7 +47,6 @@ class ListV4Service: KoinComponent {
     suspend fun deleteListItems(listId: Int, body: DeleteListItemsBody) {
         val response = service.deleteListItems(listId, body)
         if (response.isSuccessful) {
-            SessionManager.currentSession.value?.refresh(SessionManager.Session.Changed.List)
             getList(listId)
         }
     }

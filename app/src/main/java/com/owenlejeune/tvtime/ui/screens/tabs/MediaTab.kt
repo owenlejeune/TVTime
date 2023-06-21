@@ -1,9 +1,7 @@
 package com.owenlejeune.tvtime.ui.screens.tabs
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
@@ -16,11 +14,11 @@ import com.google.accompanist.pager.rememberPagerState
 import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.ui.components.PagingPosterGrid
 import com.owenlejeune.tvtime.ui.components.SearchView
+import com.owenlejeune.tvtime.ui.components.Tabs
 import com.owenlejeune.tvtime.ui.navigation.AppNavItem
 import com.owenlejeune.tvtime.ui.navigation.MediaTabNavItem
-import com.owenlejeune.tvtime.ui.components.Tabs
 import com.owenlejeune.tvtime.ui.viewmodel.HomeScreenViewModel
-import com.owenlejeune.tvtime.ui.viewmodel.MediaTabViewModel
+import com.owenlejeune.tvtime.ui.viewmodel.MainViewModel
 import com.owenlejeune.tvtime.utils.types.MediaViewType
 
 @OptIn(ExperimentalPagerApi::class)
@@ -44,11 +42,7 @@ fun MediaTab(
             mediaType = mediaType
         )
 
-        val tabs = when (mediaType) {
-            MediaViewType.MOVIE -> MediaTabNavItem.MovieItems
-            MediaViewType.TV -> MediaTabNavItem.TvItems
-            else -> throw IllegalArgumentException("Media type given: ${mediaType}, \n     expected one of MediaViewType.MOVIE, MediaViewType.TV") // shouldn't happen
-        }
+        val tabs = MediaTabNavItem.itemsForType(type = mediaType)
         val pagerState = rememberPagerState()
         Tabs(tabs = tabs, pagerState = pagerState)
         MediaTabs(
@@ -61,13 +55,13 @@ fun MediaTab(
 }
 
 @Composable
-fun MediaTabContent(appNavController: NavHostController, mediaType: MediaViewType, mediaTabItem: MediaTabNavItem) {
-    val viewModel: MediaTabViewModel? = when(mediaType) {
-        MediaViewType.MOVIE -> mediaTabItem.movieViewModel
-        MediaViewType.TV -> mediaTabItem.tvViewModel
-        else -> throw IllegalArgumentException("Media type given: ${mediaType}, \n     expected one of MediaViewType.MOVIE, MediaViewType.TV") // shouldn't happen
-    }
-    val mediaListItems = viewModel?.mediaItems?.collectAsLazyPagingItems()
+fun MediaTabContent(
+    appNavController: NavHostController,
+    mediaType: MediaViewType,
+    mediaTabItem: MediaTabNavItem
+) {
+    val viewModel = viewModel<MainViewModel>()
+    val mediaListItems = viewModel.produceFlowFor(mediaType, mediaTabItem.type).collectAsLazyPagingItems()
 
     PagingPosterGrid(
         lazyPagingItems = mediaListItems,

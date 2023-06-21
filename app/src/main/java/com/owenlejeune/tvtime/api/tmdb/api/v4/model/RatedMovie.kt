@@ -1,14 +1,14 @@
-package com.owenlejeune.tvtime.api.tmdb.api.v3.model
+package com.owenlejeune.tvtime.api.tmdb.api.v4.model
 
 import com.google.gson.annotations.SerializedName
 
-class RatedTv(
+class RatedMovie(
     id: Int,
     overview: String,
     name: String,
     voteAverage: Float,
     voteCount: Int,
-    rating: Float,
+    rating: AccountRating,
     backdropPath: String?,
     genreIds: List<Int>,
     originalLanguage: String,
@@ -16,8 +16,9 @@ class RatedTv(
     posterPath: String?,
     popularity: Float,
     releaseDate: String,
-    @SerializedName("origin_country") val originCountry: List<String>,
-): RatedTopLevelMedia(
-    RatedType.SERIES, id, overview, name, voteAverage, voteCount, rating, releaseDate,
+    @SerializedName("adult") val isAdult: Boolean,
+    @SerializedName("video") val video: Boolean
+): RatedMedia(
+    RatedType.MOVIE, id, overview, name, voteAverage, voteCount, rating, releaseDate,
     backdropPath, genreIds, originalLanguage, originalName, posterPath, popularity
 )
