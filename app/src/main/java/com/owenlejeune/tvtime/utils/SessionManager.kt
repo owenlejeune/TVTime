@@ -8,6 +8,7 @@ import com.google.gson.annotations.SerializedName
 import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.api.tmdb.TmdbClient
 import com.owenlejeune.tvtime.api.tmdb.api.v3.AccountService
+import com.owenlejeune.tvtime.api.tmdb.api.v3.AuthenticationService
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.*
 import com.owenlejeune.tvtime.api.tmdb.api.v4.AccountV4Service
 import com.owenlejeune.tvtime.api.tmdb.api.v4.AuthenticationV4Service
@@ -30,11 +31,10 @@ import java.nio.charset.StandardCharsets
 object SessionManager: KoinComponent {
 
     private val preferences: AppPreferences by inject()
+    private val authenticationService: AuthenticationService by inject()
+    private val authenticationV4Service: AuthenticationV4Service by inject()
 
     val currentSession = mutableStateOf<Session?>(null)
-
-    private val authenticationService by lazy { TmdbClient().createAuthenticationService() }
-    private val authenticationV4Service by lazy { TmdbClient().createV4AuthenticationService() }
 
     class AuthorizedSessionValues(
         @SerializedName("session_id") val sessionId: String,
@@ -132,50 +132,15 @@ object SessionManager: KoinComponent {
     }
 
     abstract class Session(val sessionId: String, val isAuthorized: Boolean, val accessToken: String = "", val accountId: String = "") {
-//        protected open var _ratedMovies: List<RatedMovie> = emptyList()
-//        val ratedMovies: List<RatedMovie>
-//            get() = _ratedMovies
 
         val ratedMovies = mutableStateListOf<RatedMovie>()
-
-//        protected open var _ratedTvShows: List<RatedTv> = emptyList()
-//        val ratedTvShows: List<RatedTv>
-//            get() = _ratedTvShows
         val ratedTvShows = mutableStateListOf<RatedTv>()
-
-//        protected open var _ratedTvEpisodes: List<RatedEpisode> = emptyList()
-//        val ratedTvEpisodes: List<RatedEpisode>
-//            get() = _ratedTvEpisodes
         val ratedTvEpisodes = mutableStateListOf<RatedEpisode>()
-
-//        protected open var _accountDetails: AccountDetails? = null
-//        val accountDetails: AccountDetails?
-//            get() = _accountDetails
         val accountDetails = mutableStateOf<AccountDetails?>(null)
-
-//        protected open var _accountLists: List<V4AccountList> = emptyList()
-//        val accountLists: List<V4AccountList>
-//            get() = _accountLists
         val accountLists = mutableStateListOf<AccountList>()
-
-//        protected open var _favoriteMovies: List<FavoriteMovie> = emptyList()
-//        val favoriteMovies: List<FavoriteMovie>
-//            get() = _favoriteMovies
         val favoriteMovies = mutableStateListOf<FavoriteMovie>()
-
-//        protected open var _favoriteTvShows: List<FavoriteTvSeries> = emptyList()
-//        val favoriteTvShows: List<FavoriteTvSeries>
-//            get() = _favoriteTvShows
         val favoriteTvShows = mutableStateListOf<FavoriteTvSeries>()
-
-//        protected open var _movieWatchlist: List<WatchlistMovie> = emptyList()
-//        val movieWatchlist: List<WatchlistMovie>
-//            get() = _movieWatchlist
         val movieWatchlist = mutableStateListOf<WatchlistMovie>()
-
-//        protected open var _tvWatchlist: List<WatchlistTvSeries> = emptyList()
-//        val tvWatchlist: List<WatchlistTvSeries>
-//            get() = _tvWatchlist
         val tvWatchlist = mutableStateListOf<WatchlistTvSeries>()
 
         fun hasRatedMovie(id: Int): Boolean {

@@ -2,17 +2,29 @@ package com.owenlejeune.tvtime.ui.screens
 
 import androidx.compose.animation.rememberSplineBasedDecay
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material3.*
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SmallTopAppBar
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberTopAppBarScrollState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
@@ -20,43 +32,40 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.owenlejeune.tvtime.R
-import com.owenlejeune.tvtime.api.tmdb.api.v3.PeopleService
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.DetailPerson
-import com.owenlejeune.tvtime.api.tmdb.api.v3.model.ExternalIds
-import com.owenlejeune.tvtime.api.tmdb.api.v3.model.PersonCreditsResponse
 import com.owenlejeune.tvtime.ui.components.ContentCard
 import com.owenlejeune.tvtime.ui.components.DetailHeader
 import com.owenlejeune.tvtime.ui.components.ExpandableContentCard
 import com.owenlejeune.tvtime.ui.components.ExternalIdsArea
 import com.owenlejeune.tvtime.ui.components.TwoLineImageTextCard
 import com.owenlejeune.tvtime.ui.navigation.AppNavItem
+import com.owenlejeune.tvtime.ui.viewmodel.MainViewModel
 import com.owenlejeune.tvtime.utils.TmdbUtils
 import com.owenlejeune.tvtime.utils.types.MediaViewType
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPagerApi::class)
 @Composable
 fun PersonDetailScreen(
     appNavController: NavController,
-    personId: Int?
+    personId: Int
 ) {
+    val mainViewModel = viewModel<MainViewModel>()
+    LaunchedEffect(Unit) {
+        mainViewModel.getById(personId, MediaViewType.PERSON)
+        mainViewModel.getExternalIds(personId, MediaViewType.PERSON)
+    }
+
     val systemUiController = rememberSystemUiController()
     systemUiController.setStatusBarColor(color = MaterialTheme.colorScheme.background)
     systemUiController.setNavigationBarColor(color = MaterialTheme.colorScheme.background)
 
-    val person = remember { mutableStateOf<DetailPerson?>(null) }
-    personId?.let {
-        if (person.value == null) {
-            fetchPerson(personId, person)
-        }
-    }
+    val peopleMap = remember { mainViewModel.peopleMap }
+    val person = peopleMap[personId]
 
     val decayAnimationSpec = rememberSplineBasedDecay<Float>()
     val topAppBarScrollState = rememberTopAppBarScrollState()
@@ -74,7 +83,7 @@ fun PersonDetailScreen(
                         scrolledContainerColor = MaterialTheme.colorScheme.background,
                         titleContentColor = MaterialTheme.colorScheme.primary
                     ),
-                title = { Text(text = person.value?.name ?: "") },
+                title = { Text(text = person?.name ?: "") },
                 navigationIcon = {
                     IconButton(onClick = { appNavController.popBackStack() }) {
                         Icon(
@@ -98,34 +107,23 @@ fun PersonDetailScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 DetailHeader(
-                    posterUrl = TmdbUtils.getFullPersonImagePath(person.value?.profilePath),
-                    posterContentDescription = person.value?.profilePath
+                    posterUrl = TmdbUtils.getFullPersonImagePath(person?.profilePath),
+                    posterContentDescription = person?.profilePath
                 )
 
-                BiographyCard(person = person.value)
+                BiographyCard(person = person)
 
-                val externalIds = remember { mutableStateOf<ExternalIds?>(null) }
-                LaunchedEffect(Unit) {
-                    scope.launch {
-                        val response = PeopleService().getExternalIds(personId!!)
-                        if (response.isSuccessful) {
-                            externalIds.value = response.body()!!
-                        }
-                    }
-                }
-                externalIds.value?.let {
+                val externalIdsMap = remember { mainViewModel.peopleExternalIdsMap }
+                val externalIds = externalIdsMap[personId]
+                externalIds?.let {
                     ExternalIdsArea(
                         externalIds = it,
                         modifier = Modifier.padding(start = 4.dp)
                     )
                 }
 
-                val credits = remember { mutableStateOf<PersonCreditsResponse?>(null) }
-                personId?.let {
-                    if (credits.value == null) {
-                        fetchCredits(personId, credits)
-                    }
-                }
+                val creditsMap = remember { mainViewModel.peopleCastMap }
+                val credits = creditsMap[personId]
 
                 ContentCard(
                     title = stringResource(R.string.known_for_label)
@@ -137,8 +135,8 @@ fun PersonDetailScreen(
                             .padding(12.dp),
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
-                        items(credits.value?.cast?.size ?: 0) { i ->
-                            val content = credits.value!!.cast[i]
+                        items(credits?.size ?: 0) { i ->
+                            val content = credits!![i]
 
                             TwoLineImageTextCard(
                                 title = content.name,
@@ -149,18 +147,18 @@ fun PersonDetailScreen(
                                     .wrapContentHeight(),
                                 imageUrl = TmdbUtils.getFullPosterPath(content.posterPath),
                                 onItemClicked = {
-                                    personId?.let {
-                                        appNavController.navigate(
-                                            AppNavItem.DetailView.withArgs(content.mediaType, content.id)
-                                        )
-                                    }
+                                    appNavController.navigate(
+                                        AppNavItem.DetailView.withArgs(content.mediaType, content.id)
+                                    )
                                 }
                             )
                         }
                     }
                 }
 
-                val departments = credits.value?.crew?.map { it.department }?.toSet() ?: emptySet()
+                val crewMap = remember { mainViewModel.peopleCrewMap }
+                val crewCredits = crewMap[personId]
+                val departments = crewCredits?.map { it.department }?.toSet() ?: emptySet()
                 if (departments.isNotEmpty()) {
                     ContentCard(title = stringResource(R.string.also_known_for_label)) {
                         Column(
@@ -178,8 +176,7 @@ fun PersonDetailScreen(
                                         .wrapContentHeight(),
                                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                                 ) {
-                                    val jobsInDepartment =
-                                        credits.value!!.crew.filter { it.department == department }
+                                    val jobsInDepartment = crewCredits!!.filter { it.department == department }
                                     items(jobsInDepartment.size) { i ->
                                         val content = jobsInDepartment[i]
                                         val title = if (content.mediaType == MediaViewType.MOVIE) {
@@ -195,11 +192,9 @@ fun PersonDetailScreen(
                                                 .wrapContentHeight(),
                                             imageUrl = TmdbUtils.getFullPosterPath(content.posterPath),
                                             onItemClicked = {
-                                                personId?.let {
-                                                    appNavController.navigate(
-                                                        AppNavItem.DetailView.withArgs(content.mediaType, content.id)
-                                                    )
-                                                }
+                                                appNavController.navigate(
+                                                    AppNavItem.DetailView.withArgs(content.mediaType, content.id)
+                                                )
                                             }
                                         )
                                     }
@@ -227,27 +222,5 @@ private fun BiographyCard(person: DetailPerson?) {
             maxLines = if (isExpanded) Int.MAX_VALUE else 3,
             overflow = TextOverflow.Ellipsis
         )
-    }
-}
-
-private fun fetchPerson(id: Int, person: MutableState<DetailPerson?>) {
-    CoroutineScope(Dispatchers.IO).launch {
-        val result = PeopleService().getPerson(id)
-        if (result.isSuccessful) {
-            withContext(Dispatchers.Main) {
-                person.value = result.body()
-            }
-        }
-    }
-}
-
-private fun fetchCredits(id: Int, credits: MutableState<PersonCreditsResponse?>) {
-    CoroutineScope(Dispatchers.IO).launch {
-        val result = PeopleService().getCredits(id)
-        if (result.isSuccessful) {
-            withContext(Dispatchers.Main) {
-                credits.value = result.body()
-            }
-        }
     }
 }

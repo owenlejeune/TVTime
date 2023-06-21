@@ -12,8 +12,7 @@ import org.koin.core.component.inject
 
 class HomePagePeoplePagingSource: PagingSource<Int, HomePagePerson>(), KoinComponent {
 
-    private val service: PeopleApi by inject()
-    private val context: Context by inject()
+    private val service: PeopleService by inject()
 
     override fun getRefreshKey(state: PagingState<Int, HomePagePerson>): Int? {
         return state.anchorPosition
@@ -32,7 +31,6 @@ class HomePagePeoplePagingSource: PagingSource<Int, HomePagePerson>(), KoinCompo
                     nextKey = if (results.isEmpty() || responseBody == null) null else responseBody.page + 1
                 )
             } else {
-//                Toast.makeText(context, "No more results found", Toast.LENGTH_SHORT).show()
                 LoadResult.Invalid()
             }
         } catch (e: Exception) {

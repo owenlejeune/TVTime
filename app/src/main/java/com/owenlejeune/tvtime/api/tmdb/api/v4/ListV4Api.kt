@@ -7,11 +7,7 @@ import retrofit2.http.*
 interface ListV4Api {
 
     @GET("list/{id}")
-    suspend fun getList(
-        @Path("id") listId: Int,
-        @Query("api_key") apiKey: String,
-        @Query("page") page: Int = 1
-    ): Response<MediaList>
+    suspend fun getList(@Path("id") listId: Int): Response<MediaList>
 
     @POST("list")
     suspend fun createList(@Body body: CreateListBody): Response<CreateListResponse>

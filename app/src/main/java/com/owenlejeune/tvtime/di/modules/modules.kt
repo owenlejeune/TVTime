@@ -6,11 +6,21 @@ import com.owenlejeune.tvtime.BuildConfig
 import com.owenlejeune.tvtime.api.*
 import com.owenlejeune.tvtime.api.tmdb.TmdbClient
 import com.owenlejeune.tvtime.api.tmdb.api.v3.AccountService
+import com.owenlejeune.tvtime.api.tmdb.api.v3.AuthenticationService
+import com.owenlejeune.tvtime.api.tmdb.api.v3.ConfigurationService
+import com.owenlejeune.tvtime.api.tmdb.api.v3.MoviesService
+import com.owenlejeune.tvtime.api.tmdb.api.v3.PeopleService
+import com.owenlejeune.tvtime.api.tmdb.api.v3.SearchService
+import com.owenlejeune.tvtime.api.tmdb.api.v3.TvService
+import com.owenlejeune.tvtime.api.tmdb.api.v3.deserializer.AccountStatesDeserializer
 import com.owenlejeune.tvtime.api.tmdb.api.v3.deserializer.KnownForDeserializer
 import com.owenlejeune.tvtime.api.tmdb.api.v3.deserializer.SortableSearchResultDeserializer
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.AccountStates
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.KnownFor
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.SortableSearchResult
 import com.owenlejeune.tvtime.api.tmdb.api.v4.AccountV4Service
+import com.owenlejeune.tvtime.api.tmdb.api.v4.AuthenticationV4Service
+import com.owenlejeune.tvtime.api.tmdb.api.v4.ListV4Service
 import com.owenlejeune.tvtime.api.tmdb.api.v4.deserializer.ListItemDeserializer
 import com.owenlejeune.tvtime.api.tmdb.api.v4.model.ListItem
 import com.owenlejeune.tvtime.preferences.AppPreferences
@@ -30,7 +40,6 @@ val networkModule = module {
     single { get<TmdbClient>().createV4AccountService() }
     single { get<TmdbClient>().createV4ListService() }
     single { get<TmdbClient>().createAccountService() }
-    single { get<TmdbClient>().createGuestSessionService() }
     single { get<TmdbClient>().createAuthenticationService() }
     single { get<TmdbClient>().createMovieService() }
     single { get<TmdbClient>().createPeopleService() }
@@ -38,14 +47,23 @@ val networkModule = module {
     single { get<TmdbClient>().createTvService() }
     single { get<TmdbClient>().createConfigurationService() }
 
+    single { ConfigurationService() }
+    single { MoviesService() }
+    single { TvService() }
     single { AccountService() }
+    single { AuthenticationService() }
+    single { PeopleService() }
+    single { SearchService() }
     single { AccountV4Service() }
+    single { AuthenticationV4Service() }
+    single { ListV4Service() }
 
     single<Map<Class<*>, JsonDeserializer<*>>> {
         mapOf(
             ListItem::class.java to ListItemDeserializer(),
             KnownFor::class.java to KnownForDeserializer(),
-            SortableSearchResult::class.java to SortableSearchResultDeserializer()
+            SortableSearchResult::class.java to SortableSearchResultDeserializer(),
+            AccountStates::class.java to AccountStatesDeserializer()
         )
     }
 

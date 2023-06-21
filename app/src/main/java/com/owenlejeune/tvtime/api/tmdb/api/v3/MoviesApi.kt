@@ -61,4 +61,7 @@ interface MoviesApi {
     @GET("movie/{id}/external_ids")
     suspend fun getExternalIds(@Path("id") id: Int): Response<ExternalIds>
 
+    @GET("movie/{id}/account_states")
+    suspend fun getAccountStates(@Path("id") id: Int, @Query("session_id") sessionId: String): Response<AccountStates>
+
 }

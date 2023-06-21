@@ -19,10 +19,11 @@ fun SliderWithLabel(
     valueRange: ClosedFloatingPointRange<Float>,
     onValueChanged: (Float) -> Unit,
     sliderLabel: String,
+    modifier: Modifier = Modifier,
     steps: Int = 0,
-    labelMinWidth: Dp = 36.dp
+    labelMinWidth: Dp = 46.dp
 ) {
-    Column {
+    Column(modifier = modifier) {
         BoxWithConstraints(
             modifier = Modifier
                 .fillMaxWidth()
@@ -60,7 +61,7 @@ fun SliderWithLabel(
 @Composable
 fun SliderLabel(label: String, minWidth: Dp, modifier: Modifier = Modifier) {
     Text(
-        label,
+        text = label,
         textAlign = TextAlign.Center,
         color = MaterialTheme.colorScheme.onPrimary,
         modifier = modifier

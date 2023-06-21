@@ -1,4 +1,5 @@
 package com.owenlejeune.tvtime.ui.screens
+import android.accounts.Account
 import android.content.Context
 import android.content.Intent
 import android.util.Log
@@ -35,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
@@ -47,11 +49,15 @@ import com.owenlejeune.tvtime.api.tmdb.api.v4.model.*
 import com.owenlejeune.tvtime.extensions.WindowSizeClass
 import com.owenlejeune.tvtime.extensions.unlessEmpty
 import com.owenlejeune.tvtime.preferences.AppPreferences
+import com.owenlejeune.tvtime.ui.components.Actions
+import com.owenlejeune.tvtime.ui.components.ActionsView
+import com.owenlejeune.tvtime.ui.components.FavoriteButton
 import com.owenlejeune.tvtime.ui.components.RatingView
 import com.owenlejeune.tvtime.ui.components.Spinner
 import com.owenlejeune.tvtime.ui.components.SwitchPreference
 import com.owenlejeune.tvtime.ui.navigation.AppNavItem
 import com.owenlejeune.tvtime.ui.theme.*
+import com.owenlejeune.tvtime.ui.viewmodel.AccountViewModel
 import com.owenlejeune.tvtime.utils.SessionManager
 import com.owenlejeune.tvtime.utils.TmdbUtils
 import com.owenlejeune.tvtime.utils.types.MediaViewType
@@ -68,22 +74,22 @@ import kotlin.math.roundToInt
 @Composable
 fun ListDetailScreen(
     appNavController: NavController,
-    itemId: Int?,
+    itemId: Int,
     windowSize: WindowSizeClass,
-    preferences: AppPreferences = KoinJavaComponent.get(AppPreferences::class.java)
+    service: ListV4Service = KoinJavaComponent.get(ListV4Service::class.java)
 ) {
+    val accountViewModel = viewModel<AccountViewModel>()
+    LaunchedEffect(Unit) {
+        accountViewModel.getList(itemId)
+    }
+
     val systemUiController = rememberSystemUiController()
     systemUiController.setStatusBarColor(color = MaterialTheme.colorScheme.background)
     systemUiController.setNavigationBarColor(color = MaterialTheme.colorScheme.background)
 
-    val service = ListV4Service()
+    val listMap = remember { accountViewModel.listMap }
+    val parentList = listMap[itemId]
 
-    val parentList = remember { mutableStateOf<MediaList?>(null) }
-    itemId?.let {
-        if (parentList.value == null) {
-            fetchList(itemId, service, parentList)
-        }
-    }
 
     val decayAnimationSpec = rememberSplineBasedDecay<Float>()
     val topAppBarScrollState = rememberTopAppBarScrollState()
@@ -101,7 +107,7 @@ fun ListDetailScreen(
                         scrolledContainerColor = MaterialTheme.colorScheme.background,
                         titleContentColor = MaterialTheme.colorScheme.primary
                     ),
-                title = { Text(text = parentList.value?.name ?: "") },
+                title = { Text(text = parentList?.name ?: "") },
                 navigationIcon = {
                     IconButton(
                         onClick = { appNavController.popBackStack() }
@@ -117,7 +123,7 @@ fun ListDetailScreen(
         }
     ) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)) {
-            parentList.value?.let { mediaList ->
+            parentList?.let { mediaList ->
                 Column(
                     modifier = Modifier
                         .padding(all = 12.dp)
@@ -151,7 +157,7 @@ private fun ListHeader(
     list: MediaList,
     selectedSortOrder: MutableState<SortOrder>,
     service: ListV4Service,
-    parentList: MutableState<MediaList?>
+    parentList: MediaList?
 ) {
     val context = LocalContext.current
 
@@ -254,10 +260,7 @@ private fun ListHeader(
         if (showEditListDialog.value) {
             EditListDialog(
                 showEditListDialog = showEditListDialog,
-                list = list,
-                service = service,
-                parentList = parentList,
-                selectedSortOrder = selectedSortOrder
+                list = list
             )
         }
     }
@@ -312,11 +315,10 @@ private fun SortOrderDialog(
 @Composable
 private fun EditListDialog(
     showEditListDialog: MutableState<Boolean>,
-    list: MediaList,
-    service: ListV4Service,
-    parentList: MutableState<MediaList?>,
-    selectedSortOrder: MutableState<SortOrder>
+    list: MediaList
 ) {
+    val accountViewModel = viewModel<AccountViewModel>()
+
     val coroutineScope = rememberCoroutineScope()
 
     var listTitle by remember { mutableStateOf(list.name) }
@@ -338,11 +340,7 @@ private fun EditListDialog(
                 onClick = {
                     val listUpdateBody = ListUpdateBody(listTitle, listDescription, isPublicList, editSelectedSortOrder)
                     coroutineScope.launch {
-                        val response = service.updateList(list.id, listUpdateBody)
-                        if (response.isSuccessful) {
-                            fetchList(list.id, service, parentList)
-                            selectedSortOrder.value = editSelectedSortOrder
-                        }
+                        accountViewModel.updateList(list.id, listUpdateBody)
                         showEditListDialog.value = false
                     }
                 }
@@ -426,23 +424,24 @@ private fun RowScope.OverviewStatCard(
 private fun ListItemView(
     appNavController: NavController,
     listItem: ListItem,
-    list: MutableState<MediaList?>
+    list: MediaList?
 ) {
-    val context = LocalContext.current
+    val accountViewModel = viewModel<AccountViewModel>()
+    val scope = rememberCoroutineScope()
+
     RevealSwipe (
         directions = setOf(RevealDirection.EndToStart),
         hiddenContentEnd = {
             IconButton(
                 modifier = Modifier.padding(horizontal = 15.dp),
                 onClick = {
-                    removeItemFromList(
-                        context = context,
-                        itemId = listItem.id,
-                        itemType =  listItem.mediaType,
-                        itemName = listItem.title,
-                        service = ListV4Service(),
-                        list = list
-                    )
+                    scope.launch {
+                        accountViewModel.deleteListItem(
+                            list?.id ?: -1,
+                            listItem.id,
+                            listItem.mediaType
+                        )
+                    }
                 }
             ) {
                 Icon(
@@ -533,7 +532,11 @@ private fun ListItemView(
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold
                         )
-                        ActionButtonRow(listItem)
+                        ActionsView(
+                            itemId = listItem.id,
+                            type = listItem.mediaType,
+                            actions = listOf(Actions.RATE, Actions.WATCHLIST, Actions.FAVORITE)
+                        )
                         Spacer(modifier = Modifier.weight(1f))
                     }
 
@@ -553,109 +556,6 @@ private fun ListItemView(
     }
 }
 
-@Composable
-private fun ActionButtonRow(listItem: ListItem) {
-    val session = SessionManager.currentSession.value
-
-    val (isFavourited, isWatchlisted, isRated) = if (listItem.mediaType == MediaViewType.MOVIE) {
-        Triple(
-            session?.hasFavoritedMovie(listItem.id) == true,
-            session?.hasWatchlistedMovie(listItem.id) == true,
-            session?.hasRatedMovie(listItem.id) == true
-        )
-    } else {
-        Triple(
-            session?.hasFavoritedTvShow(listItem.id) == true,
-            session?.hasWatchlistedTvShow(listItem.id) == true,
-            session?.hasRatedTvShow(listItem.id) == true
-        )
-    }
-
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        ActionButton(
-            itemId = listItem.id,
-            type = listItem.mediaType,
-            imageVector = Icons.Filled.Favorite,
-            contentDescription = stringResource(id = R.string.favourite_label),
-            isSelected = isFavourited,
-            filledIconColor = FavoriteSelected,
-            onClick = ::listAddToFavorite
-        )
-
-        ActionButton(
-            itemId = listItem.id,
-            type = listItem.mediaType,
-            imageVector = Icons.Filled.Bookmark,
-            contentDescription = "",
-            isSelected = isWatchlisted,
-            filledIconColor = WatchlistSelected,
-            onClick = ::listAddToWatchlist
-        )
-
-        val context = LocalContext.current
-        ActionButton(
-            itemId = listItem.id,
-            type = listItem.mediaType,
-            imageVector = Icons.Filled.Star,
-            contentDescription = "",
-            isSelected = isRated,
-            filledIconColor = RatingSelected,
-            onClick = { c, i, t, s, f ->
-                // todo - add rating
-                Toast.makeText(context, "Rating", Toast.LENGTH_SHORT).show()
-            }
-        )
-    }
-}
-
-private fun listAddToWatchlist(
-    context: Context,
-    itemId: Int,
-    type: MediaViewType,
-    itemIsWatchlisted: MutableState<Boolean>,
-    onWatchlistChanged: (Boolean) -> Unit
-) {
-    val currentSession = SessionManager.currentSession.value
-    val accountId = currentSession!!.accountDetails.value!!.id
-    CoroutineScope(Dispatchers.IO).launch {
-        val response = AccountService().addToWatchlist(accountId, WatchlistBody(type, itemId, !itemIsWatchlisted.value))
-        if (response.isSuccessful) {
-            currentSession.refresh(changed = SessionManager.Session.Changed.Watchlist)
-            withContext(Dispatchers.Main) {
-                itemIsWatchlisted.value = !itemIsWatchlisted.value
-                onWatchlistChanged(itemIsWatchlisted.value)
-            }
-        } else {
-            withContext(Dispatchers.Main) {
-                Toast.makeText(context, "An error occurred", Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
-}
-
-private fun listAddToFavorite(
-    context: Context,
-    itemId: Int,
-    type: MediaViewType,
-    itemIsFavorited: MutableState<Boolean>,
-    onFavoriteChanged: (Boolean) -> Unit
-) {
-    val currentSession = SessionManager.currentSession.value
-    val accountId = currentSession!!.accountDetails.value!!.id
-    CoroutineScope(Dispatchers.IO).launch {
-        val response = AccountService().markAsFavorite(accountId, MarkAsFavoriteBody(type, itemId, !itemIsFavorited.value))
-        if (response.isSuccessful) {
-            currentSession.refresh(changed = SessionManager.Session.Changed.Favorites)
-            withContext(Dispatchers.Main) {
-                itemIsFavorited.value = !itemIsFavorited.value
-                onFavoriteChanged(itemIsFavorited.value)
-            }
-        }
-    }
-}
-
 private fun shareListUrl(context: Context, listId: Int) {
     val shareUrl = "https://www.themoviedb.org/list/$listId"
     val sendIntent = Intent().apply {
@@ -665,46 +565,4 @@ private fun shareListUrl(context: Context, listId: Int) {
     }
     val shareIntent = Intent.createChooser(sendIntent, null)
     context.startActivity(shareIntent)
-}
-
-private fun fetchList(
-    itemId: Int,
-    service: ListV4Service,
-    listItem: MutableState<MediaList?>
-) {
-    CoroutineScope(Dispatchers.IO).launch {
-        val response = service.getList(itemId)
-        if (response.isSuccessful) {
-            withContext(Dispatchers.Main) {
-                listItem.value = response.body()
-            }
-        }
-    }
-}
-
-private fun removeItemFromList(
-    context: Context,
-    itemName: String,
-    itemId: Int,
-    itemType: MediaViewType,
-    service: ListV4Service,
-    list: MutableState<MediaList?>
-) {
-    CoroutineScope(Dispatchers.IO).launch {
-        val listId = list.value?.id ?: 0
-        val removeItem = DeleteListItemsItem(itemId, itemType)
-        val result = service.deleteListItems(listId, DeleteListItemsBody(listOf(removeItem)))
-        if (result.isSuccessful) {
-            SessionManager.currentSession.value?.refresh(SessionManager.Session.Changed.List)
-            service.getList(listId).body()?.let {
-                withContext(Dispatchers.Main) {
-                    list.value = it
-                }
-            }
-            Toast.makeText(context, "Successfully removed $itemName", Toast.LENGTH_SHORT).show()
-        } else {
-            Log.w("RemoveListItemError", result.toString())
-            Toast.makeText(context, "An error occurred!", Toast.LENGTH_SHORT).show()
-        }
-    }
 }

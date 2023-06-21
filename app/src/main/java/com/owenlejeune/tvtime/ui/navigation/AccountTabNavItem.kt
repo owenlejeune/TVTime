@@ -36,9 +36,6 @@ sealed class AccountTabNavItem(
     val noContentText = resourceUtils.getString(noContentStringRes)
 
     companion object {
-        val GuestItems
-            get() = listOf(RatedMovies, RatedTvShows, RatedTvEpisodes)
-
         val AuthorizedItems
             get() = listOf(
                 RatedMovies, RatedTvShows, RatedTvEpisodes, FavoriteMovies, FavoriteTvShows,

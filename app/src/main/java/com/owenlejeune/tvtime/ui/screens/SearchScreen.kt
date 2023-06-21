@@ -17,22 +17,27 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import androidx.paging.compose.collectAsLazyPagingItems
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.owenlejeune.tvtime.R
-import com.owenlejeune.tvtime.api.tmdb.api.v3.DetailService
 import com.owenlejeune.tvtime.api.tmdb.api.v3.MoviesService
 import com.owenlejeune.tvtime.api.tmdb.api.v3.SearchService
 import com.owenlejeune.tvtime.api.tmdb.api.v3.TvService
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.*
 import com.owenlejeune.tvtime.extensions.listItems
 import com.owenlejeune.tvtime.ui.components.MediaResultCard
+import com.owenlejeune.tvtime.ui.viewmodel.MainViewModel
+import com.owenlejeune.tvtime.ui.viewmodel.SearchViewModel
 import com.owenlejeune.tvtime.utils.TmdbUtils
 import com.owenlejeune.tvtime.utils.types.MediaViewType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.koin.java.KoinJavaComponent.get
+import com.owenlejeune.tvtime.extensions.lazyPagingItems
 
 @Composable
 fun SearchScreen(
@@ -40,6 +45,8 @@ fun SearchScreen(
     title: String,
     mediaViewType: MediaViewType
 ) {
+    val searchViewModel = viewModel<SearchViewModel>()
+
     val systemUiController = rememberSystemUiController()
     systemUiController.setStatusBarColor(color = MaterialTheme.colorScheme.background)
     systemUiController.setNavigationBarColor(color = MaterialTheme.colorScheme.background)
@@ -51,6 +58,14 @@ fun SearchScreen(
     ) {
         val searchValue = rememberSaveable { mutableStateOf("") }
         val focusRequester = remember { FocusRequester() }
+
+        LaunchedEffect(searchValue.value) {
+            if (searchValue.value.isEmpty()) {
+                searchViewModel.resetResults()
+            } else {
+                searchViewModel.searchFor(searchValue.value, mediaViewType)
+            }
+        }
 
         SmallTopAppBar(
             title = {
@@ -100,68 +115,20 @@ fun SearchScreen(
             )
         }
 
-        if (searchValue.value.isNotEmpty()) {
-            when (mediaViewType) {
-                MediaViewType.TV -> {
-                    SearchResultListView(
-                        showLoadingAnimation = showLoadingAnimation,
-                        currentQuery = searchValue,
-                        searchExecutor = { searchResults: MutableState<List<SearchResultTv>> ->
-                            searchTv(searchValue.value, searchResults)
-                        }
-                    ) { tv ->
-                        TvSearchResultView(result = tv, appNavController = appNavController)
-                    }
-                }
-                MediaViewType.MOVIE -> {
-                    SearchResultListView(
-                        showLoadingAnimation = showLoadingAnimation,
-                        currentQuery = searchValue,
-                        searchExecutor = { searchResults: MutableState<List<SearchResultMovie>> ->
-                            searchMovies(searchValue.value, searchResults)
-                        }
-                    ) { movie ->
-                        MovieSearchResultView(result = movie, appNavController = appNavController)
-                    }
-                }
-                MediaViewType.PERSON -> {
-                    SearchResultListView(
-                        showLoadingAnimation = showLoadingAnimation,
-                        currentQuery = searchValue,
-                        searchExecutor = { searchResults: MutableState<List<SearchResultPerson>> ->
-                            searchPeople(searchValue.value, searchResults)
-                        }
-                    ) { person ->
-                        PeopleSearchResultView(result = person, appNavController = appNavController)
-                    }
-                }
-                MediaViewType.MIXED -> {
-                    SearchResultListView(
-                        showLoadingAnimation = showLoadingAnimation,
-                        currentQuery = searchValue,
-                        searchExecutor = { searchResults: MutableState<List<SortableSearchResult>> ->
-                            searchMulti(searchValue.value, searchResults)
-                        },
-                    ) { item ->
-                        when (item.mediaType) {
-                            MediaViewType.MOVIE -> MovieSearchResultView(
-                                appNavController = appNavController,
-                                result = item as SearchResultMovie
-                            )
-                            MediaViewType.TV -> TvSearchResultView(
-                                appNavController = appNavController,
-                                result = item as SearchResultTv
-                            )
-                            MediaViewType.PERSON -> PeopleSearchResultView(
-                                appNavController = appNavController,
-                                result = item as SearchResultPerson
-                            )
-                            else -> {}
-                        }
-                    }
-                }
-                else -> {}
+        when (mediaViewType) {
+            MediaViewType.TV -> {
+                TvResultsView(appNavController = appNavController, searchViewModel = searchViewModel)
             }
+            MediaViewType.MOVIE -> {
+                MovieResultsView(appNavController = appNavController, searchViewModel = searchViewModel)
+            }
+            MediaViewType.PERSON -> {
+                PeopleResultsView(appNavController = appNavController, searchViewModel = searchViewModel)
+            }
+            MediaViewType.MIXED -> {
+                MultiResultsView(appNavController = appNavController, searchViewModel = searchViewModel)
+            }
+            else -> {}
         }
 
         LaunchedEffect(key1 = "") {
@@ -171,41 +138,174 @@ fun SearchScreen(
 }
 
 @Composable
-private fun <T: SortableSearchResult> SearchResultListView(
-    showLoadingAnimation: MutableState<Boolean>,
-    currentQuery: MutableState<String>,
-    searchExecutor: (MutableState<List<T>>) -> Unit,
-    viewRenderer: @Composable (T) -> Unit
+private fun MovieResultsView(
+    appNavController: NavHostController,
+    searchViewModel: SearchViewModel
 ) {
-    val searchResults = remember { mutableStateOf(emptyList<T>()) }
-
-    LaunchedEffect(key1 = currentQuery.value) {
-        showLoadingAnimation.value = true
-        searchExecutor(searchResults)
-        showLoadingAnimation.value = false
-    }
-
-    if (currentQuery.value.isNotEmpty() && searchResults.value.isEmpty()) {
-        Column(
-            modifier = Modifier.fillMaxSize()
-        ) {
-            Spacer(modifier = Modifier.weight(1f))
-            Text(
-                text = stringResource(R.string.no_search_results),
-                color = MaterialTheme.colorScheme.onBackground,
-                modifier = Modifier.align(Alignment.CenterHorizontally),
-                fontSize = 18.sp
-            )
-            Spacer(modifier = Modifier.weight(1f))
+    val results = remember { searchViewModel.movieResults }
+    results.value?.let {
+        val pagingItems = it.collectAsLazyPagingItems()
+        if (pagingItems.itemCount > 0) {
+            LazyColumn(
+                modifier = Modifier.padding(all = 12.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                lazyPagingItems(pagingItems) { item ->
+                    item?.let {
+                        MovieSearchResultView(
+                            appNavController = appNavController,
+                            result = item
+                        )
+                    }
+                }
+            }
+        } else {
+            Column(
+                modifier = Modifier.fillMaxSize()
+            ) {
+                Spacer(modifier = Modifier.weight(1f))
+                Text(
+                    text = stringResource(R.string.no_search_results),
+                    color = MaterialTheme.colorScheme.onBackground,
+                    modifier = Modifier.align(Alignment.CenterHorizontally),
+                    fontSize = 18.sp
+                )
+                Spacer(modifier = Modifier.weight(1f))
+            }
         }
     }
-    LazyColumn(
-        modifier = Modifier.padding(12.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        val items = searchResults.value.sortedByDescending { it.popularity }
-        listItems(items) { item ->
-            viewRenderer(item)
+}
+
+@Composable
+private fun TvResultsView(
+    appNavController: NavHostController,
+    searchViewModel: SearchViewModel
+) {
+    val results = remember { searchViewModel.tvResults }
+    results.value?.let {
+        val pagingItems = it.collectAsLazyPagingItems()
+        if (pagingItems.itemCount > 0) {
+            LazyColumn(
+                modifier = Modifier.padding(all = 12.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                lazyPagingItems(pagingItems) { item ->
+                    item?.let {
+                        TvSearchResultView(
+                            appNavController = appNavController,
+                            result = item
+                        )
+                    }
+                }
+            }
+        } else {
+            Column(
+                modifier = Modifier.fillMaxSize()
+            ) {
+                Spacer(modifier = Modifier.weight(1f))
+                Text(
+                    text = stringResource(R.string.no_search_results),
+                    color = MaterialTheme.colorScheme.onBackground,
+                    modifier = Modifier.align(Alignment.CenterHorizontally),
+                    fontSize = 18.sp
+                )
+                Spacer(modifier = Modifier.weight(1f))
+            }
+        }
+    }
+}
+
+@Composable
+private fun PeopleResultsView(
+    appNavController: NavHostController,
+    searchViewModel: SearchViewModel
+) {
+    val results = remember { searchViewModel.peopleResults }
+    results.value?.let {
+        val pagingItems = it.collectAsLazyPagingItems()
+        if (pagingItems.itemCount > 0) {
+            LazyColumn(
+                modifier = Modifier.padding(all = 12.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                lazyPagingItems(pagingItems) { item ->
+                    item?.let {
+                        PeopleSearchResultView(
+                            appNavController = appNavController,
+                            result = item
+                        )
+                    }
+                }
+            }
+        } else {
+            Column(
+                modifier = Modifier.fillMaxSize()
+            ) {
+                Spacer(modifier = Modifier.weight(1f))
+                Text(
+                    text = stringResource(R.string.no_search_results),
+                    color = MaterialTheme.colorScheme.onBackground,
+                    modifier = Modifier.align(Alignment.CenterHorizontally),
+                    fontSize = 18.sp
+                )
+                Spacer(modifier = Modifier.weight(1f))
+            }
+        }
+    }
+}
+
+@Composable
+private fun MultiResultsView(
+    appNavController: NavHostController,
+    searchViewModel: SearchViewModel
+) {
+    val results = remember { searchViewModel.multiResults }
+    results.value?.let {
+        val pagingItems = it.collectAsLazyPagingItems()
+        if (pagingItems.itemCount > 0) {
+            LazyColumn(
+                modifier = Modifier.padding(all = 12.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                lazyPagingItems(pagingItems) { item ->
+                    item?.let {
+                        when (item.mediaType) {
+                            MediaViewType.MOVIE -> {
+                                MovieSearchResultView(
+                                    appNavController = appNavController,
+                                    result = item as SearchResultMovie
+                                )
+                            }
+                            MediaViewType.TV -> {
+                                TvSearchResultView(
+                                    appNavController = appNavController,
+                                    result = item as SearchResultTv
+                                )
+                            }
+                            MediaViewType.PERSON -> {
+                                PeopleSearchResultView(
+                                    appNavController = appNavController,
+                                    result = item as SearchResultPerson
+                                )
+                            }
+                            else ->{}
+                        }
+                    }
+                }
+            }
+        } else {
+            Column(
+                modifier = Modifier.fillMaxSize()
+            ) {
+                Spacer(modifier = Modifier.weight(1f))
+                Text(
+                    text = stringResource(R.string.no_search_results),
+                    color = MaterialTheme.colorScheme.onBackground,
+                    modifier = Modifier.align(Alignment.CenterHorizontally),
+                    fontSize = 18.sp
+                )
+                Spacer(modifier = Modifier.weight(1f))
+            }
         }
     }
 }
@@ -233,10 +333,15 @@ private fun <T: SortableSearchResult> SearchResultItemView(
 @Composable
 private fun MovieSearchResultView(
     appNavController: NavHostController,
-    result: SearchResultMovie
+    result: SearchResultMovie,
+    service: MoviesService = get(MoviesService::class.java)
 ) {
-    val cast = remember { mutableStateOf<List<CastMember>?>(null) }
-    getCast(result.id, MoviesService(), cast)
+    LaunchedEffect(Unit) {
+        service.getCastAndCrew(result.id)
+    }
+    val mainViewModel = viewModel<MainViewModel>()
+    val castMap = remember { mainViewModel.movieCast }
+    val cast = castMap[result.id]
 
     SearchResultItemView(
         appNavController = appNavController,
@@ -247,7 +352,7 @@ private fun MovieSearchResultView(
         additionalDetails = {
             listOf(
                 TmdbUtils.releaseYearFromData(result.releaseDate),
-                cast.value?.joinToString(separator = ", ") { it.name } ?: ""
+                cast?.joinToString(separator = ", ") { it.name } ?: ""
             )
         }
     )
@@ -256,12 +361,16 @@ private fun MovieSearchResultView(
 @Composable
 private fun TvSearchResultView(
     appNavController: NavHostController,
-    result: SearchResultTv
+    result: SearchResultTv,
+    service: TvService = get(TvService::class.java)
 ) {
     val context = LocalContext.current
-
-    val cast = remember { mutableStateOf<List<CastMember>?>(null) }
-    getCast(result.id, TvService(), cast)
+    LaunchedEffect(Unit) {
+        service.getCastAndCrew(result.id)
+    }
+    val mainViewModel = viewModel<MainViewModel>()
+    val castMap = remember { mainViewModel.tvCast }
+    val cast = castMap[result.id]
 
     SearchResultItemView(
         appNavController = appNavController,
@@ -272,7 +381,7 @@ private fun TvSearchResultView(
         additionalDetails = {
             listOf(
                 "${TmdbUtils.releaseYearFromData(result.releaseDate)}  ${context.getString(R.string.search_result_tv_series)}",
-                cast.value?.joinToString(separator = ", ") { it.name } ?: ""
+                cast?.joinToString(separator = ", ") { it.name } ?: ""
             )
         }
     )
@@ -297,78 +406,4 @@ private fun PeopleSearchResultView(
             )
         }
     )
-}
-
-private fun searchMovies(
-    query: String,
-    searchResults: MutableState<List<SearchResultMovie>>
-) {
-    CoroutineScope(Dispatchers.IO).launch {
-        val response = SearchService().searchMovies(query)
-        if (response.isSuccessful) {
-            withContext(Dispatchers.Main) {
-                searchResults.value = response.body()?.results ?: emptyList()
-            }
-        }
-    }
-}
-
-private fun searchTv(
-    query: String,
-    searchResults: MutableState<List<SearchResultTv>>
-) {
-    CoroutineScope(Dispatchers.IO).launch {
-        val response = SearchService().searchTv(query)
-        if (response.isSuccessful) {
-            withContext(Dispatchers.Main) {
-                searchResults.value = response.body()?.results ?: emptyList()
-            }
-        }
-    }
-}
-
-private fun searchPeople(
-    query: String,
-    searchResults: MutableState<List<SearchResultPerson>>
-) {
-    CoroutineScope(Dispatchers.IO).launch {
-        val response = SearchService().searchPeople(query)
-        if (response.isSuccessful) {
-            withContext(Dispatchers.Main) {
-                searchResults.value = response.body()?.results ?: emptyList()
-            }
-        }
-    }
-}
-
-private fun searchMulti(
-    query: String,
-    searchResults: MutableState<List<SortableSearchResult>>
-) {
-    CoroutineScope(Dispatchers.IO).launch {
-        val response = SearchService().searchMulti(query)
-        if (response.isSuccessful) {
-            withContext(Dispatchers.Main) {
-                searchResults.value = response.body()?.results ?: emptyList()
-            }
-        }
-    }
-}
-
-private fun getCast(
-    id: Int,
-    detailService: DetailService,
-    cast: MutableState<List<CastMember>?>
-) {
-    CoroutineScope(Dispatchers.IO).launch {
-        val response = detailService.getCastAndCrew(id)
-        if (response.isSuccessful) {
-            withContext(Dispatchers.Main) {
-                cast.value = response.body()?.cast?.let {
-                    val end = minOf(2, it.size)
-                    it.subList(0, end)
-                }
-            }
-        }
-    }
 }

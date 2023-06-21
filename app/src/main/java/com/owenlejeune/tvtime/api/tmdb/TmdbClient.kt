@@ -4,7 +4,13 @@ import androidx.compose.ui.text.intl.Locale
 import com.owenlejeune.tvtime.BuildConfig
 import com.owenlejeune.tvtime.api.Client
 import com.owenlejeune.tvtime.api.QueryParam
-import com.owenlejeune.tvtime.api.tmdb.api.v3.*
+import com.owenlejeune.tvtime.api.tmdb.api.v3.AccountApi
+import com.owenlejeune.tvtime.api.tmdb.api.v3.AuthenticationApi
+import com.owenlejeune.tvtime.api.tmdb.api.v3.ConfigurationApi
+import com.owenlejeune.tvtime.api.tmdb.api.v3.MoviesApi
+import com.owenlejeune.tvtime.api.tmdb.api.v3.PeopleApi
+import com.owenlejeune.tvtime.api.tmdb.api.v3.SearchApi
+import com.owenlejeune.tvtime.api.tmdb.api.v3.TvApi
 import com.owenlejeune.tvtime.api.tmdb.api.v4.AccountV4Api
 import com.owenlejeune.tvtime.api.tmdb.api.v4.AuthenticationV4Api
 import com.owenlejeune.tvtime.api.tmdb.api.v4.ListV4Api
@@ -51,10 +57,6 @@ class TmdbClient: KoinComponent {
 
     fun createV4AuthenticationService(): AuthenticationV4Api {
         return clientV4.create(AuthenticationV4Api::class.java)
-    }
-
-    fun createGuestSessionService(): GuestSessionApi {
-        return client.create(GuestSessionApi::class.java)
     }
 
     fun createAccountService(): AccountApi {

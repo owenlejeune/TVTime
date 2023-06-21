@@ -1,46 +1,98 @@
 package com.owenlejeune.tvtime.api.tmdb.api.v3
 
-import com.owenlejeune.tvtime.api.tmdb.api.v3.model.*
+import androidx.compose.runtime.mutableStateOf
+import androidx.paging.PagingData
+import androidx.paging.PagingSource
+import androidx.paging.PagingState
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.Collection
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.Keyword
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.ProductionCompany
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.SearchResult
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.SearchResultMovie
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.SearchResultPerson
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.SearchResultTv
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.Searchable
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.SortableSearchResult
+import kotlinx.coroutines.flow.Flow
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import retrofit2.Response
-import java.util.*
 
 class SearchService: KoinComponent {
 
-    private val service: SearchApi by inject()
+    private val service: SearchService by inject()
 
-    suspend fun searchCompanies(query: String, page: Int = 1): Response<SearchResult<ProductionCompany>> {
+    val movieResults = mutableStateOf<Flow<PagingData<SearchResultMovie>>?>(null)
+    val tvResults = mutableStateOf<Flow<PagingData<SearchResultTv>>?>(null)
+    val peopleResults = mutableStateOf<Flow<PagingData<SearchResultPerson>>?>(null)
+    val multiResults = mutableStateOf<Flow<PagingData<SortableSearchResult>>?>(null)
+
+    fun searchCompanies(query: String, page: Int = 1): Response<SearchResult<ProductionCompany>> {
         return service.searchCompanies(query, page)
     }
 
-    suspend fun searchCollections(query: String, page: Int = 1): Response<SearchResult<Collection>> {
+    fun searchCollections(query: String, page: Int = 1): Response<SearchResult<Collection>> {
         return service.searchCollections(query, page)
     }
 
-    suspend fun searchKeywords(query: String, page: Int = 1): Response<SearchResult<Keyword>> {
+    fun searchKeywords(query: String, page: Int = 1): Response<SearchResult<Keyword>> {
         return service.searchKeywords(query, page)
     }
 
-    suspend fun searchMovies(query: String, page: Int = 1): Response<SearchResult<SearchResultMovie>> {
+    fun searchMovies(query: String, page: Int): Response<SearchResult<SearchResultMovie>> {
         return service.searchMovies(query, page)
     }
 
-    suspend fun searchTv(query: String, page: Int = 1): Response<SearchResult<SearchResultTv>> {
+    fun searchTv(query: String, page: Int): Response<SearchResult<SearchResultTv>> {
         return service.searchTv(query, page)
     }
 
-    suspend fun searchPeople(query: String, page: Int = 1): Response<SearchResult<SearchResultPerson>> {
+    fun searchPeople(query: String, page: Int): Response<SearchResult<SearchResultPerson>> {
         return service.searchPeople(query, page)
     }
 
-    suspend fun searchMulti(query: String, page: Int = 1): Response<SearchResult<SortableSearchResult>> {
+    fun searchMulti(query: String, page: Int): Response<SearchResult<SortableSearchResult>> {
         return service.searchMulti(query, page)
+    }
+
+}
+
+typealias SearchResultProvider<T> = suspend (Int) -> Response<SearchResult<T>>
+
+class SearchPagingSource<T: Searchable>(
+    private val provideResults: SearchResultProvider<T>
+): PagingSource<Int, T>(), KoinComponent {
+
+    override fun getRefreshKey(state: PagingState<Int, T>): Int? {
+        return state.anchorPosition
+    }
+
+    override suspend fun load(params: LoadParams<Int>): LoadResult<Int, T> {
+        return try {
+            val nextPage = params.key ?: 1
+            val response = provideResults(nextPage)
+            if (response.isSuccessful) {
+                val responseBody = response.body()
+                val result = responseBody?.results ?: emptyList()
+                LoadResult.Page(
+                    data = result,
+                    prevKey = if (nextPage == 1) {
+                        null
+                    } else {
+                        nextPage - 1
+                    },
+                    nextKey = if (result.isEmpty()) {
+                        null
+                    } else {
+                        responseBody?.page?.plus(1) ?: (nextPage + 1)
+                    }
+                )
+            } else {
+                LoadResult.Invalid()
+            }
+        } catch (e: Exception) {
+            return LoadResult.Error(e)
+        }
     }
 
 }

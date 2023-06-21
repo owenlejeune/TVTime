@@ -1,6 +1,5 @@
 package com.owenlejeune.tvtime.ui.screens
 
-import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
@@ -10,7 +9,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -18,30 +16,25 @@ import androidx.compose.material.icons.filled.Movie
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material3.*
-import androidx.compose.material.icons.filled.Bookmark
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.List
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import androidx.paging.compose.collectAsLazyPagingItems
 import coil.compose.AsyncImage
 import com.google.accompanist.flowlayout.FlowRow
 import com.google.accompanist.pager.ExperimentalPagerApi
@@ -50,63 +43,43 @@ import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.rememberPagerState
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.owenlejeune.tvtime.R
-import com.owenlejeune.tvtime.api.tmdb.api.v3.AccountService
-import com.owenlejeune.tvtime.api.tmdb.api.v3.DetailService
-import com.owenlejeune.tvtime.api.tmdb.api.v3.MoviesService
-import com.owenlejeune.tvtime.api.tmdb.api.v3.TvService
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.*
 import com.owenlejeune.tvtime.extensions.WindowSizeClass
+import com.owenlejeune.tvtime.extensions.lazyPagingItems
 import com.owenlejeune.tvtime.extensions.listItems
-import com.owenlejeune.tvtime.preferences.AppPreferences
 import com.owenlejeune.tvtime.ui.components.*
 import com.owenlejeune.tvtime.ui.navigation.AppNavItem
-import com.owenlejeune.tvtime.utils.types.TabNavItem
-import com.owenlejeune.tvtime.ui.components.DetailHeader
-import com.owenlejeune.tvtime.utils.types.MediaViewType
-import com.owenlejeune.tvtime.ui.components.Tabs
-import com.owenlejeune.tvtime.ui.theme.FavoriteSelected
-import com.owenlejeune.tvtime.ui.theme.RatingSelected
-import com.owenlejeune.tvtime.ui.theme.WatchlistSelected
-import com.owenlejeune.tvtime.ui.theme.actionButtonColor
+import com.owenlejeune.tvtime.ui.viewmodel.MainViewModel
 import com.owenlejeune.tvtime.utils.SessionManager
 import com.owenlejeune.tvtime.utils.TmdbUtils
+import com.owenlejeune.tvtime.utils.types.MediaViewType
+import com.owenlejeune.tvtime.utils.types.TabNavItem
 import kotlinx.coroutines.*
-import org.json.JSONObject
-import org.koin.java.KoinJavaComponent.get
-import java.text.DecimalFormat
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPagerApi::class)
 @Composable
 fun MediaDetailScreen(
     appNavController: NavController,
-    itemId: Int?,
+    itemId: Int,
     type: MediaViewType,
-    windowSize: WindowSizeClass,
-    preferences: AppPreferences = get(AppPreferences::class.java)
+    windowSize: WindowSizeClass
 ) {
+    val mainViewModel = viewModel<MainViewModel>()
+
     val systemUiController = rememberSystemUiController()
     systemUiController.setStatusBarColor(color = MaterialTheme.colorScheme.background)
     systemUiController.setNavigationBarColor(color = MaterialTheme.colorScheme.background)
 
-    val service = when (type) {
-        MediaViewType.MOVIE -> MoviesService()
-        MediaViewType.TV -> TvService()
-        else -> throw IllegalArgumentException("Media type given: ${type}, \n     expected one of MediaViewType.MOVIE, MediaViewType.TV") // shouldn't happen
+    LaunchedEffect(Unit) {
+        mainViewModel.getById(itemId, type)
+        mainViewModel.getImages(itemId, type)
     }
 
-    val mediaItem = remember { mutableStateOf<DetailedItem?>(null) }
-    itemId?.let {
-        if (mediaItem.value == null) {
-            fetchMediaItem(itemId, service, mediaItem)
-        }
-    }
+    val mediaItems: Map<Int, DetailedItem> = remember { mainViewModel.produceDetailsFor(type) }
+    val mediaItem = mediaItems[itemId]
 
-    val images = remember { mutableStateOf<ImageCollection?>(null) }
-    itemId?.let {
-        if (preferences.showBackdropGallery && images.value == null) {
-            fetchImages(itemId, service, images)
-        }
-    }
+    val imagesMap = remember { mainViewModel.produceImagesFor(type) }
+    val images = imagesMap[itemId]
 
     val decayAnimationSpec = rememberSplineBasedDecay<Float>()
     val topAppBarScrollState = rememberTopAppBarScrollState()
@@ -130,7 +103,7 @@ fun MediaDetailScreen(
                             scrolledContainerColor = MaterialTheme.colorScheme.background,
                             titleContentColor = MaterialTheme.colorScheme.primary
                         ),
-                    title = { Text(text = mediaItem.value?.title ?: "") },
+                    title = { Text(text = mediaItem?.title ?: "") },
                     navigationIcon = {
                         IconButton(
                             onClick = { appNavController.popBackStack() }
@@ -151,17 +124,17 @@ fun MediaDetailScreen(
                     itemId = itemId,
                     mediaItem = mediaItem,
                     images = images,
-                    service = service,
                     type = type,
                     windowSize = windowSize,
                     showImageGallery = showGalleryOverlay,
-                    pagerState = pagerState
+                    pagerState = pagerState,
+                    mainViewModel =  mainViewModel
                 )
             }
         }
 
         if (showGalleryOverlay.value) {
-            images.value?.let {
+            images?.let {
                 ImageGalleryOverlay(
                     imageCollection = it,
                     selectedImage = pagerState.currentPage,
@@ -176,16 +149,18 @@ fun MediaDetailScreen(
 @Composable
 private fun MediaViewContent(
     appNavController: NavController,
-    itemId: Int?,
-    mediaItem: MutableState<DetailedItem?>,
-    images: MutableState<ImageCollection?>,
-    service: DetailService,
+    mainViewModel: MainViewModel,
+    itemId: Int,
+    mediaItem: DetailedItem?,
+    images: ImageCollection?,
     type: MediaViewType,
     windowSize: WindowSizeClass,
     showImageGallery: MutableState<Boolean>,
     pagerState: PagerState
 ) {
-    val scope = rememberCoroutineScope()
+    LaunchedEffect(Unit) {
+        mainViewModel.getExternalIds(itemId, type)
+    }
 
     Row(
         modifier = Modifier
@@ -200,11 +175,11 @@ private fun MediaViewContent(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             DetailHeader(
-                posterUrl = TmdbUtils.getFullPosterPath(mediaItem.value?.posterPath),
-                posterContentDescription = mediaItem.value?.title,
-                backdropUrl = TmdbUtils.getFullBackdropPath(mediaItem.value?.backdropPath),
-                rating = mediaItem.value?.voteAverage?.let { it / 10 },
-                imageCollection = images.value,
+                posterUrl = TmdbUtils.getFullPosterPath(mediaItem?.posterPath),
+                posterContentDescription = mediaItem?.title,
+                backdropUrl = TmdbUtils.getFullBackdropPath(mediaItem?.backdropPath),
+                rating = mediaItem?.voteAverage?.let { it / 10 },
+                imageCollection = images,
                 showGalleryOverlay = showImageGallery,
                 pagerState = pagerState
             )
@@ -212,79 +187,44 @@ private fun MediaViewContent(
             Column(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                if (type == MediaViewType.MOVIE) {
-                    MiscMovieDetails(mediaItem = mediaItem, service as MoviesService)
-                } else {
-                    MiscTvDetails(mediaItem = mediaItem, service as TvService)
-                }
+                DetailsFor(
+                    type = type,
+                    mediaItem = mediaItem,
+                    mainViewModel = mainViewModel,
+                    itemId =  itemId
+                )
 
-                val externalIds = remember { mutableStateOf<ExternalIds?>(null) }
-                LaunchedEffect(Unit) {
-                    scope.launch {
-                        val response = service.getExternalIds(itemId!!)
-                        if (response.isSuccessful) {
-                            externalIds.value = response.body()!!
-                        }
-                    }
-                }
-                externalIds.value?.let {
+                val externalIdsMap = remember { mainViewModel.produceExternalIdsFor(type) }
+                externalIdsMap[itemId]?.let {
                     ExternalIdsArea(
                         externalIds = it,
                         modifier = Modifier.padding(start = 20.dp)
                     )
                 }
 
-                ActionsView(itemId = itemId, type = type, service = service)
+                val currentSession = remember { SessionManager.currentSession }
+                currentSession.value?.let {
+                    ActionsView(itemId = itemId, type = type)
+                }
 
                 if (type == MediaViewType.MOVIE) {
-                    Column(
-                        verticalArrangement = Arrangement.spacedBy(16.dp),
-                        modifier = Modifier.padding(horizontal = 16.dp)
-                    ) {
-                        MainContent(
-                            itemId = itemId,
-                            mediaItem = mediaItem,
-                            type = type,
-                            service = service,
-                            appNavController = appNavController,
-                            windowSize = windowSize
-                        )
-                    }
+                    MainContentMovie(
+                        itemId = itemId,
+                        mediaItem = mediaItem,
+                        type = type,
+                        appNavController = appNavController,
+                        windowSize = windowSize,
+                        mainViewModel = mainViewModel
+                    )
                 } else {
-                    val tabState = rememberPagerState()
-                    val tabs  = listOf(DetailsTab, SeasonsTab)
-                    TvSeriesTabs(pagerState = tabState, tabs = tabs)
-                    HorizontalPager(
-                        count = tabs.size,
-                        state = tabState,
-                        userScrollEnabled = false
-                    ) { page ->
-                        Column(
-                            verticalArrangement = Arrangement.spacedBy(16.dp),
-                            modifier = Modifier.padding(horizontal = 16.dp)
-                        ) {
-                            when (tabs[page]) {
-                                is DetailsTab -> {
-                                    MainContent(
-                                        itemId = itemId,
-                                        mediaItem = mediaItem,
-                                        type = type,
-                                        service = service,
-                                        appNavController = appNavController,
-                                        windowSize = windowSize
-                                    )
-                                }
-
-                                is SeasonsTab -> {
-                                    SeasonsTab(
-                                        itemId = itemId,
-                                        mediaItem = mediaItem,
-                                        service = service as TvService
-                                    )
-                                }
-                            }
-                        }
-                    }
+                    MainContentTv(
+                        itemId = itemId,
+                        mediaItem = mediaItem,
+                        type = type,
+                        appNavController = appNavController,
+                        windowSize = windowSize,
+                        mainViewModel = mainViewModel
+                    )
                 }
             }
 
@@ -298,7 +238,7 @@ private fun MediaViewContent(
                     .weight(1f)
                     .verticalScroll(state = rememberScrollState())
             ) {
-                ReviewsCard(itemId = itemId, service = service)
+                ReviewsCard(itemId = itemId, type = type, mainViewModel = mainViewModel)
 
                 Spacer(modifier = Modifier.height(16.dp))
             }
@@ -321,32 +261,21 @@ private fun TvSeriesTabs(
 
 @Composable
 private fun SeasonsTab(
-    itemId: Int?,
-    mediaItem: MutableState<DetailedItem?>,
-    service: TvService
+    itemId: Int,
+    mediaItem: DetailedItem?,
+    mainViewModel: MainViewModel
 ) {
-    val scope = rememberCoroutineScope()
-
-    mediaItem.value?.let { tv ->
-        val series = tv as DetailedTv
-
-        val seasons = remember { mutableStateMapOf<Int, Season>() }
-        LaunchedEffect(Unit) {
-            itemId?.let {
-                for (i in 0..series.numberOfSeasons) {
-                    scope.launch {
-                        val season = service.getSeason(it, i)
-                        if (season.isSuccessful) {
-                            seasons[i] = season.body()!!
-                        }
-                    }
-                }
-            }
+    LaunchedEffect(Unit) {
+        for (i in 0..(mediaItem as DetailedTv).numberOfSeasons) {
+            mainViewModel.getSeason(itemId, i)
         }
+    }
 
-        seasons.toSortedMap().values.forEach { season ->
-            SeasonSection(season = season)
-        }
+    val seasonsMap = remember { mainViewModel.tvSeasons }
+    val seasons = seasonsMap[itemId]
+
+    seasons?.forEach { season ->
+        SeasonSection(season = season)
     }
 }
 
@@ -451,37 +380,44 @@ private fun EpisodeItem(episode: Episode) {
 
 @Composable
 private fun MainContent(
-    itemId: Int?,
-    mediaItem: MutableState<DetailedItem?>,
+    itemId: Int,
+    mediaItem: DetailedItem?,
     type: MediaViewType,
-    service: DetailService,
     appNavController: NavController,
-    windowSize: WindowSizeClass
+    windowSize: WindowSizeClass,
+    mainViewModel: MainViewModel
 ) {
-    OverviewCard(itemId = itemId, mediaItem = mediaItem, service = service)
+    OverviewCard(itemId = itemId, mediaItem = mediaItem, type = type, mainViewModel = mainViewModel)
 
-    CastCard(itemId = itemId, service = service, appNavController = appNavController)
+    CastCard(itemId = itemId, appNavController = appNavController, type = type, mainViewModel = mainViewModel)
 
-    SimilarContentCard(itemId = itemId, service = service, mediaType = type, appNavController = appNavController)
+    SimilarContentCard(itemId = itemId, mediaType = type, appNavController = appNavController, mainViewModel = mainViewModel)
 
-    VideosCard(itemId = itemId, service = service, modifier = Modifier.fillMaxWidth())
+    VideosCard(itemId = itemId, modifier = Modifier.fillMaxWidth(), mainViewModel = mainViewModel, type = type)
 
-    AdditionalDetailsCard(itemId = itemId, mediaItem = mediaItem, service = service, type = type)
+    AdditionalDetailsCard(mediaItem = mediaItem, type = type)
     
-    WatchProvidersCard(itemId = itemId, service = service)
+    WatchProvidersCard(itemId = itemId, type = type, mainViewModel = mainViewModel)
 
     if (windowSize != WindowSizeClass.Expanded) {
-        ReviewsCard(itemId = itemId, service = service)
+        ReviewsCard(itemId = itemId, type = type, mainViewModel = mainViewModel)
     }
 }
 
 @Composable
-private fun MiscTvDetails(mediaItem: MutableState<DetailedItem?>, service: TvService) {
-    mediaItem.value?.let { tv ->
+private fun MiscTvDetails(
+    itemId: Int,
+    mediaItem: DetailedItem?,
+    mainViewModel: MainViewModel
+) {
+    mediaItem?.let { tv ->
+        LaunchedEffect(Unit) {
+            mainViewModel.getContentRatings(itemId)
+        }
         val series = tv as DetailedTv
 
-        val contentRating = remember { mutableStateOf("") }
-        fetchTvContentRating(series.id, service, contentRating)
+        val contentRatingsMap = remember { mainViewModel.tvContentRatings }
+        val contentRating = TmdbUtils.getTvRating(contentRatingsMap[itemId])
 
         MiscDetails(
             modifier = Modifier
@@ -497,12 +433,20 @@ private fun MiscTvDetails(mediaItem: MutableState<DetailedItem?>, service: TvSer
 }
 
 @Composable
-private fun MiscMovieDetails(mediaItem: MutableState<DetailedItem?>, service: MoviesService) {
-    mediaItem.value?.let { mi ->
+private fun MiscMovieDetails(
+    itemId: Int,
+    mediaItem: DetailedItem?,
+    mainViewModel: MainViewModel
+) {
+    mediaItem?.let { mi ->
+        LaunchedEffect(Unit) {
+            mainViewModel.getReleaseDates(itemId)
+        }
+
         val movie = mi as DetailedMovie
 
-        val contentRating = remember { mutableStateOf("") }
-        fetchMovieContentRating(movie.id, service, contentRating)
+        val contentRatingsMap = remember { mainViewModel.movieReleaseDates }
+        val contentRating = TmdbUtils.getMovieRating(contentRatingsMap[itemId])
 
         MiscDetails(
             modifier = Modifier
@@ -523,7 +467,7 @@ private fun MiscDetails(
     year: String,
     runtime: String,
     genres: List<Genre>,
-    contentRating: MutableState<String>
+    contentRating: String
 ) {
     Column(
         modifier = modifier,
@@ -541,7 +485,7 @@ private fun MiscDetails(
                 modifier = Modifier.padding(start = 12.dp)
             )
             Text(
-                text = contentRating.value,
+                text = contentRating,
                 color = MaterialTheme.colorScheme.onBackground,
                 modifier = Modifier.padding(start = 12.dp)
             )
@@ -557,363 +501,22 @@ private fun MiscDetails(
 }
 
 @Composable
-private fun ActionsView(
-    itemId: Int?,
-    type: MediaViewType,
-    service: DetailService,
-    modifier: Modifier = Modifier
-) {
-    itemId?.let {
-        val session = SessionManager.currentSession.value
-        Row(
-            modifier = modifier
-                .wrapContentSize()
-                .padding(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            RateButton(
-                itemId = itemId,
-                type = type,
-                service = service
-            )
-
-            if (session?.isAuthorized == true) {
-                val accountService = AccountService()
-                WatchlistButton(
-                    itemId = itemId,
-                    type = type
-                )
-                ListButton(
-                    itemId = itemId,
-                    type = type,
-                    service = accountService
-                )
-                FavoriteButton(
-                    itemId = itemId,
-                    type = type
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun ActionButton(
-    modifier: Modifier = Modifier,
-    itemId: Int,
-    type: MediaViewType,
-    imageVector: ImageVector,
-    contentDescription: String,
-    isSelected: Boolean,
-    filledIconColor: Color,
-    onClick: (Context, Int, MediaViewType, MutableState<Boolean>, (Boolean) -> Unit) -> Unit = { _, _, _, _, _ -> }//(MutableState<Boolean>) -> Unit = { _ -> }
-) {
-    val context = LocalContext.current
-    val session = SessionManager.currentSession
-
-    val hasSelected = remember { mutableStateOf(isSelected) }
-
-    val bgColor = MaterialTheme.colorScheme.background
-    val tintColor = remember { Animatable(if (hasSelected.value) filledIconColor else bgColor) }
-
-    val coroutineScope = rememberCoroutineScope()
-
-    Box(
-        modifier = modifier
-            .clip(CircleShape)
-            .height(40.dp)
-            .requiredWidthIn(min = 40.dp)
-            .background(color = MaterialTheme.colorScheme.actionButtonColor)
-            .clickable(
-                onClick = {
-                    if (session != null) {
-                        onClick(context, itemId, type, hasSelected) {
-                            coroutineScope.launch {
-                                tintColor.animateTo(
-                                    targetValue = if (it) filledIconColor else bgColor,
-                                    animationSpec = tween(200)
-                                )
-                            }
-                        }
-                    }
-                }
-            )
-    ) {
-        Icon(
-            modifier = Modifier
-                .clip(CircleShape)
-                .align(Alignment.Center),
-            imageVector = imageVector,
-            contentDescription = contentDescription,
-            tint = tintColor.value
-        )
-    }
-}
-
-@Composable
-private fun RateButton(
-    itemId: Int,
-    type: MediaViewType,
-    service: DetailService,
-    modifier: Modifier = Modifier
-) {
-    val session = SessionManager.currentSession.value
-    val context = LocalContext.current
-
-    val itemIsRated = remember {
-        mutableStateOf(
-            if (type == MediaViewType.MOVIE) {
-                session?.hasRatedMovie(itemId) == true
-            } else {
-                session?.hasRatedTvShow(itemId) == true
-            }
-        )
-    }
-
-    val showSessionDialog = remember { mutableStateOf(false) }
-    val showRatingDialog = remember { mutableStateOf(false) }
-
-    val bgColor = MaterialTheme.colorScheme.background
-    val filledColor = RatingSelected
-    val tintColor = remember { Animatable(if (itemIsRated.value) filledColor else bgColor) }
-
-    val coroutineScope = rememberCoroutineScope()
-
-    Box(
-        modifier = modifier
-            .animateContentSize(tween(durationMillis = 100))
-            .clip(CircleShape)
-            .height(40.dp)
-            .requiredWidthIn(min = 40.dp)
-            .background(color = MaterialTheme.colorScheme.actionButtonColor)
-            .clickable(
-                onClick = {
-                    if (session == null) {
-                        showSessionDialog.value = true
-                    } else {
-                        showRatingDialog.value = true
-                    }
-                }
-            ),
-    ) {
-        Icon(
-            modifier = Modifier
-                .clip(CircleShape)
-                .align(Alignment.Center),
-            imageVector = Icons.Filled.Star,
-            contentDescription = "",
-            tint = tintColor.value
-        )
-    }
-
-    CreateSessionDialog(showDialog = showSessionDialog, onSessionReturned = {})
-
-    val userRating = session?.getRatingForId(itemId, type) ?: 0f
-    RatingDialog(showDialog = showRatingDialog, rating = userRating, onValueConfirmed = { rating ->
-        if (rating > 0f) {
-            postRating(context, rating, itemId, service, itemIsRated)
-            coroutineScope.launch {
-                tintColor.animateTo(targetValue = filledColor, animationSpec = tween(300))
-            }
-        } else {
-            deleteRating(context, itemId, service, itemIsRated)
-            coroutineScope.launch {
-                tintColor.animateTo(targetValue = bgColor, animationSpec = tween(300))
-            }
-        }
-    })
-}
-
-@Composable
-fun WatchlistButton(
-    itemId: Int,
-    type: MediaViewType,
-    modifier: Modifier = Modifier
-) {
-    val session = SessionManager.currentSession.value
-
-    val hasWatchlistedItem = if (type == MediaViewType.MOVIE) {
-        session?.hasWatchlistedMovie(itemId) == true
-    } else {
-        session?.hasWatchlistedTvShow(itemId) == true
-    }
-
-    ActionButton(
-        modifier = modifier,
-        itemId = itemId,
-        type = type,
-        imageVector = Icons.Filled.Bookmark,
-        contentDescription = "",
-        isSelected = hasWatchlistedItem,
-        filledIconColor = WatchlistSelected,
-        onClick = ::addToWatchlist
-    )
-}
-
-@Composable
-fun ListButton(
-    itemId: Int,
-    type: MediaViewType,
-    modifier: Modifier = Modifier,
-    service: AccountService
-) {
-    val session = SessionManager.currentSession
-
-//    val hasListedItem
-
-    val showSessionDialog = remember { mutableStateOf(false) }
-
-    CircleBackgroundColorImage(
-        modifier = modifier.clickable(
-            onClick = {
-                if (session == null) {
-                    showSessionDialog.value = true
-                } else {
-                    // add to watchlsit
-                }
-            }
-        ),
-        size = 40.dp,
-        backgroundColor = MaterialTheme.colorScheme.actionButtonColor,
-        image = Icons.Filled.List,
-        colorFilter = ColorFilter.tint(color = /*if (hasWatchlistedItem.value) WatchlistSelected else*/ MaterialTheme.colorScheme.background),
-        contentDescription = ""
-    )
-
-    CreateSessionDialog(showDialog = showSessionDialog, onSessionReturned = {})
-}
-
-@OptIn(ExperimentalAnimationApi::class)
-@Composable
-fun FavoriteButton(
-    itemId: Int,
-    type: MediaViewType,
-    modifier: Modifier = Modifier
-) {
-    val session = SessionManager.currentSession.value
-    val isFavourited = if (type == MediaViewType.MOVIE) {
-        session?.hasFavoritedMovie(itemId) == true
-    } else {
-        session?.hasFavoritedTvShow(itemId) == true
-    }
-
-    ActionButton(
-        modifier = modifier,
-        itemId = itemId,
-        type = type,
-        imageVector = Icons.Filled.Favorite,
-        contentDescription = "",
-        isSelected = isFavourited,
-        filledIconColor = FavoriteSelected,
-        onClick = ::mediaAddToFavorite
-    )
-}
-
-@Composable
-private fun CreateSessionDialog(showDialog: MutableState<Boolean>, onSessionReturned: (Boolean) -> Unit) {
-    if (showDialog.value) {
-        AlertDialog(
-            modifier = Modifier.wrapContentHeight(),
-            onDismissRequest = { showDialog.value = false },
-            title = { Text(text = stringResource(R.string.sign_in_dialog_title)) },
-            confirmButton = {},
-            dismissButton = {
-                TextButton(
-                    modifier = Modifier.height(40.dp),
-                    onClick = {
-                        showDialog.value = false
-                    }
-                ) {
-                    Text(text = stringResource(R.string.action_cancel))
-                }
-            },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Button(
-                        modifier = Modifier.fillMaxWidth(),
-                        onClick = {
-                            showDialog.value = false
-                        }
-                    ) {
-                        Text(text = stringResource(R.string.action_sign_in))
-                    }
-                }
-            }
-        )
-    }
-}
-
-@Composable
-private fun RatingDialog(showDialog: MutableState<Boolean>, rating: Float, onValueConfirmed: (Float) -> Unit) {
-
-    fun formatPosition(position: Float): String {
-        return DecimalFormat("#.#").format(position.toInt()*5/10f)
-    }
-
-    if (showDialog.value) {
-        var sliderPosition by remember { mutableStateOf(rating) }
-        val formatted = formatPosition(sliderPosition).toFloat()
-        AlertDialog(
-            modifier = Modifier.wrapContentHeight(),
-            onDismissRequest = { showDialog.value = false },
-            title = { Text(text = stringResource(R.string.rating_dialog_title)) },
-            confirmButton = {
-                Button(
-                    modifier = Modifier.height(40.dp),
-                    onClick = {
-                        onValueConfirmed.invoke(formatted)
-                        showDialog.value = false
-                    }
-                ) {
-                    Text(
-                        text = if (formatted > 0f) {
-                            stringResource(id = R.string.rating_dialog_confirm)
-                        } else {
-                            stringResource(id = R.string.rating_dialog_delete)
-                        }
-                    )
-                }
-            },
-            dismissButton = {
-                Button(
-                    modifier = Modifier.height(40.dp),
-                    onClick = {
-                        showDialog.value = false
-                    }
-                ) {
-                    Text(stringResource(R.string.action_cancel))
-                }
-            },
-            text = {
-                SliderWithLabel(
-                    value = sliderPosition,
-                    valueRange = 0f..20f,
-                    onValueChanged = {
-                        sliderPosition = it
-                     },
-                    sliderLabel = "${sliderPosition.toInt() * 5}%",
-                )
-            }
-        )
-    }
-}
-
-@Composable
 private fun OverviewCard(
     modifier: Modifier = Modifier,
-    itemId: Int?,
-    mediaItem: MutableState<DetailedItem?>,
-    service: DetailService
+    itemId: Int,
+    mediaItem: DetailedItem?,
+    type: MediaViewType,
+    mainViewModel: MainViewModel
 ) {
-    val keywordResponse = remember { mutableStateOf<KeywordsResponse?>(null) }
-    if (itemId != null) {
-        if (keywordResponse.value == null) {
-            fetchKeywords(itemId, service, keywordResponse)
-        }
+    LaunchedEffect(Unit) {
+        mainViewModel.getKeywords(itemId, type)
     }
 
-    mediaItem.value?.let { mi ->
-        if (!mi.tagline.isNullOrEmpty() || keywordResponse.value?.keywords?.isNotEmpty() == true || !mi.overview.isNullOrEmpty()) {
+    val keywordsMap = remember { mainViewModel.produceKeywordsFor(type) }
+    val keywords = keywordsMap[itemId]
+
+    mediaItem?.let { mi ->
+        if (!mi.tagline.isNullOrEmpty() || keywords?.isNotEmpty() == true || !mi.overview.isNullOrEmpty()) {
             ContentCard(
                 modifier = modifier
             ) {
@@ -943,7 +546,7 @@ private fun OverviewCard(
                     )
 
 
-                    keywordResponse.value?.keywords?.let { keywords ->
+                    keywords?.let { keywords ->
                         val keywordsChipInfo = keywords.map { ChipInfo(it.name, false) }
                         Row(
                             modifier = Modifier.horizontalScroll(rememberScrollState()),
@@ -979,12 +582,10 @@ private fun OverviewCard(
 @Composable
 private fun AdditionalDetailsCard(
     modifier: Modifier = Modifier,
-    itemId: Int?,
-    mediaItem: MutableState<DetailedItem?>,
-    service: DetailService,
+    mediaItem: DetailedItem?,
     type: MediaViewType
 ) {
-    mediaItem.value?.let { mi ->
+    mediaItem?.let { mi ->
         ContentCard(
             modifier = modifier,
             title = stringResource(R.string.additional_details_title)
@@ -1116,13 +717,19 @@ private fun AdditionalDetailItem(
 
 
 @Composable
-private fun CastCard(itemId: Int?, service: DetailService, appNavController: NavController, modifier: Modifier = Modifier) {
-    val castAndCrew = remember { mutableStateOf<CastAndCrew?>(null) }
-    itemId?.let {
-        if (castAndCrew.value == null) {
-            fetchCastAndCrew(itemId, service, castAndCrew)
-        }
+private fun CastCard(
+    itemId: Int,
+    type: MediaViewType,
+    mainViewModel: MainViewModel,
+    appNavController: NavController,
+    modifier: Modifier = Modifier
+) {
+    LaunchedEffect(Unit) {
+        mainViewModel.getCastAndCrew(itemId, type)
     }
+
+    val castMap = remember { mainViewModel.produceCastFor(type) }
+    val cast = castMap[itemId]
 
     ContentCard(
         modifier = modifier,
@@ -1139,9 +746,10 @@ private fun CastCard(itemId: Int?, service: DetailService, appNavController: Nav
             item {
                 Spacer(modifier = Modifier.width(8.dp))
             }
-            items(castAndCrew.value?.cast?.size ?: 0) { i ->
-                val castMember = castAndCrew.value!!.cast[i]
-                CastCrewCard(appNavController = appNavController, person = castMember)
+            items(cast?.size ?: 0) { i ->
+                cast?.get(i)?.let {
+                    CastCrewCard(appNavController = appNavController, person = it)
+                }
             }
             item {
                 Spacer(modifier = Modifier.width(8.dp))
@@ -1175,18 +783,19 @@ private fun CastCrewCard(appNavController: NavController, person: Person) {
 
 @Composable
 fun SimilarContentCard(
-    itemId: Int?,
-    service: DetailService,
+    itemId: Int,
     mediaType: MediaViewType,
+    mainViewModel: MainViewModel,
     appNavController: NavController,
     modifier: Modifier = Modifier
 ) {
-    val similarContent = remember { mutableStateOf<HomePageResponse?>(null) }
-    itemId?.let {
-        if (similarContent.value == null) {
-            fetchSimilarContent(itemId, service, similarContent)
-        }
+    LaunchedEffect(Unit) {
+        mainViewModel.getSimilar(itemId, mediaType)
     }
+
+    val similarContentMap = remember { mainViewModel.produceSimilarContentFor(mediaType) }
+    val similarContent = similarContentMap[itemId]
+    val pagingItems = similarContent?.collectAsLazyPagingItems()
 
     ContentCard(
         modifier = modifier,
@@ -1202,22 +811,24 @@ fun SimilarContentCard(
             item {
                 Spacer(modifier = Modifier.width(8.dp))
             }
-            items(similarContent.value?.results?.size ?: 0) { i ->
-                val content = similarContent.value!!.results[i]
-
-                TwoLineImageTextCard(
-                    title = content.title,
-                    modifier = Modifier
-                        .width(124.dp)
-                        .wrapContentHeight(),
-                    imageUrl = TmdbUtils.getFullPosterPath(content),
-                    onItemClicked = {
-                        appNavController.navigate(
-                            AppNavItem.DetailView.withArgs(mediaType, content.id)
+            pagingItems?.let {
+                lazyPagingItems(it) { item ->
+                    item?.let {
+                        TwoLineImageTextCard(
+                            title = item.title,
+                            modifier = Modifier
+                                .width(124.dp)
+                                .wrapContentHeight(),
+                            imageUrl = TmdbUtils.getFullPosterPath(item),
+                            onItemClicked = {
+                                appNavController.navigate(
+                                    AppNavItem.DetailView.withArgs(mediaType, item.id)
+                                )
+                            },
+                            placeholder = Icons.Filled.Movie
                         )
-                    },
-                    placeholder = Icons.Filled.Movie
-                )
+                    }
+                }
             }
             item {
                 Spacer(modifier = Modifier.width(8.dp))
@@ -1228,19 +839,19 @@ fun SimilarContentCard(
 
 @Composable
 fun VideosCard(
-    itemId: Int?,
-    service: DetailService,
+    itemId: Int,
+    type: MediaViewType,
+    mainViewModel: MainViewModel,
     modifier: Modifier = Modifier
 ) {
-    val videoResponse = remember { mutableStateOf<VideoResponse?>(null) }
-    itemId?.let {
-        if (videoResponse.value == null) {
-            fetchVideos(itemId, service, videoResponse)
-        }
+    LaunchedEffect(Unit) {
+        mainViewModel.getVideos(itemId, type)
     }
 
-    if (videoResponse.value != null && videoResponse.value!!.results.any { it.isOfficial }) {
-        val results = videoResponse.value!!.results
+    val videosMap = remember { mainViewModel.produceVideosFor(type) }
+    val videos = videosMap[itemId]
+
+    if (videos?.any { it.isOfficial } == true) {
         ExpandableContentCard(
             modifier = modifier,
             title = {
@@ -1254,7 +865,7 @@ fun VideosCard(
             toggleTextColor = MaterialTheme.colorScheme.primary
         ) { isExpanded ->
             VideoGroup(
-                results = results,
+                results = videos,
                 type = Video.Type.TRAILER,
                 title = stringResource(id = Video.Type.TRAILER.stringRes)
             )
@@ -1262,7 +873,7 @@ fun VideosCard(
             if (isExpanded) {
                 Video.Type.values().filter { it != Video.Type.TRAILER }.forEach { type ->
                     VideoGroup(
-                        results = results,
+                        results = videos,
                         type = type,
                         title = stringResource(id = type.stringRes)
                     )
@@ -1309,24 +920,18 @@ private fun VideoGroup(results: List<Video>, type: Video.Type, title: String) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun WatchProvidersCard(
-    itemId: Int?,
-    service: DetailService,
+    itemId: Int,
+    type: MediaViewType,
+    mainViewModel: MainViewModel,
     modifier: Modifier = Modifier
 ) {
-    val watchProviders = remember { mutableStateOf<WatchProviders?>(null) }
-    itemId?.let {
-        if (watchProviders.value == null) {
-            CoroutineScope(Dispatchers.IO).launch {
-                val response = service.getWatchProviders(it)
-                if (response.isSuccessful) {
-                    val results = response.body()?.results
-                    results?.get(Locale.current.region)?.let { watchProviders.value = it }
-                }
-            }
-        }
+    LaunchedEffect(Unit) {
+        mainViewModel.getWatchProviders(itemId, type)
     }
 
-    watchProviders.value?.let { providers ->
+    val watchProvidersMap = remember { mainViewModel.produceWatchProvidersFor(type) }
+    val watchProviders = watchProvidersMap[itemId]
+    watchProviders?.let { providers ->
         if (providers.buy?.isNotEmpty() == true || providers.rent?.isNotEmpty() == true || providers.flaterate?.isNotEmpty() == true) {
             Card(
                 modifier = modifier
@@ -1438,16 +1043,17 @@ private fun WatchProviderContainer(
 
 @Composable
 private fun ReviewsCard(
-    itemId: Int?,
-    service: DetailService,
+    itemId: Int,
+    type: MediaViewType,
+    mainViewModel: MainViewModel,
     modifier: Modifier = Modifier
 ) {
-    val reviewsResponse = remember { mutableStateOf<ReviewResponse?>(null) }
-    itemId?.let {
-        if (reviewsResponse.value == null) {
-            fetchReviews(itemId, service, reviewsResponse)
-        }
+    LaunchedEffect(Unit) {
+        mainViewModel.getReviews(itemId, type)
     }
+
+    val reviewsMap = remember { mainViewModel.produceReviewsFor(type) }
+    val reviews = reviewsMap[itemId]
 
    ListContentCard(
        modifier = modifier,
@@ -1506,8 +1112,7 @@ private fun ReviewsCard(
            }
        },
    ) {
-       val reviews = reviewsResponse.value?.results ?: emptyList()
-       if (reviews.isNotEmpty()) {
+       if (reviews?.isNotEmpty() == true) {
            reviews.reversed().forEachIndexed { index, review ->
                Row(
                    modifier = Modifier
@@ -1570,182 +1175,93 @@ private fun ReviewsCard(
    }
 }
 
-private fun fetchMediaItem(id: Int, service: DetailService, mediaItem: MutableState<DetailedItem?>) {
-    CoroutineScope(Dispatchers.IO).launch {
-        val response = service.getById(id)
-        if (response.isSuccessful) {
-            withContext(Dispatchers.Main) {
-                mediaItem.value = response.body()
-            }
-        }
-    }
-}
-
-fun fetchImages(id: Int, service: DetailService, images: MutableState<ImageCollection?>) {
-    CoroutineScope(Dispatchers.IO).launch {
-        val response = service.getImages(id)
-        if (response.isSuccessful) {
-            withContext(Dispatchers.Main) {
-                images.value = response.body()
-            }
-        }
-    }
-}
-
-private fun fetchCastAndCrew(id: Int, service: DetailService, castAndCrew: MutableState<CastAndCrew?>) {
-    CoroutineScope(Dispatchers.IO).launch {
-        val response = service.getCastAndCrew(id)
-        if (response.isSuccessful) {
-            withContext(Dispatchers.Main) {
-                castAndCrew.value = response.body()
-            }
-        }
-    }
-}
-
-private fun fetchMovieContentRating(id: Int, service: MoviesService, contentRating: MutableState<String>) {
-    CoroutineScope(Dispatchers.IO).launch {
-        val results = service.getReleaseDates(id)
-        if (results.isSuccessful) {
-            val cr = TmdbUtils.getMovieRating(results.body())
-            withContext(Dispatchers.Main) {
-                contentRating.value = cr
-            }
-        }
-    }
-}
-
-private fun fetchTvContentRating(id: Int, service: TvService, contentRating: MutableState<String>) {
-    CoroutineScope(Dispatchers.IO).launch {
-        val results = service.getContentRatings(id)
-        if (results.isSuccessful) {
-            val cr = TmdbUtils.getTvRating(results.body())
-            withContext(Dispatchers.Main) {
-                contentRating.value = cr
-            }
-        }
-    }
-}
-
-private fun fetchSimilarContent(id: Int, service: DetailService, similarContent: MutableState<HomePageResponse?>) {
-    CoroutineScope(Dispatchers.IO).launch {
-        val results = service.getSimilar(id, 1)
-        if (results.isSuccessful) {
-            withContext(Dispatchers.Main) {
-                similarContent.value = results.body()
-            }
-        }
-    }
-}
-
-private fun fetchVideos(id: Int, service: DetailService, videoResponse: MutableState<VideoResponse?>) {
-    CoroutineScope(Dispatchers.IO).launch {
-        val results = service.getVideos(id)
-        if (results.isSuccessful) {
-            withContext(Dispatchers.Main) {
-                videoResponse.value = results.body()
-            }
-        }
-    }
-}
-
-private fun fetchReviews(id: Int, service: DetailService, reviewResponse: MutableState<ReviewResponse?>) {
-    CoroutineScope(Dispatchers.IO).launch {
-        val result = service.getReviews(id)
-        if (result.isSuccessful) {
-            withContext(Dispatchers.Main) {
-                reviewResponse.value = result.body()
-            }
-        }
-    }
-}
-
-private fun fetchKeywords(id: Int, service: DetailService, keywordsResponse: MutableState<KeywordsResponse?>) {
-    CoroutineScope(Dispatchers.IO).launch {
-        val result = service.getKeywords(id)
-        if (result.isSuccessful) {
-            withContext(Dispatchers.Main) {
-                keywordsResponse.value = result.body()
-            }
-        }
-    }
-}
-
-private fun postRating(context: Context, rating: Float, itemId: Int, service: DetailService, itemIsRated: MutableState<Boolean>) {
-    CoroutineScope(Dispatchers.IO).launch {
-        val response = service.postRating(itemId, RatingBody(rating = rating))
-        if (response.isSuccessful) {
-            SessionManager.currentSession.value?.refresh(changed = arrayOf(SessionManager.Session.Changed.RatedMovies, SessionManager.Session.Changed.RatedTv))
-            withContext(Dispatchers.Main) {
-                itemIsRated.value = true
-            }
-        } else {
-            withContext(Dispatchers.Main) {
-                val errorObj = JSONObject(response.errorBody().toString())
-                Toast.makeText(context, "Error: ${errorObj.getString("status_message")}", Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
-}
-
-private fun deleteRating(context: Context, itemId: Int, service: DetailService, itemIsRated: MutableState<Boolean>) {
-    CoroutineScope(Dispatchers.IO).launch {
-        val response = service.deleteRating(itemId)
-        if (response.isSuccessful) {
-            SessionManager.currentSession.value?.refresh(changed = SessionManager.Session.Changed.Rated)
-            withContext(Dispatchers.Main) {
-                itemIsRated.value = false
-            }
-        } else {
-            withContext(Dispatchers.Main) {
-                val errorObj = JSONObject(response.errorBody().toString())
-                Toast.makeText(context, "Error: ${errorObj.getString("status_message")}", Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
-}
-
-private fun addToWatchlist(
-    context: Context,
-    itemId: Int,
+@Composable
+fun DetailsFor(
     type: MediaViewType,
-    itemIsWatchlisted: MutableState<Boolean>,
-    onWatchlistChanged: (Boolean) -> Unit
+    itemId: Int,
+    mediaItem: DetailedItem?,
+    mainViewModel: MainViewModel
 ) {
-    val currentSession = SessionManager.currentSession.value
-    val accountId = currentSession!!.accountDetails.value!!.id
-    CoroutineScope(Dispatchers.IO).launch {
-        val response = AccountService().addToWatchlist(accountId, WatchlistBody(type, itemId, !itemIsWatchlisted.value))
-        if (response.isSuccessful) {
-            currentSession.refresh(changed = SessionManager.Session.Changed.Watchlist)
-            withContext(Dispatchers.Main) {
-                itemIsWatchlisted.value = !itemIsWatchlisted.value
-                onWatchlistChanged(itemIsWatchlisted.value)
-            }
-        } else {
-            withContext(Dispatchers.Main) {
-                Toast.makeText(context, "An error occurred", Toast.LENGTH_SHORT).show()
-            }
-        }
+    if (type == MediaViewType.MOVIE) {
+        MiscMovieDetails(
+            itemId = itemId,
+            mediaItem = mediaItem,
+            mainViewModel = mainViewModel
+        )
+    } else {
+        MiscTvDetails(
+            itemId = itemId,
+            mediaItem = mediaItem,
+            mainViewModel = mainViewModel
+        )
     }
 }
 
-private fun mediaAddToFavorite(
-    context: Context,
-    itemId: Int,
+@Composable
+fun MainContentMovie(
     type: MediaViewType,
-    itemIsFavorited: MutableState<Boolean>,
-    onFavoriteChanged: (Boolean) -> Unit
+    itemId: Int,
+    mediaItem: DetailedItem?,
+    appNavController: NavController,
+    windowSize: WindowSizeClass,
+    mainViewModel: MainViewModel
 ) {
-    val currentSession = SessionManager.currentSession.value
-    val accountId = currentSession!!.accountDetails.value!!.id
-    CoroutineScope(Dispatchers.IO).launch {
-        val response = AccountService().markAsFavorite(accountId, MarkAsFavoriteBody(type, itemId, !itemIsFavorited.value))
-        if (response.isSuccessful) {
-            currentSession.refresh(changed = SessionManager.Session.Changed.Favorites)
-            withContext(Dispatchers.Main) {
-                itemIsFavorited.value = !itemIsFavorited.value
-                onFavoriteChanged(itemIsFavorited.value)
+    Column(
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        modifier = Modifier.padding(horizontal = 16.dp)
+    ) {
+        MainContent(
+            itemId = itemId,
+            mediaItem = mediaItem,
+            type = type,
+            appNavController = appNavController,
+            windowSize = windowSize,
+            mainViewModel = mainViewModel
+        )
+    }
+}
+
+@OptIn(ExperimentalPagerApi::class)
+@Composable
+fun MainContentTv(
+    type: MediaViewType,
+    itemId: Int,
+    mediaItem: DetailedItem?,
+    mainViewModel: MainViewModel,
+    appNavController: NavController,
+    windowSize: WindowSizeClass
+) {
+    val tabState = rememberPagerState()
+    val tabs  = listOf(DetailsTab, SeasonsTab)
+    TvSeriesTabs(pagerState = tabState, tabs = tabs)
+    HorizontalPager(
+        count = tabs.size,
+        state = tabState,
+        userScrollEnabled = false
+    ) { page ->
+        Column(
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier.padding(horizontal = 16.dp)
+        ) {
+            when (tabs[page]) {
+                is DetailsTab -> {
+                    MainContent(
+                        itemId = itemId,
+                        mediaItem = mediaItem,
+                        type = type,
+                        appNavController = appNavController,
+                        windowSize = windowSize,
+                        mainViewModel = mainViewModel
+                    )
+                }
+
+                is SeasonsTab -> {
+                    SeasonsTab(
+                        itemId = itemId,
+                        mediaItem = mediaItem,
+                        mainViewModel = mainViewModel
+                    )
+                }
             }
         }
     }

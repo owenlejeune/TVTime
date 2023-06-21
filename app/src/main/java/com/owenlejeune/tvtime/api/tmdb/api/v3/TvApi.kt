@@ -64,4 +64,7 @@ interface TvApi {
     @GET("tv/{id}/external_ids")
     suspend fun getExternalIds(@Path("id") id: Int): Response<ExternalIds>
 
+    @GET("tv/{id}/account_states")
+    suspend fun getAccountStates(@Path("id") id: Int): Response<AccountStates>
+
 }

@@ -21,3 +21,5 @@ enum class MediaViewType {
         }
     }
 }
+
+class ViewableMediaTypeException(type: MediaViewType): IllegalArgumentException("Media type given: ${type}, \n     expected one of MediaViewType.MOVIE, MediaViewType.TV")

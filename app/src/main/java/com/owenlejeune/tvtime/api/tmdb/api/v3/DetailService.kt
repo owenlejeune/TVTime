@@ -5,26 +5,28 @@ import retrofit2.Response
 
 interface DetailService {
 
-    suspend fun getById(id: Int): Response<out DetailedItem>
+    suspend fun getById(id: Int)
 
-    suspend fun getImages(id: Int): Response<ImageCollection>
+    suspend fun getImages(id: Int)
 
-    suspend fun getCastAndCrew(id: Int): Response<CastAndCrew>
+    suspend fun getCastAndCrew(id: Int)
 
     suspend fun getSimilar(id: Int, page: Int): Response<out HomePageResponse>
 
-    suspend fun getVideos(id: Int): Response<VideoResponse>
+    suspend fun getVideos(id: Int)
 
-    suspend fun getReviews(id: Int): Response<ReviewResponse>
+    suspend fun getReviews(id: Int)
 
-    suspend fun postRating(id: Int, ratingBody: RatingBody): Response<StatusResponse>
+    suspend fun postRating(id: Int, ratingBody: RatingBody)
 
-    suspend fun deleteRating(id: Int): Response<StatusResponse>
+    suspend fun deleteRating(id: Int)
 
-    suspend fun getKeywords(id: Int): Response<KeywordsResponse>
+    suspend fun getKeywords(id: Int)
 
-    suspend fun getWatchProviders(id: Int): Response<WatchProviderResponse>
+    suspend fun getWatchProviders(id: Int)
 
-    suspend fun getExternalIds(id: Int): Response<ExternalIds>
+    suspend fun getExternalIds(id: Int)
+
+    suspend fun getAccountStates(id: Int)
 
 }

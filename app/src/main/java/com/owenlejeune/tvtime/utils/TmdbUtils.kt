@@ -145,14 +145,14 @@ object TmdbUtils {
         }
     }
 
-    fun getMovieRating(releases: MovieReleaseResults?): String {
+    fun getMovieRating(releases: List<MovieReleaseResults.ReleaseDateResult>?): String {
         if (releases == null) {
             return ""
         }
 
         val currentRegion = Locale.current.language
         val certifications = HashMap<String, String>()
-        releases.releaseDates.forEach { releaseDateResult ->
+        releases.forEach { releaseDateResult ->
             if (releaseDateResult.region == currentRegion || releaseDateResult.region == DEF_REGION) {
                 val cert = releaseDateResult.releaseDates.firstOrNull { it.certification.isNotEmpty() }
                 if (cert != null) {
@@ -166,14 +166,14 @@ object TmdbUtils {
         return ""
     }
 
-    fun getTvRating(contentRatings: TvContentRatings?): String {
+    fun getTvRating(contentRatings: List<TvContentRatings.TvContentRating>?): String {
         if (contentRatings == null) {
             return ""
         }
 
         val currentRegion = Locale.current.language
         val certifications = HashMap<String, String>()
-        contentRatings.results.forEach { contentRating ->
+        contentRatings.forEach { contentRating ->
             if (contentRating.language == currentRegion || contentRating.language == DEF_REGION) {
                 certifications[contentRating.language] = contentRating.rating
             }
