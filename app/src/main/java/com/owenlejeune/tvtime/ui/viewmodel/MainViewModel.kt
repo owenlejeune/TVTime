@@ -199,7 +199,7 @@ class MainViewModel: ViewModel(), KoinComponent {
         when (type) {
             MediaViewType.MOVIE -> movieService.getCastAndCrew(id)
             MediaViewType.TV -> tvService.getCastAndCrew(id)
-            MediaViewType.PERSON -> tvService.getCastAndCrew(id)
+            MediaViewType.PERSON -> peopleService.getCredits(id)
             else -> {}
         }
     }

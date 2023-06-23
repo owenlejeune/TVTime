@@ -1,10 +1,7 @@
 package com.owenlejeune.tvtime.ui.screens
-import android.accounts.Account
+
 import android.content.Context
 import android.content.Intent
-import android.util.Log
-import android.widget.Toast
-import androidx.compose.animation.rememberSplineBasedDecay
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.selection.selectable
@@ -13,11 +10,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Book
-import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -41,32 +34,22 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.owenlejeune.tvtime.R
-import com.owenlejeune.tvtime.api.tmdb.api.v3.AccountService
-import com.owenlejeune.tvtime.api.tmdb.api.v3.model.MarkAsFavoriteBody
-import com.owenlejeune.tvtime.api.tmdb.api.v3.model.WatchlistBody
 import com.owenlejeune.tvtime.api.tmdb.api.v4.ListV4Service
 import com.owenlejeune.tvtime.api.tmdb.api.v4.model.*
 import com.owenlejeune.tvtime.extensions.WindowSizeClass
 import com.owenlejeune.tvtime.extensions.unlessEmpty
-import com.owenlejeune.tvtime.preferences.AppPreferences
 import com.owenlejeune.tvtime.ui.components.Actions
 import com.owenlejeune.tvtime.ui.components.ActionsView
-import com.owenlejeune.tvtime.ui.components.FavoriteButton
 import com.owenlejeune.tvtime.ui.components.RatingView
 import com.owenlejeune.tvtime.ui.components.Spinner
 import com.owenlejeune.tvtime.ui.components.SwitchPreference
 import com.owenlejeune.tvtime.ui.navigation.AppNavItem
 import com.owenlejeune.tvtime.ui.theme.*
 import com.owenlejeune.tvtime.ui.viewmodel.AccountViewModel
-import com.owenlejeune.tvtime.utils.SessionManager
 import com.owenlejeune.tvtime.utils.TmdbUtils
-import com.owenlejeune.tvtime.utils.types.MediaViewType
 import de.charlex.compose.RevealDirection
 import de.charlex.compose.RevealSwipe
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.koin.java.KoinJavaComponent
 import kotlin.math.roundToInt
 
@@ -90,19 +73,16 @@ fun ListDetailScreen(
     val listMap = remember { accountViewModel.listMap }
     val parentList = listMap[itemId]
 
-    val decayAnimationSpec = rememberSplineBasedDecay<Float>()
-    val topAppBarScrollState = rememberTopAppBarScrollState()
-    val scrollBehavior = remember(decayAnimationSpec) {
-        TopAppBarDefaults.pinnedScrollBehavior(topAppBarScrollState)
-    }
+    val topAppBarScrollState = rememberTopAppBarState()
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(topAppBarScrollState)
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
-            SmallTopAppBar(
+            TopAppBar(
                 scrollBehavior = scrollBehavior,
                 colors = TopAppBarDefaults
-                    .smallTopAppBarColors(
+                    .topAppBarColors(
                         scrolledContainerColor = MaterialTheme.colorScheme.background,
                         titleContentColor = MaterialTheme.colorScheme.primary
                     ),

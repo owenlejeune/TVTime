@@ -3,7 +3,6 @@ package com.owenlejeune.tvtime.ui.screens
 import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
-import androidx.compose.animation.rememberSplineBasedDecay
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -32,7 +31,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberTopAppBarScrollState
+import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -67,11 +66,9 @@ fun AboutScreen(
 
     val context = LocalContext.current
 
-    val decayAnimationSpec = rememberSplineBasedDecay<Float>()
-    val topAppBarScrollState = rememberTopAppBarScrollState()
-    val scrollBehavior = remember(decayAnimationSpec) {
-        TopAppBarDefaults.exitUntilCollapsedScrollBehavior(decayAnimationSpec, topAppBarScrollState)
-    }
+    val topAppBarScrollState = rememberTopAppBarState()
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(topAppBarScrollState)
+
     Scaffold(
         modifier = Modifier.nestedScroll(connection = scrollBehavior.nestedScrollConnection),
         topBar = {
@@ -216,7 +213,10 @@ private fun ColumnScope.AttributionSection() {
             .clip(RoundedCornerShape(10.dp))
             .clickable(
                 onClick = {
-                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(context.getString(R.string.tmdb_home_page)))
+                    val intent = Intent(
+                        Intent.ACTION_VIEW,
+                        Uri.parse(context.getString(R.string.tmdb_home_page))
+                    )
                     context.startActivity(intent)
                 }
             )

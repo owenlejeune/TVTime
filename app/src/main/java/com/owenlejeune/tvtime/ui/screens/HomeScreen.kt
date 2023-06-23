@@ -2,17 +2,14 @@ package com.owenlejeune.tvtime.ui.screens
 
 import android.app.Activity
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.rememberSplineBasedDecay
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.NavigationRailDefaults
 import androidx.compose.material.Scaffold
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -27,9 +24,8 @@ import androidx.compose.material3.NavigationRailItemDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
-import androidx.compose.material3.rememberTopAppBarScrollState
+import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -50,8 +46,8 @@ import com.owenlejeune.tvtime.preferences.AppPreferences
 import com.owenlejeune.tvtime.ui.components.AccountIcon
 import com.owenlejeune.tvtime.ui.components.ProfileMenuContainer
 import com.owenlejeune.tvtime.ui.components.ProfileMenuDefaults
-import com.owenlejeune.tvtime.ui.navigation.HomeScreenNavItem
 import com.owenlejeune.tvtime.ui.navigation.HomeScreenNavHost
+import com.owenlejeune.tvtime.ui.navigation.HomeScreenNavItem
 import com.owenlejeune.tvtime.ui.viewmodel.HomeScreenViewModel
 import org.koin.java.KoinJavaComponent
 
@@ -64,11 +60,8 @@ fun HomeScreen(
 ) {
     val navController = rememberNavController()
 
-    val decayAnimationSpec = rememberSplineBasedDecay<Float>()
-    val topAppBarScrollState = rememberTopAppBarScrollState()
-    val scrollBehavior = remember(decayAnimationSpec) {
-        TopAppBarDefaults.exitUntilCollapsedScrollBehavior(decayAnimationSpec, topAppBarScrollState)
-    }
+    val topAppBarScrollState = rememberTopAppBarState()
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(topAppBarScrollState)
 
     val homeScreenViewModel = viewModel<HomeScreenViewModel>()
 
@@ -123,6 +116,7 @@ fun HomeScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun TopBar(
     scrollBehavior: TopAppBarScrollBehavior,
@@ -179,6 +173,7 @@ private fun BottomNavBar(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun MainContent(
     windowSize: WindowSizeClass,
@@ -218,6 +213,7 @@ private fun SingleColumnMainContent(
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun DualColumnMainContent(
     appNavController: NavHostController,

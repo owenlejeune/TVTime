@@ -1,6 +1,5 @@
 package com.owenlejeune.tvtime.ui.screens
 
-import androidx.compose.animation.rememberSplineBasedDecay
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -19,14 +18,13 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SmallTopAppBar
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberTopAppBarScrollState
+import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
@@ -58,6 +56,7 @@ fun PersonDetailScreen(
     LaunchedEffect(Unit) {
         mainViewModel.getById(personId, MediaViewType.PERSON)
         mainViewModel.getExternalIds(personId, MediaViewType.PERSON)
+        mainViewModel.getCastAndCrew(personId, MediaViewType.PERSON)
     }
 
     val systemUiController = rememberSystemUiController()
@@ -67,19 +66,16 @@ fun PersonDetailScreen(
     val peopleMap = remember { mainViewModel.peopleMap }
     val person = peopleMap[personId]
 
-    val decayAnimationSpec = rememberSplineBasedDecay<Float>()
-    val topAppBarScrollState = rememberTopAppBarScrollState()
-    val scrollBehaviour = remember(decayAnimationSpec) {
-        TopAppBarDefaults.pinnedScrollBehavior(topAppBarScrollState)
-    }
+    val topAppBarScrollState = rememberTopAppBarState()
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(topAppBarScrollState)
 
     Scaffold(
-        modifier = Modifier.nestedScroll(scrollBehaviour.nestedScrollConnection),
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
-            SmallTopAppBar(
-                scrollBehavior = scrollBehaviour,
+            TopAppBar(
+                scrollBehavior = scrollBehavior,
                 colors = TopAppBarDefaults
-                    .smallTopAppBarColors(
+                    .topAppBarColors(
                         scrolledContainerColor = MaterialTheme.colorScheme.background,
                         titleContentColor = MaterialTheme.colorScheme.primary
                     ),
@@ -96,8 +92,6 @@ fun PersonDetailScreen(
             )
         }
     ) { innerPadding ->
-        val scope = rememberCoroutineScope()
-
         Box(modifier = Modifier.padding(innerPadding)) {
             Column(
                 modifier = Modifier

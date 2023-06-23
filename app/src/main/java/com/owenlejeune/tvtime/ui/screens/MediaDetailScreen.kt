@@ -81,11 +81,8 @@ fun MediaDetailScreen(
     val imagesMap = remember { mainViewModel.produceImagesFor(type) }
     val images = imagesMap[itemId]
 
-    val decayAnimationSpec = rememberSplineBasedDecay<Float>()
-    val topAppBarScrollState = rememberTopAppBarScrollState()
-    val scrollBehavior = remember(decayAnimationSpec) {
-        TopAppBarDefaults.pinnedScrollBehavior(topAppBarScrollState)
-    }
+    val topAppBarScrollState = rememberTopAppBarState()
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(topAppBarScrollState)
 
     val pagerState = rememberPagerState(initialPage = 0)
 
@@ -96,10 +93,10 @@ fun MediaDetailScreen(
         Scaffold(
             modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
             topBar = {
-                SmallTopAppBar(
+                TopAppBar(
                     scrollBehavior = scrollBehavior,
                     colors = TopAppBarDefaults
-                        .smallTopAppBarColors(
+                        .topAppBarColors(
                             scrolledContainerColor = MaterialTheme.colorScheme.background,
                             titleContentColor = MaterialTheme.colorScheme.primary
                         ),

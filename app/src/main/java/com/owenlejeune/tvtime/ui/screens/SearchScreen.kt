@@ -23,22 +23,17 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.api.tmdb.api.v3.MoviesService
-import com.owenlejeune.tvtime.api.tmdb.api.v3.SearchService
 import com.owenlejeune.tvtime.api.tmdb.api.v3.TvService
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.*
-import com.owenlejeune.tvtime.extensions.listItems
+import com.owenlejeune.tvtime.extensions.lazyPagingItems
 import com.owenlejeune.tvtime.ui.components.MediaResultCard
 import com.owenlejeune.tvtime.ui.viewmodel.MainViewModel
 import com.owenlejeune.tvtime.ui.viewmodel.SearchViewModel
 import com.owenlejeune.tvtime.utils.TmdbUtils
 import com.owenlejeune.tvtime.utils.types.MediaViewType
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.koin.java.KoinJavaComponent.get
-import com.owenlejeune.tvtime.extensions.lazyPagingItems
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchScreen(
     appNavController: NavHostController,
@@ -67,14 +62,15 @@ fun SearchScreen(
             }
         }
 
-        SmallTopAppBar(
+        TopAppBar(
             title = {
                 TextField(
                     value = searchValue.value,
                     onValueChange = { searchValue.value = it },
                     placeholder = { Text(text = stringResource(id = R.string.search_placeholder, title)) },
-                    colors = TextFieldDefaults.textFieldColors(
-                        containerColor = MaterialTheme.colorScheme.surface,
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = MaterialTheme.colorScheme.surface,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surface,
                         focusedIndicatorColor = MaterialTheme.colorScheme.surface,
                         unfocusedIndicatorColor = MaterialTheme.colorScheme.surface
                     ),

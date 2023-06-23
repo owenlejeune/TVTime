@@ -1,5 +1,10 @@
 package com.owenlejeune.tvtime.ui.navigation
 
+import android.util.Log
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavHostController
@@ -11,17 +16,17 @@ import androidx.navigation.navDeepLink
 import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.extensions.WindowSizeClass
 import com.owenlejeune.tvtime.preferences.AppPreferences
-import com.owenlejeune.tvtime.ui.screens.SearchScreen
 import com.owenlejeune.tvtime.ui.screens.AboutScreen
 import com.owenlejeune.tvtime.ui.screens.AccountScreen
+import com.owenlejeune.tvtime.ui.screens.HomeScreen
 import com.owenlejeune.tvtime.ui.screens.ListDetailScreen
 import com.owenlejeune.tvtime.ui.screens.MediaDetailScreen
-import com.owenlejeune.tvtime.utils.types.MediaViewType
 import com.owenlejeune.tvtime.ui.screens.PersonDetailScreen
+import com.owenlejeune.tvtime.ui.screens.SearchScreen
 import com.owenlejeune.tvtime.ui.screens.SettingsScreen
 import com.owenlejeune.tvtime.ui.screens.WebLinkScreen
-import com.owenlejeune.tvtime.ui.screens.HomeScreen
 import com.owenlejeune.tvtime.utils.NavConstants
+import com.owenlejeune.tvtime.utils.types.MediaViewType
 import org.koin.java.KoinJavaComponent
 
 @Composable
@@ -32,8 +37,15 @@ fun AppNavigationHost(
     windowSize: WindowSizeClass,
     preferences: AppPreferences = KoinJavaComponent.get(AppPreferences::class.java)
 ) {
-    NavHost(navController = appNavController, startDestination = startDestination) {
-        composable(AppNavItem.MainView.route) {
+    NavHost(
+        navController = appNavController,
+        startDestination = startDestination,
+        enterTransition = { slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Start, tween(500)) },
+        popEnterTransition = { fadeIn(tween(500)) },
+        exitTransition = { fadeOut(tween(500)) },
+        popExitTransition = { slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.End, tween(500)) }
+    ) {
+        composable(route = AppNavItem.MainView.route) {
             HomeScreen(
                 appNavController = appNavController,
                 mainNavStartRoute = mainNavStartRoute,
@@ -41,7 +53,7 @@ fun AppNavigationHost(
             )
         }
         composable(
-            AppNavItem.DetailView.route.plus("/{${NavConstants.TYPE_KEY}}/{${NavConstants.ID_KEY}}"),
+            route = AppNavItem.DetailView.route.plus("/{${NavConstants.TYPE_KEY}}/{${NavConstants.ID_KEY}}"),
             arguments = listOf(
                 navArgument(NavConstants.ID_KEY) { type = NavType.IntType },
                 navArgument(NavConstants.TYPE_KEY) { type = NavType.EnumType(MediaViewType::class.java) }
