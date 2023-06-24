@@ -222,6 +222,8 @@ fun SearchView(
         val homeScreenViewModel = viewModel<HomeScreenViewModel>()
         homeScreenViewModel.fab.value = @Composable {
             FloatingActionButton(
+                containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                contentColor = MaterialTheme.colorScheme.tertiary,
                 onClick = {
                     appNavController.navigate(route)
                 }
@@ -279,7 +281,8 @@ fun MinLinesText(
 
 class ChipInfo(
     val text: String,
-    val enabled: Boolean = true
+    val enabled: Boolean = true,
+    val id: Int? = null
 )
 
 sealed class ChipStyle(val mainAxisSpacing: Dp, val crossAxisSpacing: Dp) {
@@ -329,11 +332,10 @@ object ChipDefaults {
 
 @Composable
 fun BoxyChip(
-    text: String,
+    chipInfo: ChipInfo,
     style: TextStyle = MaterialTheme.typography.bodySmall,
     isSelected: Boolean = true,
-    onSelectionChanged: (String) -> Unit = {},
-    enabled: Boolean = true,
+    onSelectionChanged: (ChipInfo) -> Unit = {},
     colors: ChipColors = ChipDefaults.boxyChipColors()
 ) {
     Surface(
@@ -346,13 +348,13 @@ fun BoxyChip(
                 .toggleable(
                     value = isSelected,
                     onValueChange = {
-                        onSelectionChanged(text)
+                        onSelectionChanged(chipInfo)
                     },
-                    enabled = enabled
+                    enabled = chipInfo.enabled
                 )
         ) {
             Text(
-                text = text,
+                text = chipInfo.text,
                 style = style,
                 color = if (isSelected) colors.selectedContentColor() else colors.unselectedContentColor(),
                 modifier = Modifier.padding(8.dp)
@@ -363,11 +365,10 @@ fun BoxyChip(
 
 @Composable
 fun RoundedChip(
-    text: String,
+    chipInfo: ChipInfo,
     style: TextStyle = MaterialTheme.typography.bodySmall,
     isSelected: Boolean = false,
-    onSelectionChanged: (String) -> Unit = {},
-    enabled: Boolean = true,
+    onSelectionChanged: (ChipInfo) -> Unit = {},
     colors: ChipColors = ChipDefaults.roundedChipColors()
 ) {
     val borderColor = if (isSelected) colors.selectedContainerColor() else colors.unselectedContainerColor()
@@ -382,14 +383,14 @@ fun RoundedChip(
                 .toggleable(
                     value = isSelected,
                     onValueChange = {
-                        onSelectionChanged(text)
+                        onSelectionChanged(chipInfo)
                     },
-                    enabled = enabled
+                    enabled = chipInfo.enabled
                 )
                 .padding(8.dp)
         ) {
             Text(
-                text = text,
+                text = chipInfo.text,
                 style = style,
                 color = if (isSelected) colors.selectedContentColor() else colors.unselectedContentColor()
             )
@@ -401,7 +402,7 @@ fun RoundedChip(
 fun ChipGroup(
     modifier: Modifier = Modifier,
     chips: List<ChipInfo> = emptyList(),
-    onSelectedChanged: (String) -> Unit = {},
+    onSelectedChanged: (ChipInfo) -> Unit = {},
     chipStyle: ChipStyle = ChipStyle.Boxy,
     roundedChipColors: ChipColors = ChipDefaults.roundedChipColors(),
     boxyChipColors: ChipColors = ChipDefaults.boxyChipColors()
@@ -412,17 +413,15 @@ fun ChipGroup(
         when (chipStyle) {
             ChipStyle.Boxy -> {
                 BoxyChip(
-                    text = chip.text,
+                    chipInfo = chip,
                     onSelectionChanged = onSelectedChanged,
-                    enabled = chip.enabled,
                     colors = boxyChipColors
                 )
             }
             ChipStyle.Rounded -> {
                 RoundedChip(
-                    text = chip.text,
+                    chipInfo = chip,
                     onSelectionChanged = onSelectedChanged,
-                    enabled = chip.enabled,
                     colors = roundedChipColors
                 )
             }
@@ -453,6 +452,7 @@ fun RatingRing(
     size: Dp = 60.dp,
     ringStrokeWidth: Dp = 4.dp,
     ringColor: Color = MaterialTheme.colorScheme.primary,
+    trackColor: Color = MaterialTheme.colorScheme.tertiaryContainer,
     textColor: Color = Color.White,
     textSize: TextUnit = 14.sp
 ) {
@@ -464,7 +464,9 @@ fun RatingRing(
             modifier = Modifier.fillMaxSize(),
             progress = progress,
             strokeWidth = ringStrokeWidth,
-            color = ringColor
+            color = ringColor,
+            trackColor = trackColor,
+            strokeCap = StrokeCap.Round
         )
 
         Text(
@@ -688,7 +690,7 @@ fun UserInitials(
         modifier = Modifier
             .clip(CircleShape)
             .size(size)
-            .background(color = MaterialTheme.colorScheme.secondary)
+            .background(color = MaterialTheme.colorScheme.tertiary)
     ) {
         Text(
             modifier = Modifier.align(Alignment.Center),

@@ -21,6 +21,8 @@ import com.owenlejeune.tvtime.api.tmdb.api.v3.model.KeywordsResponse
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.RatingBody
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.Review
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.ReviewResponse
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.SearchResult
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.SearchResultMedia
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.Season
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.StatusResponse
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.TmdbItem
@@ -57,6 +59,7 @@ class TvService: KoinComponent, DetailService, HomePageService {
     val contentRatings = Collections.synchronizedMap(mutableStateMapOf<Int, List<TvContentRatings.TvContentRating>>())
     val similar = Collections.synchronizedMap(mutableStateMapOf<Int, Flow<PagingData<TmdbItem>>>())
     val accountStates = Collections.synchronizedMap(mutableStateMapOf<Int, AccountStates>())
+    val keywordResults = Collections.synchronizedMap(mutableStateMapOf<Int, Flow<PagingData<SearchResultMedia>>>())
 
     private val _seasons = Collections.synchronizedMap(mutableStateMapOf<Int, MutableSet<Season>>())
     val seasons: MutableMap<Int, out Set<Season>>
@@ -135,6 +138,10 @@ class TvService: KoinComponent, DetailService, HomePageService {
         } else {
             Log.w(TAG, "Issue deleting rating")
         }
+    }
+
+    override suspend fun discover(keywords: String?, page: Int): Response<out SearchResult<out SearchResultMedia>> {
+        return service.discover(page, keywords)
     }
 
     override suspend fun getSimilar(id: Int, page: Int): Response<out HomePageResponse> {

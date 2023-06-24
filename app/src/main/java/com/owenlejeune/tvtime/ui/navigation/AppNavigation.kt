@@ -1,5 +1,6 @@
 package com.owenlejeune.tvtime.ui.navigation
 
+import android.os.Build
 import android.util.Log
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
@@ -15,10 +16,12 @@ import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
 import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.extensions.WindowSizeClass
+import com.owenlejeune.tvtime.extensions.safeGetSerializable
 import com.owenlejeune.tvtime.preferences.AppPreferences
 import com.owenlejeune.tvtime.ui.screens.AboutScreen
 import com.owenlejeune.tvtime.ui.screens.AccountScreen
 import com.owenlejeune.tvtime.ui.screens.HomeScreen
+import com.owenlejeune.tvtime.ui.screens.KeywordResultsScreen
 import com.owenlejeune.tvtime.ui.screens.ListDetailScreen
 import com.owenlejeune.tvtime.ui.screens.MediaDetailScreen
 import com.owenlejeune.tvtime.ui.screens.PersonDetailScreen
@@ -116,7 +119,7 @@ fun AppNavigationHost(
                     )
                 } else {
                     Pair(
-                        arguments.getSerializable(NavConstants.SEARCH_ID_KEY) as MediaViewType,
+                        arguments.safeGetSerializable(NavConstants.SEARCH_ID_KEY, MediaViewType::class.java)!!,
                         arguments.getString(NavConstants.SEARCH_TITLE_KEY) ?: ""
                     )
                 }
@@ -154,6 +157,25 @@ fun AppNavigationHost(
         composable(route = AppNavItem.AboutView.route) {
             AboutScreen(appNavController = appNavController)
         }
+        composable(
+            route = AppNavItem.KeywordsView.route.plus("/{${NavConstants.KEYWORD_TYPE_KEY}}?keyword={${NavConstants.KEYWORD_NAME_KEY}}&keywordId={${NavConstants.KEYWORD_ID_KEY}}"),
+            arguments = listOf(
+                navArgument(NavConstants.KEYWORD_TYPE_KEY) { type = NavType.EnumType(MediaViewType::class.java) },
+                navArgument(NavConstants.KEYWORD_NAME_KEY) { type = NavType.StringType },
+                navArgument(NavConstants.KEYWORD_ID_KEY) { type = NavType.IntType }
+            )
+        ) { navBackStackEntry ->
+            val type = navBackStackEntry.arguments?.safeGetSerializable(NavConstants.KEYWORD_TYPE_KEY, MediaViewType::class.java)!!
+            val keywords = navBackStackEntry.arguments?.getString(NavConstants.KEYWORD_NAME_KEY) ?: ""
+            val id = navBackStackEntry.arguments?.getInt(NavConstants.KEYWORD_ID_KEY)!!
+
+            KeywordResultsScreen(
+                type = type,
+                keyword = keywords,
+                id = id,
+                appNavController = appNavController
+            )
+        }
     }
 }
 
@@ -178,5 +200,8 @@ sealed class AppNavItem(val route: String) {
     }
     object AccountView: AppNavItem("account_route")
     object AboutView: AppNavItem("about_route")
+    object KeywordsView: AppNavItem("keywords_route") {
+        fun withArgs(type: MediaViewType, keyword: String, id: Int) = route.plus("/$type?keyword=$keyword&keywordId=$id")
+    }
 
 }

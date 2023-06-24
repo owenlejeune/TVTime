@@ -1,5 +1,7 @@
 package com.owenlejeune.tvtime.ui.navigation
 
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Face
 import androidx.compose.material.icons.outlined.Movie
@@ -30,7 +32,12 @@ fun HomeScreenNavHost(
 ) {
     val homeScreenViewModel = viewModel<HomeScreenViewModel>()
 
-    NavHost(navController = navController, startDestination = startDestination) {
+    NavHost(
+        navController = navController,
+        startDestination = startDestination,
+        enterTransition = { fadeIn() },
+        exitTransition = { fadeOut() }
+    ) {
         composable(HomeScreenNavItem.Movies.route) {
             homeScreenViewModel.appBarActions.value = {}
             MediaTab(

@@ -130,7 +130,7 @@ fun ActionButton(
             .clip(CircleShape)
             .height(40.dp)
             .requiredWidthIn(min = 40.dp)
-            .background(color = MaterialTheme.colorScheme.actionButtonColor)
+            .background(color = MaterialTheme.colorScheme.tertiary)
             .clickable(onClick = onClick)
     ) {
         Icon(

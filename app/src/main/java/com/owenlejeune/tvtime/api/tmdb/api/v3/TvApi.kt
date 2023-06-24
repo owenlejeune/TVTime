@@ -67,4 +67,6 @@ interface TvApi {
     @GET("tv/{id}/account_states")
     suspend fun getAccountStates(@Path("id") id: Int): Response<AccountStates>
 
+    @GET("discover/tv")
+    suspend fun discover(@Query("page") page: Int, @Query("with_keywords") keywords: String? = null): Response<SearchResult<SearchResultTv>>
 }

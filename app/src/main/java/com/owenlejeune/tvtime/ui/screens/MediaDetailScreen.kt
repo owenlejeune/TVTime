@@ -385,7 +385,7 @@ private fun MainContent(
     windowSize: WindowSizeClass,
     mainViewModel: MainViewModel
 ) {
-    OverviewCard(itemId = itemId, mediaItem = mediaItem, type = type, mainViewModel = mainViewModel)
+    OverviewCard(itemId = itemId, mediaItem = mediaItem, type = type, mainViewModel = mainViewModel, appNavController = appNavController)
 
     CastCard(itemId = itemId, appNavController = appNavController, type = type, mainViewModel = mainViewModel)
 
@@ -500,11 +500,12 @@ private fun MiscDetails(
 
 @Composable
 private fun OverviewCard(
-    modifier: Modifier = Modifier,
     itemId: Int,
     mediaItem: DetailedItem?,
     type: MediaViewType,
-    mainViewModel: MainViewModel
+    mainViewModel: MainViewModel,
+    appNavController: NavController,
+    modifier: Modifier = Modifier
 ) {
     LaunchedEffect(Unit) {
         mainViewModel.getKeywords(itemId, type)
@@ -530,7 +531,8 @@ private fun OverviewCard(
                             Text(
                                 modifier = Modifier.padding(horizontal = 16.dp),
                                 text = tagline,
-                                color = MaterialTheme.colorScheme.primary,
+                                color = MaterialTheme.colorScheme.tertiary
+                                ,
                                 style = MaterialTheme.typography.bodyLarge,
                                 fontStyle = FontStyle.Italic,
                             )
@@ -545,7 +547,7 @@ private fun OverviewCard(
 
 
                     keywords?.let { keywords ->
-                        val keywordsChipInfo = keywords.map { ChipInfo(it.name, false) }
+                        val keywordsChipInfo = keywords.map { ChipInfo(it.name, true, it.id) }
                         Row(
                             modifier = Modifier.horizontalScroll(rememberScrollState()),
                             horizontalArrangement = Arrangement.spacedBy(ChipStyle.Rounded.mainAxisSpacing)
@@ -553,16 +555,13 @@ private fun OverviewCard(
                             Spacer(modifier = Modifier.width(8.dp))
                             keywordsChipInfo.forEach { keywordChipInfo ->
                                 RoundedChip(
-                                    text = keywordChipInfo.text,
-                                    enabled = keywordChipInfo.enabled,
+                                    chipInfo = keywordChipInfo,
                                     colors = ChipDefaults.roundedChipColors(
                                         unselectedContainerColor = MaterialTheme.colorScheme.primary,
                                         unselectedContentColor = MaterialTheme.colorScheme.primary
                                     ),
                                     onSelectionChanged = { chip ->
-//                                        if (service is MoviesService) {
-//                                            // Toast.makeText(context, chip, Toast.LENGTH_SHORT).show()
-//                                        }
+                                        appNavController.navigate(AppNavItem.KeywordsView.withArgs(type, chip.text, chip.id!!))
                                     }
                                 )
                             }

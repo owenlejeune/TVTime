@@ -29,4 +29,6 @@ interface DetailService {
 
     suspend fun getAccountStates(id: Int)
 
+    suspend fun discover(keywords: String? = null, page: Int): Response<out SearchResult<out SearchResultMedia>>
+
 }

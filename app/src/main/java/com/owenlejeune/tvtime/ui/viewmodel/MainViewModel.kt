@@ -15,6 +15,7 @@ import com.owenlejeune.tvtime.api.tmdb.api.v3.model.ImageCollection
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.Keyword
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.RatingBody
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.Review
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.SearchResultMedia
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.TmdbItem
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.Video
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.WatchProviders
@@ -43,6 +44,7 @@ class MainViewModel: ViewModel(), KoinComponent {
     val movieReleaseDates = movieService.releaseDates
     val similarMovies = movieService.similar
     val movieAccountStates = movieService.accountStates
+    val movieKeywordResults = movieService.keywordResults
 
     val popularMovies = createPagingFlow(
         fetcher = { p -> movieService.getPopular(p) },
@@ -74,6 +76,7 @@ class MainViewModel: ViewModel(), KoinComponent {
     val tvSeasons = tvService.seasons
     val similarTv = tvService.similar
     val tvAccountStates = tvService.accountStates
+    val tvKeywordResults = tvService.keywordResults
 
     val popularTv = createPagingFlow(
         fetcher = { p -> tvService.getPopular(p) },
@@ -155,7 +158,7 @@ class MainViewModel: ViewModel(), KoinComponent {
         return providesForType(type, { movieAccountStates }, { tvAccountStates} )
     }
 
-    fun produceFlowFor(mediaType: MediaViewType, contentType: MediaTabNavItem.Type): Flow<PagingData<TmdbItem>> {
+    fun produceMediaTabFlowFor(mediaType: MediaViewType, contentType: MediaTabNavItem.Type): Flow<PagingData<TmdbItem>> {
         return providesForType(
             mediaType,
             {
@@ -175,6 +178,10 @@ class MainViewModel: ViewModel(), KoinComponent {
                 }
             }
         )
+    }
+
+    fun produceKeywordsResultsFor(mediaType: MediaViewType): Map<Int, Flow<PagingData<SearchResultMedia>>> {
+        return providesForType(mediaType, { movieKeywordResults }, { tvKeywordResults })
     }
 
     suspend fun getById(id: Int, type: MediaViewType) {
@@ -280,6 +287,24 @@ class MainViewModel: ViewModel(), KoinComponent {
             MediaViewType.TV -> {
                 similarTv[id] = createPagingFlow(
                     fetcher = { p -> tvService.getSimilar(id, p) },
+                    processor = { it.results }
+                )
+            }
+            else -> {}
+        }
+    }
+
+    fun getKeywordResults(id: Int, keyword: String, type: MediaViewType) {
+        when (type) {
+            MediaViewType.MOVIE -> {
+                movieKeywordResults[id] = createPagingFlow(
+                    fetcher = { p -> movieService.discover(keyword, p) },
+                    processor = { it.results }
+                )
+            }
+            MediaViewType.TV -> {
+                tvKeywordResults[id] = createPagingFlow(
+                    fetcher = { p -> tvService.discover(keyword, p) },
                     processor = { it.results }
                 )
             }

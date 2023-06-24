@@ -64,4 +64,7 @@ interface MoviesApi {
     @GET("movie/{id}/account_states")
     suspend fun getAccountStates(@Path("id") id: Int, @Query("session_id") sessionId: String): Response<AccountStates>
 
+    @GET("discover/movie")
+    suspend fun discover(@Query("with_keywords") keywords: String? = null, @Query("page") page: Int): Response<SearchResult<SearchResultMovie>>
+
 }

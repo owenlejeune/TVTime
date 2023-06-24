@@ -19,6 +19,8 @@ import com.owenlejeune.tvtime.api.tmdb.api.v3.model.MovieReleaseResults
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.RatingBody
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.Review
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.SearchResult
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.SearchResultMedia
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.SearchResultMovie
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.Searchable
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.SortableSearchResult
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.StatusResponse
@@ -53,6 +55,7 @@ class MoviesService: KoinComponent, DetailService, HomePageService {
     val releaseDates = Collections.synchronizedMap(mutableStateMapOf<Int, List<MovieReleaseResults.ReleaseDateResult>>())
     val similar = Collections.synchronizedMap(mutableStateMapOf<Int, Flow<PagingData<TmdbItem>>>())
     val accountStates = Collections.synchronizedMap(mutableStateMapOf<Int, AccountStates>())
+    val keywordResults = Collections.synchronizedMap(mutableStateMapOf<Int, Flow<PagingData<SearchResultMedia>>>())
 
 
     override suspend fun getById(id: Int) {
@@ -134,6 +137,9 @@ class MoviesService: KoinComponent, DetailService, HomePageService {
         }
     }
 
+    override suspend fun discover(keywords: String?, page: Int): Response<out SearchResult<out SearchResultMedia>> {
+        return movieService.discover(keywords, page)
+    }
 
     override suspend fun getSimilar(id: Int, page: Int): Response<out HomePageResponse> {
         return movieService.getSimilarMovies(id, page)

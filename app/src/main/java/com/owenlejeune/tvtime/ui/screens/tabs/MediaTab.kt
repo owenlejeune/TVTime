@@ -61,7 +61,7 @@ fun MediaTabContent(
     mediaTabItem: MediaTabNavItem
 ) {
     val viewModel = viewModel<MainViewModel>()
-    val mediaListItems = viewModel.produceFlowFor(mediaType, mediaTabItem.type).collectAsLazyPagingItems()
+    val mediaListItems = viewModel.produceMediaTabFlowFor(mediaType, mediaTabItem.type).collectAsLazyPagingItems()
 
     PagingPosterGrid(
         lazyPagingItems = mediaListItems,
