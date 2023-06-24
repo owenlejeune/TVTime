@@ -6,6 +6,7 @@ import com.owenlejeune.tvtime.utils.types.MediaViewType
 abstract class SortableSearchResult(
     @SerializedName("media_type") val mediaType: MediaViewType,
     @SerializedName("popularity") val popularity: Float,
-    @SerializedName("id") val id: Int,
-    @SerializedName("name", alternate = ["title"]) val name: String
-): Searchable
+    id: Int,
+    name: String,
+    posterPath: String?
+): TmdbItem(id, posterPath, name), Searchable

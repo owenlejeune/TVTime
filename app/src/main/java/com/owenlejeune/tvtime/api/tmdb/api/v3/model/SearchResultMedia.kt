@@ -12,9 +12,9 @@ abstract class SearchResultMedia(
     @SerializedName("genre_ids") val genreIds: List<Int>,
     @SerializedName("original_language") val originalLanguage: String,
     @SerializedName("original_name", alternate = ["original_title"]) val originalName: String,
-    @SerializedName("poster_path") val posterPath: String?,
+    posterPath: String?,
     type: MediaViewType,
     id: Int,
     name: String,
     popularity: Float
-): SortableSearchResult(type, popularity, id, name)
+): SortableSearchResult(type, popularity, id, name, posterPath)

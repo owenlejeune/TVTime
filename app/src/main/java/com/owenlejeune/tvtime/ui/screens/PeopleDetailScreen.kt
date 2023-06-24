@@ -204,17 +204,19 @@ fun PersonDetailScreen(
 
 @Composable
 private fun BiographyCard(person: DetailPerson?) {
-    ExpandableContentCard { isExpanded ->
-        Text(
-            modifier = Modifier
-                .fillMaxWidth()
-                .wrapContentHeight()
-                .padding(top = 12.dp, start = 16.dp, end = 16.dp),
-            text = person?.biography ?: "",
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            style = MaterialTheme.typography.bodyMedium,
-            maxLines = if (isExpanded) Int.MAX_VALUE else 3,
-            overflow = TextOverflow.Ellipsis
-        )
+    if (person != null && person.biography.isNotEmpty()) {
+        ExpandableContentCard { isExpanded ->
+            Text(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight()
+                    .padding(top = 12.dp, start = 16.dp, end = 16.dp),
+                text = person.biography,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.bodyMedium,
+                maxLines = if (isExpanded) Int.MAX_VALUE else 3,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
     }
 }

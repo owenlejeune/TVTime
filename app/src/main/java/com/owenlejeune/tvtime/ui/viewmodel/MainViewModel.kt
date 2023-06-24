@@ -19,8 +19,9 @@ import com.owenlejeune.tvtime.api.tmdb.api.v3.model.SearchResultMedia
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.TmdbItem
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.Video
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.WatchProviders
-import com.owenlejeune.tvtime.ui.navigation.MediaTabNavItem
+import com.owenlejeune.tvtime.ui.screens.tabs.MediaTabNavItem
 import com.owenlejeune.tvtime.utils.types.MediaViewType
+import com.owenlejeune.tvtime.utils.types.TimeWindow
 import com.owenlejeune.tvtime.utils.types.ViewableMediaTypeException
 import kotlinx.coroutines.flow.Flow
 import org.koin.core.component.KoinComponent
@@ -46,22 +47,30 @@ class MainViewModel: ViewModel(), KoinComponent {
     val movieAccountStates = movieService.accountStates
     val movieKeywordResults = movieService.keywordResults
 
-    val popularMovies = createPagingFlow(
-        fetcher = { p -> movieService.getPopular(p) },
-        processor = { it.results }
-    )
-    val topRatedMovies = createPagingFlow(
-        fetcher = { p -> movieService.getTopRated(p) },
-        processor = { it.results }
-    )
-    val nowPlayingMovies = createPagingFlow(
-        fetcher = { p -> movieService.getNowPlaying(p) },
-        processor = { it.results }
-    )
-    val upcomingMovies = createPagingFlow(
-        fetcher = { p -> movieService.getUpcoming(p) },
-        processor = { it.results }
-    )
+    val popularMovies by lazy {
+        createPagingFlow(
+            fetcher = { p -> movieService.getPopular(p) },
+            processor = { it.results }
+        )
+    }
+    val topRatedMovies by lazy {
+        createPagingFlow(
+            fetcher = { p -> movieService.getTopRated(p) },
+            processor = { it.results }
+        )
+    }
+    val nowPlayingMovies by lazy {
+        createPagingFlow(
+            fetcher = { p -> movieService.getNowPlaying(p) },
+            processor = { it.results }
+        )
+    }
+    val upcomingMovies by lazy {
+        createPagingFlow(
+            fetcher = { p -> movieService.getUpcoming(p) },
+            processor = { it.results }
+        )
+    }
 
     val detailedTv = tvService.detailTv
     val tvImages = tvService.images
@@ -78,22 +87,30 @@ class MainViewModel: ViewModel(), KoinComponent {
     val tvAccountStates = tvService.accountStates
     val tvKeywordResults = tvService.keywordResults
 
-    val popularTv = createPagingFlow(
-        fetcher = { p -> tvService.getPopular(p) },
-        processor = { it.results }
-    )
-    val topRatedTv = createPagingFlow(
-        fetcher = { p -> tvService.getTopRated(p) },
-        processor = { it.results }
-    )
-    val airingTodayTv = createPagingFlow(
-        fetcher = { p -> tvService.getNowPlaying(p) },
-        processor = { it.results }
-    )
-    val onTheAirTv = createPagingFlow(
-        fetcher = { p -> tvService.getUpcoming(p) },
-        processor = { it.results }
-    )
+    val popularTv by lazy {
+        createPagingFlow(
+            fetcher = { p -> tvService.getPopular(p) },
+            processor = { it.results }
+        )
+    }
+    val topRatedTv by lazy{
+        createPagingFlow(
+            fetcher = { p -> tvService.getTopRated(p) },
+            processor = { it.results }
+        )
+    }
+    val airingTodayTv by lazy {
+        createPagingFlow(
+            fetcher = { p -> tvService.getNowPlaying(p) },
+            processor = { it.results }
+        )
+    }
+    val onTheAirTv by lazy {
+        createPagingFlow(
+            fetcher = { p -> tvService.getUpcoming(p) },
+            processor = { it.results }
+        )
+    }
 
     val peopleMap = peopleService.peopleMap
     val peopleCastMap = peopleService.castMap
@@ -101,10 +118,12 @@ class MainViewModel: ViewModel(), KoinComponent {
     val peopleImagesMap = peopleService.imagesMap
     val peopleExternalIdsMap = peopleService.externalIdsMap
 
-    val popularPeople = createPagingFlow(
-        fetcher = { p -> peopleService.getPopular(p) },
-        processor = { it.results }
-    )
+    val popularPeople by lazy {
+        createPagingFlow(
+            fetcher = { p -> peopleService.getPopular(p) },
+            processor = { it.results }
+        )
+    }
 
     private fun <T> providesForType(type: MediaViewType, movies: () -> T, tv: () -> T): T {
         return when (type) {
@@ -167,6 +186,7 @@ class MainViewModel: ViewModel(), KoinComponent {
                     MediaTabNavItem.Type.TOP_RATED -> topRatedMovies
                     MediaTabNavItem.Type.NOW_PLAYING -> nowPlayingMovies
                     MediaTabNavItem.Type.POPULAR -> popularMovies
+                    else -> throw Exception("Can't produce media flow for $mediaType")
                 }
             },
             {
@@ -175,6 +195,7 @@ class MainViewModel: ViewModel(), KoinComponent {
                     MediaTabNavItem.Type.TOP_RATED -> topRatedTv
                     MediaTabNavItem.Type.NOW_PLAYING -> airingTodayTv
                     MediaTabNavItem.Type.POPULAR -> popularTv
+                    else -> throw Exception("Can't produce media flow for $mediaType")
                 }
             }
         )
@@ -182,6 +203,30 @@ class MainViewModel: ViewModel(), KoinComponent {
 
     fun produceKeywordsResultsFor(mediaType: MediaViewType): Map<Int, Flow<PagingData<SearchResultMedia>>> {
         return providesForType(mediaType, { movieKeywordResults }, { tvKeywordResults })
+    }
+
+    fun produceTrendingFor(mediaType: MediaViewType, timeWindow: TimeWindow): Flow<PagingData<TmdbItem>> {
+        return when (mediaType) {
+            MediaViewType.MOVIE -> {
+                createPagingFlow(
+                    fetcher = { p -> movieService.getTrending(timeWindow, p) },
+                    processor = { it.results }
+                )
+            }
+            MediaViewType.TV -> {
+                createPagingFlow(
+                    fetcher = { p -> tvService.getTrending(timeWindow, p) },
+                    processor = { it.results }
+                )
+            }
+            MediaViewType.PERSON -> {
+                createPagingFlow(
+                    fetcher = { p -> peopleService.getTrending(timeWindow, p) },
+                    processor = { it.results }
+                )
+            }
+            else -> throw ViewableMediaTypeException(mediaType)
+        }
     }
 
     suspend fun getById(id: Int, type: MediaViewType) {

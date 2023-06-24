@@ -1,6 +1,7 @@
 package com.owenlejeune.tvtime.api.tmdb.api.v3
 
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.*
+import com.owenlejeune.tvtime.utils.types.TimeWindow
 import retrofit2.Response
 import retrofit2.http.*
 
@@ -69,4 +70,7 @@ interface TvApi {
 
     @GET("discover/tv")
     suspend fun discover(@Query("page") page: Int, @Query("with_keywords") keywords: String? = null): Response<SearchResult<SearchResultTv>>
+
+    @GET("trending/tv/{time_window}")
+    suspend fun trending(@Path("time_window") timeWindow: String, @Query("page") page: Int): Response<SearchResult<SearchResultTv>>
 }

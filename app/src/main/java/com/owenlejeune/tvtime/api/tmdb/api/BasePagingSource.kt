@@ -53,7 +53,7 @@ class BasePagingSource<T: Any, S>(
                     nextKey = if (results.isEmpty()) { null } else { page + 1}
                 )
             } else {
-                Toast.makeText(context, context.getString(R.string.no_result_found), Toast.LENGTH_SHORT).show()
+//                Toast.makeText(context, context.getString(R.string.no_result_found), Toast.LENGTH_SHORT).show()
                 LoadResult.Invalid()
             }
         } catch (e: Exception) {

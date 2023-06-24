@@ -28,6 +28,7 @@ import com.owenlejeune.tvtime.api.tmdb.api.v3.model.TmdbItem
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.Video
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.WatchProviders
 import com.owenlejeune.tvtime.utils.SessionManager
+import com.owenlejeune.tvtime.utils.types.TimeWindow
 import kotlinx.coroutines.flow.Flow
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -135,6 +136,10 @@ class MoviesService: KoinComponent, DetailService, HomePageService {
         } else {
             Log.w(TAG, "Issue deleting rating")
         }
+    }
+
+    suspend fun getTrending(timeWindow: TimeWindow, page: Int): Response<out SearchResult<out SearchResultMedia>> {
+        return movieService.trending(timeWindow.name.lowercase(), page)
     }
 
     override suspend fun discover(keywords: String?, page: Int): Response<out SearchResult<out SearchResultMedia>> {

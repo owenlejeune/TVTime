@@ -5,6 +5,9 @@ import com.owenlejeune.tvtime.api.tmdb.api.v3.model.ExternalIds
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.HomePagePeopleResponse
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.PersonCreditsResponse
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.PersonImageCollection
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.SearchResult
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.SearchResultPerson
+import com.owenlejeune.tvtime.utils.types.TimeWindow
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Path
@@ -35,5 +38,8 @@ interface PeopleApi {
 
     @GET("person/{id}/external_ids")
     suspend fun getExternalIds(@Path("id") id: Int): Response<ExternalIds>
+
+    @GET("trending/person/{time_window}")
+    suspend fun trending(@Path("time_window") timeWindow: String, @Query("page") page: Int): Response<SearchResult<SearchResultPerson>>
 
 }

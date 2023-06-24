@@ -12,6 +12,7 @@
     <string name="nav_upcoming_title">Upcoming</string>
     <string name="nav_tv_airing_today_title">Airing Today</string>
     <string name="nav_tv_on_the_air">On The Air</string>
+    <string name="nav_trending_title">Trending</string>
     <string name="nav_account_title">Account</string>
     <string name="nav_rated_movies_title">Rated Movies</string>
     <string name="nav_rated_shows_title">Rated TV Shows</string>
@@ -216,6 +217,9 @@
     <string name="recommended_tv_title">Recommended TV</string>
     <string name="no_recommended_tv">No Recommended TV</string>
     <string name="no_result_found">No more results found</string>
+    <string name="search_multi_title">Multi</string>
+    <string name="time_window_day">Day</string>
+    <string name="time_window_week">Week</string>
 
     <string name="attribution_text">This product uses the TMDB API but is not endorsed or certified by TMDB.</string>
     <string name="tmdb_home_page">"https://www.themoviedb.org"</string>

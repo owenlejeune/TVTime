@@ -79,7 +79,7 @@ fun KeywordResultsScreen(
                                 id = result.id,
                                 backdropPath = TmdbUtils.getFullBackdropPath(result.backdropPath),
                                 posterPath = TmdbUtils.getFullPosterPath(result.posterPath),
-                                title = result.name,
+                                title = result.title,
                                 additionalDetails = listOf(result.overview)
                             )
                         }

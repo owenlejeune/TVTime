@@ -112,22 +112,22 @@ fun SearchScreen(
             SelectableTextChip(
                 selected = viewType.value == MediaViewType.MOVIE,
                 onSelected = { viewType.value = MediaViewType.MOVIE },
-                text = "Movies"
+                text = stringResource(id = R.string.nav_movies_title)
             )
             SelectableTextChip(
                 selected = viewType.value == MediaViewType.TV,
                 onSelected = { viewType.value = MediaViewType.TV },
-                text = "TV"
+                text = stringResource(id = R.string.nav_tv_title)
             )
             SelectableTextChip(
                 selected = viewType.value == MediaViewType.PERSON,
                 onSelected = { viewType.value = MediaViewType.PERSON },
-                text = "People"
+                text = stringResource(id = R.string.nav_people_title)
             )
             SelectableTextChip(
                 selected = viewType.value == MediaViewType.MIXED,
                 onSelected = { viewType.value = MediaViewType.MIXED },
-                text = "Multi"
+                text = stringResource(id = R.string.search_multi_title)
             )
         }
 
@@ -374,7 +374,7 @@ private fun <T: SortableSearchResult> SearchResultItemView(
         id = searchResult.id,
         backdropPath = backdropModel(searchResult),
         posterPath = posterModel(searchResult),
-        title = searchResult.name,
+        title = searchResult.title,
         additionalDetails = additionalDetails(searchResult)
     )
 }
@@ -453,7 +453,7 @@ private fun PeopleSearchResultView(
         appNavController = appNavController,
         mediaViewType = MediaViewType.PERSON,
         searchResult = result,
-        posterModel = { TmdbUtils.getFullPersonImagePath(result.profilePath) },
+        posterModel = { TmdbUtils.getFullPersonImagePath(result.posterPath) },
         backdropModel = { TmdbUtils.getFullBackdropPath(mostKnownFor?.backdropPath) },
         additionalDetails = { additional }
     )

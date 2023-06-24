@@ -52,11 +52,13 @@ private val POSTER_HEIGHT = 180.dp
 
 @Composable
 fun PagingPosterGrid(
+    modifier: Modifier = Modifier,
     lazyPagingItems: LazyPagingItems<TmdbItem>?,
     onClick: (id: Int) -> Unit = {}
 ) {
     lazyPagingItems?.let {
         LazyVerticalGrid(
+            modifier = modifier,
             columns = GridCells.Adaptive(minSize = POSTER_WIDTH),
             contentPadding = PaddingValues(8.dp),
             horizontalArrangement = Arrangement.SpaceBetween

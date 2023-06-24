@@ -1,4 +1,4 @@
-package com.owenlejeune.tvtime.ui.navigation
+package com.owenlejeune.tvtime.ui.screens.tabs
 
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
@@ -84,7 +84,7 @@ sealed class AccountTabNavItem(
         R.string.no_favorite_movies,
         MediaViewType.MOVIE,
         screenContent,
-        AccountTabType.FAVORITE,
+    AccountTabType.FAVORITE,
         FavoriteMovie::class,
         3
     )

@@ -12,6 +12,10 @@ import com.owenlejeune.tvtime.api.tmdb.api.v3.model.HomePagePeopleResponse
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.PersonCreditsResponse
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.PersonImage
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.PersonImageCollection
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.SearchResult
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.SearchResultMedia
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.SearchResultPerson
+import com.owenlejeune.tvtime.utils.types.TimeWindow
 import okhttp3.internal.notify
 import org.koin.core.component.KoinComponent
 import retrofit2.Response
@@ -88,6 +92,10 @@ class PeopleService: KoinComponent {
 
     suspend fun getPopular(page: Int): Response<HomePagePeopleResponse> {
         return service.getPopular(page)
+    }
+
+    suspend fun getTrending(timeWindow: TimeWindow, page: Int): Response<SearchResult<SearchResultPerson>> {
+        return service.trending(timeWindow.name.lowercase(), page)
     }
 
 }

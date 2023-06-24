@@ -11,7 +11,7 @@ import com.owenlejeune.tvtime.api.tmdb.api.v4.ListV4Service
 import com.owenlejeune.tvtime.api.tmdb.api.v4.model.DeleteListItemsBody
 import com.owenlejeune.tvtime.api.tmdb.api.v4.model.DeleteListItemsItem
 import com.owenlejeune.tvtime.api.tmdb.api.v4.model.ListUpdateBody
-import com.owenlejeune.tvtime.ui.navigation.AccountTabNavItem
+import com.owenlejeune.tvtime.ui.screens.tabs.AccountTabNavItem
 import com.owenlejeune.tvtime.utils.SessionManager
 import com.owenlejeune.tvtime.utils.types.MediaViewType
 import com.owenlejeune.tvtime.utils.types.ViewableMediaTypeException

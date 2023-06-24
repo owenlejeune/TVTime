@@ -1117,15 +1117,18 @@ fun SelectableTextChip(
     selected: Boolean,
     onSelected: () -> Unit,
     text: String,
+    modifier: Modifier = Modifier,
     selectedColor: Color = MaterialTheme.colorScheme.secondary,
     unselectedColor: Color = MaterialTheme.colorScheme.surfaceVariant
 ) {
     Box(
-        modifier = Modifier
-            .clip(RoundedCornerShape(percent = 25))
-            .border(width = 1.dp, color = selectedColor, shape = RoundedCornerShape(percent = 25))
-            .background(color = if(selected) selectedColor else unselectedColor)
-            .clickable(onClick = onSelected)
+        modifier = modifier.then(
+            Modifier
+                .clip(RoundedCornerShape(percent = 25))
+                .border(width = 1.dp, color = selectedColor, shape = RoundedCornerShape(percent = 25))
+                .background(color = if(selected) selectedColor else unselectedColor)
+                .clickable(onClick = onSelected)
+        )
     ) {
         Text(
             text = text,

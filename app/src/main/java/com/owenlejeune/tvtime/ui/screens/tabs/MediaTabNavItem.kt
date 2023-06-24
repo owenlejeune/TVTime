@@ -1,4 +1,4 @@
-package com.owenlejeune.tvtime.ui.navigation
+package com.owenlejeune.tvtime.ui.screens.tabs
 
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
@@ -6,6 +6,7 @@ import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.api.tmdb.api.v3.HomePageService
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.HomePageResponse
 import com.owenlejeune.tvtime.ui.screens.tabs.MediaTabContent
+import com.owenlejeune.tvtime.ui.screens.tabs.MediaTabTrendingContent
 import com.owenlejeune.tvtime.utils.ResourceUtils
 import com.owenlejeune.tvtime.utils.types.MediaViewType
 import com.owenlejeune.tvtime.utils.types.TabNavItem
@@ -27,12 +28,13 @@ sealed class MediaTabNavItem(
         POPULAR,
         NOW_PLAYING,
         UPCOMING,
-        TOP_RATED
+        TOP_RATED,
+        TRENDING
     }
 
     companion object  {
-        val MovieItems = listOf(NowPlaying, Popular, Upcoming, TopRated)
-        val TvItems = listOf(OnTheAir, Popular, AiringToday, TopRated)
+        private val MovieItems = listOf(NowPlaying, Popular, Trending, Upcoming, TopRated)
+        private val TvItems = listOf(OnTheAir, Popular, Trending, AiringToday, TopRated)
 
         fun itemsForType(type: MediaViewType): List<MediaTabNavItem> {
             return when (type) {
@@ -40,12 +42,6 @@ sealed class MediaTabNavItem(
                 MediaViewType.TV -> TvItems
                 else -> throw ViewableMediaTypeException(type)
             }
-        }
-
-        private val Items = listOf(NowPlaying, Popular, TopRated, Upcoming, AiringToday, OnTheAir)
-
-        fun getByRoute(route: String?): MediaTabNavItem? {
-            return Items.firstOrNull { it.route == route }
         }
     }
 
@@ -85,10 +81,21 @@ sealed class MediaTabNavItem(
         screen = screenContent,
         type = Type.UPCOMING
     )
+
+    object Trending: MediaTabNavItem(
+        stringRes = R.string.nav_trending_title,
+        route = "trending_route",
+        screen = trendingScreenContent,
+        type = Type.TRENDING
+    )
 }
 
 private val screenContent: MediaNavComposableFun = { appNavController, mediaViewType, mediaTabItem ->
     MediaTabContent(appNavController = appNavController, mediaType = mediaViewType, mediaTabItem = mediaTabItem)
+}
+
+private val trendingScreenContent: MediaNavComposableFun = { appNavController, mediaViewType, mediaTabItem ->
+    MediaTabTrendingContent(appNavController = appNavController, mediaType = mediaViewType, mediaTabItem = mediaTabItem)
 }
 
 typealias MediaNavComposableFun = @Composable (NavHostController, MediaViewType, MediaTabNavItem) -> Unit

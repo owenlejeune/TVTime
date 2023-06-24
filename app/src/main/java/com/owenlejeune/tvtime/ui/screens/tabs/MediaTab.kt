@@ -1,8 +1,16 @@
 package com.owenlejeune.tvtime.ui.screens.tabs
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
@@ -13,13 +21,14 @@ import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.rememberPagerState
 import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.ui.components.PagingPosterGrid
+import com.owenlejeune.tvtime.ui.components.ScrollableTabs
 import com.owenlejeune.tvtime.ui.components.SearchView
-import com.owenlejeune.tvtime.ui.components.Tabs
+import com.owenlejeune.tvtime.ui.components.SelectableTextChip
 import com.owenlejeune.tvtime.ui.navigation.AppNavItem
-import com.owenlejeune.tvtime.ui.navigation.MediaTabNavItem
 import com.owenlejeune.tvtime.ui.viewmodel.HomeScreenViewModel
 import com.owenlejeune.tvtime.ui.viewmodel.MainViewModel
 import com.owenlejeune.tvtime.utils.types.MediaViewType
+import com.owenlejeune.tvtime.utils.types.TimeWindow
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
@@ -44,7 +53,7 @@ fun MediaTab(
 
         val tabs = MediaTabNavItem.itemsForType(type = mediaType)
         val pagerState = rememberPagerState()
-        Tabs(tabs = tabs, pagerState = pagerState)
+        ScrollableTabs(tabs = tabs, pagerState = pagerState)
         MediaTabs(
             tabs = tabs,
             pagerState = pagerState,
@@ -71,6 +80,52 @@ fun MediaTabContent(
             )
         }
     )
+}
+
+@Composable
+fun MediaTabTrendingContent(
+    appNavController: NavHostController,
+    mediaType: MediaViewType,
+    mediaTabItem: MediaTabNavItem
+) {
+    val viewModel = viewModel<MainViewModel>()
+
+    val timeWindow = remember { mutableStateOf(TimeWindow.DAY) }
+    val flow = remember { mutableStateOf(viewModel.produceTrendingFor(mediaType, timeWindow.value)) }
+
+    LaunchedEffect(timeWindow.value) {
+        flow.value = viewModel.produceTrendingFor(mediaType, timeWindow.value)
+    }
+
+    val mediaListItems = flow.value.collectAsLazyPagingItems()
+
+    Column {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = Modifier.padding(all = 12.dp)
+        ) {
+            SelectableTextChip(
+                selected = timeWindow.value == TimeWindow.DAY,
+                onSelected = { timeWindow.value = TimeWindow.DAY },
+                text = stringResource(id = R.string.time_window_day),
+                modifier = Modifier.weight(1f)
+            )
+            SelectableTextChip(
+                selected = timeWindow.value == TimeWindow.WEEK,
+                onSelected = { timeWindow.value = TimeWindow.WEEK },
+                text = stringResource(id = R.string.time_window_week),
+                modifier = Modifier.weight(1f)
+            )
+        }
+        PagingPosterGrid(
+            lazyPagingItems = mediaListItems,
+            onClick = { id ->
+                appNavController.navigate(
+                    AppNavItem.DetailView.withArgs(mediaType, id)
+                )
+            }
+        )
+    }
 }
 
 @OptIn(ExperimentalPagerApi::class)

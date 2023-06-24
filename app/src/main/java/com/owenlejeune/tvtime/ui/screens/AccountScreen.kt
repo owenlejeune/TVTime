@@ -40,8 +40,8 @@ import com.owenlejeune.tvtime.ui.components.AccountIcon
 import com.owenlejeune.tvtime.ui.components.MediaResultCard
 import com.owenlejeune.tvtime.ui.components.PagingPosterGrid
 import com.owenlejeune.tvtime.ui.components.ScrollableTabs
-import com.owenlejeune.tvtime.ui.navigation.AccountTabNavItem
 import com.owenlejeune.tvtime.ui.navigation.AppNavItem
+import com.owenlejeune.tvtime.ui.screens.tabs.AccountTabNavItem
 import com.owenlejeune.tvtime.ui.viewmodel.AccountViewModel
 import com.owenlejeune.tvtime.utils.SessionManager
 import com.owenlejeune.tvtime.utils.TmdbUtils
