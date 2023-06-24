@@ -31,6 +31,7 @@ import com.owenlejeune.tvtime.api.tmdb.api.v3.TvService
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.*
 import com.owenlejeune.tvtime.extensions.lazyPagingItems
 import com.owenlejeune.tvtime.ui.components.MediaResultCard
+import com.owenlejeune.tvtime.ui.components.SelectableTextChip
 import com.owenlejeune.tvtime.ui.viewmodel.MainViewModel
 import com.owenlejeune.tvtime.ui.viewmodel.SearchViewModel
 import com.owenlejeune.tvtime.utils.TmdbUtils
@@ -50,6 +51,8 @@ fun SearchScreen(
     systemUiController.setStatusBarColor(color = MaterialTheme.colorScheme.background)
     systemUiController.setNavigationBarColor(color = MaterialTheme.colorScheme.background)
 
+    val viewType = remember { mutableStateOf(mediaViewType) }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -58,11 +61,11 @@ fun SearchScreen(
         val searchValue = rememberSaveable { mutableStateOf("") }
         val focusRequester = remember { FocusRequester() }
 
-        LaunchedEffect(searchValue.value) {
+        LaunchedEffect(searchValue.value, viewType.value) {
             if (searchValue.value.isEmpty()) {
                 searchViewModel.resetResults()
             } else {
-                searchViewModel.searchFor(searchValue.value, mediaViewType)
+                searchViewModel.searchFor(searchValue.value, viewType.value)
             }
         }
 
@@ -79,7 +82,8 @@ fun SearchScreen(
                         unfocusedIndicatorColor = MaterialTheme.colorScheme.surface
                     ),
                     modifier = Modifier
-                        .focusRequester(focusRequester),
+                        .focusRequester(focusRequester)
+                        .fillMaxWidth(),
                     singleLine = true,
                     trailingIcon = {
                         if (searchValue.value.isNotEmpty()) {
@@ -101,7 +105,33 @@ fun SearchScreen(
         )
         Divider(thickness = 2.dp, color = MaterialTheme.colorScheme.surfaceVariant)
 
-        when (mediaViewType) {
+        Row(
+            modifier = Modifier.padding(start = 12.dp, top = 12.dp, bottom = 12.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            SelectableTextChip(
+                selected = viewType.value == MediaViewType.MOVIE,
+                onSelected = { viewType.value = MediaViewType.MOVIE },
+                text = "Movies"
+            )
+            SelectableTextChip(
+                selected = viewType.value == MediaViewType.TV,
+                onSelected = { viewType.value = MediaViewType.TV },
+                text = "TV"
+            )
+            SelectableTextChip(
+                selected = viewType.value == MediaViewType.PERSON,
+                onSelected = { viewType.value = MediaViewType.PERSON },
+                text = "People"
+            )
+            SelectableTextChip(
+                selected = viewType.value == MediaViewType.MIXED,
+                onSelected = { viewType.value = MediaViewType.MIXED },
+                text = "Multi"
+            )
+        }
+
+        when (viewType.value) {
             MediaViewType.TV -> {
                 TvResultsView(appNavController = appNavController, searchViewModel = searchViewModel)
             }
