@@ -1,8 +1,11 @@
 package com.owenlejeune.tvtime.ui.screens
 
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Clear
@@ -19,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.owenlejeune.tvtime.R
@@ -97,20 +101,6 @@ fun SearchScreen(
         )
         Divider(thickness = 2.dp, color = MaterialTheme.colorScheme.surfaceVariant)
 
-        val showLoadingAnimation = remember { mutableStateOf(false) }
-        if (showLoadingAnimation.value) {
-            LinearProgressIndicator(
-                modifier = Modifier.fillMaxWidth(),
-                trackColor = MaterialTheme.colorScheme.background
-            )
-        } else {
-            LinearProgressIndicator(
-                modifier = Modifier.fillMaxWidth(),
-                trackColor = MaterialTheme.colorScheme.background,
-                progress = 0f
-            )
-        }
-
         when (mediaViewType) {
             MediaViewType.TV -> {
                 TvResultsView(appNavController = appNavController, searchViewModel = searchViewModel)
@@ -138,6 +128,8 @@ private fun MovieResultsView(
     appNavController: NavHostController,
     searchViewModel: SearchViewModel
 ) {
+    val context = LocalContext.current
+
     val results = remember { searchViewModel.movieResults }
     results.value?.let {
         val pagingItems = it.collectAsLazyPagingItems()
@@ -146,6 +138,7 @@ private fun MovieResultsView(
                 modifier = Modifier.padding(all = 12.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
+                handleLoadState(context, pagingItems.loadState.refresh)
                 lazyPagingItems(pagingItems) { item ->
                     item?.let {
                         MovieSearchResultView(
@@ -154,6 +147,7 @@ private fun MovieResultsView(
                         )
                     }
                 }
+                handleLoadState(context, pagingItems.loadState.append)
             }
         } else {
             Column(
@@ -177,6 +171,8 @@ private fun TvResultsView(
     appNavController: NavHostController,
     searchViewModel: SearchViewModel
 ) {
+    val context = LocalContext.current
+
     val results = remember { searchViewModel.tvResults }
     results.value?.let {
         val pagingItems = it.collectAsLazyPagingItems()
@@ -185,6 +181,7 @@ private fun TvResultsView(
                 modifier = Modifier.padding(all = 12.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
+                handleLoadState(context, pagingItems.loadState.refresh)
                 lazyPagingItems(pagingItems) { item ->
                     item?.let {
                         TvSearchResultView(
@@ -193,6 +190,7 @@ private fun TvResultsView(
                         )
                     }
                 }
+                handleLoadState(context, pagingItems.loadState.append)
             }
         } else {
             Column(
@@ -216,6 +214,8 @@ private fun PeopleResultsView(
     appNavController: NavHostController,
     searchViewModel: SearchViewModel
 ) {
+    val context = LocalContext.current
+
     val results = remember { searchViewModel.peopleResults }
     results.value?.let {
         val pagingItems = it.collectAsLazyPagingItems()
@@ -224,6 +224,7 @@ private fun PeopleResultsView(
                 modifier = Modifier.padding(all = 12.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
+                handleLoadState(context, pagingItems.loadState.refresh)
                 lazyPagingItems(pagingItems) { item ->
                     item?.let {
                         PeopleSearchResultView(
@@ -232,6 +233,7 @@ private fun PeopleResultsView(
                         )
                     }
                 }
+                handleLoadState(context, pagingItems.loadState.append)
             }
         } else {
             Column(
@@ -255,6 +257,8 @@ private fun MultiResultsView(
     appNavController: NavHostController,
     searchViewModel: SearchViewModel
 ) {
+    val context = LocalContext.current
+
     val results = remember { searchViewModel.multiResults }
     results.value?.let {
         val pagingItems = it.collectAsLazyPagingItems()
@@ -263,6 +267,7 @@ private fun MultiResultsView(
                 modifier = Modifier.padding(all = 12.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
+                handleLoadState(context, pagingItems.loadState.refresh)
                 lazyPagingItems(pagingItems) { item ->
                     item?.let {
                         when (item.mediaType) {
@@ -288,6 +293,7 @@ private fun MultiResultsView(
                         }
                     }
                 }
+                handleLoadState(context, pagingItems.loadState.append)
             }
         } else {
             Column(
@@ -303,6 +309,23 @@ private fun MultiResultsView(
                 Spacer(modifier = Modifier.weight(1f))
             }
         }
+    }
+}
+
+private fun LazyListScope.handleLoadState(context: Context, state: LoadState) {
+    when (state) {
+        is LoadState.Loading -> {
+            item {
+                LinearProgressIndicator(
+                    modifier = Modifier.fillMaxWidth(),
+                    trackColor = MaterialTheme.colorScheme.background
+                )
+            }
+        }
+        is LoadState.Error -> {
+            Toast.makeText(context, "An error occurred", Toast.LENGTH_SHORT).show()
+        }
+        else -> {}
     }
 }
 
@@ -388,18 +411,20 @@ private fun PeopleSearchResultView(
     appNavController: NavHostController,
     result: SearchResultPerson
 ) {
-    val mostKnownFor = result.knownFor.sortedBy { it.popularity }[0]
+    val mostKnownFor = result.knownFor.sortedBy { it.popularity }.takeUnless { it.isEmpty() }?.get(0)
+
+    val additional = mostKnownFor?.let {
+        listOf(
+            "${mostKnownFor.title} (${TmdbUtils.releaseYearFromData(mostKnownFor.releaseDate)})"
+        )
+    } ?: emptyList()
 
     SearchResultItemView(
         appNavController = appNavController,
         mediaViewType = MediaViewType.PERSON,
         searchResult = result,
         posterModel = { TmdbUtils.getFullPersonImagePath(result.profilePath) },
-        backdropModel = { TmdbUtils.getFullBackdropPath(mostKnownFor.backdropPath) },
-        additionalDetails = {
-            listOf(
-                "${mostKnownFor.title} (${TmdbUtils.releaseYearFromData(mostKnownFor.releaseDate)})"
-            )
-        }
+        backdropModel = { TmdbUtils.getFullBackdropPath(mostKnownFor?.backdropPath) },
+        additionalDetails = { additional }
     )
 }

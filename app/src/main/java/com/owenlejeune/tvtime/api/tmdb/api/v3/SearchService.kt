@@ -20,38 +20,38 @@ import retrofit2.Response
 
 class SearchService: KoinComponent {
 
-    private val service: SearchService by inject()
+    private val service: SearchApi by inject()
 
     val movieResults = mutableStateOf<Flow<PagingData<SearchResultMovie>>?>(null)
     val tvResults = mutableStateOf<Flow<PagingData<SearchResultTv>>?>(null)
     val peopleResults = mutableStateOf<Flow<PagingData<SearchResultPerson>>?>(null)
     val multiResults = mutableStateOf<Flow<PagingData<SortableSearchResult>>?>(null)
 
-    fun searchCompanies(query: String, page: Int = 1): Response<SearchResult<ProductionCompany>> {
+    suspend fun searchCompanies(query: String, page: Int = 1): Response<SearchResult<ProductionCompany>> {
         return service.searchCompanies(query, page)
     }
 
-    fun searchCollections(query: String, page: Int = 1): Response<SearchResult<Collection>> {
+    suspend fun searchCollections(query: String, page: Int = 1): Response<SearchResult<Collection>> {
         return service.searchCollections(query, page)
     }
 
-    fun searchKeywords(query: String, page: Int = 1): Response<SearchResult<Keyword>> {
+    suspend fun searchKeywords(query: String, page: Int = 1): Response<SearchResult<Keyword>> {
         return service.searchKeywords(query, page)
     }
 
-    fun searchMovies(query: String, page: Int): Response<SearchResult<SearchResultMovie>> {
+    suspend fun searchMovies(query: String, page: Int): Response<SearchResult<SearchResultMovie>> {
         return service.searchMovies(query, page)
     }
 
-    fun searchTv(query: String, page: Int): Response<SearchResult<SearchResultTv>> {
+    suspend fun searchTv(query: String, page: Int): Response<SearchResult<SearchResultTv>> {
         return service.searchTv(query, page)
     }
 
-    fun searchPeople(query: String, page: Int): Response<SearchResult<SearchResultPerson>> {
+    suspend fun searchPeople(query: String, page: Int): Response<SearchResult<SearchResultPerson>> {
         return service.searchPeople(query, page)
     }
 
-    fun searchMulti(query: String, page: Int): Response<SearchResult<SortableSearchResult>> {
+    suspend fun searchMulti(query: String, page: Int): Response<SearchResult<SortableSearchResult>> {
         return service.searchMulti(query, page)
     }
 

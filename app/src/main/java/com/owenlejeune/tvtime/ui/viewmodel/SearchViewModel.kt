@@ -1,12 +1,16 @@
 package com.owenlejeune.tvtime.ui.viewmodel
 
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.paging.PagingData
 import com.owenlejeune.tvtime.api.tmdb.api.createPagingFlow
 import com.owenlejeune.tvtime.api.tmdb.api.v3.SearchResultProvider
 import com.owenlejeune.tvtime.api.tmdb.api.v3.SearchService
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.Searchable
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.SortableSearchResult
 import com.owenlejeune.tvtime.utils.types.MediaViewType
+import com.owenlejeune.tvtime.utils.types.ViewableMediaTypeException
 import kotlinx.coroutines.flow.Flow
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
