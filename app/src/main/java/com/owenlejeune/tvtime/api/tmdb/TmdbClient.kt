@@ -7,6 +7,7 @@ import com.owenlejeune.tvtime.api.QueryParam
 import com.owenlejeune.tvtime.api.tmdb.api.v3.AccountApi
 import com.owenlejeune.tvtime.api.tmdb.api.v3.AuthenticationApi
 import com.owenlejeune.tvtime.api.tmdb.api.v3.ConfigurationApi
+import com.owenlejeune.tvtime.api.tmdb.api.v3.CreditsApi
 import com.owenlejeune.tvtime.api.tmdb.api.v3.MoviesApi
 import com.owenlejeune.tvtime.api.tmdb.api.v3.PeopleApi
 import com.owenlejeune.tvtime.api.tmdb.api.v3.SearchApi
@@ -65,6 +66,10 @@ class TmdbClient: KoinComponent {
 
     fun createConfigurationService(): ConfigurationApi {
         return client.create(ConfigurationApi::class.java)
+    }
+
+    fun createCreditsService(): CreditsApi {
+        return client.create(CreditsApi::class.java)
     }
 
     fun createV4AccountService(): AccountV4Api {

@@ -9,16 +9,19 @@ import com.owenlejeune.tvtime.api.tmdb.TmdbClient
 import com.owenlejeune.tvtime.api.tmdb.api.v3.AccountService
 import com.owenlejeune.tvtime.api.tmdb.api.v3.AuthenticationService
 import com.owenlejeune.tvtime.api.tmdb.api.v3.ConfigurationService
+import com.owenlejeune.tvtime.api.tmdb.api.v3.CreditsService
 import com.owenlejeune.tvtime.api.tmdb.api.v3.MoviesService
 import com.owenlejeune.tvtime.api.tmdb.api.v3.PeopleService
 import com.owenlejeune.tvtime.api.tmdb.api.v3.SearchService
 import com.owenlejeune.tvtime.api.tmdb.api.v3.TvService
 import com.owenlejeune.tvtime.api.tmdb.api.v3.deserializer.AccountStatesDeserializer
+import com.owenlejeune.tvtime.api.tmdb.api.v3.deserializer.CreditMediaDeserializer
 import com.owenlejeune.tvtime.api.tmdb.api.v3.deserializer.DetailCastDeserializer
 import com.owenlejeune.tvtime.api.tmdb.api.v3.deserializer.DetailCrewDeserializer
 import com.owenlejeune.tvtime.api.tmdb.api.v3.deserializer.KnownForDeserializer
 import com.owenlejeune.tvtime.api.tmdb.api.v3.deserializer.SortableSearchResultDeserializer
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.AccountStates
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.CreditMedia
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.DetailCast
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.DetailCrew
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.KnownFor
@@ -52,6 +55,7 @@ val networkModule = module {
     single { get<TmdbClient>().createSearchService() }
     single { get<TmdbClient>().createTvService() }
     single { get<TmdbClient>().createConfigurationService() }
+    single { get<TmdbClient>().createCreditsService() }
 
     single { ConfigurationService() }
     single { MoviesService() }
@@ -60,6 +64,7 @@ val networkModule = module {
     single { AuthenticationService() }
     single { PeopleService() }
     single { SearchService() }
+    single { CreditsService() }
     single { AccountV4Service() }
     single { AuthenticationV4Service() }
     single { ListV4Service() }
@@ -72,6 +77,7 @@ val networkModule = module {
             AccountStates::class.java to AccountStatesDeserializer(),
             DetailCast::class.java to DetailCastDeserializer(),
             DetailCrew::class.java to DetailCrewDeserializer(),
+            CreditMedia::class.java to CreditMediaDeserializer(),
             Date::class.java to DateTypeAdapter()
         )
     }
