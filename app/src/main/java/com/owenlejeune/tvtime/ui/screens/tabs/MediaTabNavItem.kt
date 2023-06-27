@@ -33,8 +33,8 @@ sealed class MediaTabNavItem(
     }
 
     companion object  {
-        private val MovieItems = listOf(NowPlaying, Popular, Trending, Upcoming, TopRated)
-        private val TvItems = listOf(OnTheAir, Popular, Trending, AiringToday, TopRated)
+        private val MovieItems = listOf(Trending, NowPlaying, Popular, Upcoming, TopRated)
+        private val TvItems = listOf(Trending, OnTheAir, Popular, AiringToday, TopRated)
 
         fun itemsForType(type: MediaViewType): List<MediaTabNavItem> {
             return when (type) {

@@ -28,6 +28,7 @@ import com.owenlejeune.tvtime.ui.screens.ListDetailScreen
 import com.owenlejeune.tvtime.ui.screens.MediaDetailScreen
 import com.owenlejeune.tvtime.ui.screens.PersonDetailScreen
 import com.owenlejeune.tvtime.ui.screens.SearchScreen
+import com.owenlejeune.tvtime.ui.screens.SeasonListScreen
 import com.owenlejeune.tvtime.ui.screens.SettingsScreen
 import com.owenlejeune.tvtime.ui.screens.WebLinkScreen
 import com.owenlejeune.tvtime.utils.NavConstants
@@ -200,6 +201,16 @@ fun AppNavigationHost(
 
             GalleryView(id = id, type = type, appNavController = appNavController)
         }
+        composable(
+            route = AppNavItem.SeasonListView.route.plus("/{${NavConstants.ID_KEY}}"),
+            arguments = listOf(
+                navArgument(NavConstants.ID_KEY) { type = NavType.IntType }
+            )
+        ) { navBackStackEntry ->
+            val id = navBackStackEntry.arguments?.getInt(NavConstants.ID_KEY)!!
+
+            SeasonListScreen(id = id, appNavController = appNavController)
+        }
     }
 }
 
@@ -232,6 +243,9 @@ sealed class AppNavItem(val route: String) {
     }
     object GalleryView: AppNavItem("gallery_view_route") {
         fun withArgs(type: MediaViewType, id: Int) = route.plus("/$type/$id")
+    }
+    object SeasonListView: AppNavItem("season_list_route") {
+        fun withArgs(id: Int) = route.plus("/$id")
     }
 
 }

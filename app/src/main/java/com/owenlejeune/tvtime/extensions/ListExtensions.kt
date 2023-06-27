@@ -19,3 +19,7 @@ fun <T> List<T>.bringToFront(predicate: (T) -> Boolean): List<T> {
     }
     return frontItems.plus(orig)
 }
+
+fun <T> List<T>.subListLimit(limit: Int, fromIndex: Int = 0): List<T> {
+    return subList(fromIndex = fromIndex, toIndex = minOf(size, fromIndex+limit))
+}

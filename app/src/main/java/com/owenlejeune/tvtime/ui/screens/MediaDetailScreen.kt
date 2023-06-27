@@ -4,8 +4,6 @@ import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
 import androidx.compose.animation.*
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
@@ -14,16 +12,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Movie
 import androidx.compose.material.icons.filled.Send
-import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
@@ -38,13 +33,13 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import coil.compose.AsyncImage
 import com.google.accompanist.flowlayout.FlowRow
 import com.google.accompanist.pager.ExperimentalPagerApi
-import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.rememberPagerState
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.*
 import com.owenlejeune.tvtime.extensions.WindowSizeClass
+import com.owenlejeune.tvtime.extensions.getCalendarYear
 import com.owenlejeune.tvtime.extensions.lazyPagingItems
 import com.owenlejeune.tvtime.extensions.listItems
 import com.owenlejeune.tvtime.ui.components.*
@@ -53,7 +48,6 @@ import com.owenlejeune.tvtime.ui.viewmodel.MainViewModel
 import com.owenlejeune.tvtime.utils.SessionManager
 import com.owenlejeune.tvtime.utils.TmdbUtils
 import com.owenlejeune.tvtime.utils.types.MediaViewType
-import com.owenlejeune.tvtime.utils.types.TabNavItem
 import kotlinx.coroutines.*
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPagerApi::class)
@@ -204,24 +198,55 @@ private fun MediaViewContent(
                     ActionsView(itemId = itemId, type = type, modifier = Modifier.padding(start = 20.dp))
                 }
 
-                if (type == MediaViewType.MOVIE) {
-                    MainContentMovie(
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                ) {
+                    OverviewCard(
                         itemId = itemId,
                         mediaItem = mediaItem,
                         type = type,
-                        appNavController = appNavController,
-                        windowSize = windowSize,
-                        mainViewModel = mainViewModel
+                        mainViewModel = mainViewModel,
+                        appNavController = appNavController
                     )
-                } else {
-                    MainContentTv(
+
+                    CastCard(
                         itemId = itemId,
-                        mediaItem = mediaItem,
-                        type = type,
                         appNavController = appNavController,
-                        windowSize = windowSize,
+                        type = type,
                         mainViewModel = mainViewModel
                     )
+
+                    if (type == MediaViewType.TV) {
+                        SeasonCard(
+                            itemId = itemId,
+                            mediaItem = mediaItem,
+                            mainViewModel = mainViewModel,
+                            appNavController = appNavController
+                        )
+                    }
+
+                    SimilarContentCard(
+                        itemId = itemId,
+                        mediaType = type,
+                        appNavController = appNavController,
+                        mainViewModel = mainViewModel
+                    )
+
+                    VideosCard(
+                        itemId = itemId,
+                        modifier = Modifier.fillMaxWidth(),
+                        mainViewModel = mainViewModel,
+                        type = type
+                    )
+
+                    AdditionalDetailsCard(mediaItem = mediaItem, type = type)
+
+                    WatchProvidersCard(itemId = itemId, type = type, mainViewModel = mainViewModel)
+
+                    if (windowSize != WindowSizeClass.Expanded) {
+                        ReviewsCard(itemId = itemId, type = type, mainViewModel = mainViewModel)
+                    }
                 }
             }
 
@@ -240,165 +265,6 @@ private fun MediaViewContent(
                 Spacer(modifier = Modifier.height(16.dp))
             }
         }
-    }
-}
-
-@OptIn(ExperimentalPagerApi::class)
-@Composable
-private fun TvSeriesTabs(
-    pagerState: PagerState,
-    tabs: List<TabNavItem>
-) {
-    Tabs(
-        modifier = Modifier.offset(y = (-16).dp),
-        pagerState = pagerState,
-        tabs = tabs
-    )
-}
-
-@Composable
-private fun SeasonsTab(
-    itemId: Int,
-    mediaItem: DetailedItem?,
-    mainViewModel: MainViewModel
-) {
-    LaunchedEffect(mediaItem) {
-        val numSeasons = (mediaItem as DetailedTv?)?.numberOfSeasons ?: 0
-        for (i in 0..numSeasons) {
-            mainViewModel.getSeason(itemId, i)
-        }
-    }
-
-    val seasonsMap = remember { mainViewModel.tvSeasons }
-    val seasons = seasonsMap[itemId]
-
-    seasons?.forEach { season ->
-        SeasonSection(season = season)
-    }
-}
-
-@Composable
-private fun SeasonSection(season: Season) {
-    var isExpanded by remember { mutableStateOf(false) }
-    Box(
-        modifier = Modifier
-            .clip(RoundedCornerShape(10.dp))
-            .background(color = MaterialTheme.colorScheme.surfaceVariant)
-            .clickable {
-                isExpanded = !isExpanded
-            }
-    ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 24.dp, vertical = 24.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = season.name,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            Spacer(modifier = Modifier.weight(1f))
-
-            var currentRotation by remember { mutableStateOf(0f) }
-            val rotation = remember { androidx.compose.animation.core.Animatable(currentRotation) }
-            LaunchedEffect(isExpanded) {
-                rotation.animateTo(
-                    targetValue = if (isExpanded) 180f else 0f,
-                    animationSpec = tween(200, easing = LinearEasing)
-                ) {
-                    currentRotation = value
-                }
-            }
-            Icon(
-                imageVector = Icons.Outlined.ExpandMore,
-                contentDescription = null,
-                modifier = Modifier
-                    .size(32.dp)
-                    .rotate(currentRotation),
-                tint = MaterialTheme.colorScheme.onSurface,
-            )
-        }
-    }
-    AnimatedVisibility(
-        visible = isExpanded,
-        enter = expandVertically(),
-        exit = shrinkVertically()
-    ) {
-        Column(
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            season.episodes.forEachIndexed { index, episode ->
-                EpisodeItem(episode = episode)
-                if (index != season.episodes.size - 1) {
-                    Divider()
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun EpisodeItem(episode: Episode) {
-    val height = 170.dp
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        modifier = Modifier.height(height)
-    ) {
-        AsyncImage(
-            model = TmdbUtils.getFullEpisodeStillPath(episode),
-            contentDescription = null,
-            modifier = Modifier
-                .size(width = 100.dp, height = height)
-                .clip(RoundedCornerShape(10.dp)),
-            contentScale = ContentScale.Crop
-        )
-        Column(
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            Text(
-                text = "S${episode.seasonNumber}E${episode.episodeNumber} • ${episode.name}",
-                color = MaterialTheme.colorScheme.secondary,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-            TmdbUtils.convertEpisodeDate(episode.airDate)?.let {
-                Text(
-                    text = it,
-                    fontStyle = FontStyle.Italic,
-                    fontSize = 12.sp
-                )
-            }
-            Text(
-                text = episode.overview,
-                overflow = TextOverflow.Ellipsis,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-        }
-    }
-}
-
-@Composable
-private fun MainContent(
-    itemId: Int,
-    mediaItem: DetailedItem?,
-    type: MediaViewType,
-    appNavController: NavController,
-    windowSize: WindowSizeClass,
-    mainViewModel: MainViewModel
-) {
-    OverviewCard(itemId = itemId, mediaItem = mediaItem, type = type, mainViewModel = mainViewModel, appNavController = appNavController)
-
-    CastCard(itemId = itemId, appNavController = appNavController, type = type, mainViewModel = mainViewModel)
-
-    SimilarContentCard(itemId = itemId, mediaType = type, appNavController = appNavController, mainViewModel = mainViewModel)
-
-    VideosCard(itemId = itemId, modifier = Modifier.fillMaxWidth(), mainViewModel = mainViewModel, type = type)
-
-    AdditionalDetailsCard(mediaItem = mediaItem, type = type)
-    
-    WatchProvidersCard(itemId = itemId, type = type, mainViewModel = mainViewModel)
-
-    if (windowSize != WindowSizeClass.Expanded) {
-        ReviewsCard(itemId = itemId, type = type, mainViewModel = mainViewModel)
     }
 }
 
@@ -779,6 +645,77 @@ private fun CastCrewCard(appNavController: NavController, person: Person) {
 }
 
 @Composable
+private fun SeasonCard(
+    itemId: Int,
+    mediaItem: DetailedItem?,
+    mainViewModel: MainViewModel,
+    appNavController: NavController
+) {
+    LaunchedEffect(mediaItem) {
+        val lastSeason = (mediaItem as DetailedTv?)?.numberOfSeasons ?: 0
+        if (lastSeason > 0) {
+            mainViewModel.getSeason(itemId, lastSeason)
+        }
+    }
+
+    val seasonsMap = remember { mainViewModel.tvSeasons }
+    val lastSeason = seasonsMap[itemId]?.lastOrNull()
+
+    lastSeason?.let {
+        ContentCard(
+            title = "Latest Season"
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .padding(all = 12.dp)
+            ) {
+                PosterItem(
+                    url = TmdbUtils.getFullPosterPath(it.posterPath),
+                    title = it.name,
+                    overrideShowTitle = false,
+                    enabled = false
+                )
+
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Text(
+                        text = it.name,
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                    Text(
+                        text = "${it.airDate?.getCalendarYear()} | ${it.episodes.size} Episodes"
+                    )
+                    Text(
+                        text = it.overview,
+                        fontSize = 14.sp,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+            }
+
+            Box(
+                modifier = Modifier
+                    .padding(start = 12.dp, bottom = 12.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .clickable {
+                        appNavController.navigate(AppNavItem.SeasonListView.withArgs(id = itemId))
+                    }
+            ) {
+                Text(
+                    text = "See all seasons",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontSize = 14.sp,
+                    modifier = Modifier.padding(4.dp)
+                )
+            }
+        }
+    }
+}
+
+@Composable
 fun SimilarContentCard(
     itemId: Int,
     mediaType: MediaViewType,
@@ -914,7 +851,6 @@ private fun VideoGroup(results: List<Video>, type: Video.Type, title: String) {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun WatchProvidersCard(
     itemId: Int,
@@ -945,7 +881,7 @@ private fun WatchProvidersCard(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
 
-                var selectedIndex by remember { mutableStateOf(
+                var selectedIndex by remember { mutableIntStateOf(
                     when {
                         providers.flaterate != null -> 0
                         providers.rent != null -> 1
@@ -1192,83 +1128,4 @@ fun DetailsFor(
             mainViewModel = mainViewModel
         )
     }
-}
-
-@Composable
-fun MainContentMovie(
-    type: MediaViewType,
-    itemId: Int,
-    mediaItem: DetailedItem?,
-    appNavController: NavController,
-    windowSize: WindowSizeClass,
-    mainViewModel: MainViewModel
-) {
-    Column(
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-        modifier = Modifier.padding(horizontal = 16.dp)
-    ) {
-        MainContent(
-            itemId = itemId,
-            mediaItem = mediaItem,
-            type = type,
-            appNavController = appNavController,
-            windowSize = windowSize,
-            mainViewModel = mainViewModel
-        )
-    }
-}
-
-@OptIn(ExperimentalPagerApi::class)
-@Composable
-fun MainContentTv(
-    type: MediaViewType,
-    itemId: Int,
-    mediaItem: DetailedItem?,
-    mainViewModel: MainViewModel,
-    appNavController: NavController,
-    windowSize: WindowSizeClass
-) {
-    val tabState = rememberPagerState()
-    val tabs  = listOf(DetailsTab, SeasonsTab)
-    TvSeriesTabs(pagerState = tabState, tabs = tabs)
-    HorizontalPager(
-        count = tabs.size,
-        state = tabState,
-        userScrollEnabled = false
-    ) { page ->
-        Column(
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            modifier = Modifier.padding(horizontal = 16.dp)
-        ) {
-            when (tabs[page]) {
-                is DetailsTab -> {
-                    MainContent(
-                        itemId = itemId,
-                        mediaItem = mediaItem,
-                        type = type,
-                        appNavController = appNavController,
-                        windowSize = windowSize,
-                        mainViewModel = mainViewModel
-                    )
-                }
-
-                is SeasonsTab -> {
-                    SeasonsTab(
-                        itemId = itemId,
-                        mediaItem = mediaItem,
-                        mainViewModel = mainViewModel
-                    )
-                }
-            }
-        }
-    }
-}
-
-object DetailsTab: TabNavItem("details_route") {
-    override val name: String
-    get() = "Details"
-}
-object SeasonsTab: TabNavItem("seasons_route") {
-    override val name: String
-        get() = "Seasons"
 }

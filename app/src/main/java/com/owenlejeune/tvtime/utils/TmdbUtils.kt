@@ -242,15 +242,12 @@ object TmdbUtils {
         return "$${thousands}"
     }
 
-    fun convertEpisodeDate(inDate: String?): String? {
+    fun convertEpisodeDate(inDate: Date?): String? {
         if (inDate == null) {
             return null
         }
-
-        val origFormat = SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
         val outFormat = SimpleDateFormat("MMMM dd, yyyy", java.util.Locale.getDefault())
-
-        return origFormat.parse(inDate)?.let { outFormat.format(it) }
+        return outFormat.format(inDate)
     }
 
     fun toDate(releaseDate: String): Date {

@@ -143,6 +143,9 @@ dependencies {
     def compose_markdown = "0.3.3"
     implementation "com.github.jeziellago:compose-markdown:$compose_markdown"
 
+    def cloudy = "0.1.2"
+    implementation "com.github.skydoves:cloudy:$cloudy"
+
     // testing
     def junit = "4.13.2"
     def androidx_junit = "1.1.3"
