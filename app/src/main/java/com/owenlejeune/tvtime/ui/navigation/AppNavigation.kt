@@ -20,6 +20,7 @@ import com.owenlejeune.tvtime.extensions.safeGetSerializable
 import com.owenlejeune.tvtime.preferences.AppPreferences
 import com.owenlejeune.tvtime.ui.screens.AboutScreen
 import com.owenlejeune.tvtime.ui.screens.AccountScreen
+import com.owenlejeune.tvtime.ui.screens.GalleryView
 import com.owenlejeune.tvtime.ui.screens.HomeScreen
 import com.owenlejeune.tvtime.ui.screens.KeywordResultsScreen
 import com.owenlejeune.tvtime.ui.screens.KnownForScreen
@@ -187,6 +188,18 @@ fun AppNavigationHost(
 
             KnownForScreen(appNavController = appNavController, id = id)
         }
+        composable(
+            route = AppNavItem.GalleryView.route.plus("/{${NavConstants.TYPE_KEY}}/{${NavConstants.ID_KEY}}"),
+            arguments = listOf(
+                navArgument(NavConstants.TYPE_KEY) { type = NavType.EnumType(MediaViewType::class.java) },
+                navArgument(NavConstants.ID_KEY) { type = NavType.IntType }
+            )
+        ) { navBackStackEntry ->
+            val type = navBackStackEntry.arguments?.safeGetSerializable(NavConstants.TYPE_KEY, MediaViewType::class.java)!!
+            val id = navBackStackEntry.arguments?.getInt(NavConstants.ID_KEY)!!
+
+            GalleryView(id = id, type = type, appNavController = appNavController)
+        }
     }
 }
 
@@ -216,6 +229,9 @@ sealed class AppNavItem(val route: String) {
     }
     object KnownForView: AppNavItem("known_for_route") {
         fun withArgs(id: Int) = route.plus("/$id")
+    }
+    object GalleryView: AppNavItem("gallery_view_route") {
+        fun withArgs(type: MediaViewType, id: Int) = route.plus("/$type/$id")
     }
 
 }

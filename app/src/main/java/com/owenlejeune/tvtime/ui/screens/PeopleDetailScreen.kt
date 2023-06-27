@@ -5,15 +5,18 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -42,6 +45,7 @@ import com.owenlejeune.tvtime.ui.components.ContentCard
 import com.owenlejeune.tvtime.ui.components.DetailHeader
 import com.owenlejeune.tvtime.ui.components.ExpandableContentCard
 import com.owenlejeune.tvtime.ui.components.ExternalIdsArea
+import com.owenlejeune.tvtime.ui.components.PosterItem
 import com.owenlejeune.tvtime.ui.components.TwoLineImageTextCard
 import com.owenlejeune.tvtime.ui.navigation.AppNavItem
 import com.owenlejeune.tvtime.ui.viewmodel.MainViewModel
@@ -62,6 +66,7 @@ fun PersonDetailScreen(
         mainViewModel.getById(personId, MediaViewType.PERSON)
         mainViewModel.getExternalIds(personId, MediaViewType.PERSON)
         mainViewModel.getCastAndCrew(personId, MediaViewType.PERSON)
+        mainViewModel.getImages(personId, MediaViewType.PERSON)
     }
 
     val systemUiController = rememberSystemUiController()
@@ -122,50 +127,9 @@ fun PersonDetailScreen(
 
                 BiographyCard(person = person)
 
-                val creditsMap = remember { mainViewModel.peopleCastMap }
-                val credits = creditsMap[personId] ?: emptyList()
-
-                ContentCard(
-                    title = stringResource(R.string.known_for_label)
-                ) {
-                    LazyRow(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .wrapContentHeight()
-                            .padding(12.dp),
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        items(min(credits.size, 15)) { i ->
-                            val content = credits[i]
-
-                            TwoLineImageTextCard(
-                                title = content.title,
-                                titleTextColor = MaterialTheme.colorScheme.primary,
-                                subtitle = content.character,
-                                modifier = Modifier
-                                    .width(124.dp)
-                                    .wrapContentHeight(),
-                                imageUrl = TmdbUtils.getFullPosterPath(content.posterPath),
-                                onItemClicked = {
-                                    appNavController.navigate(
-                                        AppNavItem.DetailView.withArgs(content.mediaType, content.id)
-                                    )
-                                }
-                            )
-                        }
-                    }
-
-                    Text(
-                        text = stringResource(id = R.string.expand_see_all),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        fontSize = 12.sp,
-                        modifier = Modifier
-                            .padding(start = 16.dp, bottom = 16.dp)
-                            .clickable {
-                                appNavController.navigate(AppNavItem.KnownForView.withArgs(personId))
-                            }
-                    )
-                }
+                CreditsCard(personId = personId, appNavController = appNavController)
+                
+                ImagesCard(id = personId, appNavController = appNavController)
             }
         }
     }
@@ -187,5 +151,112 @@ private fun BiographyCard(person: DetailPerson?) {
                 overflow = TextOverflow.Ellipsis
             )
         }
+    }
+}
+
+@Composable
+private fun CreditsCard(
+    personId: Int,
+    appNavController: NavController
+) {
+    val mainViewModel = viewModel<MainViewModel>()
+    
+    val creditsMap = remember { mainViewModel.peopleCastMap }
+    val credits = creditsMap[personId] ?: emptyList()
+
+    ContentCard(
+        title = stringResource(R.string.known_for_label)
+    ) {
+        LazyRow(
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentHeight()
+                .padding(vertical = 12.dp),
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            item {
+                Spacer(modifier = Modifier.width(8.dp))
+            }
+            items(min(credits.size, 15)) { i ->
+                val content = credits[i]
+
+                TwoLineImageTextCard(
+                    title = content.title,
+                    titleTextColor = MaterialTheme.colorScheme.primary,
+                    subtitle = content.character,
+                    modifier = Modifier
+                        .width(124.dp)
+                        .wrapContentHeight(),
+                    imageUrl = TmdbUtils.getFullPosterPath(content.posterPath),
+                    onItemClicked = {
+                        appNavController.navigate(
+                            AppNavItem.DetailView.withArgs(content.mediaType, content.id)
+                        )
+                    }
+                )
+            }
+            item {
+                Spacer(modifier = Modifier.width(8.dp))
+            }
+        }
+
+        Text(
+            text = stringResource(id = R.string.expand_see_all),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            fontSize = 12.sp,
+            modifier = Modifier
+                .padding(start = 16.dp, bottom = 16.dp)
+                .clickable {
+                    appNavController.navigate(AppNavItem.KnownForView.withArgs(personId))
+                }
+        )
+    }
+}
+
+@Composable
+private fun ImagesCard(
+    id: Int,
+    appNavController: NavController
+) {
+    val mainViewModel = viewModel<MainViewModel>()
+    val imagesMap = remember { mainViewModel.peopleImagesMap }
+    val images = imagesMap[id] ?: emptyList()
+
+    ContentCard(
+        title = stringResource(R.string.images_title)
+    ) {
+        LazyRow(
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentHeight()
+                .padding(vertical = 12.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            item {
+                Spacer(modifier = Modifier.width(8.dp))
+            }
+            items(images) { image ->
+                PosterItem(
+                    width = 120.dp,
+                    url = TmdbUtils.getFullPersonImagePath(image.filePath),
+                    placeholder = Icons.Filled.Person,
+                    title = ""
+                )
+            }
+            item {
+                Spacer(modifier = Modifier.width(8.dp))
+            }
+        }
+
+        Text(
+            text = stringResource(id = R.string.expand_see_all),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            fontSize = 12.sp,
+            modifier = Modifier
+                .padding(start = 16.dp, bottom = 16.dp)
+                .clickable {
+                    appNavController.navigate(AppNavItem.GalleryView.withArgs(MediaViewType.PERSON, id))
+                }
+        )
     }
 }

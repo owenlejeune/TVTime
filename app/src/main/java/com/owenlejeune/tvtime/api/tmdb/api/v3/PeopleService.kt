@@ -6,17 +6,12 @@ import com.owenlejeune.tvtime.api.tmdb.TmdbClient
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.DetailCast
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.DetailCrew
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.DetailPerson
-import com.owenlejeune.tvtime.api.tmdb.api.v3.model.DetailedMovie
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.ExternalIds
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.HomePagePeopleResponse
-import com.owenlejeune.tvtime.api.tmdb.api.v3.model.PersonCreditsResponse
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.PersonImage
-import com.owenlejeune.tvtime.api.tmdb.api.v3.model.PersonImageCollection
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.SearchResult
-import com.owenlejeune.tvtime.api.tmdb.api.v3.model.SearchResultMedia
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.SearchResultPerson
 import com.owenlejeune.tvtime.utils.types.TimeWindow
-import okhttp3.internal.notify
 import org.koin.core.component.KoinComponent
 import retrofit2.Response
 import java.util.Collections
@@ -95,7 +90,7 @@ class PeopleService: KoinComponent {
     }
 
     suspend fun getTrending(timeWindow: TimeWindow, page: Int): Response<SearchResult<SearchResultPerson>> {
-        return service.trending(timeWindow.name.lowercase(), page)
+        return service.getTrending(timeWindow.name.lowercase(), page)
     }
 
 }

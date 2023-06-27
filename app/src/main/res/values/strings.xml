@@ -237,4 +237,5 @@
     <string name="cast_character_template">as %1$s</string>
     <string name="cast_tv_character_template">as %1$s (%2$d eps.)</string>
     <string name="crew_template">… %1$s</string>
+    <string name="images_title">Images</string>
 </resources>
