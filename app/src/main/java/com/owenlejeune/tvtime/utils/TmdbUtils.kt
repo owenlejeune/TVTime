@@ -1,5 +1,6 @@
 package com.owenlejeune.tvtime.utils
 
+import android.nfc.FormatException
 import androidx.compose.ui.text.intl.Locale
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.AccountDetails
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.AuthorDetails
@@ -16,6 +17,7 @@ import com.owenlejeune.tvtime.api.tmdb.api.v3.model.TvContentRatings
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.Video
 import com.owenlejeune.tvtime.ui.viewmodel.ConfigurationViewModel
 import java.text.SimpleDateFormat
+import java.util.Date
 
 object TmdbUtils {
 
@@ -249,6 +251,11 @@ object TmdbUtils {
         val outFormat = SimpleDateFormat("MMMM dd, yyyy", java.util.Locale.getDefault())
 
         return origFormat.parse(inDate)?.let { outFormat.format(it) }
+    }
+
+    fun toDate(releaseDate: String): Date {
+        val format = SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
+        return format.parse(releaseDate) ?: throw FormatException("Expected date format \"yyyy-MM-dd\", got $releaseDate")
     }
 
 }

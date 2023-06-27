@@ -24,7 +24,6 @@ import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.ui.navigation.AppNavItem
 import com.owenlejeune.tvtime.utils.types.MediaViewType
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MediaResultCard(
     appNavController: NavController,
@@ -34,13 +33,14 @@ fun MediaResultCard(
     posterPath: Any?,
     title: String,
     additionalDetails: List<String>,
+    modifier: Modifier = Modifier,
     rating: Float? = null
 ) {
     Card(
         shape = RoundedCornerShape(10.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 10.dp),
-        modifier = Modifier
-            .background(color = MaterialTheme.colorScheme.surface)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        modifier = modifier.then(Modifier
             .fillMaxWidth()
             .clickable(
                 onClick = {
@@ -49,6 +49,7 @@ fun MediaResultCard(
                     )
                 }
             )
+        )
     ) {
         Box(
             modifier = Modifier.height(112.dp)

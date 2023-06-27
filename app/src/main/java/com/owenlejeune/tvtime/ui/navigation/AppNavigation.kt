@@ -22,6 +22,7 @@ import com.owenlejeune.tvtime.ui.screens.AboutScreen
 import com.owenlejeune.tvtime.ui.screens.AccountScreen
 import com.owenlejeune.tvtime.ui.screens.HomeScreen
 import com.owenlejeune.tvtime.ui.screens.KeywordResultsScreen
+import com.owenlejeune.tvtime.ui.screens.KnownForScreen
 import com.owenlejeune.tvtime.ui.screens.ListDetailScreen
 import com.owenlejeune.tvtime.ui.screens.MediaDetailScreen
 import com.owenlejeune.tvtime.ui.screens.PersonDetailScreen
@@ -176,6 +177,16 @@ fun AppNavigationHost(
                 appNavController = appNavController
             )
         }
+        composable(
+            route = AppNavItem.KnownForView.route.plus("/{${NavConstants.ID_KEY}}"),
+            arguments = listOf(
+                navArgument(NavConstants.ID_KEY) { type = NavType.IntType }
+            )
+        ) { navBackStackEntry ->
+            val id = navBackStackEntry.arguments?.getInt(NavConstants.ID_KEY)!!
+
+            KnownForScreen(appNavController = appNavController, id = id)
+        }
     }
 }
 
@@ -202,6 +213,9 @@ sealed class AppNavItem(val route: String) {
     object AboutView: AppNavItem("about_route")
     object KeywordsView: AppNavItem("keywords_route") {
         fun withArgs(type: MediaViewType, keyword: String, id: Int) = route.plus("/$type?keyword=$keyword&keywordId=$id")
+    }
+    object KnownForView: AppNavItem("known_for_route") {
+        fun withArgs(id: Int) = route.plus("/$id")
     }
 
 }

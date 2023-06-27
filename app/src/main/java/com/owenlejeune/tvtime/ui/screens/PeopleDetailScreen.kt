@@ -1,6 +1,7 @@
 package com.owenlejeune.tvtime.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -30,6 +31,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.google.accompanist.pager.ExperimentalPagerApi
@@ -45,6 +47,9 @@ import com.owenlejeune.tvtime.ui.navigation.AppNavItem
 import com.owenlejeune.tvtime.ui.viewmodel.MainViewModel
 import com.owenlejeune.tvtime.utils.TmdbUtils
 import com.owenlejeune.tvtime.utils.types.MediaViewType
+import java.lang.Integer.min
+
+private const val TAG = "PeopleDetailScreen"
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPagerApi::class)
 @Composable
@@ -102,10 +107,9 @@ fun PersonDetailScreen(
             ) {
                 DetailHeader(
                     posterUrl = TmdbUtils.getFullPersonImagePath(person?.profilePath),
-                    posterContentDescription = person?.profilePath
+                    posterContentDescription = person?.profilePath,
+                    elevation = 0.dp
                 )
-
-                BiographyCard(person = person)
 
                 val externalIdsMap = remember { mainViewModel.peopleExternalIdsMap }
                 val externalIds = externalIdsMap[personId]
@@ -116,8 +120,10 @@ fun PersonDetailScreen(
                     )
                 }
 
+                BiographyCard(person = person)
+
                 val creditsMap = remember { mainViewModel.peopleCastMap }
-                val credits = creditsMap[personId]
+                val credits = creditsMap[personId] ?: emptyList()
 
                 ContentCard(
                     title = stringResource(R.string.known_for_label)
@@ -129,11 +135,11 @@ fun PersonDetailScreen(
                             .padding(12.dp),
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
-                        items(credits?.size ?: 0) { i ->
-                            val content = credits!![i]
+                        items(min(credits.size, 15)) { i ->
+                            val content = credits[i]
 
                             TwoLineImageTextCard(
-                                title = content.name,
+                                title = content.title,
                                 titleTextColor = MaterialTheme.colorScheme.primary,
                                 subtitle = content.character,
                                 modifier = Modifier
@@ -148,54 +154,17 @@ fun PersonDetailScreen(
                             )
                         }
                     }
-                }
 
-                val crewMap = remember { mainViewModel.peopleCrewMap }
-                val crewCredits = crewMap[personId]
-                val departments = crewCredits?.map { it.department }?.toSet() ?: emptySet()
-                if (departments.isNotEmpty()) {
-                    ContentCard(title = stringResource(R.string.also_known_for_label)) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .wrapContentHeight()
-                                .padding(12.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            departments.forEach { department ->
-                                Text(text = department, color = MaterialTheme.colorScheme.primary)
-                                LazyRow(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .wrapContentHeight(),
-                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
-                                ) {
-                                    val jobsInDepartment = crewCredits!!.filter { it.department == department }
-                                    items(jobsInDepartment.size) { i ->
-                                        val content = jobsInDepartment[i]
-                                        val title = if (content.mediaType == MediaViewType.MOVIE) {
-                                            content.title ?: ""
-                                        } else {
-                                            content.name ?: ""
-                                        }
-                                        TwoLineImageTextCard(
-                                            title = title,
-                                            subtitle = content.job,
-                                            modifier = Modifier
-                                                .width(124.dp)
-                                                .wrapContentHeight(),
-                                            imageUrl = TmdbUtils.getFullPosterPath(content.posterPath),
-                                            onItemClicked = {
-                                                appNavController.navigate(
-                                                    AppNavItem.DetailView.withArgs(content.mediaType, content.id)
-                                                )
-                                            }
-                                        )
-                                    }
-                                }
+                    Text(
+                        text = stringResource(id = R.string.expand_see_all),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontSize = 12.sp,
+                        modifier = Modifier
+                            .padding(start = 16.dp, bottom = 16.dp)
+                            .clickable {
+                                appNavController.navigate(AppNavItem.KnownForView.withArgs(personId))
                             }
-                        }
-                    }
+                    )
                 }
             }
         }

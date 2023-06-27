@@ -451,8 +451,8 @@ fun RatingRing(
     progress: Float = 0f,
     size: Dp = 60.dp,
     ringStrokeWidth: Dp = 4.dp,
-    ringColor: Color = MaterialTheme.colorScheme.primary,
-    trackColor: Color = MaterialTheme.colorScheme.tertiaryContainer,
+    ringColor: Color = MaterialTheme.colorScheme.tertiaryContainer,
+    trackColor: Color = MaterialTheme.colorScheme.tertiary,
     textColor: Color = Color.White,
     textSize: TextUnit = 14.sp
 ) {
@@ -474,6 +474,29 @@ fun RatingRing(
             text = "${(progress*100).toInt()}%",
             color = textColor,
             fontSize = textSize
+        )
+    }
+}
+
+
+@Composable
+fun RatingView(
+    progress: Float,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .clip(CircleShape)
+            .size(60.dp)
+            .background(color = MaterialTheme.colorScheme.secondary)
+    ) {
+        RatingRing(
+            modifier = Modifier.padding(5.dp),
+            textColor = MaterialTheme.colorScheme.onSecondary,
+            progress = progress,
+            textSize = 14.sp,
+            ringStrokeWidth = 4.dp,
+            size = 50.dp
         )
     }
 }

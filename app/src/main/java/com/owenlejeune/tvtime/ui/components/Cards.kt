@@ -32,6 +32,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -172,23 +173,43 @@ fun TwoLineImageTextCard(
             elevation = 0.dp,
             overrideShowTitle = false
         )
-        MinLinesText(
+        Text(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 5.dp),
-            minLines = 2,
             text = title,
+            minLines = 2,
+            maxLines = 2,
             color = titleTextColor,
-            style = MaterialTheme.typography.bodyMedium
+            style = MaterialTheme.typography.bodyMedium,
+            overflow = TextOverflow.Ellipsis
         )
-        subtitle?.let {
-            MinLinesText(
-                modifier = Modifier.fillMaxWidth(),
-                minLines = 2,
-                text = subtitle,
-                style = MaterialTheme.typography.bodySmall,
-                color = subtitleTextColor
-            )
-        }
+        Text(
+            modifier = Modifier.fillMaxWidth(),
+            minLines = 2,
+            maxLines = 2,
+            text = subtitle ?: "",
+            style = MaterialTheme.typography.bodySmall,
+            color = subtitleTextColor,
+            overflow = TextOverflow.Ellipsis
+        )
+//        MinLinesText(
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .padding(top = 5.dp),
+//            minLines = 2,
+//            text = title,
+//            color = titleTextColor,
+//            style = MaterialTheme.typography.bodyMedium
+//        )
+//        subtitle?.let {
+//            MinLinesText(
+//                modifier = Modifier.fillMaxWidth(),
+//                minLines = 2,
+//                text = subtitle,
+//                style = MaterialTheme.typography.bodySmall,
+//                color = subtitleTextColor
+//            )
+//        }
     }
 }

@@ -35,6 +35,7 @@
 
     <string name="expandable_see_more">See more</string>
     <string name="expandable_see_less">See less</string>
+    <string name="expand_see_all">See all</string>
 
     <string name="search_placeholder">Search %1$s</string>
 
@@ -230,4 +231,10 @@
     <string name="streaming_label">Streaming</string>
     <string name="rent_label">Rent</string>
     <string name="buy_label">Buy</string>
+
+    <string name="actor_label">Actor</string>
+    <string name="production_label">Production</string>
+    <string name="cast_character_template">as %1$s</string>
+    <string name="cast_tv_character_template">as %1$s (%2$d eps.)</string>
+    <string name="crew_template">… %1$s</string>
 </resources>

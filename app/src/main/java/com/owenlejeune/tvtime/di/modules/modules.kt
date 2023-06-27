@@ -2,6 +2,7 @@ package com.owenlejeune.tvtime.di.modules
 
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonDeserializer
+import com.google.gson.TypeAdapter
 import com.owenlejeune.tvtime.BuildConfig
 import com.owenlejeune.tvtime.api.*
 import com.owenlejeune.tvtime.api.tmdb.TmdbClient
@@ -13,9 +14,13 @@ import com.owenlejeune.tvtime.api.tmdb.api.v3.PeopleService
 import com.owenlejeune.tvtime.api.tmdb.api.v3.SearchService
 import com.owenlejeune.tvtime.api.tmdb.api.v3.TvService
 import com.owenlejeune.tvtime.api.tmdb.api.v3.deserializer.AccountStatesDeserializer
+import com.owenlejeune.tvtime.api.tmdb.api.v3.deserializer.DetailCastDeserializer
+import com.owenlejeune.tvtime.api.tmdb.api.v3.deserializer.DetailCrewDeserializer
 import com.owenlejeune.tvtime.api.tmdb.api.v3.deserializer.KnownForDeserializer
 import com.owenlejeune.tvtime.api.tmdb.api.v3.deserializer.SortableSearchResultDeserializer
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.AccountStates
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.DetailCast
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.DetailCrew
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.KnownFor
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.SortableSearchResult
 import com.owenlejeune.tvtime.api.tmdb.api.v4.AccountV4Service
@@ -29,6 +34,7 @@ import com.owenlejeune.tvtime.ui.viewmodel.SettingsViewModel
 import com.owenlejeune.tvtime.utils.ResourceUtils
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
+import java.util.Date
 
 val networkModule = module {
     single { if (BuildConfig.DEBUG) DebugHttpClient() else ProdHttpClient() }
@@ -58,18 +64,21 @@ val networkModule = module {
     single { AuthenticationV4Service() }
     single { ListV4Service() }
 
-    single<Map<Class<*>, JsonDeserializer<*>>> {
+    single<Map<Class<*>, Any>> {
         mapOf(
             ListItem::class.java to ListItemDeserializer(),
             KnownFor::class.java to KnownForDeserializer(),
             SortableSearchResult::class.java to SortableSearchResultDeserializer(),
-            AccountStates::class.java to AccountStatesDeserializer()
+            AccountStates::class.java to AccountStatesDeserializer(),
+            DetailCast::class.java to DetailCastDeserializer(),
+            DetailCrew::class.java to DetailCrewDeserializer(),
+            Date::class.java to DateTypeAdapter()
         )
     }
 
     single {
         GsonBuilder().apply {
-            get<Map<Class<*>, JsonDeserializer<*>>>().forEach { des ->
+            get<Map<Class<*>, Any>>().forEach { des ->
                 registerTypeAdapter(des.key, des.value)
             }
         }.create()
