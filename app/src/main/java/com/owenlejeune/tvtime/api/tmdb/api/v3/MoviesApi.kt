@@ -26,7 +26,7 @@ interface MoviesApi {
     suspend fun getMovieImages(@Path("id") id: Int): Response<ImageCollection>
 
     @GET("movie/{id}/credits")
-    suspend fun getCastAndCrew(@Path("id") id: Int): Response<CastAndCrew>
+    suspend fun getCastAndCrew(@Path("id") id: Int): Response<MovieCastAndCrew>
 
     @GET("movie/{id}/release_dates")
     suspend fun getReleaseDates(@Path("id") id: Int): Response<MovieReleaseResults>

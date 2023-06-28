@@ -25,8 +25,8 @@ interface TvApi {
     @GET("tv/{id}/images")
     suspend fun getTvImages(@Path("id") id: Int): Response<ImageCollection>
 
-    @GET("tv/{id}/credits")
-    suspend fun getCastAndCrew(@Path("id") id: Int): Response<CastAndCrew>
+    @GET("tv/{id}/aggregate_credits")
+    suspend fun getCastAndCrew(@Path("id") id: Int): Response<TvCastAndCrew>
 
     @GET("tv/{id}/content_ratings")
     suspend fun getContentRatings(@Path("id") id: Int): Response<TvContentRatings>

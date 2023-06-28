@@ -119,7 +119,7 @@ class OnboardingActivity: MonetCompatActivity() {
                     .fillMaxWidth()
                     .padding(all = 12.dp)
             ) {
-                OnboardingPage[pagerState.currentPage].footer.invoke(this@Column)
+                OnboardingPage[pagerState.currentPage].footer.invoke(this)
                 Row(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     modifier = Modifier.fillMaxWidth()

@@ -629,8 +629,18 @@ private fun CastCrewCard(appNavController: NavController, person: Person) {
             .width(124.dp)
             .wrapContentHeight(),
         subtitle = when (person) {
-            is CastMember -> person.character
-            is CrewMember -> person.job
+            is MovieCastMember -> person.character
+            is MovieCrewMember -> person.job
+            is TvCastMember -> {
+                val roles = person.roles.joinToString(separator = "/") { it.role }
+                val epsCount = person.totalEpisodeCount
+                "$roles ($epsCount Eps.)"
+            }
+            is TvCrewMember -> {
+                val roles = person.jobs.joinToString(separator = "/") { it.role }
+                val epsCount = person.totalEpisodeCount
+                "$roles ($epsCount Eps.)"
+            }
             else -> null
         },
         imageUrl = TmdbUtils.getFullPersonImagePath(person),
