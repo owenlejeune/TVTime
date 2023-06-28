@@ -1,6 +1,7 @@
 package com.owenlejeune.tvtime.api.tmdb.api.v3.model
 
 import com.google.gson.annotations.SerializedName
+import java.util.Date
 
 class DetailedTv(
     id: Int,
@@ -20,8 +21,8 @@ class DetailedTv(
     popularity: Float,
     spokenLanguages: List<SpokenLanguage>,
     @SerializedName("created_by") val createdBy: List<Person>,
-    @SerializedName("first_air_date") val firstAirDate: String,
-    @SerializedName("last_air_date") val lastAirDate: String,
+    @SerializedName("first_air_date") val firstAirDate: Date?,
+    @SerializedName("last_air_date") val lastAirDate: Date?,
     @SerializedName("in_production") val inProduction: Boolean,
     @SerializedName("networks") val networks: List<Network>,
     @SerializedName("number_of_episodes") val numberOfEpisodes: Int,

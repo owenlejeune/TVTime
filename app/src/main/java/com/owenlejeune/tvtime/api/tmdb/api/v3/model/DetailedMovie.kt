@@ -1,6 +1,7 @@
 package com.owenlejeune.tvtime.api.tmdb.api.v3.model
 
 import com.google.gson.annotations.SerializedName
+import java.util.Date
 
 class DetailedMovie(
     id: Int,
@@ -21,7 +22,7 @@ class DetailedMovie(
     spokenLanguages: List<SpokenLanguage>,
     @SerializedName("adult") val isAdult: Boolean,
     @SerializedName("budget") val budget: Int,
-    @SerializedName("release_date") val releaseDate: String,
+    @SerializedName("release_date") val releaseDate: Date?,
     @SerializedName("revenue") val revenue: Long,
     @SerializedName("runtime") val runtime: Int?,
     @SerializedName("imdb_id") val imdbId: String?,

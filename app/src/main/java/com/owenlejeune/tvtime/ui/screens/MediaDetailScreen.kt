@@ -317,7 +317,7 @@ private fun MiscMovieDetails(
                 .fillMaxWidth()
                 .wrapContentHeight()
                 .padding(horizontal = 16.dp),
-            year = TmdbUtils.getMovieReleaseYear(movie),
+            year = movie.releaseDate?.getCalendarYear()?.toString() ?: "",
             runtime = TmdbUtils.convertRuntimeToHoursMinutes(movie),
             genres = movie.genres,
             contentRating = contentRating
@@ -673,7 +673,7 @@ private fun SeasonCard(
 
     lastSeason?.let {
         ContentCard(
-            title = "Latest Season"
+            title = stringResource(R.string.latest_season_title)
         ) {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -696,7 +696,7 @@ private fun SeasonCard(
                         style = MaterialTheme.typography.titleMedium
                     )
                     Text(
-                        text = "${it.airDate?.getCalendarYear()} | ${it.episodes.size} Episodes"
+                        text = stringResource(id = R.string.season_ep_count, it.airDate?.getCalendarYear() ?: 0, it.episodes.size)
                     )
                     Text(
                         text = it.overview,
@@ -715,7 +715,7 @@ private fun SeasonCard(
                     }
             ) {
                 Text(
-                    text = "See all seasons",
+                    text = stringResource(id = R.string.see_all_seasons_text),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 14.sp,
                     modifier = Modifier.padding(4.dp)

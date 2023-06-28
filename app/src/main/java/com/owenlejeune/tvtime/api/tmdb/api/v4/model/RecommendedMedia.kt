@@ -2,6 +2,7 @@ package com.owenlejeune.tvtime.api.tmdb.api.v4.model
 
 import com.google.gson.annotations.SerializedName
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.TmdbItem
+import java.util.Date
 
 abstract class RecommendedMedia(
     id: Int,
@@ -25,7 +26,7 @@ abstract class RecommendedMedia(
     @SerializedName("popularity")
     val popularity: Float,
     @SerializedName("release_date", alternate = ["first_air_date"])
-    val releaseDate: String,
+    val releaseDate: Date?,
     @SerializedName("vote_average")
     val voteAverage: Float,
     @SerializedName("vote_count")

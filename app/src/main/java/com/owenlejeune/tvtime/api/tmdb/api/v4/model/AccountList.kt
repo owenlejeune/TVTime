@@ -1,6 +1,7 @@
 package com.owenlejeune.tvtime.api.tmdb.api.v4.model
 
 import com.google.gson.annotations.SerializedName
+import java.util.Date
 
 class AccountList(
     @SerializedName("iso_639_1") val languageCode: String,
@@ -10,8 +11,8 @@ class AccountList(
     @SerializedName("revenue") val revenue: String,
     @SerializedName("public") val public: Int,
     @SerializedName("name") val name: String,
-    @SerializedName("updated_at") val updatedAt: String,
-    @SerializedName("created_at") val createdAt: String,
+    @SerializedName("updated_at") val updatedAt: Date?,
+    @SerializedName("created_at") val createdAt: Date?,
 //    @SerializedName("sort_by")
     @SerializedName("backdrop_path") val backdropPath: String,
     @SerializedName("runtime") val runtime: Int,

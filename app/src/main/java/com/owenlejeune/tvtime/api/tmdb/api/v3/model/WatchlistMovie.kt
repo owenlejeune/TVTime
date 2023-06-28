@@ -1,6 +1,7 @@
 package com.owenlejeune.tvtime.api.tmdb.api.v3.model
 
 import com.google.gson.annotations.SerializedName
+import java.util.Date
 
 class WatchlistMovie(
     posterPath: String?,
@@ -9,7 +10,7 @@ class WatchlistMovie(
     backdropPath: String?,
     voteAverage: Float,
     overview: String,
-    releaseDate: String,
+    releaseDate: Date?,
     genreIds: List<Int>,
     originalLanguage: String,
     voteCount: Int,

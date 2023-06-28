@@ -2,10 +2,11 @@ package com.owenlejeune.tvtime.api.tmdb.api.v3.model
 
 import com.google.gson.annotations.SerializedName
 import com.owenlejeune.tvtime.utils.types.MediaViewType
+import java.util.Date
 
 abstract class KnownFor(
     @SerializedName("backdrop_path") val backdropPath: String?,
-    @SerializedName("release_date", alternate = ["first_air_date"]) val releaseDate: String,
+    @SerializedName("release_date", alternate = ["first_air_date"]) val releaseDate: Date?,
     @SerializedName("genre_ids") val genreIds: List<Int>,
     @SerializedName("id") val id: Int,
     @SerializedName("media_type") val mediaType: MediaViewType,

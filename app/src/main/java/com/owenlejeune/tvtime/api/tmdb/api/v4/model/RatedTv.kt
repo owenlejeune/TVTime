@@ -1,6 +1,7 @@
 package com.owenlejeune.tvtime.api.tmdb.api.v4.model
 
 import com.google.gson.annotations.SerializedName
+import java.util.Date
 
 class RatedTv(
     id: Int,
@@ -15,7 +16,7 @@ class RatedTv(
     originalName: String,
     posterPath: String?,
     popularity: Float,
-    releaseDate: String,
+    releaseDate: Date?,
     @SerializedName("origin_country") val originCountry: List<String>,
 ): RatedMedia(
     RatedType.SERIES, id, overview, name, voteAverage, voteCount, rating, releaseDate,

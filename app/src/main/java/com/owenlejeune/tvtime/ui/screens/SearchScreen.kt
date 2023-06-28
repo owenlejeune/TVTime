@@ -29,6 +29,7 @@ import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.api.tmdb.api.v3.MoviesService
 import com.owenlejeune.tvtime.api.tmdb.api.v3.TvService
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.*
+import com.owenlejeune.tvtime.extensions.getCalendarYear
 import com.owenlejeune.tvtime.extensions.lazyPagingItems
 import com.owenlejeune.tvtime.ui.components.MediaResultCard
 import com.owenlejeune.tvtime.ui.components.SelectableTextChip
@@ -400,7 +401,7 @@ private fun MovieSearchResultView(
         backdropModel = { TmdbUtils.getFullBackdropPath(result.backdropPath) },
         additionalDetails = {
             listOf(
-                TmdbUtils.releaseYearFromData(result.releaseDate),
+                result.releaseDate?.getCalendarYear()?.toString() ?: "",
                 cast?.joinToString(separator = ", ") { it.name } ?: ""
             )
         }
@@ -429,7 +430,7 @@ private fun TvSearchResultView(
         backdropModel = { TmdbUtils.getFullBackdropPath(result.backdropPath) },
         additionalDetails = {
             listOf(
-                "${TmdbUtils.releaseYearFromData(result.releaseDate)}  ${context.getString(R.string.search_result_tv_series)}",
+                "${result.releaseDate?.getCalendarYear() ?: ""}  ${context.getString(R.string.search_result_tv_series)}",
                 cast?.joinToString(separator = ", ") { it.name } ?: ""
             )
         }
@@ -445,7 +446,7 @@ private fun PeopleSearchResultView(
 
     val additional = mostKnownFor?.let {
         listOf(
-            "${mostKnownFor.title} (${TmdbUtils.releaseYearFromData(mostKnownFor.releaseDate)})"
+            "${mostKnownFor.title} (${mostKnownFor.releaseDate?.getCalendarYear()})"
         )
     } ?: emptyList()
 

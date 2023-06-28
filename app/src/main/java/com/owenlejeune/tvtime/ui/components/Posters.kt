@@ -145,12 +145,12 @@ fun PosterItem(
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PosterItem(
     url: String?,
     modifier: Modifier = Modifier,
     width: Dp = POSTER_WIDTH,
+    height: Dp = POSTER_HEIGHT,
     onClick: () -> Unit = {},
     enabled: Boolean = true,
     placeholder: ImageVector = Icons.Filled.Movie,
@@ -164,6 +164,7 @@ fun PosterItem(
         elevation = CardDefaults.elevatedCardElevation(defaultElevation = elevation),
         modifier = modifier
             .width(width = width)
+            .height(height = height)
             .wrapContentHeight()
             .clickable(
                 enabled = enabled,
@@ -176,7 +177,7 @@ fun PosterItem(
         val m = if (backgroundColor == Color.Transparent) {
             Modifier.wrapContentHeight()
         } else {
-            Modifier.height(POSTER_HEIGHT)
+            Modifier.height(height)
         }
         Box(
             modifier = m

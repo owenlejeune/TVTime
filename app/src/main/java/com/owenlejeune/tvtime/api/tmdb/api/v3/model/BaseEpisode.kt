@@ -1,9 +1,10 @@
 package com.owenlejeune.tvtime.api.tmdb.api.v3.model
 
 import com.google.gson.annotations.SerializedName
+import java.util.Date
 
 class BaseEpisode(
-    @SerializedName("air_date") val airDate: String,
+    @SerializedName("air_date") val airDate: Date?,
     @SerializedName("episode_number") val episodeNumber: Int,
     @SerializedName("id") val id: Int,
     @SerializedName("name") val name: String,

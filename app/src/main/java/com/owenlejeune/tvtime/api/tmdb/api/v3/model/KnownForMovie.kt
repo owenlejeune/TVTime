@@ -2,10 +2,11 @@ package com.owenlejeune.tvtime.api.tmdb.api.v3.model
 
 import com.google.gson.annotations.SerializedName
 import com.owenlejeune.tvtime.utils.types.MediaViewType
+import java.util.Date
 
 class KnownForMovie(
     backdropPath: String?,
-    releaseDate: String,
+    releaseDate: Date?,
     genreIds: List<Int>,
     id: Int,
     mediaType: MediaViewType,

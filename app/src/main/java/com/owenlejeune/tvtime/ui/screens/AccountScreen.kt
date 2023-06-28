@@ -34,6 +34,7 @@ import com.owenlejeune.tvtime.api.tmdb.api.v4.model.AccountList
 import com.owenlejeune.tvtime.api.tmdb.api.v4.model.RatedMedia
 import com.owenlejeune.tvtime.api.tmdb.api.v4.model.RatedMovie
 import com.owenlejeune.tvtime.api.tmdb.api.v4.model.RatedTv
+import com.owenlejeune.tvtime.extensions.getCalendarYear
 import com.owenlejeune.tvtime.extensions.lazyPagingItems
 import com.owenlejeune.tvtime.extensions.unlessEmpty
 import com.owenlejeune.tvtime.ui.components.AccountIcon
@@ -47,6 +48,7 @@ import com.owenlejeune.tvtime.utils.SessionManager
 import com.owenlejeune.tvtime.utils.TmdbUtils
 import com.owenlejeune.tvtime.utils.types.MediaViewType
 import kotlinx.coroutines.launch
+import java.util.Date
 import kotlin.reflect.KClass
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -281,19 +283,23 @@ private fun MediaItemRow(
     mediaViewType: MediaViewType,
     id: Int,
     name: String,
-    date: String,
+    date: Date?,
     description: String,
     posterPath: String? = null,
     backdropPath: String? = null,
     rating: Float? = null
 ) {
+    var title = "$name •"
+    date?.let {
+        title += " (${date.getCalendarYear()})"
+    }
     MediaResultCard(
         appNavController = appNavController,
         mediaViewType = mediaViewType,
         id = id,
         backdropPath = backdropPath,
         posterPath = posterPath,
-        title = "$name (${date.split("-")[0]})",
+        title = title,
         additionalDetails = listOf(description),
         rating = rating
     )

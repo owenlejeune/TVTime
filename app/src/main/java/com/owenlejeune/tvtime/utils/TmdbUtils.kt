@@ -15,6 +15,7 @@ import com.owenlejeune.tvtime.api.tmdb.api.v3.model.Status
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.TmdbItem
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.TvContentRatings
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.Video
+import com.owenlejeune.tvtime.extensions.getCalendarYear
 import com.owenlejeune.tvtime.ui.viewmodel.ConfigurationViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -93,30 +94,14 @@ object TmdbUtils {
         }
     }
 
-    fun getFullEpisodeStillPath(episode: Episode): String? {
-        return getFullEpisodeStillPath(episode.stillPath)
-    }
-
-    fun getMovieReleaseYear(movie: DetailedMovie): String {
-        return movie.releaseDate.split("-")[0]
-    }
-
     fun getSeriesRun(series: DetailedTv): String {
-        val startYear = getTvStartYear(series)
+        val startYear = series.firstAirDate?.getCalendarYear() ?: ""
         val endYear = if (series.status == Status.ACTIVE) {
-            getTvEndYear(series)
+            series.lastAirDate?.getCalendarYear() ?: ""
         } else {
             ""
         }
         return "${startYear}-${endYear}"
-    }
-
-    fun getTvStartYear(series: DetailedTv): String {
-        return series.firstAirDate.split("-")[0]
-    }
-
-    fun getTvEndYear(series: DetailedTv): String {
-        return series.lastAirDate.split("-")[0]
     }
 
     fun convertRuntimeToHoursMinutes(movie: DetailedMovie): String {
@@ -197,12 +182,12 @@ object TmdbUtils {
         return ""
     }
 
-    fun formatDate(inDate: String): String {
-        val orig = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", java.util.Locale.US)
+    fun formatDate(inDate: Date?): String {
+        if (inDate == null) {
+            return ""
+        }
         val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm", java.util.Locale.US)
-
-        val date = orig.parse(inDate)//.replace("Z", "+0000"))
-        return formatter.format(date)
+        return formatter.format(inDate)
     }
 
     fun getAccountGravatarUrl(accountDetails: AccountDetails): String {
@@ -217,13 +202,6 @@ object TmdbUtils {
     fun getAccountAvatarUrl(accountDetails: AccountDetails): String {
         val path = accountDetails.avatar.tmdb?.avatarPath
         return IMAGE_BASE.plus(LOGO_SIZE).plus(path)
-    }
-
-    fun releaseYearFromData(releaseDate: String): String {
-        if (releaseDate.length >=4) {
-            return releaseDate.split("-").first { it.length == 4 }
-        }
-        return ""
     }
 
     fun formatRevenue(revenue: Long): String {

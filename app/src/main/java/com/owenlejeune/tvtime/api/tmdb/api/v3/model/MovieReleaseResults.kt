@@ -1,6 +1,7 @@
 package com.owenlejeune.tvtime.api.tmdb.api.v3.model
 
 import com.google.gson.annotations.SerializedName
+import java.util.Date
 
 data class MovieReleaseResults(
     @SerializedName("results") val releaseDates: List<ReleaseDateResult>
@@ -13,7 +14,7 @@ data class MovieReleaseResults(
 
     inner class ReleaseDate(
         @SerializedName("certification") val certification: String,
-        @SerializedName("release_date") val releaseDate: String
+        @SerializedName("release_date") val releaseDate: Date?
     )
 
 }

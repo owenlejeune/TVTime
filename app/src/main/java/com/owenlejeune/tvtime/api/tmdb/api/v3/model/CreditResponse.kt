@@ -26,7 +26,7 @@ abstract class CreditMedia(
     @SerializedName("media_type") val mediaType: MediaViewType,
     @SerializedName("genre_ids") val genreIds: List<Int>,
     @SerializedName("popularity") val popularity: Float,
-    @SerializedName("release_date", alternate = ["first_air_date"]) val releaseDate: Date,
+    @SerializedName("release_date", alternate = ["first_air_date"]) val releaseDate: Date?,
     @SerializedName("vote_average") val voteAverage: Float,
     @SerializedName("vote_count") val voteCount: Int,
     @SerializedName("character") val character: String
@@ -73,7 +73,7 @@ class CreditTv(
     MediaViewType.TV, genreIds, popularity, releaseDate, voteAverage, voteCount, character)
 
 class CreditEpisode(
-    @SerializedName("air_date") val airDate: Date,
+    @SerializedName("air_date") val airDate: Date?,
     @SerializedName("episode_number") val episodeNumber: Int,
     @SerializedName("id") val id: Int,
     @SerializedName("name") val name: String,
@@ -86,7 +86,7 @@ class CreditEpisode(
 )
 
 class CreditSeason(
-    @SerializedName("air_date") val airDate: Date,
+    @SerializedName("air_date") val airDate: Date?,
     @SerializedName("episode_count") val episodeCount: Int,
     @SerializedName("id") val id: Int,
     @SerializedName("name") val name: String,

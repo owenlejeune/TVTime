@@ -238,4 +238,7 @@
     <string name="cast_tv_character_template">as %1$s (%2$d eps.)</string>
     <string name="crew_template">… %1$s</string>
     <string name="images_title">Images</string>
+    <string name="latest_season_title">Latest Season</string>
+    <string name="season_ep_count">%1$d | %2$d Episodes</string>
+    <string name="see_all_seasons_text">See all seasons</string>
 </resources>

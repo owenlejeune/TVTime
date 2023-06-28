@@ -1,6 +1,7 @@
 package com.owenlejeune.tvtime.api.tmdb.api.v4.model
 
 import com.google.gson.annotations.SerializedName
+import java.util.Date
 
 class RatedMovie(
     id: Int,
@@ -15,7 +16,7 @@ class RatedMovie(
     originalName: String,
     posterPath: String?,
     popularity: Float,
-    releaseDate: String,
+    releaseDate: Date?,
     @SerializedName("adult") val isAdult: Boolean,
     @SerializedName("video") val video: Boolean
 ): RatedMedia(
