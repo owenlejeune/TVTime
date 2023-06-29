@@ -63,6 +63,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
+import coil.request.CachePolicy
+import coil.request.ImageRequest
 import com.google.accompanist.flowlayout.FlowRow
 import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.AuthorDetails
@@ -601,6 +603,13 @@ fun FullScreenThumbnailVideoPlayer(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
+        val url = "https://img.youtube.com/vi/${key}/hqdefault.jpg"
+        val model = ImageRequest.Builder(LocalContext.current)
+            .data(url)
+            .diskCacheKey(url ?: "")
+            .networkCachePolicy(CachePolicy.ENABLED)
+            .memoryCachePolicy(CachePolicy.ENABLED)
+            .build()
         AsyncImage(
             modifier = Modifier
                 .clickable(
@@ -611,7 +620,7 @@ fun FullScreenThumbnailVideoPlayer(
                         context.startActivity(intent)
                     }
                 ),
-            model = "https://img.youtube.com/vi/${key}/hqdefault.jpg",
+            model = model,
             contentDescription = "",
             placeholder = rememberAsyncImagePainter(model = R.drawable.placeholder)
         )
@@ -684,11 +693,18 @@ fun AvatarImage(
     modifier: Modifier = Modifier
 ) {
     if (author.avatarPath != null) {
+        val url = TmdbUtils.getFullAvatarPath(author)
+        val model = ImageRequest.Builder(LocalContext.current)
+            .data(url)
+            .diskCacheKey(url ?: "")
+            .networkCachePolicy(CachePolicy.ENABLED)
+            .memoryCachePolicy(CachePolicy.ENABLED)
+            .build()
         AsyncImage(
             modifier = modifier
                 .size(size)
                 .clip(CircleShape),
-            model = TmdbUtils.getFullAvatarPath(author),
+            model = model,
             contentDescription = ""
         )
     } else {
@@ -766,8 +782,14 @@ fun AccountIcon(
             UserInitials(size = size, name = name)
         } else {
             Box(modifier = Modifier.size(size)) {
+                val model = ImageRequest.Builder(LocalContext.current)
+                    .data(avatarUrl)
+                    .diskCacheKey(avatarUrl)
+                    .networkCachePolicy(CachePolicy.ENABLED)
+                    .memoryCachePolicy(CachePolicy.ENABLED)
+                    .build()
                 AsyncImage(
-                    model = avatarUrl,
+                    model = model,
                     contentDescription = "",
                     modifier = Modifier
                         .size(60.dp)

@@ -32,6 +32,8 @@ import androidx.constraintlayout.compose.Dimension
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import coil.request.CachePolicy
+import coil.request.ImageRequest
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.api.tmdb.api.v4.ListV4Service
@@ -143,11 +145,18 @@ private fun ListHeader(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            val url = TmdbUtils.getAccountGravatarUrl(list.createdBy.gravatarHash)
+            val model = ImageRequest.Builder(LocalContext.current)
+                .data(url)
+                .diskCacheKey(url ?: "")
+                .networkCachePolicy(CachePolicy.ENABLED)
+                .memoryCachePolicy(CachePolicy.ENABLED)
+                .build()
             AsyncImage(
                 modifier = Modifier
                     .clip(CircleShape)
                     .size(50.dp),
-                model = TmdbUtils.getAccountGravatarUrl(list.createdBy.gravatarHash),
+                model = model,
                 contentDescription = null,
             )
             Text(
@@ -446,8 +455,15 @@ private fun ListItemView(
                 modifier = Modifier.height(112.dp)
             ) {
                 listItem.backdropPath?.let {
+                    val url = TmdbUtils.getFullBackdropPath(listItem.backdropPath)
+                    val model = ImageRequest.Builder(LocalContext.current)
+                        .data(url)
+                        .diskCacheKey(url ?: "")
+                        .networkCachePolicy(CachePolicy.ENABLED)
+                        .memoryCachePolicy(CachePolicy.ENABLED)
+                        .build()
                     AsyncImage(
-                        model = TmdbUtils.getFullBackdropPath(listItem.backdropPath),
+                        model = model,
                         contentDescription = null,
                         contentScale = ContentScale.FillWidth,
                         modifier = Modifier
@@ -470,6 +486,13 @@ private fun ListItemView(
                 ) {
                     val (poster, content, ratingView) = createRefs()
 
+                    val url = TmdbUtils.getFullPosterPath(listItem.posterPath)
+                    val model = ImageRequest.Builder(LocalContext.current)
+                        .data(url)
+                        .diskCacheKey(url ?: "")
+                        .networkCachePolicy(CachePolicy.ENABLED)
+                        .memoryCachePolicy(CachePolicy.ENABLED)
+                        .build()
                     AsyncImage(
                         modifier = Modifier
                             .constrainAs(poster) {
@@ -480,7 +503,7 @@ private fun ListItemView(
                             }
                             .aspectRatio(0.7f)
                             .clip(RoundedCornerShape(10.dp)),
-                        model = TmdbUtils.getFullPosterPath(listItem.posterPath) ?: R.drawable.placeholder_transparent,
+                        model = model,
                         contentDescription = listItem.title
                     )
 

@@ -12,6 +12,7 @@ import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -20,6 +21,8 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import coil.request.CachePolicy
+import coil.request.ImageRequest
 import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.ui.navigation.AppNavItem
 import com.owenlejeune.tvtime.utils.types.MediaViewType
@@ -55,8 +58,14 @@ fun MediaResultCard(
             modifier = Modifier.height(112.dp)
         ) {
             backdropPath?.let {
+                val model = ImageRequest.Builder(LocalContext.current)
+                    .data(backdropPath)
+                    .diskCacheKey(backdropPath.toString())
+                    .networkCachePolicy(CachePolicy.ENABLED)
+                    .memoryCachePolicy(CachePolicy.ENABLED)
+                    .build()
                 AsyncImage(
-                    model = backdropPath,
+                    model = model,
                     contentDescription = null,
                     contentScale = ContentScale.FillWidth,
                     modifier = Modifier
@@ -79,6 +88,12 @@ fun MediaResultCard(
             ) {
                 val (poster, content, ratingView) = createRefs()
 
+                val model = ImageRequest.Builder(LocalContext.current)
+                    .data(posterPath)
+                    .diskCacheKey(posterPath?.toString() ?: "")
+                    .networkCachePolicy(CachePolicy.ENABLED)
+                    .memoryCachePolicy(CachePolicy.ENABLED)
+                    .build()
                 AsyncImage(
                     modifier = Modifier
                         .constrainAs(poster) {
@@ -89,7 +104,7 @@ fun MediaResultCard(
                         }
                         .aspectRatio(0.7f)
                         .clip(RoundedCornerShape(10.dp)),
-                    model = posterPath ?: R.drawable.placeholder_transparent,
+                    model = model,
                     contentDescription = title
                 )
 

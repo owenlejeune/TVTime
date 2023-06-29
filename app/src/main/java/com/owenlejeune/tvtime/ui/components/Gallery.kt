@@ -20,6 +20,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -31,9 +32,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TileMode
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import coil.request.CachePolicy
+import coil.request.ImageRequest
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.PagerState
@@ -55,7 +59,7 @@ fun TapGallery(
     val scope = rememberCoroutineScope()
 
     var showControls by remember { mutableStateOf(false) }
-    var lastTappedTime by remember { mutableStateOf(System.currentTimeMillis()) }
+    var lastTappedTime by remember { mutableLongStateOf(System.currentTimeMillis()) }
 
     var job: Job? = null
     LaunchedEffect(lastTappedTime) {
@@ -86,8 +90,14 @@ fun TapGallery(
                 .wrapContentHeight()
                 .onGloballyPositioned { sizeImage.value = it.size }
         ) { page ->
+            val model = ImageRequest.Builder(LocalContext.current)
+                .data(models[page])
+                .diskCacheKey(models[page]?.toString() ?: "")
+                .networkCachePolicy(CachePolicy.ENABLED)
+                .memoryCachePolicy(CachePolicy.ENABLED)
+                .build()
             AsyncImage(
-                model = models[page],
+                model = model,
                 contentDescription = null,
                 contentScale = ContentScale.FillWidth
             )

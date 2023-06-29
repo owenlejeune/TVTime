@@ -28,6 +28,8 @@ import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
+import coil.request.CachePolicy
+import coil.request.ImageRequest
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.PagerState
@@ -110,6 +112,65 @@ fun DetailHeader(
     }
 }
 
+@OptIn(ExperimentalPagerApi::class)
+@Composable
+fun DetailHeader2(
+    modifier: Modifier = Modifier,
+    showGalleryOverlay: MutableState<Boolean>? = null,
+    imageCollection: ImageCollection? = null,
+    backdropUrl: String? = null,
+    posterUrl: String? = null,
+    backdropContentDescription: String? = null,
+    posterContentDescription: String? = null,
+    rating: Float? = null,
+    pagerState: PagerState? = null,
+    elevation: Dp = 20.dp
+) {
+    Box(
+        modifier = modifier.then(
+            Modifier.fillMaxWidth().wrapContentHeight()
+        )
+    ) {
+        if (imageCollection != null) {
+            BackdropGallery(
+                modifier = Modifier
+                    .clickable {
+                        showGalleryOverlay?.value = true
+                    },
+                imageCollection = imageCollection,
+                state = pagerState
+            )
+        } else {
+            Backdrop(
+                imageUrl = backdropUrl,
+                contentDescription = backdropContentDescription
+            )
+        }
+
+        Row(
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+                .padding(start = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(20.dp),
+            verticalAlignment = Alignment.Bottom
+        ) {
+            PosterItem(
+                url = posterUrl,
+                title = posterContentDescription,
+                elevation = elevation,
+                overrideShowTitle = false,
+                enabled = false
+            )
+
+            rating?.let {
+                RatingView(
+                    progress = rating
+                )
+            }
+        }
+    }
+}
+
 @Composable
 private fun BackdropContainer(
     modifier: Modifier = Modifier,
@@ -146,8 +207,14 @@ private fun Backdrop(
         modifier = modifier
     ) { sizeImage ->
         if (imageUrl != null) {
+            val model = ImageRequest.Builder(LocalContext.current)
+                .data(imageUrl)
+                .diskCacheKey(imageUrl)
+                .networkCachePolicy(CachePolicy.ENABLED)
+                .memoryCachePolicy(CachePolicy.ENABLED)
+                .build()
             AsyncImage(
-                model = imageUrl,
+                model = model,
                 placeholder = rememberAsyncImagePainter(model = R.drawable.placeholder),
                 contentDescription = contentDescription,
                 modifier = Modifier.onGloballyPositioned { sizeImage.value = it.size },
@@ -183,8 +250,15 @@ fun BackdropGallery(
                 modifier = Modifier.fillMaxWidth()
             ) { page ->
                 val backdrop = imageCollection.backdrops[page]
+                val url = TmdbUtils.getFullBackdropPath(backdrop)
+                val model = ImageRequest.Builder(LocalContext.current)
+                    .data(url)
+                    .diskCacheKey(url ?: "")
+                    .networkCachePolicy(CachePolicy.ENABLED)
+                    .memoryCachePolicy(CachePolicy.ENABLED)
+                    .build()
                 AsyncImage(
-                    model = TmdbUtils.getFullBackdropPath(backdrop),
+                    model = model,
                     placeholder = rememberAsyncImagePainter(model = R.drawable.placeholder),
                     contentDescription = "",
                     modifier = Modifier.onGloballyPositioned { sizeImage.value = it.size },

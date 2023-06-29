@@ -41,7 +41,6 @@ import com.owenlejeune.tvtime.R
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ContentCard(
     modifier: Modifier = Modifier,
@@ -72,7 +71,6 @@ fun ContentCard(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExpandableContentCard(
     modifier: Modifier = Modifier,
@@ -120,7 +118,6 @@ fun ExpandableContentCard(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ListContentCard(
     modifier: Modifier = Modifier,
@@ -157,6 +154,7 @@ fun TwoLineImageTextCard(
     title: String,
     modifier: Modifier = Modifier,
     subtitle: String? = null,
+    hideSubtitle: Boolean = false,
     imageUrl: String? = null,
     placeholder: ImageVector = Icons.Filled.Person,
     titleTextColor: Color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -184,32 +182,16 @@ fun TwoLineImageTextCard(
             style = MaterialTheme.typography.bodyMedium,
             overflow = TextOverflow.Ellipsis
         )
-        Text(
-            modifier = Modifier.fillMaxWidth(),
-            minLines = 2,
-            maxLines = 2,
-            text = subtitle ?: "",
-            style = MaterialTheme.typography.bodySmall,
-            color = subtitleTextColor,
-            overflow = TextOverflow.Ellipsis
-        )
-//        MinLinesText(
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .padding(top = 5.dp),
-//            minLines = 2,
-//            text = title,
-//            color = titleTextColor,
-//            style = MaterialTheme.typography.bodyMedium
-//        )
-//        subtitle?.let {
-//            MinLinesText(
-//                modifier = Modifier.fillMaxWidth(),
-//                minLines = 2,
-//                text = subtitle,
-//                style = MaterialTheme.typography.bodySmall,
-//                color = subtitleTextColor
-//            )
-//        }
+        if (!hideSubtitle) {
+            Text(
+                modifier = Modifier.fillMaxWidth(),
+                minLines = 2,
+                maxLines = 2,
+                text = subtitle ?: "",
+                style = MaterialTheme.typography.bodySmall,
+                color = subtitleTextColor,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
     }
 }

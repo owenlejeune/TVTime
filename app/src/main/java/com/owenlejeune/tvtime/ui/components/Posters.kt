@@ -28,6 +28,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
@@ -35,6 +36,8 @@ import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import coil.compose.AsyncImage
+import coil.request.CachePolicy
+import coil.request.ImageRequest
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.HomePagePerson
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.Person
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.TmdbItem
@@ -202,6 +205,12 @@ fun PosterItem(
                 endY = sizeImage.height.toFloat()
             )
 
+            val model = ImageRequest.Builder(LocalContext.current)
+                .data(url)
+                .diskCacheKey(url ?: "")
+                .networkCachePolicy(CachePolicy.ENABLED)
+                .memoryCachePolicy(CachePolicy.ENABLED)
+                .build()
             AsyncImage(
                 modifier = Modifier
                     .width(width = width)
@@ -214,7 +223,7 @@ fun PosterItem(
                         Log.d("Poster", "Error loading: $url")
                     }
                 },
-                model = url,
+                model = model,
                 contentDescription = title,
                 contentScale = ContentScale.FillBounds,
                 onSuccess = { backgroundColor = Color.Transparent }

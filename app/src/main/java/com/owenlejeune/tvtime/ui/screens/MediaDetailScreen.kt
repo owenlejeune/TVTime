@@ -31,6 +31,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.paging.compose.collectAsLazyPagingItems
 import coil.compose.AsyncImage
+import coil.request.CachePolicy
+import coil.request.ImageRequest
 import com.google.accompanist.flowlayout.FlowRow
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.PagerState
@@ -165,7 +167,7 @@ private fun MediaViewContent(
                 .verticalScroll(state = rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            DetailHeader(
+            DetailHeader2(
                 posterUrl = TmdbUtils.getFullPosterPath(mediaItem?.posterPath),
                 posterContentDescription = mediaItem?.title,
                 backdropUrl = TmdbUtils.getFullBackdropPath(mediaItem?.backdropPath),
@@ -741,22 +743,22 @@ fun SimilarContentCard(
     val similarContent = similarContentMap[itemId]
     val pagingItems = similarContent?.collectAsLazyPagingItems()
 
-    ContentCard(
-        modifier = modifier,
-        title = stringResource(id = R.string.recommended_label)
-    ) {
-        LazyRow(
-            modifier = Modifier
-                .fillMaxWidth()
-                .wrapContentHeight()
-                .padding(vertical = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(4.dp)
+    pagingItems?.let {
+        ContentCard(
+            modifier = modifier,
+            title = stringResource(id = R.string.recommended_label)
         ) {
-            item {
-                Spacer(modifier = Modifier.width(8.dp))
-            }
-            pagingItems?.let {
-                lazyPagingItems(it) { item ->
+            LazyRow(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight()
+                    .padding(vertical = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                item {
+                    Spacer(modifier = Modifier.width(8.dp))
+                }
+                lazyPagingItems(pagingItems) { item ->
                     item?.let {
                         TwoLineImageTextCard(
                             title = item.title,
@@ -769,13 +771,14 @@ fun SimilarContentCard(
                                     AppNavItem.DetailView.withArgs(mediaType, item.id)
                                 )
                             },
-                            placeholder = Icons.Filled.Movie
+                            placeholder = Icons.Filled.Movie,
+                            hideSubtitle = true
                         )
                     }
                 }
-            }
-            item {
-                Spacer(modifier = Modifier.width(8.dp))
+                item {
+                    Spacer(modifier = Modifier.width(8.dp))
+                }
             }
         }
     }
@@ -964,8 +967,15 @@ private fun WatchProviderContainer(
                             context.startActivity(intent)
                         }
                 ) {
+                    val url = TmdbUtils.fullLogoPath(item.logoPath)
+                    val model = ImageRequest.Builder(LocalContext.current)
+                        .data(url)
+                        .diskCacheKey(url ?: "")
+                        .networkCachePolicy(CachePolicy.ENABLED)
+                        .memoryCachePolicy(CachePolicy.ENABLED)
+                        .build()
                     AsyncImage(
-                        model = TmdbUtils.fullLogoPath(item.logoPath),
+                        model = model,
                         contentDescription = null,
                         modifier = Modifier
                             .size(48.dp)
