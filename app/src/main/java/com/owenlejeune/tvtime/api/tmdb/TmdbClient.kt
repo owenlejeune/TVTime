@@ -1,6 +1,8 @@
 package com.owenlejeune.tvtime.api.tmdb
 
+import android.annotation.SuppressLint
 import androidx.compose.ui.text.intl.Locale
+import androidx.lifecycle.viewmodel.viewModelFactory
 import com.owenlejeune.tvtime.BuildConfig
 import com.owenlejeune.tvtime.api.Client
 import com.owenlejeune.tvtime.api.QueryParam
@@ -17,6 +19,7 @@ import com.owenlejeune.tvtime.api.tmdb.api.v4.AuthenticationV4Api
 import com.owenlejeune.tvtime.api.tmdb.api.v4.ListV4Api
 import com.owenlejeune.tvtime.extensions.addQueryParams
 import com.owenlejeune.tvtime.preferences.AppPreferences
+import com.owenlejeune.tvtime.ui.viewmodel.ConfigurationViewModel
 import com.owenlejeune.tvtime.utils.SessionManager
 import okhttp3.Interceptor
 import okhttp3.Response
@@ -33,7 +36,6 @@ class TmdbClient: KoinComponent {
 
     private val client: Client by inject { parametersOf(V_3_BASE_URL) }
     private val clientV4: Client by inject { parametersOf(V_4_BASE_URL) }
-    private val preferences: AppPreferences by inject()
 
     init {
         client.addInterceptor(TmdbInterceptor())
@@ -84,6 +86,21 @@ class TmdbClient: KoinComponent {
         return clientV4.create(ListV4Api::class.java)
     }
 
+    @SuppressLint("AutoboxingStateValueProperty")
+    private fun handleResponseCode(response: Response) {
+        when (response.code) {
+            429 -> {
+                ConfigurationViewModel.lastResponseCode.value = 429
+            }
+            in 400..499 -> {
+                ConfigurationViewModel.lastResponseCode.value = response.code
+            }
+            in 500..599 -> {
+                ConfigurationViewModel.lastResponseCode.value = response.code
+            }
+        }
+    }
+
     private inner class TmdbInterceptor: Interceptor {
         override fun intercept(chain: Interceptor.Chain): Response {
             val apiParam = QueryParam("api_key", BuildConfig.TMDB_ApiKey)
@@ -106,7 +123,11 @@ class TmdbClient: KoinComponent {
             val requestBuilder = chain.request().newBuilder().url(builder.build())
 
             val request = requestBuilder.build()
-            return chain.proceed(request)
+            val response = chain.proceed(request)
+
+            handleResponseCode(response)
+
+            return response
         }
 
         private fun sessionIdParam(urlSegments: List<String>): QueryParam? {
@@ -154,7 +175,11 @@ class TmdbClient: KoinComponent {
                 }
             }
 
-            return chain.proceed(builder.build())
+            val response = chain.proceed(builder.build())
+
+            handleResponseCode(response)
+
+            return response
         }
 
         private fun shouldIncludeLanguageParam(urlSegments: List<String>): Boolean {

@@ -241,4 +241,7 @@
     <string name="latest_season_title">Latest Season</string>
     <string name="season_ep_count">%1$d | %2$d Episodes</string>
     <string name="see_all_seasons_text">See all seasons</string>
+    <string name="network_disconnected_message">Network Disconnected</string>
+    <string name="network_api_rate_limit_reached">API Rate limit reached</string>
+    <string name="network_error_occurred">%1$d: An error occurred</string>
 </resources>
