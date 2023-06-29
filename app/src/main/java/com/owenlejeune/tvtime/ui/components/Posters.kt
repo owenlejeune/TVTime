@@ -7,6 +7,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyGridItemScope
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -57,6 +58,7 @@ private val POSTER_HEIGHT = 180.dp
 fun PagingPosterGrid(
     modifier: Modifier = Modifier,
     lazyPagingItems: LazyPagingItems<TmdbItem>?,
+    header: @Composable (LazyGridItemScope.() -> Unit)? = null,
     onClick: (id: Int) -> Unit = {}
 ) {
     lazyPagingItems?.let {
@@ -66,6 +68,9 @@ fun PagingPosterGrid(
             contentPadding = PaddingValues(8.dp),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
+            header?.let {
+                header(header)
+            }
             lazyPagingItems(
                 lazyPagingItems = lazyPagingItems,
                 key = { i -> it[i]!!.id }

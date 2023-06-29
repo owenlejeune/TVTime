@@ -99,33 +99,35 @@ fun MediaTabTrendingContent(
 
     val mediaListItems = flow.value.collectAsLazyPagingItems()
 
-    Column {
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            modifier = Modifier.padding(all = 12.dp)
-        ) {
-            SelectableTextChip(
-                selected = timeWindow.value == TimeWindow.DAY,
-                onSelected = { timeWindow.value = TimeWindow.DAY },
-                text = stringResource(id = R.string.time_window_day),
-                modifier = Modifier.weight(1f)
-            )
-            SelectableTextChip(
-                selected = timeWindow.value == TimeWindow.WEEK,
-                onSelected = { timeWindow.value = TimeWindow.WEEK },
-                text = stringResource(id = R.string.time_window_week),
-                modifier = Modifier.weight(1f)
-            )
-        }
-        PagingPosterGrid(
-            lazyPagingItems = mediaListItems,
-            onClick = { id ->
-                appNavController.navigate(
-                    AppNavItem.DetailView.withArgs(mediaType, id)
+    PagingPosterGrid(
+        lazyPagingItems = mediaListItems,
+        header = {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier
+                    .padding(horizontal = 4.dp)
+                    .padding(bottom = 4.dp)
+            ) {
+                SelectableTextChip(
+                    selected = timeWindow.value == TimeWindow.DAY,
+                    onSelected = { timeWindow.value = TimeWindow.DAY },
+                    text = stringResource(id = R.string.time_window_day),
+                    modifier = Modifier.weight(1f)
+                )
+                SelectableTextChip(
+                    selected = timeWindow.value == TimeWindow.WEEK,
+                    onSelected = { timeWindow.value = TimeWindow.WEEK },
+                    text = stringResource(id = R.string.time_window_week),
+                    modifier = Modifier.weight(1f)
                 )
             }
-        )
-    }
+        },
+        onClick = { id ->
+            appNavController.navigate(
+                AppNavItem.DetailView.withArgs(mediaType, id)
+            )
+        }
+    )
 }
 
 @OptIn(ExperimentalPagerApi::class)
