@@ -170,7 +170,10 @@ private fun MovieResultsView(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 handleLoadState(context, pagingItems.loadState.refresh)
-                lazyPagingItems(pagingItems) { item ->
+                lazyPagingItems(
+                    lazyPagingItems = pagingItems,
+                    key = { i -> pagingItems[i]!!.id }
+                ) { item ->
                     item?.let {
                         MovieSearchResultView(
                             appNavController = appNavController,
@@ -213,7 +216,10 @@ private fun TvResultsView(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 handleLoadState(context, pagingItems.loadState.refresh)
-                lazyPagingItems(pagingItems) { item ->
+                lazyPagingItems(
+                    lazyPagingItems = pagingItems,
+                    key = { i -> pagingItems[i]!!.id }
+                ) { item ->
                     item?.let {
                         TvSearchResultView(
                             appNavController = appNavController,
@@ -256,7 +262,10 @@ private fun PeopleResultsView(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 handleLoadState(context, pagingItems.loadState.refresh)
-                lazyPagingItems(pagingItems) { item ->
+                lazyPagingItems(
+                    lazyPagingItems = pagingItems,
+                    key = { i -> pagingItems[i]!!.id }
+                ) { item ->
                     item?.let {
                         PeopleSearchResultView(
                             appNavController = appNavController,
@@ -299,7 +308,10 @@ private fun MultiResultsView(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 handleLoadState(context, pagingItems.loadState.refresh)
-                lazyPagingItems(pagingItems) { item ->
+                lazyPagingItems(
+                    lazyPagingItems = pagingItems,
+                    key = { i -> pagingItems[i]!!.id }
+                ) { item ->
                     item?.let {
                         when (item.mediaType) {
                             MediaViewType.MOVIE -> {

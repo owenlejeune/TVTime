@@ -12,15 +12,17 @@ import androidx.paging.compose.LazyPagingItems
 
 fun <T: Any> LazyGridScope.lazyPagingItems(
     lazyPagingItems: LazyPagingItems<T>,
+    key: ((index: Int) -> Any)? = null,
     itemContent: @Composable LazyGridItemScope.(value: T?) -> Unit
 ) {
-    items(lazyPagingItems.itemCount) { index ->
+    items(lazyPagingItems.itemCount, key = key) { index ->
         itemContent(lazyPagingItems[index])
     }
 }
 
 fun <T: Any> LazyGridScope.listItems(
     items: List<T>,
+    key: (T?) -> Any,
     itemContent: @Composable (value: T) -> Unit
 ) {
     items(items.size) { index ->
@@ -41,6 +43,7 @@ fun LazyGridScope.header(
 
 fun <T: Any> LazyListScope.listItems(
     items: Collection<T>,
+    key: (T?) -> Any,
     itemContent: @Composable (value: T) -> Unit
 ) {
     items(items.size) { index ->
@@ -60,6 +63,7 @@ fun <T: Any?> LazyListScope.listItems(
 
 fun <T: Any> LazyListScope.lazyPagingItems(
     lazyPagingItems: LazyPagingItems<T>,
+    key: ((index: Int) -> Any)? = null,
     itemContent: @Composable LazyItemScope.(value: T?) -> Unit
 ) {
     items(lazyPagingItems.itemCount) { index ->

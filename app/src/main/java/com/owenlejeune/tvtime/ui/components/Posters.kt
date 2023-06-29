@@ -66,7 +66,10 @@ fun PagingPosterGrid(
             contentPadding = PaddingValues(8.dp),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            lazyPagingItems(lazyPagingItems) { item ->
+            lazyPagingItems(
+                lazyPagingItems = lazyPagingItems,
+                key = { i -> it[i]!!.id }
+            ) { item ->
                 item?.let {
                     PosterItem(
                         modifier = Modifier.padding(5.dp),
@@ -102,7 +105,10 @@ fun PagingPeoplePosterGrid(
                 header()
             }
 
-            lazyPagingItems(lazyPagingItems) { person ->
+            lazyPagingItems(
+                lazyPagingItems = lazyPagingItems,
+                key = { i -> it[i]!!.id }
+            ) { person ->
                 person?.let {
                     PosterItem(
                         url = TmdbUtils.getFullPersonImagePath(person.profilePath),
