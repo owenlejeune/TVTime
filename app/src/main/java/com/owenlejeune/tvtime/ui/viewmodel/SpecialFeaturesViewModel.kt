@@ -11,8 +11,8 @@ class SpecialFeaturesViewModel: ViewModel(), KoinComponent {
 
     val nextMcuProject = mcuService.nextMcuProject
 
-    suspend fun getNextMcuProject() {
-        if (nextMcuProject.value == null) {
+    suspend fun getNextMcuProject(force: Boolean = false) {
+        if (nextMcuProject.value == null || force) {
             mcuService.getNextMcuProject()
         }
     }

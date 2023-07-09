@@ -113,8 +113,10 @@ class AccountViewModel: ViewModel(), KoinComponent {
         }
     }
 
-    suspend fun getList(listId: Int) {
-        listService.getList(listId = listId)
+    suspend fun getList(listId: Int, force: Boolean = false) {
+        if (listMap[listId] == null || force) {
+            listService.getList(listId = listId)
+        }
     }
 
     suspend fun deleteListItem(listId: Int, itemId: Int, itemType: MediaViewType) {

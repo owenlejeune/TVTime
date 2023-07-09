@@ -229,70 +229,70 @@ class MainViewModel: ViewModel(), KoinComponent {
         }
     }
 
-    suspend fun getById(id: Int, type: MediaViewType) {
+    suspend fun getById(id: Int, type: MediaViewType, force: Boolean = false) {
         when (type) {
-            MediaViewType.MOVIE -> movieService.getById(id)
-            MediaViewType.TV -> tvService.getById(id)
-            MediaViewType.PERSON -> peopleService.getPerson(id)
+            MediaViewType.MOVIE -> if (detailMovies[id] == null || force) movieService.getById(id)
+            MediaViewType.TV -> if (detailedTv[id] == null || force) tvService.getById(id)
+            MediaViewType.PERSON -> if (peopleMap[id] == null || force) peopleService.getPerson(id)
             else -> {}
         }
     }
 
-    suspend fun getImages(id: Int, type: MediaViewType) {
+    suspend fun getImages(id: Int, type: MediaViewType, force: Boolean = false) {
         when (type) {
-            MediaViewType.MOVIE -> movieService.getImages(id)
-            MediaViewType.TV -> tvService.getImages(id)
-            MediaViewType.PERSON -> peopleService.getImages(id)
+            MediaViewType.MOVIE -> if (movieImages[id] == null || force) movieService.getImages(id)
+            MediaViewType.TV -> if (tvImages[id] == null || force) tvService.getImages(id)
+            MediaViewType.PERSON -> if (peopleImagesMap[id] == null || force) peopleService.getImages(id)
             else -> {}
         }
     }
 
-    suspend fun getCastAndCrew(id: Int, type: MediaViewType) {
+    suspend fun getCastAndCrew(id: Int, type: MediaViewType, force: Boolean = false) {
         when (type) {
-            MediaViewType.MOVIE -> movieService.getCastAndCrew(id)
-            MediaViewType.TV -> tvService.getCastAndCrew(id)
-            MediaViewType.PERSON -> peopleService.getCredits(id)
+            MediaViewType.MOVIE -> if (movieCast[id] == null || movieCrew[id] == null || force) movieService.getCastAndCrew(id)
+            MediaViewType.TV -> if (tvCast[id] == null || tvCrew[id] == null || force) tvService.getCastAndCrew(id)
+            MediaViewType.PERSON -> if (peopleCastMap[id] == null || peopleCrewMap[id] == null || force) peopleService.getCredits(id)
             else -> {}
         }
     }
 
-    suspend fun getVideos(id: Int, type: MediaViewType) {
+    suspend fun getVideos(id: Int, type: MediaViewType, force: Boolean = false) {
         when (type) {
-            MediaViewType.MOVIE -> movieService.getVideos(id)
-            MediaViewType.TV -> tvService.getVideos(id)
+            MediaViewType.MOVIE -> if (movieVideos[id] == null || force) movieService.getVideos(id)
+            MediaViewType.TV -> if (tvVideos[id] == null || force) tvService.getVideos(id)
             else -> {}
         }
     }
 
-    suspend fun getReviews(id: Int, type: MediaViewType) {
+    suspend fun getReviews(id: Int, type: MediaViewType, force: Boolean = false) {
         when (type) {
-            MediaViewType.MOVIE -> movieService.getReviews(id)
-            MediaViewType.TV -> tvService.getReviews(id)
+            MediaViewType.MOVIE -> if (movieReviews[id] == null || force) movieService.getReviews(id)
+            MediaViewType.TV -> if (tvReviews[id] == null || force) tvService.getReviews(id)
             else -> {}
         }
     }
 
-    suspend fun getKeywords(id: Int, type: MediaViewType) {
+    suspend fun getKeywords(id: Int, type: MediaViewType, force: Boolean = false) {
         when (type) {
-            MediaViewType.MOVIE -> movieService.getKeywords(id)
-            MediaViewType.TV -> tvService.getKeywords(id)
+            MediaViewType.MOVIE -> if (movieKeywords[id] == null || force) movieService.getKeywords(id)
+            MediaViewType.TV -> if (tvKeywords[id] == null || force) tvService.getKeywords(id)
             else -> {}
         }
     }
 
-    suspend fun getWatchProviders(id: Int, type: MediaViewType) {
+    suspend fun getWatchProviders(id: Int, type: MediaViewType, force: Boolean = false) {
         when (type) {
-            MediaViewType.MOVIE -> movieService.getWatchProviders(id)
-            MediaViewType.TV -> tvService.getWatchProviders(id)
+            MediaViewType.MOVIE -> if (movieWatchProviders[id] == null || force) movieService.getWatchProviders(id)
+            MediaViewType.TV -> if (tvWatchProviders[id] == null || force) tvService.getWatchProviders(id)
             else -> {}
         }
     }
 
-    suspend fun getExternalIds(id: Int, type: MediaViewType) {
+    suspend fun getExternalIds(id: Int, type: MediaViewType, force: Boolean = false) {
         when (type) {
-            MediaViewType.MOVIE -> movieService.getExternalIds(id)
-            MediaViewType.TV -> tvService.getExternalIds(id)
-            MediaViewType.PERSON -> peopleService.getExternalIds(id)
+            MediaViewType.MOVIE -> if (movieExternalIds[id] == null || force) movieService.getExternalIds(id)
+            MediaViewType.TV -> if (tvExternalIds[id] == null || force) tvService.getExternalIds(id)
+            MediaViewType.PERSON -> if (peopleExternalIdsMap[id] == null || force) peopleService.getExternalIds(id)
             else -> {}
         }
     }
@@ -357,16 +357,22 @@ class MainViewModel: ViewModel(), KoinComponent {
         }
     }
 
-    suspend fun getReleaseDates(id: Int) {
-        movieService.getReleaseDates(id)
+    suspend fun getReleaseDates(id: Int, force: Boolean = false) {
+        if (movieReleaseDates[id] == null || force) {
+            movieService.getReleaseDates(id)
+        }
     }
 
-    suspend fun getContentRatings(id: Int) {
-        tvService.getContentRatings(id)
+    suspend fun getContentRatings(id: Int, force: Boolean = false) {
+        if (tvContentRatings[id] == null || force) {
+            tvService.getContentRatings(id)
+        }
     }
 
-    suspend fun getSeason(seriesId: Int, seasonId: Int) {
-        tvService.getSeason(seriesId, seasonId)
+    suspend fun getSeason(seriesId: Int, seasonId: Int, force: Boolean = false) {
+        if (tvSeasons[seriesId] == null || force) {
+            tvService.getSeason(seriesId, seasonId)
+        }
     }
 
 }
