@@ -46,6 +46,7 @@ import com.owenlejeune.tvtime.extensions.format
 import com.owenlejeune.tvtime.extensions.getCalendarYear
 import com.owenlejeune.tvtime.extensions.lazyPagingItems
 import com.owenlejeune.tvtime.extensions.listItems
+import com.owenlejeune.tvtime.preferences.AppPreferences
 import com.owenlejeune.tvtime.ui.components.*
 import com.owenlejeune.tvtime.ui.navigation.AppNavItem
 import com.owenlejeune.tvtime.ui.viewmodel.MainViewModel
@@ -54,6 +55,7 @@ import com.owenlejeune.tvtime.utils.SessionManager
 import com.owenlejeune.tvtime.utils.TmdbUtils
 import com.owenlejeune.tvtime.utils.types.MediaViewType
 import kotlinx.coroutines.*
+import org.koin.java.KoinJavaComponent.get
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPagerApi::class)
 @Composable
@@ -152,7 +154,8 @@ private fun MediaViewContent(
     type: MediaViewType,
     windowSize: WindowSizeClass,
     showImageGallery: MutableState<Boolean>,
-    pagerState: PagerState
+    pagerState: PagerState,
+    preferences: AppPreferences = get(AppPreferences::class.java)
 ) {
     LaunchedEffect(Unit) {
         mainViewModel.getExternalIds(itemId, type)
@@ -249,7 +252,10 @@ private fun MediaViewContent(
 
                     WatchProvidersCard(itemId = itemId, type = type, mainViewModel = mainViewModel)
 
-                    if (mediaItem?.productionCompanies?.firstOrNull { it.name == "Marvel Studios" } != null) {
+                    if (
+                        mediaItem?.productionCompanies?.firstOrNull { it.name == "Marvel Studios" } != null
+                        && preferences.showNextMcuProduction
+                    ) {
                         NextMcuProjectCard(appNavController = appNavController)
                     }
 
@@ -1078,7 +1084,7 @@ private fun NextMcuProjectCard(
                         Text(
                             text = nextMcuProject.value?.title ?: "",
                             style = MaterialTheme.typography.headlineSmall,
-                            fontWeight = FontWeight.W700
+                            fontWeight = FontWeight.W600
                         )
 
                         val releaseDate =

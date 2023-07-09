@@ -1,7 +1,5 @@
 package com.owenlejeune.tvtime.ui.navigation
 
-import android.os.Build
-import android.util.Log
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -92,18 +90,6 @@ fun AppNavigationHost(
                     )
                 }
             }
-        }
-        composable(
-            AppNavItem.SettingsView.route.plus("/{${NavConstants.SETTINGS_KEY}}"),
-            arguments = listOf(
-                navArgument(NavConstants.SETTINGS_KEY) { type = NavType.StringType }
-            )
-        ) {
-            val route = it.arguments?.getString(NavConstants.SETTINGS_KEY)
-            SettingsScreen(
-                appNavController = appNavController,
-                route = route
-            )
         }
         composable(AppNavItem.SettingsView.route) {
             SettingsScreen(appNavController = appNavController)
@@ -237,9 +223,7 @@ sealed class AppNavItem(val route: String) {
     object DetailView: AppNavItem("detail_route") {
         fun withArgs(type: MediaViewType, id: Int) = route.plus("/${type}/${id}")
     }
-    object SettingsView: AppNavItem("settings_route") {
-        fun withArgs(page: String) = route.plus("/$page")
-    }
+    object SettingsView: AppNavItem("settings_route")
     object SearchView: AppNavItem("search_route") {
         fun withArgs(searchType: MediaViewType, pageTitle: String) = route.plus("?searchType=$searchType&pageTitle=$pageTitle")
     }

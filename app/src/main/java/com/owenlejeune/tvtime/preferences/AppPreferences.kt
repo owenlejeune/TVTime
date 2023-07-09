@@ -34,6 +34,7 @@ class AppPreferences(context: Context) {
         private val ACCOUNT_TAB_POSITION = "account_tab_position"
         private val SHOW_BTAB_LABELS = "show_btab_labels"
         private val SHOW_POSTER_TITLE = "show_poster_titles"
+        private val SHOW_NEXT_MCU = "show_next_mcu"
     }
 
     private val preferences: SharedPreferences = context.getSharedPreferences(PREF_FILE, Context.MODE_PRIVATE)
@@ -127,6 +128,12 @@ class AppPreferences(context: Context) {
     var showBackdropGallery: Boolean
         get() = preferences.getBoolean(SHOW_BACKDROP_GALLERY, showBackdropGalleryDefault)
         set(value) { preferences.put(SHOW_BACKDROP_GALLERY, value) }
+
+    /******** Special Features Preferences ********/
+    val showNextMcuProductionDefault: Boolean = false
+    var showNextMcuProduction: Boolean
+        get() = preferences.getBoolean(SHOW_NEXT_MCU, showNextMcuProductionDefault)
+        set(value) { preferences.put(SHOW_NEXT_MCU, value) }
 
     /********* Helpers ********/
     private fun SharedPreferences.put(key: String, value: Any?) {

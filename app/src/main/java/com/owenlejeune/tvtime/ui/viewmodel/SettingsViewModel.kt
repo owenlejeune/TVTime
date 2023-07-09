@@ -23,6 +23,7 @@ class SettingsViewModel: ViewModel() {
         private val _showPosterTitles = MutableStateFlow(preferences.showPosterTitles)
         private val _firstLaunchTesting = MutableStateFlow(preferences.firstLaunchTesting)
         private val _showBackdropGallery = MutableStateFlow(preferences.showBackdropGallery)
+        private val _showNextMcuProduction = MutableStateFlow(preferences.showNextMcuProduction)
     }
 
     val showSearchBar = _showSearchBar.asStateFlow()
@@ -36,6 +37,7 @@ class SettingsViewModel: ViewModel() {
     val showPosterTitles = _showPosterTitles.asStateFlow()
     val firstLaunchTesting = _firstLaunchTesting.asStateFlow()
     val showBackdropGallery = _showBackdropGallery.asStateFlow()
+    val showNextMcuProduction = _showNextMcuProduction.asStateFlow()
 
     fun toggleShowSearchBar() {
         _showSearchBar.value = _showSearchBar.value.not()
@@ -130,6 +132,16 @@ class SettingsViewModel: ViewModel() {
     fun setShowBackdropGallery(value: Boolean) {
         _showBackdropGallery.value = value
         preferences.showBackdropGallery = value
+    }
+
+    fun toggleShowNextMcuProduction() {
+        _showNextMcuProduction.value = _showNextMcuProduction.value.not()
+        preferences.showNextMcuProduction = _showNextMcuProduction.value
+    }
+
+    fun setShowNextMcuProduction(value: Boolean) {
+        _showNextMcuProduction.value = value
+        preferences.showNextMcuProduction = value
     }
 
 }

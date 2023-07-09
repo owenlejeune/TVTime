@@ -84,6 +84,10 @@
     <string name="preference_show_text_labels_title">Show tab text labels</string>
     <string name="preference_show_text_labels_subtitle">Show text labels for tab items in the bottom tab bar or navigation rail</string>
     <string name="preference_home_tab_order_heading">Home Tab Order</string>
+    <string name="preference_heading_special_features">Special Features</string>
+    <string name="preference_subtitle_special_features">Extra features and hidden goodies</string>
+    <string name="preferences_show_next_mcu_title">Show Next MCU Production</string>
+    <string name="preferences_show_next_mcu_subtitle">Show a card with information on the next scheduled MCU production when viewing details for an MCU release</string>
 
     <!-- video type -->
     <string name="video_type_clip">Clips</string>
