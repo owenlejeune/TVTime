@@ -3,9 +3,9 @@ package com.owenlejeune.tvtime.utils.types
 import com.google.gson.annotations.SerializedName
 
 enum class MediaViewType {
-    @SerializedName("movie")
+    @SerializedName("movie", alternate = ["Movie"])
     MOVIE,
-    @SerializedName("tv")
+    @SerializedName("tv", alternate = ["TV Show"])
     TV,
     @SerializedName("person")
     PERSON,

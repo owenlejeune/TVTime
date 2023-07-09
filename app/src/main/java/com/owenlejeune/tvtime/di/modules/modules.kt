@@ -5,6 +5,8 @@ import com.google.gson.JsonDeserializer
 import com.google.gson.TypeAdapter
 import com.owenlejeune.tvtime.BuildConfig
 import com.owenlejeune.tvtime.api.*
+import com.owenlejeune.tvtime.api.nextmcu.NextMCUClient
+import com.owenlejeune.tvtime.api.nextmcu.NextMCUService
 import com.owenlejeune.tvtime.api.tmdb.TmdbClient
 import com.owenlejeune.tvtime.api.tmdb.api.v3.AccountService
 import com.owenlejeune.tvtime.api.tmdb.api.v3.AuthenticationService
@@ -70,6 +72,10 @@ val networkModule = module {
     single { AccountV4Service() }
     single { AuthenticationV4Service() }
     single { ListV4Service() }
+
+    single { NextMCUClient() }
+    single { get<NextMCUClient>().createNextMcuService() }
+    single { NextMCUService() }
 
     single<Map<Class<*>, Any>> {
         mapOf(

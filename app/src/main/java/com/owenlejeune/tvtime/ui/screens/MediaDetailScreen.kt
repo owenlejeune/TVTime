@@ -40,13 +40,16 @@ import com.google.accompanist.pager.rememberPagerState
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.*
+import com.owenlejeune.tvtime.extensions.DateFormat
 import com.owenlejeune.tvtime.extensions.WindowSizeClass
+import com.owenlejeune.tvtime.extensions.format
 import com.owenlejeune.tvtime.extensions.getCalendarYear
 import com.owenlejeune.tvtime.extensions.lazyPagingItems
 import com.owenlejeune.tvtime.extensions.listItems
 import com.owenlejeune.tvtime.ui.components.*
 import com.owenlejeune.tvtime.ui.navigation.AppNavItem
 import com.owenlejeune.tvtime.ui.viewmodel.MainViewModel
+import com.owenlejeune.tvtime.ui.viewmodel.SpecialFeaturesViewModel
 import com.owenlejeune.tvtime.utils.SessionManager
 import com.owenlejeune.tvtime.utils.TmdbUtils
 import com.owenlejeune.tvtime.utils.types.MediaViewType
@@ -245,6 +248,10 @@ private fun MediaViewContent(
                     AdditionalDetailsCard(mediaItem = mediaItem, type = type)
 
                     WatchProvidersCard(itemId = itemId, type = type, mainViewModel = mainViewModel)
+
+                    if (mediaItem?.productionCompanies?.firstOrNull { it.name == "Marvel Studios" } != null) {
+                        NextMcuProjectCard(appNavController = appNavController)
+                    }
 
                     if (windowSize != WindowSizeClass.Expanded) {
                         ReviewsCard(itemId = itemId, type = type, mainViewModel = mainViewModel)
@@ -629,7 +636,12 @@ private fun CastCard(
                 modifier = Modifier
                     .padding(start = 12.dp, bottom = 12.dp)
                     .clickable {
-                        appNavController.navigate(AppNavItem.CaseCrewListView.withArgs(type, itemId))
+                        appNavController.navigate(
+                            AppNavItem.CaseCrewListView.withArgs(
+                                type,
+                                itemId
+                            )
+                        )
                     }
             )
         }
@@ -1004,6 +1016,90 @@ private fun WatchProviderContainer(
                     )
                 }
             }
+    }
+}
+
+@Composable
+private fun NextMcuProjectCard(
+    appNavController: NavController,
+    modifier: Modifier = Modifier
+) {
+    val viewModel = viewModel<SpecialFeaturesViewModel>()
+
+    LaunchedEffect(Unit) {
+        viewModel.getNextMcuProject()
+    }
+
+    val nextMcuProject = remember { viewModel.nextMcuProject }
+
+    Card(
+        shape = RoundedCornerShape(10.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 10.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+        modifier = modifier.then(Modifier
+            .fillMaxWidth()
+        )
+    ) {
+        Box(
+            modifier = Modifier.height(250.dp)
+        ) {
+            val model = ImageRequest.Builder(LocalContext.current)
+                .data(nextMcuProject.value?.posterUrl)
+                .diskCacheKey(nextMcuProject.value?.title)
+                .networkCachePolicy(CachePolicy.ENABLED)
+                .memoryCachePolicy(CachePolicy.ENABLED)
+                .build()
+
+            Column(
+                modifier = Modifier.padding(all = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.next_in_the_mcu_title),
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.W700,
+                    modifier = Modifier.padding(start = 2.dp)
+                )
+
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    AsyncImage(
+                        model = model,
+                        modifier = Modifier
+                            .aspectRatio(0.7f)
+                            .clip(RoundedCornerShape(10.dp)),
+                        contentDescription = nextMcuProject.value?.title
+                    )
+
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Text(
+                            text = nextMcuProject.value?.title ?: "",
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.W700
+                        )
+
+                        val releaseDate =
+                            nextMcuProject.value?.releaseDate?.format(DateFormat.MMMM_dd) ?: ""
+                        val daysLeft = stringResource(
+                            id = R.string.days_left,
+                            nextMcuProject.value?.daysUntil ?: -1
+                        )
+                        Text(
+                            text = "$releaseDate • $daysLeft",
+                            fontStyle = FontStyle.Italic
+                        )
+
+                        Text(
+                            text = nextMcuProject.value?.overview ?: "",
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                }
+            }
+        }
     }
 }
 
