@@ -602,23 +602,36 @@ private fun CastCard(
         backgroundColor = MaterialTheme.colorScheme.primary,
         textColor = MaterialTheme.colorScheme.background
     ) {
-        LazyRow(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            item {
-                Spacer(modifier = Modifier.width(8.dp))
-            }
-            items(cast?.size ?: 0) { i ->
-                cast?.get(i)?.let {
-                    CastCrewCard(appNavController = appNavController, person = it)
+        Column {
+            LazyRow(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                item {
+                    Spacer(modifier = Modifier.width(8.dp))
+                }
+                items(cast?.size ?: 0) { i ->
+                    cast?.get(i)?.let {
+                        CastCrewCard(appNavController = appNavController, person = it)
+                    }
+                }
+                item {
+                    Spacer(modifier = Modifier.width(8.dp))
                 }
             }
-            item {
-                Spacer(modifier = Modifier.width(8.dp))
-            }
+
+            Text(
+                text = "See all cast and crew",
+                fontSize = 12.sp,
+                color = MaterialTheme.colorScheme.inversePrimary,
+                modifier = Modifier
+                    .padding(start = 12.dp, bottom = 12.dp)
+                    .clickable {
+                        appNavController.navigate(AppNavItem.CaseCrewListView.withArgs(type, itemId))
+                    }
+            )
         }
     }
 }

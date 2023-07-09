@@ -20,6 +20,7 @@ import com.owenlejeune.tvtime.extensions.safeGetSerializable
 import com.owenlejeune.tvtime.preferences.AppPreferences
 import com.owenlejeune.tvtime.ui.screens.AboutScreen
 import com.owenlejeune.tvtime.ui.screens.AccountScreen
+import com.owenlejeune.tvtime.ui.screens.CastCrewListScreen
 import com.owenlejeune.tvtime.ui.screens.GalleryView
 import com.owenlejeune.tvtime.ui.screens.HomeScreen
 import com.owenlejeune.tvtime.ui.screens.KeywordResultsScreen
@@ -211,6 +212,18 @@ fun AppNavigationHost(
 
             SeasonListScreen(id = id, appNavController = appNavController)
         }
+        composable(
+            route = AppNavItem.CaseCrewListView.route.plus("/{${NavConstants.TYPE_KEY}}/{${NavConstants.ID_KEY}}"),
+            arguments = listOf(
+                navArgument(NavConstants.TYPE_KEY) { type = NavType.EnumType(MediaViewType::class.java) },
+                navArgument(NavConstants.ID_KEY) { type = NavType.IntType }
+            )
+        ) { navBackStackEntry ->
+            val type = navBackStackEntry.arguments?.safeGetSerializable(NavConstants.TYPE_KEY, MediaViewType::class.java)!!
+            val id = navBackStackEntry.arguments?.getInt(NavConstants.ID_KEY)!!
+
+            CastCrewListScreen(appNavController = appNavController, type = type, id = id)
+        }
     }
 }
 
@@ -246,6 +259,9 @@ sealed class AppNavItem(val route: String) {
     }
     object SeasonListView: AppNavItem("season_list_route") {
         fun withArgs(id: Int) = route.plus("/$id")
+    }
+    object CaseCrewListView: AppNavItem("cast_crew_list_route") {
+        fun withArgs(type: MediaViewType, id: Int) = route.plus("/$type/$id")
     }
 
 }
