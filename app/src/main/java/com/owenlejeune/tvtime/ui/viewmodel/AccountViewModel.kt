@@ -32,50 +32,41 @@ class AccountViewModel: ViewModel(), KoinComponent {
 
     val listMap = listService.listMap
 
-    val ratedTv: Flow<PagingData<Any>>
-        get() = createPagingFlow(
+    val ratedTv: Flow<PagingData<Any>> = createPagingFlow(
             fetcher = { p -> accountV4Service.getRatedTvShows(accountId, p) },
             processor = { it.results }
         )
-    val favoriteTv: Flow<PagingData<Any>>
-        get() = createPagingFlow(
+    val favoriteTv: Flow<PagingData<Any>> = createPagingFlow(
             fetcher = { p -> accountV4Service.getFavoriteTvShows(accountId, p) },
             processor = { it.results }
         )
-    val watchlistTv: Flow<PagingData<Any>>
-        get() = createPagingFlow(
+    val watchlistTv: Flow<PagingData<Any>> = createPagingFlow(
             fetcher = { p -> accountV4Service.getTvShowWatchlist(accountId, p) },
             processor = { it.results }
         )
-    val recommendedTv: Flow<PagingData<Any>>
-        get() = createPagingFlow(
+    val recommendedTv: Flow<PagingData<Any>> = createPagingFlow(
             fetcher = { p -> accountV4Service.getRecommendedTvSeries(accountId, p) },
             processor = { it.results }
         )
 
-    val ratedMovies: Flow<PagingData<Any>>
-        get() = createPagingFlow(
+    val ratedMovies: Flow<PagingData<Any>> = createPagingFlow(
             fetcher = { p -> accountV4Service.getRatedMovies(accountId, p) },
             processor = { it.results }
         )
-    val favoriteMovies: Flow<PagingData<Any>>
-        get() = createPagingFlow(
+    val favoriteMovies: Flow<PagingData<Any>> = createPagingFlow(
             fetcher = { p -> accountV4Service.getFavoriteMovies(accountId, p) },
             processor = { it.results }
         )
-    val watchlistMovies: Flow<PagingData<Any>>
-        get() = createPagingFlow(
+    val watchlistMovies: Flow<PagingData<Any>> = createPagingFlow(
             fetcher = { p -> accountV4Service.getMovieWatchlist(accountId, p) },
             processor = { it.results }
         )
-    val recommendedMovies: Flow<PagingData<Any>>
-        get() = createPagingFlow(
+    val recommendedMovies: Flow<PagingData<Any>> = createPagingFlow(
             fetcher = { p -> accountV4Service.getRecommendedMovies(accountId, p) },
             processor = { it.results }
         )
 
-    val userLists: Flow<PagingData<Any>>
-        get() = createPagingFlow(
+    val userLists: Flow<PagingData<Any>> = createPagingFlow(
             fetcher = { p -> accountV4Service.getLists(accountId, p) },
             processor = { it.results }
         )

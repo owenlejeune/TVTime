@@ -120,6 +120,11 @@ class TmdbClient: KoinComponent {
                 builder.addQueryParams(languageParam, regionParam)
             }
 
+            if (shouldIncludeSessionIdParam(segments)) {
+                val sessionIdParam = QueryParam("session_id", SessionManager.currentSession.value!!.sessionId)
+                builder.addQueryParams(sessionIdParam)
+            }
+
             val requestBuilder = chain.request().newBuilder().url(builder.build())
 
             val request = requestBuilder.build()
@@ -151,6 +156,15 @@ class TmdbClient: KoinComponent {
             return true
         }
 
+        private fun shouldIncludeSessionIdParam(urlSegments: List<String>): Boolean {
+            val includedRoutes = listOf("account_states")
+            for (route in includedRoutes) {
+                if (urlSegments.contains(route)) {
+                    return true
+                }
+            }
+            return false
+        }
     }
 
     private inner class V4Interceptor: Interceptor {
