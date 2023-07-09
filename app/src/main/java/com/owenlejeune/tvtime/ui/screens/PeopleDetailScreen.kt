@@ -138,7 +138,9 @@ fun PersonDetailScreen(
 @Composable
 private fun BiographyCard(person: DetailPerson?) {
     if (person != null && person.biography.isNotEmpty()) {
-        ExpandableContentCard { isExpanded ->
+        ExpandableContentCard(
+            expandOnTouchAnywhere = true
+        ) { isExpanded ->
             Text(
                 modifier = Modifier
                     .fillMaxWidth()

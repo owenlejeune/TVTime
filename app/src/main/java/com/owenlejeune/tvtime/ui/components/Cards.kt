@@ -79,12 +79,20 @@ fun ExpandableContentCard(
     collapsedText: String = stringResource(id = R.string.expandable_see_more),
     expandedText: String = stringResource(id = R.string.expandable_see_less),
     toggleTextColor: Color = MaterialTheme.colorScheme.onSurfaceVariant,
-    content: @Composable (Boolean) -> Unit = {}
+    expandOnTouchAnywhere: Boolean = false,
+    content: @Composable (Boolean) -> Unit
 ) {
     var expandedState by remember { mutableStateOf(false) }
 
     Card(
-        modifier = modifier,
+        modifier = modifier.then(
+            Modifier.clickable(
+                enabled = expandOnTouchAnywhere,
+                onClick = {
+                    expandedState = true
+                }
+            )
+        ),
         shape = RoundedCornerShape(10.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
         colors = CardDefaults.cardColors(containerColor = backgroundColor)
