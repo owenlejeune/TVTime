@@ -1,7 +1,10 @@
 package com.owenlejeune.tvtime.api.tmdb.api.v4
 
+import android.content.Context
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
 import com.owenlejeune.tvtime.api.tmdb.api.v4.model.AddToListBody
 import com.owenlejeune.tvtime.api.tmdb.api.v4.model.CreateListBody
 import com.owenlejeune.tvtime.api.tmdb.api.v4.model.DeleteListItemsBody
@@ -18,6 +21,7 @@ class ListV4Service: KoinComponent {
     }
 
     private val service: ListV4Api by inject()
+    private val context: Context by inject()
 
     val listMap = mutableStateMapOf<Int, MediaList>()
 
@@ -59,8 +63,21 @@ class ListV4Service: KoinComponent {
         service.deleteList(listId)
     }
 
-    suspend fun addItemsToList(listId: Int, body: AddToListBody) {//}: Response<AddToListResponse> {
-        service.addItemsToList(listId, body)
+    suspend fun addItemsToList(listId: Int, body: AddToListBody) {
+        val response = service.addItemsToList(listId, body)
+        if (response.isSuccessful) {
+            response.body()?.let {
+                if (it.isSuccess) {
+                    Toast.makeText(context, "Successfully added to list", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(context, "Error: This item already exists in list", Toast.LENGTH_SHORT).show()
+                }
+            } ?: run {
+                Toast.makeText(context, "An error occurred", Toast.LENGTH_SHORT).show()
+            }
+        } else {
+            Toast.makeText(context, "An error occurred", Toast.LENGTH_SHORT).show()
+        }
     }
 
     suspend fun updateListItems(listId: Int, body: UpdateListItemBody) {//}: Response<AddToListResponse> {

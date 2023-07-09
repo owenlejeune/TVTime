@@ -6,14 +6,12 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
@@ -24,8 +22,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.constraintlayout.compose.ConstraintLayout
 import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
 import coil.request.CachePolicy
@@ -37,11 +33,9 @@ import com.google.accompanist.pager.rememberPagerState
 import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.ExternalIds
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.ImageCollection
-import com.owenlejeune.tvtime.ui.viewmodel.ConfigurationViewModel
 import com.owenlejeune.tvtime.utils.TmdbUtils
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalPagerApi::class)
 @Composable
@@ -55,76 +49,7 @@ fun DetailHeader(
     posterContentDescription: String? = null,
     rating: Float? = null,
     pagerState: PagerState? = null,
-    elevation: Dp = 20.dp
-) {
-    ConstraintLayout(modifier = modifier
-        .fillMaxWidth()
-        .wrapContentHeight()
-    ) {
-        val (
-            backdropImage, posterImage, ratingsView
-        )  = createRefs()
-
-        if (imageCollection != null) {
-            BackdropGallery(
-                modifier = Modifier
-                    .constrainAs(backdropImage) {
-                        top.linkTo(parent.top)
-                        start.linkTo(parent.start)
-                        end.linkTo(parent.end)
-                    }
-                    .clickable {
-                        showGalleryOverlay?.value = true
-                    },
-                imageCollection = imageCollection,
-                state = pagerState
-            )
-        } else {
-            Backdrop(
-                imageUrl = backdropUrl,
-                contentDescription = backdropContentDescription
-            )
-        }
-
-        PosterItem(
-            modifier = Modifier
-                .constrainAs(posterImage) {
-                    bottom.linkTo(backdropImage.bottom)
-                    start.linkTo(parent.start, margin = 16.dp)
-                },
-            url = posterUrl,
-            title = posterContentDescription,
-            elevation = elevation,
-            overrideShowTitle = false,
-            enabled = false
-        )
-
-        rating?.let {
-            RatingView(
-                modifier = Modifier
-                    .constrainAs(ratingsView) {
-                        bottom.linkTo(parent.bottom)
-                        start.linkTo(posterImage.end, margin = 20.dp)
-                    },
-                progress = rating
-            )
-        }
-    }
-}
-
-@OptIn(ExperimentalPagerApi::class)
-@Composable
-fun DetailHeader2(
-    modifier: Modifier = Modifier,
-    showGalleryOverlay: MutableState<Boolean>? = null,
-    imageCollection: ImageCollection? = null,
-    backdropUrl: String? = null,
-    posterUrl: String? = null,
-    backdropContentDescription: String? = null,
-    posterContentDescription: String? = null,
-    rating: Float? = null,
-    pagerState: PagerState? = null,
-    elevation: Dp = 20.dp
+    elevation: Dp = 50.dp
 ) {
     Box(
         modifier = modifier.then(

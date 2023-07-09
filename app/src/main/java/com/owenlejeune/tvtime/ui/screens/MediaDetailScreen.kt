@@ -167,7 +167,7 @@ private fun MediaViewContent(
                 .verticalScroll(state = rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            DetailHeader2(
+            DetailHeader(
                 posterUrl = TmdbUtils.getFullPosterPath(mediaItem?.posterPath),
                 posterContentDescription = mediaItem?.title,
                 backdropUrl = TmdbUtils.getFullBackdropPath(mediaItem?.backdropPath),
