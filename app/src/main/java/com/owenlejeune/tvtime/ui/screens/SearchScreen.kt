@@ -399,7 +399,7 @@ private fun MovieSearchResultView(
     service: MoviesService = get(MoviesService::class.java)
 ) {
     LaunchedEffect(Unit) {
-        service.getCastAndCrew(result.id)
+        service.getCastAndCrew(result.id, false)
     }
     val mainViewModel = viewModel<MainViewModel>()
     val castMap = remember { mainViewModel.movieCast }
@@ -428,7 +428,7 @@ private fun TvSearchResultView(
 ) {
     val context = LocalContext.current
     LaunchedEffect(Unit) {
-        service.getCastAndCrew(result.id)
+        service.getCastAndCrew(result.id, false)
     }
     val mainViewModel = viewModel<MainViewModel>()
     val castMap = remember { mainViewModel.tvCast }

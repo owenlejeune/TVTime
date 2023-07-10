@@ -4,6 +4,7 @@ enum class LoadingState {
 
     INACTIVE,
     LOADING,
+    REFRESHING,
     COMPLETE,
     ERROR
 

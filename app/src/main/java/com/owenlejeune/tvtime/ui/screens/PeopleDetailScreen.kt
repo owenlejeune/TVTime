@@ -1,5 +1,6 @@
 package com.owenlejeune.tvtime.ui.screens
 
+import android.graphics.Paint.Align
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -14,9 +15,13 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -28,7 +33,10 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
@@ -51,22 +59,33 @@ import com.owenlejeune.tvtime.ui.navigation.AppNavItem
 import com.owenlejeune.tvtime.ui.viewmodel.MainViewModel
 import com.owenlejeune.tvtime.utils.TmdbUtils
 import com.owenlejeune.tvtime.utils.types.MediaViewType
+import kotlinx.coroutines.launch
 import java.lang.Integer.min
 
 private const val TAG = "PeopleDetailScreen"
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalPagerApi::class)
+private suspend fun fetchData(
+    mainViewModel: MainViewModel,
+    id: Int,
+    force: Boolean = false
+) {
+    mainViewModel.getById(id, MediaViewType.PERSON, force)
+    mainViewModel.getExternalIds(id, MediaViewType.PERSON, force)
+    mainViewModel.getCastAndCrew(id, MediaViewType.PERSON, force)
+    mainViewModel.getImages(id, MediaViewType.PERSON, force)
+}
+
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalPagerApi::class, ExperimentalMaterialApi::class)
 @Composable
 fun PersonDetailScreen(
     appNavController: NavController,
     personId: Int
 ) {
+    val scope = rememberCoroutineScope()
+
     val mainViewModel = viewModel<MainViewModel>()
     LaunchedEffect(Unit) {
-        mainViewModel.getById(personId, MediaViewType.PERSON)
-        mainViewModel.getExternalIds(personId, MediaViewType.PERSON)
-        mainViewModel.getCastAndCrew(personId, MediaViewType.PERSON)
-        mainViewModel.getImages(personId, MediaViewType.PERSON)
+        fetchData(mainViewModel, personId)
     }
 
     val systemUiController = rememberSystemUiController()
@@ -78,6 +97,17 @@ fun PersonDetailScreen(
 
     val topAppBarScrollState = rememberTopAppBarState()
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(topAppBarScrollState)
+
+    val isRefreshing = remember { mutableStateOf(false) }
+    mainViewModel.monitorDetailsLoadingRefreshing(refreshing = isRefreshing)
+    val pullRefreshState = rememberPullRefreshState(
+        refreshing = isRefreshing.value,
+        onRefresh = {
+            scope.launch {
+                fetchData(mainViewModel, personId, true)
+            }
+        }
+    )
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -102,7 +132,10 @@ fun PersonDetailScreen(
             )
         }
     ) { innerPadding ->
-        Box(modifier = Modifier.padding(innerPadding)) {
+        Box(modifier = Modifier
+            .padding(innerPadding)
+            .pullRefresh(state = pullRefreshState)
+        ) {
             Column(
                 modifier = Modifier
                     .background(color = MaterialTheme.colorScheme.background)
@@ -131,6 +164,12 @@ fun PersonDetailScreen(
                 
                 ImagesCard(id = personId, appNavController = appNavController)
             }
+            
+            PullRefreshIndicator(
+                refreshing = isRefreshing.value,
+                state = pullRefreshState,
+                modifier = Modifier.align(alignment = Alignment.TopCenter)
+            )
         }
     }
 }
@@ -257,7 +296,12 @@ private fun ImagesCard(
             modifier = Modifier
                 .padding(start = 16.dp, bottom = 16.dp)
                 .clickable {
-                    appNavController.navigate(AppNavItem.GalleryView.withArgs(MediaViewType.PERSON, id))
+                    appNavController.navigate(
+                        AppNavItem.GalleryView.withArgs(
+                            MediaViewType.PERSON,
+                            id
+                        )
+                    )
                 }
         )
     }

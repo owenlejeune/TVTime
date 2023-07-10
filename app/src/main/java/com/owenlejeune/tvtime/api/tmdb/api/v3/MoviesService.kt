@@ -6,6 +6,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.paging.PagingData
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
+import com.owenlejeune.tvtime.api.LoadingState
+import com.owenlejeune.tvtime.api.loadRemoteData
 import com.owenlejeune.tvtime.api.storedIn
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.AccountStates
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.CastMember
@@ -58,62 +60,112 @@ class MoviesService: KoinComponent, DetailService, HomePageService {
     val accountStates = Collections.synchronizedMap(mutableStateMapOf<Int, AccountStates>())
     val keywordResults = Collections.synchronizedMap(mutableStateMapOf<Int, Flow<PagingData<SearchResultMedia>>>())
 
+    val detailsLoadingState = mutableStateOf(LoadingState.INACTIVE)
+    val imagesLoadingState = mutableStateOf(LoadingState.INACTIVE)
+    val castCrewLoadingState = mutableStateOf(LoadingState.INACTIVE)
+    val videosLoadingState = mutableStateOf(LoadingState.INACTIVE)
+    val reviewsLoadingState = mutableStateOf(LoadingState.INACTIVE)
+    val keywordsLoadingState = mutableStateOf(LoadingState.INACTIVE)
+    val watchProvidersLoadingState = mutableStateOf(LoadingState.INACTIVE)
+    val externalIdsLoadingState = mutableStateOf(LoadingState.INACTIVE)
+    val releaseDatesLoadingState = mutableStateOf(LoadingState.INACTIVE)
+    val accountStatesLoadingState = mutableStateOf(LoadingState.INACTIVE)
 
-    override suspend fun getById(id: Int) {
-        movieService.getMovieById(id) storedIn { detailMovies[id] = it }
+    override suspend fun getById(id: Int, refreshing: Boolean) {
+        loadRemoteData(
+            { movieService.getMovieById(id) },
+            { detailMovies[id] = it },
+            detailsLoadingState,
+            refreshing
+        )
     }
 
-    override suspend fun getImages(id: Int) {
-        movieService.getMovieImages(id) storedIn { images[id] = it }
+    override suspend fun getImages(id: Int, refreshing: Boolean) {
+        loadRemoteData(
+            { movieService.getMovieImages(id) },
+            { images[id] = it },
+            imagesLoadingState,
+            refreshing
+        )
     }
 
-    override suspend fun getCastAndCrew(id: Int) {
-        movieService.getCastAndCrew(id) storedIn {
-            cast[id] = it.cast
-            crew[id] = it.crew
-        }
+    override suspend fun getCastAndCrew(id: Int, refreshing: Boolean) {
+        loadRemoteData(
+            { movieService.getCastAndCrew(id) },
+            {
+                cast[id] = it.cast
+                crew[id] = it.crew
+            },
+            castCrewLoadingState,
+            refreshing
+        )
     }
-    override suspend fun getVideos(id: Int) {
-        movieService.getVideos(id) storedIn { videos[id] = it.results }
-    }
-
-    override suspend fun getReviews(id: Int) {
-        movieService.getReviews(id) storedIn { reviews[id] = it.results }
-    }
-
-    override suspend fun getKeywords(id: Int) {
-        movieService.getKeywords(id) storedIn { keywords[id] = it.keywords ?: emptyList() }
-    }
-
-    override suspend fun getWatchProviders(id: Int) {
-        movieService.getWatchProviders(id) storedIn {
-            it.results[Locale.getDefault().country]?.let { wp ->
-                watchProviders[id] = wp
-            }
-        }
+    override suspend fun getVideos(id: Int, refreshing: Boolean) {
+        loadRemoteData(
+            { movieService.getVideos(id) },
+            { videos[id] = it.results },
+            videosLoadingState,
+            refreshing
+        )
     }
 
-    override suspend fun getExternalIds(id: Int) {
-        movieService.getExternalIds(id) storedIn { externalIds[id] = it }
+    override suspend fun getReviews(id: Int, refreshing: Boolean) {
+        loadRemoteData(
+            { movieService.getReviews(id) },
+            { reviews[id] = it.results },
+            reviewsLoadingState,
+            refreshing
+        )
+    }
+
+    override suspend fun getKeywords(id: Int, refreshing: Boolean) {
+        loadRemoteData(
+            { movieService.getKeywords(id) },
+            { keywords[id] = it.keywords ?: emptyList() },
+            keywordsLoadingState,
+            refreshing
+        )
+    }
+
+    override suspend fun getWatchProviders(id: Int, refreshing: Boolean) {
+        loadRemoteData(
+            { movieService.getWatchProviders(id) },
+            {
+                it.results[Locale.getDefault().country]?.let { wp ->
+                    watchProviders[id] = wp
+                }
+            },
+            watchProvidersLoadingState,
+            refreshing
+        )
+    }
+
+    override suspend fun getExternalIds(id: Int, refreshing: Boolean) {
+        loadRemoteData(
+            { movieService.getExternalIds(id) },
+            { externalIds[id] = it },
+            externalIdsLoadingState,
+            refreshing
+        )
     }
 
     override suspend fun getAccountStates(id: Int) {
         val sessionId = SessionManager.currentSession.value?.sessionId ?: throw Exception("Session must not be null")
-        val response = movieService.getAccountStates(id, sessionId)
-        if (response.isSuccessful) {
-            response.body()?.let {
-                Log.d(TAG, "Successfully got account states: $it")
-                accountStates[id] = it
-            } ?: run {
-                Log.d(TAG, "Problem getting account states")
-            }
-        } else {
-            Log.d(TAG, "Issue getting account states: $response")
-        }
+        loadRemoteData(
+            { movieService.getAccountStates(id, sessionId) },
+            { accountStates[id] = it },
+            accountStatesLoadingState,
+            false
+        )
     }
 
-    suspend fun getReleaseDates(id: Int) {
-        movieService.getReleaseDates(id) storedIn { releaseDates[id] = it.releaseDates }
+    suspend fun getReleaseDates(id: Int, refreshing: Boolean) {
+        loadRemoteData(
+            { movieService.getReleaseDates(id) },
+            { releaseDates[id] = it.releaseDates },
+            releaseDatesLoadingState,
+            refreshing
+        )
     }
 
     override suspend fun postRating(id: Int, ratingBody: RatingBody) {

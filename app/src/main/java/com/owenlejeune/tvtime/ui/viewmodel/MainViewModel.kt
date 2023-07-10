@@ -1,7 +1,12 @@
 package com.owenlejeune.tvtime.ui.viewmodel
 
+import android.annotation.SuppressLint
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.remember
 import androidx.lifecycle.ViewModel
 import androidx.paging.PagingData
+import com.owenlejeune.tvtime.api.LoadingState
 import com.owenlejeune.tvtime.api.tmdb.api.createPagingFlow
 import com.owenlejeune.tvtime.api.tmdb.api.v3.MoviesService
 import com.owenlejeune.tvtime.api.tmdb.api.v3.PeopleService
@@ -19,6 +24,7 @@ import com.owenlejeune.tvtime.api.tmdb.api.v3.model.SearchResultMedia
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.TmdbItem
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.Video
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.WatchProviders
+import com.owenlejeune.tvtime.extensions.anyOf
 import com.owenlejeune.tvtime.ui.screens.tabs.MediaTabNavItem
 import com.owenlejeune.tvtime.utils.types.MediaViewType
 import com.owenlejeune.tvtime.utils.types.TimeWindow
@@ -46,6 +52,17 @@ class MainViewModel: ViewModel(), KoinComponent {
     val similarMovies = movieService.similar
     val movieAccountStates = movieService.accountStates
     val movieKeywordResults = movieService.keywordResults
+
+    val movieDetailsLoadingState = movieService.detailsLoadingState
+    val movieImagesLoadingState = movieService.imagesLoadingState
+    val movieCastCrewLoadingState = movieService.castCrewLoadingState
+    val movieVideosLoadingState = movieService.videosLoadingState
+    val movieReviewsLoadingState = movieService.reviewsLoadingState
+    val movieKeywordsLoadingState = movieService.keywordsLoadingState
+    val movieWatchProvidersLoadingState = movieService.watchProvidersLoadingState
+    val movieExternalIdsLoadingState = movieService.externalIdsLoadingState
+    val movieReleaseDatesLoadingState = movieService.releaseDatesLoadingState
+    val movieAccountStatesLoadingState = movieService.accountStatesLoadingState
 
     val popularMovies by lazy {
         createPagingFlow(
@@ -87,6 +104,18 @@ class MainViewModel: ViewModel(), KoinComponent {
     val tvAccountStates = tvService.accountStates
     val tvKeywordResults = tvService.keywordResults
 
+    val tvDetailsLoadingState = tvService.detailsLoadingState
+    val tvImagesLoadingState = tvService.imagesLoadingState
+    val tvCastCrewLoadingState = tvService.castCrewLoadingState
+    val tvVideosLoadingState = tvService.videosLoadingState
+    val tvReviewsLoadingState = tvService.reviewsLoadingState
+    val tvKeywordsLoadingState = tvService.keywordsLoadingState
+    val tvWatchProvidersLoadingState = tvService.watchProvidersLoadingState
+    val tvExternalIdsLoadingState = tvService.externalIdsLoadingState
+    val tvSeasonsLoadingState = tvService.seasonsLoadingState
+    val tvContentRatingsLoadingState = tvService.contentRatingsLoadingState
+    val tvAccountStatesLoadingState = tvService.accountStatesLoadingState
+
     val popularTv by lazy {
         createPagingFlow(
             fetcher = { p -> tvService.getPopular(p) },
@@ -117,6 +146,11 @@ class MainViewModel: ViewModel(), KoinComponent {
     val peopleCrewMap = peopleService.crewMap
     val peopleImagesMap = peopleService.imagesMap
     val peopleExternalIdsMap = peopleService.externalIdsMap
+
+    val peopleDetailsLoadingState = peopleService.detailsLoadingState
+    val peopleCastCrewLoadingState = peopleService.castCrewLoadingState
+    val peopleImagesLoadingState = peopleService.imagesLoadingState
+    val peopleExternalIdsLoadingState = peopleService.externalIdsLoadingState
 
     val popularPeople by lazy {
         createPagingFlow(
@@ -231,68 +265,68 @@ class MainViewModel: ViewModel(), KoinComponent {
 
     suspend fun getById(id: Int, type: MediaViewType, force: Boolean = false) {
         when (type) {
-            MediaViewType.MOVIE -> if (detailMovies[id] == null || force) movieService.getById(id)
-            MediaViewType.TV -> if (detailedTv[id] == null || force) tvService.getById(id)
-            MediaViewType.PERSON -> if (peopleMap[id] == null || force) peopleService.getPerson(id)
+            MediaViewType.MOVIE -> if (detailMovies[id] == null || force) movieService.getById(id, force)
+            MediaViewType.TV -> if (detailedTv[id] == null || force) tvService.getById(id, force)
+            MediaViewType.PERSON -> if (peopleMap[id] == null || force) peopleService.getPerson(id, force)
             else -> {}
         }
     }
 
     suspend fun getImages(id: Int, type: MediaViewType, force: Boolean = false) {
         when (type) {
-            MediaViewType.MOVIE -> if (movieImages[id] == null || force) movieService.getImages(id)
-            MediaViewType.TV -> if (tvImages[id] == null || force) tvService.getImages(id)
-            MediaViewType.PERSON -> if (peopleImagesMap[id] == null || force) peopleService.getImages(id)
+            MediaViewType.MOVIE -> if (movieImages[id] == null || force) movieService.getImages(id, force)
+            MediaViewType.TV -> if (tvImages[id] == null || force) tvService.getImages(id, force)
+            MediaViewType.PERSON -> if (peopleImagesMap[id] == null || force) peopleService.getImages(id, force)
             else -> {}
         }
     }
 
     suspend fun getCastAndCrew(id: Int, type: MediaViewType, force: Boolean = false) {
         when (type) {
-            MediaViewType.MOVIE -> if (movieCast[id] == null || movieCrew[id] == null || force) movieService.getCastAndCrew(id)
-            MediaViewType.TV -> if (tvCast[id] == null || tvCrew[id] == null || force) tvService.getCastAndCrew(id)
-            MediaViewType.PERSON -> if (peopleCastMap[id] == null || peopleCrewMap[id] == null || force) peopleService.getCredits(id)
+            MediaViewType.MOVIE -> if (movieCast[id] == null || movieCrew[id] == null || force) movieService.getCastAndCrew(id, force)
+            MediaViewType.TV -> if (tvCast[id] == null || tvCrew[id] == null || force) tvService.getCastAndCrew(id, force)
+            MediaViewType.PERSON -> if (peopleCastMap[id] == null || peopleCrewMap[id] == null || force) peopleService.getCredits(id, force)
             else -> {}
         }
     }
 
     suspend fun getVideos(id: Int, type: MediaViewType, force: Boolean = false) {
         when (type) {
-            MediaViewType.MOVIE -> if (movieVideos[id] == null || force) movieService.getVideos(id)
-            MediaViewType.TV -> if (tvVideos[id] == null || force) tvService.getVideos(id)
+            MediaViewType.MOVIE -> if (movieVideos[id] == null || force) movieService.getVideos(id, force)
+            MediaViewType.TV -> if (tvVideos[id] == null || force) tvService.getVideos(id, force)
             else -> {}
         }
     }
 
     suspend fun getReviews(id: Int, type: MediaViewType, force: Boolean = false) {
         when (type) {
-            MediaViewType.MOVIE -> if (movieReviews[id] == null || force) movieService.getReviews(id)
-            MediaViewType.TV -> if (tvReviews[id] == null || force) tvService.getReviews(id)
+            MediaViewType.MOVIE -> if (movieReviews[id] == null || force) movieService.getReviews(id, force)
+            MediaViewType.TV -> if (tvReviews[id] == null || force) tvService.getReviews(id, force)
             else -> {}
         }
     }
 
     suspend fun getKeywords(id: Int, type: MediaViewType, force: Boolean = false) {
         when (type) {
-            MediaViewType.MOVIE -> if (movieKeywords[id] == null || force) movieService.getKeywords(id)
-            MediaViewType.TV -> if (tvKeywords[id] == null || force) tvService.getKeywords(id)
+            MediaViewType.MOVIE -> if (movieKeywords[id] == null || force) movieService.getKeywords(id, force)
+            MediaViewType.TV -> if (tvKeywords[id] == null || force) tvService.getKeywords(id, force)
             else -> {}
         }
     }
 
     suspend fun getWatchProviders(id: Int, type: MediaViewType, force: Boolean = false) {
         when (type) {
-            MediaViewType.MOVIE -> if (movieWatchProviders[id] == null || force) movieService.getWatchProviders(id)
-            MediaViewType.TV -> if (tvWatchProviders[id] == null || force) tvService.getWatchProviders(id)
+            MediaViewType.MOVIE -> if (movieWatchProviders[id] == null || force) movieService.getWatchProviders(id, force)
+            MediaViewType.TV -> if (tvWatchProviders[id] == null || force) tvService.getWatchProviders(id, force)
             else -> {}
         }
     }
 
     suspend fun getExternalIds(id: Int, type: MediaViewType, force: Boolean = false) {
         when (type) {
-            MediaViewType.MOVIE -> if (movieExternalIds[id] == null || force) movieService.getExternalIds(id)
-            MediaViewType.TV -> if (tvExternalIds[id] == null || force) tvService.getExternalIds(id)
-            MediaViewType.PERSON -> if (peopleExternalIdsMap[id] == null || force) peopleService.getExternalIds(id)
+            MediaViewType.MOVIE -> if (movieExternalIds[id] == null || force) movieService.getExternalIds(id, force)
+            MediaViewType.TV -> if (tvExternalIds[id] == null || force) tvService.getExternalIds(id, force)
+            MediaViewType.PERSON -> if (peopleExternalIdsMap[id] == null || force) peopleService.getExternalIds(id, force)
             else -> {}
         }
     }
@@ -359,20 +393,64 @@ class MainViewModel: ViewModel(), KoinComponent {
 
     suspend fun getReleaseDates(id: Int, force: Boolean = false) {
         if (movieReleaseDates[id] == null || force) {
-            movieService.getReleaseDates(id)
+            movieService.getReleaseDates(id, force)
         }
     }
 
     suspend fun getContentRatings(id: Int, force: Boolean = false) {
         if (tvContentRatings[id] == null || force) {
-            tvService.getContentRatings(id)
+            tvService.getContentRatings(id, force)
         }
     }
 
     suspend fun getSeason(seriesId: Int, seasonId: Int, force: Boolean = false) {
         if (tvSeasons[seriesId] == null || force) {
-            tvService.getSeason(seriesId, seasonId)
+            tvService.getSeason(seriesId, seasonId, force)
         }
+    }
+
+    @SuppressLint("ComposableNaming")
+    @Composable
+    fun monitorDetailsLoadingRefreshing(refreshing: MutableState<Boolean>) {
+        val movieDetails = remember { movieDetailsLoadingState }
+        val movieImages = remember { movieImagesLoadingState }
+        val movieCastCrew = remember { movieCastCrewLoadingState }
+        val movieVideos = remember { movieVideosLoadingState }
+        val movieReviews = remember { movieReviewsLoadingState }
+        val movieKeywords = remember { movieKeywordsLoadingState }
+        val movieWatchProviders = remember { movieWatchProvidersLoadingState }
+        val movieExternalIds = remember { movieExternalIdsLoadingState }
+        val movieReleaseDates = remember { movieReleaseDatesLoadingState }
+        val movieAccountStates = remember { movieAccountStatesLoadingState }
+        val tvDetails = remember { tvDetailsLoadingState }
+        val tvImages = remember { tvImagesLoadingState }
+        val tvCastCrew = remember { tvCastCrewLoadingState }
+        val tvVideos = remember { tvVideosLoadingState }
+        val tvReviews = remember { tvReviewsLoadingState }
+        val tvKeywords = remember { tvKeywordsLoadingState }
+        val tvWatchProviders = remember { tvWatchProvidersLoadingState }
+        val tvExternalIds = remember { tvExternalIdsLoadingState }
+        val tvSeasons = remember { tvSeasonsLoadingState }
+        val tvContentRatings = remember { tvContentRatingsLoadingState }
+        val tvAccountStates = remember { tvAccountStatesLoadingState }
+        val peopleDetails = remember { peopleDetailsLoadingState }
+        val peopleCastCrew = remember { peopleCastCrewLoadingState }
+        val peopleImages = remember { peopleImagesLoadingState }
+        val peopleExternalIds = remember { peopleExternalIdsLoadingState }
+
+        refreshing.value = movieDetails.value == LoadingState.REFRESHING || movieImages.value == LoadingState.REFRESHING ||
+                movieCastCrew.value == LoadingState.REFRESHING ||  movieVideos.value == LoadingState.REFRESHING ||
+                movieReviews.value == LoadingState.REFRESHING || movieKeywords.value == LoadingState.REFRESHING ||
+                movieWatchProviders.value == LoadingState.REFRESHING || movieExternalIds.value == LoadingState.REFRESHING ||
+                movieReleaseDates.value == LoadingState.REFRESHING || movieAccountStates.value == LoadingState.REFRESHING ||
+                tvDetails.value == LoadingState.REFRESHING || tvImages.value == LoadingState.REFRESHING ||
+                tvCastCrew.value == LoadingState.REFRESHING || tvVideos.value == LoadingState.REFRESHING ||
+                tvReviews.value == LoadingState.REFRESHING || tvKeywords.value == LoadingState.REFRESHING ||
+                tvWatchProviders.value == LoadingState.REFRESHING || tvExternalIds.value == LoadingState.REFRESHING ||
+                tvSeasons.value == LoadingState.REFRESHING || tvContentRatings.value == LoadingState.REFRESHING ||
+                tvAccountStates.value == LoadingState.REFRESHING || peopleDetails.value == LoadingState.REFRESHING ||
+                peopleCastCrew.value == LoadingState.REFRESHING || peopleImages.value == LoadingState.REFRESHING ||
+                peopleExternalIds.value == LoadingState.REFRESHING
     }
 
 }

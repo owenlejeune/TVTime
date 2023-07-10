@@ -1,7 +1,9 @@
 package com.owenlejeune.tvtime.api.tmdb.api.v3
 
-import android.util.Log
 import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
+import com.owenlejeune.tvtime.api.LoadingState
+import com.owenlejeune.tvtime.api.loadRemoteData
 import com.owenlejeune.tvtime.api.tmdb.TmdbClient
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.DetailCast
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.DetailCrew
@@ -28,61 +30,48 @@ class PeopleService: KoinComponent {
     val imagesMap = Collections.synchronizedMap(mutableStateMapOf<Int, List<PersonImage>>())
     val externalIdsMap = Collections.synchronizedMap(mutableStateMapOf<Int, ExternalIds>())
 
-    suspend fun getPerson(id: Int) {
-        val response = service.getPerson(id)
-        if (response.isSuccessful) {
-            response.body()?.let {
-                Log.d(TAG, "Successfully got person $id")
-                peopleMap[id] = it
-            } ?: run {
-                Log.w(TAG, "Problem getting person $id")
-            }
-        } else {
-            Log.e(TAG, "Issue getting person $id")
-        }
+    val detailsLoadingState = mutableStateOf(LoadingState.INACTIVE)
+    val castCrewLoadingState = mutableStateOf(LoadingState.INACTIVE)
+    val imagesLoadingState = mutableStateOf(LoadingState.INACTIVE)
+    val externalIdsLoadingState = mutableStateOf(LoadingState.INACTIVE)
+
+    suspend fun getPerson(id: Int, refreshing: Boolean) {
+        loadRemoteData(
+            { service.getPerson(id) },
+            { peopleMap[id] = it },
+            detailsLoadingState,
+            refreshing
+        )
     }
 
-    suspend fun getCredits(id: Int) {
-        val response = service.getCredits(id)
-        if (response.isSuccessful) {
-            response.body()?.let {
-                Log.d(TAG, "Successfully got credits $id")
+    suspend fun getCredits(id: Int, refreshing: Boolean) {
+        loadRemoteData(
+            { service.getCredits(id) },
+            {
                 castMap[id] = it.cast
                 crewMap[id] = it.crew
-            } ?: run {
-                Log.w(TAG, "Problem getting credits $id")
-            }
-        } else {
-            Log.e(TAG, "Issue getting credits $id")
-        }
+            },
+            castCrewLoadingState,
+            refreshing
+        )
     }
 
-    suspend fun getImages(id: Int) {
-        val response = service.getImages(id)
-        if (response.isSuccessful) {
-            response.body()?.let {
-                Log.d(TAG, "Successfully got images $id")
-                imagesMap[id] = it.images
-            } ?: run {
-                Log.w(TAG, "Problem getting images $id")
-            }
-        } else {
-            Log.e(TAG, "Issues getting images $id")
-        }
+    suspend fun getImages(id: Int, refreshing: Boolean) {
+        loadRemoteData(
+            { service.getImages(id) },
+            { imagesMap[id] = it.images },
+            imagesLoadingState,
+            refreshing
+        )
     }
 
-    suspend fun getExternalIds(id: Int) {
-        val response = service.getExternalIds(id)
-        if (response.isSuccessful) {
-            response.body()?.let {
-                Log.d(TAG, "Successfully got external ids $id")
-                externalIdsMap[id] = it
-            } ?: run {
-                Log.w(TAG, "Problem getting external ids $id")
-            }
-        } else {
-            Log.e(TAG, "Issue getting external ids $id")
-        }
+    suspend fun getExternalIds(id: Int, refreshing: Boolean) {
+        loadRemoteData(
+            { service.getExternalIds(id) },
+            { externalIdsMap[id] = it },
+            externalIdsLoadingState,
+            refreshing
+        )
     }
 
     suspend fun getPopular(page: Int): Response<HomePagePeopleResponse> {

@@ -3,17 +3,56 @@ package com.owenlejeune.tvtime.ui.screens
 import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
-import androidx.compose.animation.*
-import androidx.compose.foundation.*
-import androidx.compose.foundation.layout.*
+import androidx.compose.animation.Crossfade
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Movie
 import androidx.compose.material.icons.filled.Send
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Divider
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberTopAppBarState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -39,7 +78,18 @@ import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.rememberPagerState
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.owenlejeune.tvtime.R
-import com.owenlejeune.tvtime.api.tmdb.api.v3.model.*
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.DetailedItem
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.DetailedMovie
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.DetailedTv
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.Genre
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.ImageCollection
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.MovieCastMember
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.MovieCrewMember
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.Person
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.TvCastMember
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.TvCrewMember
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.Video
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.WatchProviderDetails
 import com.owenlejeune.tvtime.extensions.DateFormat
 import com.owenlejeune.tvtime.extensions.WindowSizeClass
 import com.owenlejeune.tvtime.extensions.format
@@ -47,17 +97,63 @@ import com.owenlejeune.tvtime.extensions.getCalendarYear
 import com.owenlejeune.tvtime.extensions.lazyPagingItems
 import com.owenlejeune.tvtime.extensions.listItems
 import com.owenlejeune.tvtime.preferences.AppPreferences
-import com.owenlejeune.tvtime.ui.components.*
+import com.owenlejeune.tvtime.ui.components.ActionsView
+import com.owenlejeune.tvtime.ui.components.AvatarImage
+import com.owenlejeune.tvtime.ui.components.ChipDefaults
+import com.owenlejeune.tvtime.ui.components.ChipGroup
+import com.owenlejeune.tvtime.ui.components.ChipInfo
+import com.owenlejeune.tvtime.ui.components.ChipStyle
+import com.owenlejeune.tvtime.ui.components.CircleBackgroundColorImage
+import com.owenlejeune.tvtime.ui.components.ContentCard
+import com.owenlejeune.tvtime.ui.components.DetailHeader
+import com.owenlejeune.tvtime.ui.components.ExpandableContentCard
+import com.owenlejeune.tvtime.ui.components.ExternalIdsArea
+import com.owenlejeune.tvtime.ui.components.FullScreenThumbnailVideoPlayer
+import com.owenlejeune.tvtime.ui.components.HtmlText
+import com.owenlejeune.tvtime.ui.components.ImageGalleryOverlay
+import com.owenlejeune.tvtime.ui.components.ListContentCard
+import com.owenlejeune.tvtime.ui.components.PosterItem
+import com.owenlejeune.tvtime.ui.components.RoundedChip
+import com.owenlejeune.tvtime.ui.components.RoundedTextField
+import com.owenlejeune.tvtime.ui.components.SelectableTextChip
+import com.owenlejeune.tvtime.ui.components.TwoLineImageTextCard
 import com.owenlejeune.tvtime.ui.navigation.AppNavItem
 import com.owenlejeune.tvtime.ui.viewmodel.MainViewModel
 import com.owenlejeune.tvtime.ui.viewmodel.SpecialFeaturesViewModel
 import com.owenlejeune.tvtime.utils.SessionManager
 import com.owenlejeune.tvtime.utils.TmdbUtils
 import com.owenlejeune.tvtime.utils.types.MediaViewType
-import kotlinx.coroutines.*
+import kotlinx.coroutines.launch
 import org.koin.java.KoinJavaComponent.get
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalPagerApi::class)
+private suspend fun fetchData(
+    mainViewModel: MainViewModel,
+    itemId: Int,
+    type: MediaViewType,
+    force: Boolean = false
+) {
+    mainViewModel.getById(itemId, type, force)
+    mainViewModel.getImages(itemId, type, force)
+    mainViewModel.getExternalIds(itemId, type, force)
+    mainViewModel.getKeywords(itemId, type, force)
+    mainViewModel.getCastAndCrew(itemId, type, force)
+    mainViewModel.getSimilar(itemId, type)
+    mainViewModel.getVideos(itemId, type, force)
+    mainViewModel.getWatchProviders(itemId, type, force)
+    mainViewModel.getReviews(itemId, type, force)
+
+    when (type) {
+        MediaViewType.MOVIE -> {
+            mainViewModel.getReleaseDates(itemId, force)
+        }
+        MediaViewType.TV -> {
+            mainViewModel.getContentRatings(itemId, force)
+        }
+        else -> {}
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalPagerApi::class, ExperimentalMaterialApi::class)
 @Composable
 fun MediaDetailScreen(
     appNavController: NavController,
@@ -65,16 +161,13 @@ fun MediaDetailScreen(
     type: MediaViewType,
     windowSize: WindowSizeClass
 ) {
+    val scope = rememberCoroutineScope()
+
     val mainViewModel = viewModel<MainViewModel>()
 
     val systemUiController = rememberSystemUiController()
     systemUiController.setStatusBarColor(color = MaterialTheme.colorScheme.background)
     systemUiController.setNavigationBarColor(color = MaterialTheme.colorScheme.background)
-
-    LaunchedEffect(Unit) {
-        mainViewModel.getById(itemId, type)
-        mainViewModel.getImages(itemId, type)
-    }
 
     val mediaItems: Map<Int, DetailedItem> = remember { mainViewModel.produceDetailsFor(type) }
     val mediaItem = mediaItems[itemId]
@@ -86,6 +179,30 @@ fun MediaDetailScreen(
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(topAppBarScrollState)
 
     val pagerState = rememberPagerState(initialPage = 0)
+
+    LaunchedEffect(Unit) {
+        fetchData(mainViewModel, itemId, type)
+    }
+
+    if (type == MediaViewType.TV) {
+        LaunchedEffect(mediaItem) {
+            val lastSeason = (mediaItem as DetailedTv?)?.numberOfSeasons ?: 0
+            if (lastSeason > 0) {
+                mainViewModel.getSeason(itemId, lastSeason)
+            }
+        }
+    }
+
+    val isRefreshing = remember { mutableStateOf(false) }
+    mainViewModel.monitorDetailsLoadingRefreshing(refreshing = isRefreshing)
+    val pullRefreshState = rememberPullRefreshState(
+        refreshing = isRefreshing.value,
+        onRefresh = {
+            scope.launch {
+                fetchData(mainViewModel, itemId, type, true)
+            }
+        }
+    )
 
     Box(
         modifier = Modifier.fillMaxSize()
@@ -116,7 +233,10 @@ fun MediaDetailScreen(
                 )
             }
         ) { innerPadding ->
-            Box(modifier = Modifier.padding(innerPadding)) {
+            Box(modifier = Modifier
+                .padding(innerPadding)
+                .pullRefresh(state = pullRefreshState)
+            ) {
                 MediaViewContent(
                     appNavController = appNavController,
                     itemId = itemId,
@@ -127,6 +247,11 @@ fun MediaDetailScreen(
                     showImageGallery = showGalleryOverlay,
                     pagerState = pagerState,
                     mainViewModel =  mainViewModel
+                )
+                PullRefreshIndicator(
+                    refreshing = isRefreshing.value,
+                    state = pullRefreshState,
+                    modifier = Modifier.align(alignment = Alignment.TopCenter)
                 )
             }
         }
@@ -143,7 +268,7 @@ fun MediaDetailScreen(
     }
 }
 
-@OptIn(ExperimentalPagerApi::class)
+@OptIn(ExperimentalPagerApi::class, ExperimentalMaterialApi::class)
 @Composable
 private fun MediaViewContent(
     appNavController: NavController,
@@ -157,10 +282,6 @@ private fun MediaViewContent(
     pagerState: PagerState,
     preferences: AppPreferences = get(AppPreferences::class.java)
 ) {
-    LaunchedEffect(Unit) {
-        mainViewModel.getExternalIds(itemId, type)
-    }
-
     Row(
         modifier = Modifier
             .background(color = MaterialTheme.colorScheme.background),
@@ -290,9 +411,6 @@ private fun MiscTvDetails(
     mainViewModel: MainViewModel
 ) {
     mediaItem?.let { tv ->
-        LaunchedEffect(Unit) {
-            mainViewModel.getContentRatings(itemId)
-        }
         val series = tv as DetailedTv
 
         val contentRatingsMap = remember { mainViewModel.tvContentRatings }
@@ -318,10 +436,6 @@ private fun MiscMovieDetails(
     mainViewModel: MainViewModel
 ) {
     mediaItem?.let { mi ->
-        LaunchedEffect(Unit) {
-            mainViewModel.getReleaseDates(itemId)
-        }
-
         val movie = mi as DetailedMovie
 
         val contentRatingsMap = remember { mainViewModel.movieReleaseDates }
@@ -388,10 +502,6 @@ private fun OverviewCard(
     appNavController: NavController,
     modifier: Modifier = Modifier
 ) {
-    LaunchedEffect(Unit) {
-        mainViewModel.getKeywords(itemId, type)
-    }
-
     val keywordsMap = remember { mainViewModel.produceKeywordsFor(type) }
     val keywords = keywordsMap[itemId]
 
@@ -602,10 +712,6 @@ private fun CastCard(
     appNavController: NavController,
     modifier: Modifier = Modifier
 ) {
-    LaunchedEffect(Unit) {
-        mainViewModel.getCastAndCrew(itemId, type)
-    }
-
     val castMap = remember { mainViewModel.produceCastFor(type) }
     val cast = castMap[itemId]
 
@@ -694,13 +800,6 @@ private fun SeasonCard(
     mainViewModel: MainViewModel,
     appNavController: NavController
 ) {
-    LaunchedEffect(mediaItem) {
-        val lastSeason = (mediaItem as DetailedTv?)?.numberOfSeasons ?: 0
-        if (lastSeason > 0) {
-            mainViewModel.getSeason(itemId, lastSeason)
-        }
-    }
-
     val seasonsMap = remember { mainViewModel.tvSeasons }
     val lastSeason = seasonsMap[itemId]?.lastOrNull()
 
@@ -766,10 +865,6 @@ fun SimilarContentCard(
     appNavController: NavController,
     modifier: Modifier = Modifier
 ) {
-    LaunchedEffect(Unit) {
-        mainViewModel.getSimilar(itemId, mediaType)
-    }
-
     val similarContentMap = remember { mainViewModel.produceSimilarContentFor(mediaType) }
     val similarContent = similarContentMap[itemId]
     val pagingItems = similarContent?.collectAsLazyPagingItems()
@@ -822,10 +917,6 @@ fun VideosCard(
     mainViewModel: MainViewModel,
     modifier: Modifier = Modifier
 ) {
-    LaunchedEffect(Unit) {
-        mainViewModel.getVideos(itemId, type)
-    }
-
     val videosMap = remember { mainViewModel.produceVideosFor(type) }
     val videos = videosMap[itemId]
 
@@ -902,10 +993,6 @@ private fun WatchProvidersCard(
     mainViewModel: MainViewModel,
     modifier: Modifier = Modifier
 ) {
-    LaunchedEffect(Unit) {
-        mainViewModel.getWatchProviders(itemId, type)
-    }
-
     val watchProvidersMap = remember { mainViewModel.produceWatchProvidersFor(type) }
     val watchProviders = watchProvidersMap[itemId]
     watchProviders?.let { providers ->
@@ -1116,10 +1203,6 @@ private fun ReviewsCard(
     mainViewModel: MainViewModel,
     modifier: Modifier = Modifier
 ) {
-    LaunchedEffect(Unit) {
-        mainViewModel.getReviews(itemId, type)
-    }
-
     val reviewsMap = remember { mainViewModel.produceReviewsFor(type) }
     val reviews = reviewsMap[itemId]
 

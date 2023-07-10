@@ -2,9 +2,12 @@ package com.owenlejeune.tvtime.api.tmdb.api.v3
 
 import android.util.Log
 import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.paging.PagingData
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
+import com.owenlejeune.tvtime.api.LoadingState
+import com.owenlejeune.tvtime.api.loadRemoteData
 import com.owenlejeune.tvtime.api.storedIn
 import com.owenlejeune.tvtime.api.tmdb.TmdbClient
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.AccountStates
@@ -66,59 +69,126 @@ class TvService: KoinComponent, DetailService, HomePageService {
     val seasons: MutableMap<Int, out Set<Season>>
         get() = _seasons
 
-    override suspend fun getById(id: Int) {
-        service.getTvShowById(id) storedIn { detailTv[id] = it }
+    val detailsLoadingState = mutableStateOf(LoadingState.INACTIVE)
+    val imagesLoadingState = mutableStateOf(LoadingState.INACTIVE)
+    val castCrewLoadingState = mutableStateOf(LoadingState.INACTIVE)
+    val contentRatingsLoadingState = mutableStateOf(LoadingState.INACTIVE)
+    val videosLoadingState = mutableStateOf(LoadingState.INACTIVE)
+    val reviewsLoadingState = mutableStateOf(LoadingState.INACTIVE)
+    val keywordsLoadingState = mutableStateOf(LoadingState.INACTIVE)
+    val watchProvidersLoadingState = mutableStateOf(LoadingState.INACTIVE)
+    val externalIdsLoadingState = mutableStateOf(LoadingState.INACTIVE)
+    val accountStatesLoadingState = mutableStateOf(LoadingState.INACTIVE)
+    val seasonsLoadingState = mutableStateOf(LoadingState.INACTIVE)
+
+    override suspend fun getById(id: Int, refreshing: Boolean) {
+        loadRemoteData(
+            { service.getTvShowById(id) },
+            { detailTv[id] = it },
+            detailsLoadingState,
+            refreshing
+        )
     }
 
-    override suspend fun getImages(id: Int) {
-        service.getTvImages(id) storedIn { images[id] = it }
+    override suspend fun getImages(id: Int, refreshing: Boolean) {
+        loadRemoteData(
+            { service.getTvImages(id) },
+            { images[id] = it },
+            imagesLoadingState,
+            refreshing
+        )
     }
 
-    override suspend fun getCastAndCrew(id: Int) {
-        service.getCastAndCrew(id) storedIn {
-            cast[id] = it.cast
-            crew[id] = it.crew
-        }
+    override suspend fun getCastAndCrew(id: Int, refreshing: Boolean) {
+        loadRemoteData(
+            { service.getCastAndCrew(id) },
+            {
+                cast[id] = it.cast
+                crew[id] = it.crew
+            },
+            castCrewLoadingState,
+            refreshing
+        )
     }
 
-    suspend fun getContentRatings(id: Int) {
-        service.getContentRatings(id) storedIn { contentRatings[id] = it.results }
+    suspend fun getContentRatings(id: Int, refreshing: Boolean) {
+        loadRemoteData(
+            { service.getContentRatings(id) },
+            { contentRatings[id] = it.results },
+            contentRatingsLoadingState,
+            refreshing
+        )
     }
 
-    override suspend fun getVideos(id: Int) {
-        service.getVideos(id) storedIn { videos[id] = it.results }
+    override suspend fun getVideos(id: Int, refreshing: Boolean) {
+        loadRemoteData(
+            { service.getVideos(id) },
+            { videos[id] = it.results },
+            videosLoadingState,
+            refreshing
+        )
     }
 
-    override suspend fun getReviews(id: Int) {
-        service.getReviews(id) storedIn { reviews[id] = it.results }
+    override suspend fun getReviews(id: Int, refreshing: Boolean) {
+        loadRemoteData(
+            { service.getReviews(id) },
+            { reviews[id] = it.results },
+            reviewsLoadingState,
+            refreshing
+        )
     }
 
-    override suspend fun getKeywords(id: Int) {
-        service.getKeywords(id) storedIn { keywords[id] = it.keywords ?: emptyList() }
+    override suspend fun getKeywords(id: Int, refreshing: Boolean) {
+        loadRemoteData(
+            { service.getKeywords(id) },
+            { keywords[id] = it.keywords ?: emptyList() },
+            keywordsLoadingState,
+            refreshing
+        )
     }
 
-    override suspend fun getWatchProviders(id: Int) {
-        service.getWatchProviders(id) storedIn {
-            it.results[Locale.getDefault().country]?.let { wp ->
-                watchProviders[id] = wp
-            }
-        }
+    override suspend fun getWatchProviders(id: Int, refreshing: Boolean) {
+        loadRemoteData(
+            { service.getWatchProviders(id) },
+            {
+                it.results[Locale.getDefault().country]?.let { wp ->
+                    watchProviders[id] = wp
+                }
+            },
+            watchProvidersLoadingState,
+            refreshing
+        )
     }
 
     override suspend fun getAccountStates(id: Int) {
-        service.getAccountStates(id) storedIn { accountStates[id] = it }
+        loadRemoteData(
+            { service.getAccountStates(id) },
+            { accountStates[id] = it },
+            accountStatesLoadingState,
+            false
+        )
     }
 
-    suspend fun getSeason(seriesId: Int, seasonId: Int) {
-        service.getSeason(seriesId, seasonId) storedIn {
-            _seasons[seriesId]?.add(it) ?: run {
-                _seasons[seriesId] = mutableSetOf(it)
-            }
-        }
+    suspend fun getSeason(seriesId: Int, seasonId: Int, refreshing: Boolean) {
+        loadRemoteData(
+            { service.getSeason(seriesId, seasonId) },
+            {
+                _seasons[seriesId]?.add(it) ?: run {
+                    _seasons[seriesId] = mutableSetOf(it)
+                }
+            },
+            seasonsLoadingState,
+            refreshing
+        )
     }
 
-    override suspend fun getExternalIds(id: Int) {
-        service.getExternalIds(id) storedIn { externalIds[id] = it }
+    override suspend fun getExternalIds(id: Int, refreshing: Boolean) {
+        loadRemoteData(
+            { service.getExternalIds(id) },
+            { externalIds[id] = it },
+            externalIdsLoadingState,
+            refreshing
+        )
     }
 
     override suspend fun postRating(id: Int, ratingBody: RatingBody) {

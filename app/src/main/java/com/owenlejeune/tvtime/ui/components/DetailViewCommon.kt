@@ -19,6 +19,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
@@ -252,11 +253,13 @@ private fun ExternalIdLogo(
             context.startActivity(intent)
         },
         modifier = Modifier.size(28.dp)
+//        modifier = Modifier.size(40.dp)
     ) {
         Icon(
             painter = logoPainter,
             contentDescription = null,
-            tint = MaterialTheme.colorScheme.secondary
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(28.dp)
         )
     }
 }
