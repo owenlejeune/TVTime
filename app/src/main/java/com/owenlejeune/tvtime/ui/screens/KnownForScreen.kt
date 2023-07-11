@@ -36,7 +36,7 @@ import com.owenlejeune.tvtime.api.tmdb.api.v3.model.TvCast
 import com.owenlejeune.tvtime.extensions.bringToFront
 import com.owenlejeune.tvtime.extensions.getCalendarYear
 import com.owenlejeune.tvtime.ui.components.MediaResultCard
-import com.owenlejeune.tvtime.ui.components.SelectableTextChip
+import com.owenlejeune.tvtime.ui.components.PillSegmentedControl
 import com.owenlejeune.tvtime.ui.viewmodel.MainViewModel
 import com.owenlejeune.tvtime.utils.TmdbUtils
 
@@ -99,19 +99,11 @@ fun KnownForScreen(
                         modifier = Modifier.padding(start = 16.dp, top = 12.dp, bottom = 12.dp),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        SelectableTextChip(
-                            selected = actorSelected,
-                            onSelected = { actorSelected = true },
-                            text = stringResource(id = R.string.actor_label),
-                            selectedColor = MaterialTheme.colorScheme.tertiary,
-                            unselectedColor = MaterialTheme.colorScheme.background
-                        )
-                        SelectableTextChip(
-                            selected = !actorSelected,
-                            onSelected = { actorSelected = false },
-                            text = stringResource(id = R.string.production_label),
-                            selectedColor = MaterialTheme.colorScheme.tertiary,
-                            unselectedColor = MaterialTheme.colorScheme.background
+                        val labels = listOf(stringResource(id = R.string.actor_label), stringResource(id = R.string.production_label))
+                        PillSegmentedControl(
+                            items = labels,
+                            itemLabel = { _, t -> t },
+                            onItemSelected = { i, _ -> actorSelected = i == 0}
                         )
                     }
                 }

@@ -32,7 +32,7 @@ import com.owenlejeune.tvtime.api.tmdb.api.v3.model.*
 import com.owenlejeune.tvtime.extensions.getCalendarYear
 import com.owenlejeune.tvtime.extensions.lazyPagingItems
 import com.owenlejeune.tvtime.ui.components.MediaResultCard
-import com.owenlejeune.tvtime.ui.components.SelectableTextChip
+import com.owenlejeune.tvtime.ui.components.PillSegmentedControl
 import com.owenlejeune.tvtime.ui.viewmodel.MainViewModel
 import com.owenlejeune.tvtime.ui.viewmodel.SearchViewModel
 import com.owenlejeune.tvtime.utils.TmdbUtils
@@ -106,31 +106,26 @@ fun SearchScreen(
         )
         Divider(thickness = 2.dp, color = MaterialTheme.colorScheme.surfaceVariant)
 
-        Row(
-            modifier = Modifier.padding(start = 12.dp, top = 12.dp, bottom = 12.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            SelectableTextChip(
-                selected = viewType.value == MediaViewType.MOVIE,
-                onSelected = { viewType.value = MediaViewType.MOVIE },
-                text = stringResource(id = R.string.nav_movies_title)
-            )
-            SelectableTextChip(
-                selected = viewType.value == MediaViewType.TV,
-                onSelected = { viewType.value = MediaViewType.TV },
-                text = stringResource(id = R.string.nav_tv_title)
-            )
-            SelectableTextChip(
-                selected = viewType.value == MediaViewType.PERSON,
-                onSelected = { viewType.value = MediaViewType.PERSON },
-                text = stringResource(id = R.string.nav_people_title)
-            )
-            SelectableTextChip(
-                selected = viewType.value == MediaViewType.MIXED,
-                onSelected = { viewType.value = MediaViewType.MIXED },
-                text = stringResource(id = R.string.search_multi_title)
-            )
-        }
+        val searchTypes = listOf(MediaViewType.MOVIE, MediaViewType.TV, MediaViewType.PERSON, MediaViewType.MIXED)
+        val selected = remember { mutableStateOf(searchTypes[0]) }
+
+        val context = LocalContext.current
+        PillSegmentedControl(
+            items = searchTypes,
+            itemLabel = { _, i ->
+                when (i) {
+                    MediaViewType.MOVIE -> context.getString(R.string.nav_movies_title)
+                    MediaViewType.TV -> context.getString(R.string.nav_tv_title)
+                    MediaViewType.PERSON -> context.getString(R.string.nav_people_title)
+                    MediaViewType.MIXED -> context.getString(R.string.search_multi_title)
+                    else -> ""
+                }
+            },
+            onItemSelected = { _, i ->
+                selected.value = i
+            },
+            modifier = Modifier.padding(start = 12.dp, top = 12.dp, end = 12.dp)
+        )
 
         when (viewType.value) {
             MediaViewType.TV -> {

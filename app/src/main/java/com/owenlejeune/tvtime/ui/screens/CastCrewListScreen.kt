@@ -2,7 +2,6 @@ package com.owenlejeune.tvtime.ui.screens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -31,14 +30,10 @@ import androidx.navigation.NavController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.CrewMember
-import com.owenlejeune.tvtime.api.tmdb.api.v3.model.DetailCrew
-import com.owenlejeune.tvtime.api.tmdb.api.v3.model.MovieCast
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.MovieCastMember
-import com.owenlejeune.tvtime.api.tmdb.api.v3.model.TvCast
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.TvCastMember
-import com.owenlejeune.tvtime.extensions.getCalendarYear
 import com.owenlejeune.tvtime.ui.components.MediaResultCard
-import com.owenlejeune.tvtime.ui.components.SelectableTextChip
+import com.owenlejeune.tvtime.ui.components.PillSegmentedControl
 import com.owenlejeune.tvtime.ui.viewmodel.MainViewModel
 import com.owenlejeune.tvtime.utils.TmdbUtils
 import com.owenlejeune.tvtime.utils.types.MediaViewType
@@ -99,28 +94,14 @@ fun CastCrewListScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 item {
-                    Row(
-                        modifier = Modifier.padding(start = 16.dp, top = 12.dp, bottom = 12.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        SelectableTextChip(
-                            selected = castSelected,
-                            onSelected = { castSelected = true },
-                            text = stringResource(id = R.string.actor_label),
-                            selectedColor = MaterialTheme.colorScheme.tertiary,
-                            unselectedColor = MaterialTheme.colorScheme.background
-                        )
-                        SelectableTextChip(
-                            selected = !castSelected,
-                            onSelected = { castSelected = false },
-                            text = stringResource(id = R.string.production_label),
-                            selectedColor = MaterialTheme.colorScheme.tertiary,
-                            unselectedColor = MaterialTheme.colorScheme.background
-                        )
-                    }
+                    val labels = listOf(stringResource(id = R.string.actor_label), stringResource(id = R.string.production_label))
+                    PillSegmentedControl(
+                        items = labels,
+                        itemLabel = { _, t -> t },
+                        onItemSelected = { i, _ -> castSelected = i == 0 },
+                        modifier = Modifier.padding(horizontal = 8.dp)
+                    )
                 }
-
-
 
                 items(items!!) { item ->
                     val additionalDetails = emptyList<String>().toMutableList()

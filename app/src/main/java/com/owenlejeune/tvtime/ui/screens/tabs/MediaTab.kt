@@ -1,14 +1,14 @@
 package com.owenlejeune.tvtime.ui.screens.tabs
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -21,9 +21,9 @@ import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.rememberPagerState
 import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.ui.components.PagingPosterGrid
+import com.owenlejeune.tvtime.ui.components.PillSegmentedControl
 import com.owenlejeune.tvtime.ui.components.ScrollableTabs
 import com.owenlejeune.tvtime.ui.components.SearchView
-import com.owenlejeune.tvtime.ui.components.SelectableTextChip
 import com.owenlejeune.tvtime.ui.navigation.AppNavItem
 import com.owenlejeune.tvtime.ui.viewmodel.HomeScreenViewModel
 import com.owenlejeune.tvtime.ui.viewmodel.MainViewModel
@@ -102,25 +102,23 @@ fun MediaTabTrendingContent(
     PagingPosterGrid(
         lazyPagingItems = mediaListItems,
         header = {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            val options = listOf(TimeWindow.DAY, TimeWindow.WEEK)
+
+            val context = LocalContext.current
+            PillSegmentedControl(
+                items = options,
+                itemLabel = { _, i ->
+                    when (i) {
+                        TimeWindow.DAY -> context.getString(R.string.time_window_day)
+                        TimeWindow.WEEK -> context.getString(R.string.time_window_week)
+                    }
+                },
+                onItemSelected = { _, i -> timeWindow.value = i },
                 modifier = Modifier
+                    .fillMaxWidth()
                     .padding(horizontal = 4.dp)
                     .padding(bottom = 4.dp)
-            ) {
-                SelectableTextChip(
-                    selected = timeWindow.value == TimeWindow.DAY,
-                    onSelected = { timeWindow.value = TimeWindow.DAY },
-                    text = stringResource(id = R.string.time_window_day),
-                    modifier = Modifier.weight(1f)
-                )
-                SelectableTextChip(
-                    selected = timeWindow.value == TimeWindow.WEEK,
-                    onSelected = { timeWindow.value = TimeWindow.WEEK },
-                    text = stringResource(id = R.string.time_window_week),
-                    modifier = Modifier.weight(1f)
-                )
-            }
+            )
         },
         onClick = { id ->
             appNavController.navigate(

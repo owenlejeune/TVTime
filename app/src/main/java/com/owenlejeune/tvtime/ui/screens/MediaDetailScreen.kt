@@ -1,5 +1,6 @@
 package com.owenlejeune.tvtime.ui.screens
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
@@ -48,7 +49,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -112,10 +112,10 @@ import com.owenlejeune.tvtime.ui.components.FullScreenThumbnailVideoPlayer
 import com.owenlejeune.tvtime.ui.components.HtmlText
 import com.owenlejeune.tvtime.ui.components.ImageGalleryOverlay
 import com.owenlejeune.tvtime.ui.components.ListContentCard
+import com.owenlejeune.tvtime.ui.components.PillSegmentedControl
 import com.owenlejeune.tvtime.ui.components.PosterItem
 import com.owenlejeune.tvtime.ui.components.RoundedChip
 import com.owenlejeune.tvtime.ui.components.RoundedTextField
-import com.owenlejeune.tvtime.ui.components.SelectableTextChip
 import com.owenlejeune.tvtime.ui.components.TwoLineImageTextCard
 import com.owenlejeune.tvtime.ui.navigation.AppNavItem
 import com.owenlejeune.tvtime.ui.viewmodel.MainViewModel
@@ -986,6 +986,7 @@ private fun VideoGroup(results: List<Video>, type: Video.Type, title: String) {
     }
 }
 
+@SuppressLint("AutoboxingStateValueProperty")
 @Composable
 private fun WatchProvidersCard(
     itemId: Int,
@@ -1012,49 +1013,33 @@ private fun WatchProvidersCard(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
 
-                var selectedIndex by remember { mutableIntStateOf(
-                    when {
-                        providers.flaterate != null -> 0
-                        providers.rent != null -> 1
-                        providers.buy != null -> 2
-                        else -> -1
-                    }
-                ) }
-                Row(
-                    modifier = Modifier.padding(start = 16.dp, top = 12.dp, bottom = 12.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    providers.flaterate?.let {
-                        SelectableTextChip(
-                            selected = selectedIndex == 0,
-                            onSelected = { selectedIndex = 0 },
-                            text = stringResource(R.string.streaming_label)
-                        )
-                    }
-                    providers.rent?.let {
-                        SelectableTextChip(
-                            selected = selectedIndex == 1,
-                            onSelected = { selectedIndex = 1 },
-                            text = stringResource(R.string.rent_label)
-                        )
-                    }
-                    providers.buy?.let {
-                        SelectableTextChip(
-                            selected = selectedIndex == 2,
-                            onSelected = { selectedIndex = 2 },
-                            text = stringResource(R.string.buy_label)
-                        )
-                    }
+                val itemsMap = mutableMapOf<Int, List<WatchProviderDetails>>().apply {
+                    providers.flaterate?.let { put(0, it) }
+                    providers.rent?.let { put(1, it) }
+                    providers.buy?.let { put(2, it) }
                 }
+                val selected = remember { mutableStateOf(if (itemsMap.isEmpty()) null else itemsMap.values.first()) }
+
+                val context = LocalContext.current
+                PillSegmentedControl(
+                    items = itemsMap.values.toList(),
+                    itemLabel = { i, _ ->
+                        when (i) {
+                            0 -> context.getString(R.string.streaming_label)
+                            1 -> context.getString(R.string.rent_label)
+                            2 -> context.getString(R.string.buy_label)
+                            else -> ""
+                        }
+                    },
+                    onItemSelected = { i, _ -> selected.value = itemsMap.values.toList()[i] },
+                    modifier = Modifier.padding(all = 8.dp)
+                )
+
                 Crossfade(
                     modifier = modifier.padding(top = 4.dp, bottom = 12.dp),
-                    targetState = selectedIndex
-                ) { index ->
-                    when (index) {
-                        0 -> WatchProviderContainer(watchProviders = providers.flaterate!!, link = providers.link)
-                        1 -> WatchProviderContainer(watchProviders = providers.rent!!, link = providers.link)
-                        2 -> WatchProviderContainer(watchProviders = providers.buy!!, link = providers.link)
-                    }
+                    targetState = selected.value
+                ) { value ->
+                    WatchProviderContainer(watchProviders = value!!, link = providers.link)
                 }
             }
         }
