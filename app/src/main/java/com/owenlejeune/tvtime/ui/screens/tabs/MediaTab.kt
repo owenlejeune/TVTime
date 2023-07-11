@@ -101,7 +101,7 @@ fun MediaTabTrendingContent(
 
     PagingPosterGrid(
         lazyPagingItems = mediaListItems,
-        header = {
+        headerContent = {
             val options = listOf(TimeWindow.DAY, TimeWindow.WEEK)
 
             val context = LocalContext.current

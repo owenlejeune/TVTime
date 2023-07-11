@@ -1,7 +1,6 @@
 package com.owenlejeune.tvtime.ui.components
 
 import android.util.Log
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
@@ -16,7 +15,6 @@ import androidx.compose.material.icons.filled.Movie
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -39,16 +37,14 @@ import androidx.paging.compose.LazyPagingItems
 import coil.compose.AsyncImage
 import coil.request.CachePolicy
 import coil.request.ImageRequest
+import com.owenlejeune.tvtime.api.LoadingState
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.HomePagePerson
-import com.owenlejeune.tvtime.api.tmdb.api.v3.model.Person
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.TmdbItem
 import com.owenlejeune.tvtime.extensions.header
 import com.owenlejeune.tvtime.extensions.lazyPagingItems
-import com.owenlejeune.tvtime.extensions.listItems
+import com.owenlejeune.tvtime.extensions.shimmerBackground
 import com.owenlejeune.tvtime.preferences.AppPreferences
-import com.owenlejeune.tvtime.ui.viewmodel.ConfigurationViewModel
 import com.owenlejeune.tvtime.utils.TmdbUtils
-import org.koin.androidx.compose.koinViewModel
 import org.koin.java.KoinJavaComponent.get
 
 private val POSTER_WIDTH = 120.dp
@@ -58,7 +54,7 @@ private val POSTER_HEIGHT = 180.dp
 fun PagingPosterGrid(
     modifier: Modifier = Modifier,
     lazyPagingItems: LazyPagingItems<TmdbItem>?,
-    header: @Composable (LazyGridItemScope.() -> Unit)? = null,
+    headerContent: @Composable (LazyGridItemScope.() -> Unit)? = null,
     onClick: (id: Int) -> Unit = {}
 ) {
     lazyPagingItems?.let {
@@ -68,8 +64,8 @@ fun PagingPosterGrid(
             contentPadding = PaddingValues(8.dp),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            header?.let {
-                header(header)
+            headerContent?.let {
+                header(headerContent)
             }
             lazyPagingItems(
                 lazyPagingItems = lazyPagingItems,
