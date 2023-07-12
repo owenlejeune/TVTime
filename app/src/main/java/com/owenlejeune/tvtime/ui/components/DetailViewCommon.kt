@@ -89,9 +89,11 @@ fun DetailHeader(
             )
 
             rating?.let {
-                RatingView(
-                    progress = rating
-                )
+                if (it > 0f) {
+                    RatingView(
+                        progress = rating
+                    )
+                }
             }
         }
     }

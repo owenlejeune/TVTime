@@ -377,7 +377,7 @@ private fun MediaViewContent(
                         mediaItem?.productionCompanies?.firstOrNull { it.name == "Marvel Studios" } != null
                         && preferences.showNextMcuProduction
                     ) {
-                        NextMcuProjectCard(appNavController = appNavController)
+                        NextMcuProjectCard(itemId = itemId, appNavController = appNavController)
                     }
 
                     if (windowSize != WindowSizeClass.Expanded) {
@@ -472,11 +472,13 @@ private fun MiscDetails(
                 .wrapContentHeight()
         ) {
             Text(text = year, color = MaterialTheme.colorScheme.onBackground)
-            Text(
-                text = runtime,
-                color = MaterialTheme.colorScheme.onBackground,
-                modifier = Modifier.padding(start = 12.dp)
-            )
+            if (runtime != "0m") {
+                Text(
+                    text = runtime,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    modifier = Modifier.padding(start = 12.dp)
+                )
+            }
             Text(
                 text = contentRating,
                 color = MaterialTheme.colorScheme.onBackground,
@@ -870,40 +872,42 @@ fun SimilarContentCard(
     val pagingItems = similarContent?.collectAsLazyPagingItems()
 
     pagingItems?.let {
-        ContentCard(
-            modifier = modifier,
-            title = stringResource(id = R.string.recommended_label)
-        ) {
-            LazyRow(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .wrapContentHeight()
-                    .padding(vertical = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(4.dp)
+        if (it.itemCount > 0) {
+            ContentCard(
+                modifier = modifier,
+                title = stringResource(id = R.string.recommended_label)
             ) {
-                item {
-                    Spacer(modifier = Modifier.width(8.dp))
-                }
-                lazyPagingItems(pagingItems) { item ->
-                    item?.let {
-                        TwoLineImageTextCard(
-                            title = item.title,
-                            modifier = Modifier
-                                .width(124.dp)
-                                .wrapContentHeight(),
-                            imageUrl = TmdbUtils.getFullPosterPath(item),
-                            onItemClicked = {
-                                appNavController.navigate(
-                                    AppNavItem.DetailView.withArgs(mediaType, item.id)
-                                )
-                            },
-                            placeholder = Icons.Filled.Movie,
-                            hideSubtitle = true
-                        )
+                LazyRow(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight()
+                        .padding(vertical = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    item {
+                        Spacer(modifier = Modifier.width(8.dp))
                     }
-                }
-                item {
-                    Spacer(modifier = Modifier.width(8.dp))
+                    lazyPagingItems(pagingItems) { item ->
+                        item?.let {
+                            TwoLineImageTextCard(
+                                title = item.title,
+                                modifier = Modifier
+                                    .width(124.dp)
+                                    .wrapContentHeight(),
+                                imageUrl = TmdbUtils.getFullPosterPath(item),
+                                onItemClicked = {
+                                    appNavController.navigate(
+                                        AppNavItem.DetailView.withArgs(mediaType, item.id)
+                                    )
+                                },
+                                placeholder = Icons.Filled.Movie,
+                                hideSubtitle = true
+                            )
+                        }
+                    }
+                    item {
+                        Spacer(modifier = Modifier.width(8.dp))
+                    }
                 }
             }
         }
@@ -1099,6 +1103,7 @@ private fun WatchProviderContainer(
 
 @Composable
 private fun NextMcuProjectCard(
+    itemId: Int,
     appNavController: NavController,
     modifier: Modifier = Modifier
 ) {
@@ -1110,70 +1115,82 @@ private fun NextMcuProjectCard(
 
     val nextMcuProject = remember { viewModel.nextMcuProject }
 
-    Card(
-        shape = RoundedCornerShape(10.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 10.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-        modifier = modifier.then(Modifier
-            .fillMaxWidth()
-        )
-    ) {
-        Box(
-            modifier = Modifier.height(250.dp)
+    if (nextMcuProject.value?.id != itemId) {
+        Card(
+            shape = RoundedCornerShape(10.dp),
+            elevation = CardDefaults.cardElevation(defaultElevation = 10.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+            modifier = modifier.then(Modifier
+                .fillMaxWidth()
+                .clickable {
+                    nextMcuProject.value?.let {
+                        appNavController.navigate(
+                            AppNavItem.DetailView.withArgs(
+                                it.type,
+                                it.id
+                            )
+                        )
+                    }
+                }
+            )
         ) {
-            val model = ImageRequest.Builder(LocalContext.current)
-                .data(nextMcuProject.value?.posterUrl)
-                .diskCacheKey(nextMcuProject.value?.title)
-                .networkCachePolicy(CachePolicy.ENABLED)
-                .memoryCachePolicy(CachePolicy.ENABLED)
-                .build()
-
-            Column(
-                modifier = Modifier.padding(all = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(6.dp)
+            Box(
+                modifier = Modifier.height(250.dp)
             ) {
-                Text(
-                    text = stringResource(R.string.next_in_the_mcu_title),
-                    style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.W700,
-                    modifier = Modifier.padding(start = 2.dp)
-                )
+                val model = ImageRequest.Builder(LocalContext.current)
+                    .data(nextMcuProject.value?.posterUrl)
+                    .diskCacheKey(nextMcuProject.value?.title)
+                    .networkCachePolicy(CachePolicy.ENABLED)
+                    .memoryCachePolicy(CachePolicy.ENABLED)
+                    .build()
 
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                Column(
+                    modifier = Modifier.padding(all = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
-                    AsyncImage(
-                        model = model,
-                        modifier = Modifier
-                            .aspectRatio(0.7f)
-                            .clip(RoundedCornerShape(10.dp)),
-                        contentDescription = nextMcuProject.value?.title
+                    Text(
+                        text = stringResource(R.string.next_in_the_mcu_title),
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.W700,
+                        modifier = Modifier.padding(start = 2.dp)
                     )
 
-                    Column(
-                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        Text(
-                            text = nextMcuProject.value?.title ?: "",
-                            style = MaterialTheme.typography.headlineSmall,
-                            fontWeight = FontWeight.W600
+                        AsyncImage(
+                            model = model,
+                            modifier = Modifier
+                                .aspectRatio(0.7f)
+                                .clip(RoundedCornerShape(10.dp)),
+                            contentDescription = nextMcuProject.value?.title
                         )
 
-                        val releaseDate =
-                            nextMcuProject.value?.releaseDate?.format(DateFormat.MMMM_dd) ?: ""
-                        val daysLeft = stringResource(
-                            id = R.string.days_left,
-                            nextMcuProject.value?.daysUntil ?: -1
-                        )
-                        Text(
-                            text = "$releaseDate • $daysLeft",
-                            fontStyle = FontStyle.Italic
-                        )
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            Text(
+                                text = nextMcuProject.value?.title ?: "",
+                                style = MaterialTheme.typography.headlineSmall,
+                                fontWeight = FontWeight.W600
+                            )
 
-                        Text(
-                            text = nextMcuProject.value?.overview ?: "",
-                            overflow = TextOverflow.Ellipsis
-                        )
+                            val releaseDate =
+                                nextMcuProject.value?.releaseDate?.format(DateFormat.MMMM_dd) ?: ""
+                            val daysLeft = stringResource(
+                                id = R.string.days_left,
+                                nextMcuProject.value?.daysUntil ?: -1
+                            )
+                            Text(
+                                text = "$releaseDate • $daysLeft",
+                                fontStyle = FontStyle.Italic
+                            )
+
+                            Text(
+                                text = nextMcuProject.value?.overview ?: "",
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
                     }
                 }
             }

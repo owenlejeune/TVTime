@@ -8,7 +8,7 @@ import org.koin.core.parameter.parametersOf
 class NextMCUClient: KoinComponent {
 
     companion object {
-        private const val BASE_URL = "https://www.whenisthenextmcufilm.com/"
+        private const val BASE_URL = "https://dev.whenisthenextmcufilm.com/"
     }
 
     private val client: Client by inject { parametersOf(BASE_URL) }

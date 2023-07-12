@@ -7,6 +7,7 @@ import java.util.Date
 class NextMCU(
     @SerializedName("days_until") val daysUntil: Int,
     @SerializedName("title") val title: String,
+    @SerializedName("id") val id: Int,
     @SerializedName("overview") val overview: String,
     @SerializedName("poster_url") val posterUrl: String?,
     @SerializedName("release_date") val releaseDate: Date,
