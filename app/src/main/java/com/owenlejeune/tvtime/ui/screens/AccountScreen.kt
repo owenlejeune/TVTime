@@ -27,7 +27,6 @@ import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.rememberPagerState
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.*
 import com.owenlejeune.tvtime.api.tmdb.api.v4.model.AccountList
@@ -44,6 +43,7 @@ import com.owenlejeune.tvtime.ui.components.ScrollableTabs
 import com.owenlejeune.tvtime.ui.navigation.AppNavItem
 import com.owenlejeune.tvtime.ui.screens.tabs.AccountTabNavItem
 import com.owenlejeune.tvtime.ui.viewmodel.AccountViewModel
+import com.owenlejeune.tvtime.ui.viewmodel.ApplicationViewModel
 import com.owenlejeune.tvtime.utils.SessionManager
 import com.owenlejeune.tvtime.utils.TmdbUtils
 import com.owenlejeune.tvtime.utils.types.MediaViewType
@@ -57,9 +57,9 @@ fun AccountScreen(
     appNavController: NavHostController,
     doSignInPartTwo: Boolean = false
 ) {
-    val systemUiController = rememberSystemUiController()
-    systemUiController.setStatusBarColor(color = MaterialTheme.colorScheme.background)
-    systemUiController.setNavigationBarColor(color = MaterialTheme.colorScheme.background)
+    val applicationViewModel = viewModel<ApplicationViewModel>()
+    applicationViewModel.statusBarColor.value = MaterialTheme.colorScheme.background
+    applicationViewModel.navigationBarColor.value = MaterialTheme.colorScheme.background
 
     val currentSessionState = remember { SessionManager.currentSession }
     val currentSession = currentSessionState.value

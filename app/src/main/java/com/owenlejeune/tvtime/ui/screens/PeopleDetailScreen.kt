@@ -1,6 +1,5 @@
 package com.owenlejeune.tvtime.ui.screens
 
-import android.graphics.Paint.Align
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -46,7 +45,6 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.google.accompanist.pager.ExperimentalPagerApi
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.DetailPerson
 import com.owenlejeune.tvtime.ui.components.ContentCard
@@ -56,6 +54,7 @@ import com.owenlejeune.tvtime.ui.components.ExternalIdsArea
 import com.owenlejeune.tvtime.ui.components.PosterItem
 import com.owenlejeune.tvtime.ui.components.TwoLineImageTextCard
 import com.owenlejeune.tvtime.ui.navigation.AppNavItem
+import com.owenlejeune.tvtime.ui.viewmodel.ApplicationViewModel
 import com.owenlejeune.tvtime.ui.viewmodel.MainViewModel
 import com.owenlejeune.tvtime.utils.TmdbUtils
 import com.owenlejeune.tvtime.utils.types.MediaViewType
@@ -88,9 +87,9 @@ fun PersonDetailScreen(
         fetchData(mainViewModel, personId)
     }
 
-    val systemUiController = rememberSystemUiController()
-    systemUiController.setStatusBarColor(color = MaterialTheme.colorScheme.background)
-    systemUiController.setNavigationBarColor(color = MaterialTheme.colorScheme.background)
+    val applicationViewModel = viewModel<ApplicationViewModel>()
+    applicationViewModel.statusBarColor.value = MaterialTheme.colorScheme.background
+    applicationViewModel.navigationBarColor.value = MaterialTheme.colorScheme.background
 
     val peopleMap = remember { mainViewModel.peopleMap }
     val person = peopleMap[personId]

@@ -62,13 +62,12 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.CachePolicy
 import coil.request.ImageRequest
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.Episode
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.Season
+import com.owenlejeune.tvtime.ui.viewmodel.ApplicationViewModel
 import com.owenlejeune.tvtime.ui.viewmodel.MainViewModel
 import com.owenlejeune.tvtime.utils.TmdbUtils
-import com.skydoves.cloudy.Cloudy
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -78,9 +77,9 @@ fun SeasonListScreen(
 ) {
     val mainViewModel = viewModel<MainViewModel>()
 
-    val systemUiController = rememberSystemUiController()
-    systemUiController.setStatusBarColor(color = MaterialTheme.colorScheme.background)
-    systemUiController.setNavigationBarColor(color = MaterialTheme.colorScheme.background)
+    val applicationViewModel = viewModel<ApplicationViewModel>()
+    applicationViewModel.statusBarColor.value = MaterialTheme.colorScheme.background
+    applicationViewModel.navigationBarColor.value = MaterialTheme.colorScheme.background
 
     LaunchedEffect(Unit) {
         val numSeasons = mainViewModel.detailedTv[id]!!.numberOfSeasons

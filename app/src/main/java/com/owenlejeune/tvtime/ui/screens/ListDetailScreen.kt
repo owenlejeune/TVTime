@@ -34,7 +34,6 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.CachePolicy
 import coil.request.ImageRequest
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.api.tmdb.api.v4.ListV4Service
 import com.owenlejeune.tvtime.api.tmdb.api.v4.model.*
@@ -48,6 +47,7 @@ import com.owenlejeune.tvtime.ui.components.SwitchPreference
 import com.owenlejeune.tvtime.ui.navigation.AppNavItem
 import com.owenlejeune.tvtime.ui.theme.*
 import com.owenlejeune.tvtime.ui.viewmodel.AccountViewModel
+import com.owenlejeune.tvtime.ui.viewmodel.ApplicationViewModel
 import com.owenlejeune.tvtime.utils.TmdbUtils
 import de.charlex.compose.RevealDirection
 import de.charlex.compose.RevealSwipe
@@ -68,9 +68,9 @@ fun ListDetailScreen(
         accountViewModel.getList(itemId)
     }
 
-    val systemUiController = rememberSystemUiController()
-    systemUiController.setStatusBarColor(color = MaterialTheme.colorScheme.background)
-    systemUiController.setNavigationBarColor(color = MaterialTheme.colorScheme.background)
+    val applicationViewModel = viewModel<ApplicationViewModel>()
+    applicationViewModel.statusBarColor.value = MaterialTheme.colorScheme.background
+    applicationViewModel.navigationBarColor.value = MaterialTheme.colorScheme.background
 
     val listMap = remember { accountViewModel.listMap }
     val parentList = listMap[itemId]

@@ -27,13 +27,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.CrewMember
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.MovieCastMember
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.TvCastMember
 import com.owenlejeune.tvtime.ui.components.MediaResultCard
 import com.owenlejeune.tvtime.ui.components.PillSegmentedControl
+import com.owenlejeune.tvtime.ui.viewmodel.ApplicationViewModel
 import com.owenlejeune.tvtime.ui.viewmodel.MainViewModel
 import com.owenlejeune.tvtime.utils.TmdbUtils
 import com.owenlejeune.tvtime.utils.types.MediaViewType
@@ -46,10 +46,10 @@ fun CastCrewListScreen(
     id: Int
 ) {
     val mainViewModel = viewModel<MainViewModel>()
+    val applicationViewModel = viewModel<ApplicationViewModel>()
 
-    val systemUiController = rememberSystemUiController()
-    systemUiController.setStatusBarColor(color = MaterialTheme.colorScheme.background)
-    systemUiController.setNavigationBarColor(color = MaterialTheme.colorScheme.background)
+    applicationViewModel.statusBarColor.value = MaterialTheme.colorScheme.background
+    applicationViewModel.navigationBarColor.value = MaterialTheme.colorScheme.background
 
     val topAppBarScrollState = rememberTopAppBarState()
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(topAppBarScrollState)

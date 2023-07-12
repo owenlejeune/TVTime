@@ -60,7 +60,6 @@ import androidx.navigation.NavController
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.kieronquinn.monetcompat.core.MonetCompat
 import com.owenlejeune.tvtime.BuildConfig
 import com.owenlejeune.tvtime.OnboardingActivity
@@ -74,6 +73,7 @@ import com.owenlejeune.tvtime.ui.components.SliderPreference
 import com.owenlejeune.tvtime.ui.components.SwitchPreference
 import com.owenlejeune.tvtime.ui.navigation.SettingsNavItem
 import com.owenlejeune.tvtime.ui.navigation.SettingsNavigationHost
+import com.owenlejeune.tvtime.ui.viewmodel.ApplicationViewModel
 import com.owenlejeune.tvtime.ui.viewmodel.SettingsViewModel
 import com.owenlejeune.tvtime.ui.views.HomeTabRecyclerAdapter
 import com.owenlejeune.tvtime.ui.views.ItemMoveCallback
@@ -85,9 +85,9 @@ import kotlinx.coroutines.launch
 fun SettingsScreen(
     appNavController: NavController
 ) {
-    val systemUiController = rememberSystemUiController()
-    systemUiController.setStatusBarColor(color = MaterialTheme.colorScheme.background)
-    systemUiController.setNavigationBarColor(color = MaterialTheme.colorScheme.background)
+    val applicationViewModel = viewModel<ApplicationViewModel>()
+    applicationViewModel.statusBarColor.value = MaterialTheme.colorScheme.background
+    applicationViewModel.navigationBarColor.value = MaterialTheme.colorScheme.background
 
     val topAppBarScrollState = rememberTopAppBarState()
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(topAppBarScrollState)

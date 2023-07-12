@@ -6,10 +6,13 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.compositeOver
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.kieronquinn.monetcompat.core.MonetCompat
 import com.owenlejeune.tvtime.preferences.AppPreferences
+import com.owenlejeune.tvtime.ui.viewmodel.ApplicationViewModel
 import org.koin.java.KoinJavaComponent.get
 
 private val DarkColorPalette = darkColorScheme(
@@ -113,11 +116,15 @@ fun TVTimeTheme(
             ),
             shapes = Shapes,
             content = {
-                val systemUiController = rememberSystemUiController()
-                systemUiController.setStatusBarColor(color = androidx.compose.material3.MaterialTheme.colorScheme.background)
-                systemUiController.setNavigationBarColor(color = androidx.compose.material3.MaterialTheme.colorScheme.background)
-
                 content()
+
+                val applicationViewModel = viewModel<ApplicationViewModel>()
+                val statusBarColor by remember { applicationViewModel.statusBarColor }
+                val navigationBarColor by remember { applicationViewModel.navigationBarColor }
+
+                val systemUiController = rememberSystemUiController()
+                systemUiController.setStatusBarColor(color = statusBarColor)
+                systemUiController.setNavigationBarColor(color = navigationBarColor)
             }
         )
     }

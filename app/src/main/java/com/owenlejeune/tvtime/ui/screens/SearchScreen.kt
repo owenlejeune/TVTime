@@ -24,7 +24,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.api.tmdb.api.v3.MoviesService
 import com.owenlejeune.tvtime.api.tmdb.api.v3.TvService
@@ -33,6 +32,7 @@ import com.owenlejeune.tvtime.extensions.getCalendarYear
 import com.owenlejeune.tvtime.extensions.lazyPagingItems
 import com.owenlejeune.tvtime.ui.components.MediaResultCard
 import com.owenlejeune.tvtime.ui.components.PillSegmentedControl
+import com.owenlejeune.tvtime.ui.viewmodel.ApplicationViewModel
 import com.owenlejeune.tvtime.ui.viewmodel.MainViewModel
 import com.owenlejeune.tvtime.ui.viewmodel.SearchViewModel
 import com.owenlejeune.tvtime.utils.TmdbUtils
@@ -47,10 +47,10 @@ fun SearchScreen(
     mediaViewType: MediaViewType
 ) {
     val searchViewModel = viewModel<SearchViewModel>()
+    val applicationViewModel = viewModel<ApplicationViewModel>()
 
-    val systemUiController = rememberSystemUiController()
-    systemUiController.setStatusBarColor(color = MaterialTheme.colorScheme.background)
-    systemUiController.setNavigationBarColor(color = MaterialTheme.colorScheme.background)
+    applicationViewModel.statusBarColor.value = MaterialTheme.colorScheme.background
+    applicationViewModel.navigationBarColor.value = MaterialTheme.colorScheme.background
 
     val viewType = remember { mutableStateOf(mediaViewType) }
 

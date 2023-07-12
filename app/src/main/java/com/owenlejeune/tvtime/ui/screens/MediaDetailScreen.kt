@@ -76,7 +76,6 @@ import com.google.accompanist.flowlayout.FlowRow
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.rememberPagerState
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.DetailedItem
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.DetailedMovie
@@ -118,6 +117,7 @@ import com.owenlejeune.tvtime.ui.components.RoundedChip
 import com.owenlejeune.tvtime.ui.components.RoundedTextField
 import com.owenlejeune.tvtime.ui.components.TwoLineImageTextCard
 import com.owenlejeune.tvtime.ui.navigation.AppNavItem
+import com.owenlejeune.tvtime.ui.viewmodel.ApplicationViewModel
 import com.owenlejeune.tvtime.ui.viewmodel.MainViewModel
 import com.owenlejeune.tvtime.ui.viewmodel.SpecialFeaturesViewModel
 import com.owenlejeune.tvtime.utils.SessionManager
@@ -164,10 +164,10 @@ fun MediaDetailScreen(
     val scope = rememberCoroutineScope()
 
     val mainViewModel = viewModel<MainViewModel>()
+    val applicationViewModel = viewModel<ApplicationViewModel>()
 
-    val systemUiController = rememberSystemUiController()
-    systemUiController.setStatusBarColor(color = MaterialTheme.colorScheme.background)
-    systemUiController.setNavigationBarColor(color = MaterialTheme.colorScheme.background)
+    applicationViewModel.statusBarColor.value = MaterialTheme.colorScheme.background
+    applicationViewModel.navigationBarColor.value = MaterialTheme.colorScheme.background
 
     val mediaItems: Map<Int, DetailedItem> = remember { mainViewModel.produceDetailsFor(type) }
     val mediaItem = mediaItems[itemId]

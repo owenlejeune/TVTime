@@ -41,11 +41,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.owenlejeune.tvtime.BuildConfig
 import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.ui.navigation.AppNavItem
+import com.owenlejeune.tvtime.ui.viewmodel.ApplicationViewModel
 import com.owenlejeune.tvtime.utils.SessionManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -303,9 +305,9 @@ fun ProfileMenuContainer(
         colors.navBarColor
     }
 
-    val systemUiController = rememberSystemUiController()
-    systemUiController.setStatusBarColor(statusBarColor)
-    systemUiController.setNavigationBarColor(navBarColor)
+    val applicationViewModel = viewModel<ApplicationViewModel>()
+    applicationViewModel.statusBarColor.value = statusBarColor
+    applicationViewModel.navigationBarColor.value = navBarColor
 
     Box {
         content()
