@@ -35,11 +35,11 @@ fun StoreRouteButton() {
         modifier = Modifier
             .combinedClickable(
                 onClick = {
-                    applicationViewModel.storedRoute.value = applicationViewModel.currentRoute.value
+                    applicationViewModel.setStoredRoute(applicationViewModel.currentRoute.value)
                     Toast.makeText(context, "Stored route \"${applicationViewModel.storedRoute.value}\"", Toast.LENGTH_SHORT).show()
                 },
                 onLongClick = {
-                    applicationViewModel.storedRoute.value = ""
+                    applicationViewModel.setStoredRoute("")
                     Toast.makeText(context, "Stored route \"\"", Toast.LENGTH_SHORT).show()
                 }
             )

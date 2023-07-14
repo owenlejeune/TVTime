@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -109,19 +110,21 @@ fun SeasonListScreen(
                     .verticalScroll(state = rememberScrollState())
             ) {
                 val seasonsMap = remember { mainViewModel.tvSeasons }
-                val seasons = seasonsMap[id] ?: emptyList()
+                val seasons = seasonsMap[id] ?: emptySet()
 
                 seasons.sortedBy { it.seasonNumber }.forEach { season ->
-                    SeasonSection(season = season)
+                    SeasonSection(season = season, singleSeason = isSingleSeason(seasons))
                 }
+
+                Spacer(modifier = Modifier.height(6.dp))
             }
         }
     }
 }
 
 @Composable
-private fun SeasonSection(season: Season) {
-    var isExpanded by remember { mutableStateOf(false) }
+private fun SeasonSection(season: Season, singleSeason: Boolean) {
+    var isExpanded by remember { mutableStateOf(singleSeason) }
 
     Row(
         modifier = Modifier.padding(horizontal = 12.dp),
@@ -253,4 +256,8 @@ private fun EpisodeItem(episode: Episode) {
             }
         }
     }
+}
+
+private fun isSingleSeason(seasons: Set<Season>): Boolean {
+    return seasons.size == 1 || (seasons.size == 2 && seasons.any { it.seasonNumber == 0 })
 }

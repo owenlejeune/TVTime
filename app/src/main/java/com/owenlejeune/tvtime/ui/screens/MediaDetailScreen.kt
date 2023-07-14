@@ -729,7 +729,7 @@ private fun CastCard(
             }
 
             Text(
-                text = "See all cast and crew",
+                text = stringResource(R.string.see_all_cast_and_crew),
                 fontSize = 12.sp,
                 color = MaterialTheme.colorScheme.inversePrimary,
                 modifier = Modifier

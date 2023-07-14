@@ -13,6 +13,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -29,6 +30,7 @@ import com.owenlejeune.tvtime.api.tmdb.api.v3.model.MovieCast
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.TvCast
 import com.owenlejeune.tvtime.extensions.bringToFront
 import com.owenlejeune.tvtime.extensions.getCalendarYear
+import com.owenlejeune.tvtime.extensions.unlessEmpty
 import com.owenlejeune.tvtime.ui.components.BackButton
 import com.owenlejeune.tvtime.ui.components.MediaResultCard
 import com.owenlejeune.tvtime.ui.components.PillSegmentedControl
@@ -36,6 +38,7 @@ import com.owenlejeune.tvtime.ui.components.TVTTopAppBar
 import com.owenlejeune.tvtime.ui.viewmodel.ApplicationViewModel
 import com.owenlejeune.tvtime.ui.viewmodel.MainViewModel
 import com.owenlejeune.tvtime.utils.TmdbUtils
+import com.owenlejeune.tvtime.utils.types.MediaViewType
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,6 +48,10 @@ fun KnownForScreen(
 ) {
     val mainViewModel = viewModel<MainViewModel>()
     val applicationViewModel = viewModel<ApplicationViewModel>()
+
+    LaunchedEffect(Unit) {
+        mainViewModel.getCastAndCrew(id, MediaViewType.PERSON)
+    }
 
     applicationViewModel.statusBarColor.value = MaterialTheme.colorScheme.background
     applicationViewModel.navigationBarColor.value = MaterialTheme.colorScheme.background
@@ -83,7 +90,7 @@ fun KnownForScreen(
             ) {
                 item {
                     Row(
-                        modifier = Modifier.padding(start = 16.dp, top = 12.dp, bottom = 12.dp),
+                        modifier = Modifier.padding(start = 16.dp, top = 12.dp, end = 12.dp),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         val labels = listOf(stringResource(id = R.string.actor_label), stringResource(id = R.string.production_label))
@@ -98,12 +105,12 @@ fun KnownForScreen(
                 items(items) { item ->
                     val additionalDetails = emptyList<String>().toMutableList()
                     when (item) {
-                        is MovieCast -> additionalDetails.add(stringResource(id = R.string.cast_character_template, item.character))
-                        is TvCast -> additionalDetails.add(stringResource(id = R.string.cast_tv_character_template, item.character, item.episodeCount))
+                        is MovieCast -> additionalDetails.add(stringResource(id = R.string.cast_character_template, item.character.unlessEmpty("-")))
+                        is TvCast -> additionalDetails.add(stringResource(id = R.string.cast_tv_character_template, item.character.unlessEmpty("-"), item.episodeCount))
                         is DetailCrew -> additionalDetails.add(stringResource(id = R.string.crew_template, item.job))
                     }
 
-                    val releaseYear = item.releaseDate?.getCalendarYear() ?: ""
+                    val releaseYear = item.releaseDate?.getCalendarYear() ?: stringResource(id = R.string.tba)
 
                     MediaResultCard(
                         appNavController = appNavController,

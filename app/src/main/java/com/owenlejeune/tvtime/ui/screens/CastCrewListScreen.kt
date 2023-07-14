@@ -104,7 +104,7 @@ fun CastCrewListScreen(
 
                     MediaResultCard(
                         appNavController = appNavController,
-                        mediaViewType = type,
+                        mediaViewType = MediaViewType.PERSON,
                         id = item.id,
                         backdropPath = null,
                         posterPath = TmdbUtils.getFullPosterPath(item.profilePath),

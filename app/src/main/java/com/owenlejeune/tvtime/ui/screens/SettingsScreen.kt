@@ -1,5 +1,6 @@
 package com.owenlejeune.tvtime.ui.screens
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.os.Build
 import android.widget.Toast
@@ -43,6 +44,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -82,6 +84,7 @@ import com.owenlejeune.tvtime.ui.views.HomeTabRecyclerAdapter
 import com.owenlejeune.tvtime.ui.views.ItemMoveCallback
 import com.owenlejeune.tvtime.utils.SessionManager
 import kotlinx.coroutines.launch
+import org.koin.java.KoinJavaComponent.get
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -436,7 +439,7 @@ fun SpecialFeaturePreferences() {
 }
 
 @Composable
-fun DevPreferences() {
+fun DevPreferences(preferences: AppPreferences = get(AppPreferences::class.java)) {
     if (BuildConfig.DEBUG) {
         val settingsViewModel = viewModel<SettingsViewModel>()
 
@@ -525,6 +528,7 @@ fun DevPreferences() {
                 Column {
                     Text(text = "Current stored test route", fontSize = 18.sp)
                     Text(text = currentStoredRoute.value.unlessEmpty("---"))
+                    Text(text = preferences.storedTestRoute.unlessEmpty("--"))
                 }
                 Spacer(modifier = Modifier.weight(1f))
                 IconButton(
@@ -542,6 +546,7 @@ fun DevPreferences() {
     }
 }
 
+@SuppressLint("AutoboxingStateValueProperty")
 @Composable
 private fun WallpaperPicker(
     showPopup: MutableState<Boolean>
@@ -551,7 +556,7 @@ private fun WallpaperPicker(
     val settingsViewModel = viewModel<SettingsViewModel>()
 
     val wallpaperColors = remember { mutableStateOf<List<Int>>(emptyList()) }
-    val selectedWallpaperColor = remember { mutableStateOf(0) }
+    val selectedWallpaperColor = remember { mutableIntStateOf(0) }
     LaunchedEffect(true) {
         val colors = MonetCompat.getInstance().getAvailableWallpaperColors() ?: emptyList()
         if (colors.isEmpty()) {

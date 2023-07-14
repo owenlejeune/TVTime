@@ -56,20 +56,23 @@ import com.owenlejeune.tvtime.ui.viewmodel.ApplicationViewModel
 import com.owenlejeune.tvtime.ui.viewmodel.MainViewModel
 import com.owenlejeune.tvtime.utils.TmdbUtils
 import com.owenlejeune.tvtime.utils.types.MediaViewType
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.lang.Integer.min
 
 private const val TAG = "PeopleDetailScreen"
 
-private suspend fun fetchData(
+private fun fetchData(
     mainViewModel: MainViewModel,
     id: Int,
     force: Boolean = false
 ) {
-    mainViewModel.getById(id, MediaViewType.PERSON, force)
-    mainViewModel.getExternalIds(id, MediaViewType.PERSON, force)
-    mainViewModel.getCastAndCrew(id, MediaViewType.PERSON, force)
-    mainViewModel.getImages(id, MediaViewType.PERSON, force)
+    val scope = CoroutineScope(Dispatchers.IO)
+    scope.launch { mainViewModel.getById(id, MediaViewType.PERSON, force) }
+    scope.launch { mainViewModel.getExternalIds(id, MediaViewType.PERSON, force) }
+    scope.launch { mainViewModel.getCastAndCrew(id, MediaViewType.PERSON, force) }
+    scope.launch { mainViewModel.getImages(id, MediaViewType.PERSON, force) }
 }
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPagerApi::class, ExperimentalMaterialApi::class)
@@ -78,8 +81,6 @@ fun PersonDetailScreen(
     appNavController: NavController,
     personId: Int
 ) {
-    val scope = rememberCoroutineScope()
-
     val mainViewModel = viewModel<MainViewModel>()
     LaunchedEffect(Unit) {
         fetchData(mainViewModel, personId)
@@ -100,9 +101,7 @@ fun PersonDetailScreen(
     val pullRefreshState = rememberPullRefreshState(
         refreshing = isRefreshing.value,
         onRefresh = {
-            scope.launch {
-                fetchData(mainViewModel, personId, true)
-            }
+            fetchData(mainViewModel, personId, true)
         }
     )
 
@@ -191,6 +190,7 @@ private fun CreditsCard(
     
     val creditsMap = remember { mainViewModel.peopleCastMap }
     val credits = creditsMap[personId] ?: emptyList()
+    val sortedCredits = credits.sortedByDescending { it.popularity }
 
     ContentCard(
         title = stringResource(R.string.known_for_label)
@@ -205,8 +205,8 @@ private fun CreditsCard(
             item {
                 Spacer(modifier = Modifier.width(8.dp))
             }
-            items(min(credits.size, 15)) { i ->
-                val content = credits[i]
+            items(min(sortedCredits.size, 15)) { i ->
+                val content = sortedCredits[i]
 
                 TwoLineImageTextCard(
                     title = content.title,

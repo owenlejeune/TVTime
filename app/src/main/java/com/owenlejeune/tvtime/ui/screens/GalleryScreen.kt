@@ -95,7 +95,8 @@ private fun PersonGalleryView(
                 width = 120.dp,
                 url = TmdbUtils.getFullPersonImagePath(image.filePath),
                 placeholder = Icons.Filled.Person,
-                title = ""
+                title = "",
+                modifier = Modifier.padding(5.dp)
             )
         }
     }
