@@ -13,7 +13,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Scaffold
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -46,6 +45,7 @@ import com.owenlejeune.tvtime.preferences.AppPreferences
 import com.owenlejeune.tvtime.ui.components.AccountIcon
 import com.owenlejeune.tvtime.ui.components.ProfileMenuContainer
 import com.owenlejeune.tvtime.ui.components.ProfileMenuDefaults
+import com.owenlejeune.tvtime.ui.components.TVTLargeTopAppBar
 import com.owenlejeune.tvtime.ui.navigation.HomeScreenNavHost
 import com.owenlejeune.tvtime.ui.navigation.HomeScreenNavItem
 import com.owenlejeune.tvtime.ui.viewmodel.HomeScreenViewModel
@@ -88,7 +88,8 @@ fun HomeScreen(
                 if (windowSize != WindowSizeClass.Expanded) {
                     TopBar(
                         scrollBehavior = scrollBehavior,
-                        navigationIcon = navigationIcon
+                        navigationIcon = navigationIcon,
+                        appNavController = appNavController
                     )
                 }
             },
@@ -119,6 +120,7 @@ fun HomeScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun TopBar(
+    appNavController: NavController,
     scrollBehavior: TopAppBarScrollBehavior,
     navigationIcon: @Composable () -> Unit = {}
 ) {
@@ -126,13 +128,10 @@ private fun TopBar(
     val title = remember { homeScreenViewModel.appBarTitle }
     val actions = remember { homeScreenViewModel.appBarActions }
 
-    LargeTopAppBar(
+    TVTLargeTopAppBar(
         title = { Text(text = title.value) },
         scrollBehavior = scrollBehavior,
-        colors = TopAppBarDefaults
-            .largeTopAppBarColors(
-                scrolledContainerColor = MaterialTheme.colorScheme.background
-            ),
+        appNavController = appNavController,
         actions = actions.value,
         navigationIcon = navigationIcon
     )
@@ -251,7 +250,8 @@ private fun DualColumnMainContent(
         Column {
             TopBar(
                 scrollBehavior = topBarScrollBehaviour,
-                navigationIcon = navigationIcon
+                navigationIcon = navigationIcon,
+                appNavController = appNavController
             )
             MainMediaView(
                 appNavController = appNavController,

@@ -18,15 +18,12 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -52,6 +49,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.owenlejeune.tvtime.BuildConfig
 import com.owenlejeune.tvtime.R
+import com.owenlejeune.tvtime.ui.components.BackButton
+import com.owenlejeune.tvtime.ui.components.TVTLargeTopAppBar
 import com.owenlejeune.tvtime.ui.viewmodel.ApplicationViewModel
 import com.owenlejeune.tvtime.utils.FileUtils
 import dev.jeziellago.compose.markdowntext.MarkdownText
@@ -73,17 +72,11 @@ fun AboutScreen(
     Scaffold(
         modifier = Modifier.nestedScroll(connection = scrollBehavior.nestedScrollConnection),
         topBar = {
-            LargeTopAppBar(
+            TVTLargeTopAppBar(
                 title = { Text(text = stringResource(id = R.string.nav_about_title)) },
+                appNavController = appNavController,
                 navigationIcon = {
-                    IconButton(
-                        onClick = { appNavController.popBackStack() }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.ArrowBack,
-                            contentDescription = null
-                        )
-                    }
+                    BackButton(appNavController)
                 }
             )
         }

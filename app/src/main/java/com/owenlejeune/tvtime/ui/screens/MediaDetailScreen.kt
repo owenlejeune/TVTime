@@ -27,7 +27,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Movie
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
@@ -37,12 +36,9 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
@@ -98,6 +94,7 @@ import com.owenlejeune.tvtime.extensions.listItems
 import com.owenlejeune.tvtime.preferences.AppPreferences
 import com.owenlejeune.tvtime.ui.components.ActionsView
 import com.owenlejeune.tvtime.ui.components.AvatarImage
+import com.owenlejeune.tvtime.ui.components.BackButton
 import com.owenlejeune.tvtime.ui.components.ChipDefaults
 import com.owenlejeune.tvtime.ui.components.ChipGroup
 import com.owenlejeune.tvtime.ui.components.ChipInfo
@@ -115,6 +112,7 @@ import com.owenlejeune.tvtime.ui.components.PillSegmentedControl
 import com.owenlejeune.tvtime.ui.components.PosterItem
 import com.owenlejeune.tvtime.ui.components.RoundedChip
 import com.owenlejeune.tvtime.ui.components.RoundedTextField
+import com.owenlejeune.tvtime.ui.components.TVTTopAppBar
 import com.owenlejeune.tvtime.ui.components.TwoLineImageTextCard
 import com.owenlejeune.tvtime.ui.navigation.AppNavItem
 import com.owenlejeune.tvtime.ui.viewmodel.ApplicationViewModel
@@ -211,24 +209,12 @@ fun MediaDetailScreen(
         Scaffold(
             modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
             topBar = {
-                TopAppBar(
+                TVTTopAppBar(
                     scrollBehavior = scrollBehavior,
-                    colors = TopAppBarDefaults
-                        .topAppBarColors(
-                            scrolledContainerColor = MaterialTheme.colorScheme.background,
-                            titleContentColor = MaterialTheme.colorScheme.primary
-                        ),
                     title = { Text(text = mediaItem?.title ?: "") },
+                    appNavController = appNavController,
                     navigationIcon = {
-                        IconButton(
-                            onClick = { appNavController.popBackStack() }
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.ArrowBack,
-                                contentDescription = stringResource(id = R.string.content_description_back_button),
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-                        }
+                        BackButton(navController = appNavController)
                     }
                 )
             }
@@ -349,7 +335,6 @@ private fun MediaViewContent(
                     if (type == MediaViewType.TV) {
                         SeasonCard(
                             itemId = itemId,
-                            mediaItem = mediaItem,
                             mainViewModel = mainViewModel,
                             appNavController = appNavController
                         )
@@ -751,7 +736,7 @@ private fun CastCard(
                     .padding(start = 12.dp, bottom = 12.dp)
                     .clickable {
                         appNavController.navigate(
-                            AppNavItem.CaseCrewListView.withArgs(
+                            AppNavItem.CastCrewListView.withArgs(
                                 type,
                                 itemId
                             )
@@ -798,7 +783,6 @@ private fun CastCrewCard(appNavController: NavController, person: Person) {
 @Composable
 private fun SeasonCard(
     itemId: Int,
-    mediaItem: DetailedItem?,
     mainViewModel: MainViewModel,
     appNavController: NavController
 ) {
@@ -1077,7 +1061,7 @@ private fun WatchProviderContainer(
                     val url = TmdbUtils.fullLogoPath(item.logoPath)
                     val model = ImageRequest.Builder(LocalContext.current)
                         .data(url)
-                        .diskCacheKey(url ?: "")
+                        .diskCacheKey(url)
                         .networkCachePolicy(CachePolicy.ENABLED)
                         .memoryCachePolicy(CachePolicy.ENABLED)
                         .build()
@@ -1120,18 +1104,19 @@ private fun NextMcuProjectCard(
             shape = RoundedCornerShape(10.dp),
             elevation = CardDefaults.cardElevation(defaultElevation = 10.dp),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-            modifier = modifier.then(Modifier
-                .fillMaxWidth()
-                .clickable {
-                    nextMcuProject.value?.let {
-                        appNavController.navigate(
-                            AppNavItem.DetailView.withArgs(
-                                it.type,
-                                it.id
+            modifier = modifier.then(
+                Modifier
+                    .fillMaxWidth()
+                    .clickable {
+                        nextMcuProject.value?.let {
+                            appNavController.navigate(
+                                AppNavItem.DetailView.withArgs(
+                                    it.type,
+                                    it.id
+                                )
                             )
-                        )
+                        }
                     }
-                }
             )
         ) {
             Box(

@@ -6,6 +6,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -30,6 +31,7 @@ import com.owenlejeune.tvtime.ui.screens.SearchScreen
 import com.owenlejeune.tvtime.ui.screens.SeasonListScreen
 import com.owenlejeune.tvtime.ui.screens.SettingsScreen
 import com.owenlejeune.tvtime.ui.screens.WebLinkScreen
+import com.owenlejeune.tvtime.ui.viewmodel.ApplicationViewModel
 import com.owenlejeune.tvtime.utils.NavConstants
 import com.owenlejeune.tvtime.utils.types.MediaViewType
 import org.koin.java.KoinJavaComponent
@@ -42,6 +44,8 @@ fun AppNavigationHost(
     windowSize: WindowSizeClass,
     preferences: AppPreferences = KoinJavaComponent.get(AppPreferences::class.java)
 ) {
+    val applicationViewModel = viewModel<ApplicationViewModel>()
+
     NavHost(
         navController = appNavController,
         startDestination = startDestination,
@@ -51,6 +55,7 @@ fun AppNavigationHost(
         popExitTransition = { slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.End, tween(500)) }
     ) {
         composable(route = AppNavItem.MainView.route) {
+            applicationViewModel.currentRoute.value = AppNavItem.MainView.route
             HomeScreen(
                 appNavController = appNavController,
                 mainNavStartRoute = mainNavStartRoute,
@@ -64,27 +69,27 @@ fun AppNavigationHost(
                 navArgument(NavConstants.TYPE_KEY) { type = NavType.EnumType(MediaViewType::class.java) }
             )
         ) { navBackStackEntry ->
-            val args = navBackStackEntry.arguments
-            val mediaType = args?.getSerializable(NavConstants.TYPE_KEY) as MediaViewType
+            val mediaType = navBackStackEntry.arguments?.safeGetSerializable(NavConstants.TYPE_KEY, MediaViewType::class.java)!!
+            val id = navBackStackEntry.arguments?.getInt(NavConstants.ID_KEY)!!
 
+            applicationViewModel.currentRoute.value = AppNavItem.DetailView.withArgs(mediaType, id)
             when (mediaType) {
                 MediaViewType.PERSON -> {
                     PersonDetailScreen(
                         appNavController = appNavController,
-                        personId = args.getInt(NavConstants.ID_KEY)
+                        personId = id
                     )
                 }
                 MediaViewType.LIST -> {
                     ListDetailScreen(
                         appNavController = appNavController,
-                        itemId = args.getInt(NavConstants.ID_KEY),
-                        windowSize = windowSize
+                        itemId = id
                     )
                 }
                 else -> {
                     MediaDetailScreen(
                         appNavController = appNavController,
-                        itemId = args.getInt(NavConstants.ID_KEY),
+                        itemId = id,
                         type = mediaType,
                         windowSize = windowSize
                     )
@@ -92,6 +97,7 @@ fun AppNavigationHost(
             }
         }
         composable(AppNavItem.SettingsView.route) {
+            applicationViewModel.currentRoute.value = AppNavItem.SettingsView.route
             SettingsScreen(appNavController = appNavController)
         }
         composable(
@@ -114,6 +120,7 @@ fun AppNavigationHost(
                     )
                 }
 
+                applicationViewModel.currentRoute.value = AppNavItem.SearchView.withArgs(type, title)
                 SearchScreen(
                     appNavController = appNavController,
                     title = title,
@@ -129,6 +136,7 @@ fun AppNavigationHost(
         ) {
             val url = it.arguments?.getString(NavConstants.WEB_LINK_KEY)
             url?.let {
+                applicationViewModel.currentRoute.value = AppNavItem.WebLinkView.withArgs(url)
                 WebLinkScreen(url = url, appNavController = appNavController)
             }
         }
@@ -139,12 +147,14 @@ fun AppNavigationHost(
             )
         ) {
             val deepLink = it.arguments?.getString(NavConstants.ACCOUNT_KEY)
+            applicationViewModel.currentRoute.value = AppNavItem.AccountView.route
             AccountScreen(
                 appNavController = appNavController,
                 doSignInPartTwo = deepLink == NavConstants.AUTH_REDIRECT_PAGE
             )
         }
         composable(route = AppNavItem.AboutView.route) {
+            applicationViewModel.currentRoute.value = AppNavItem.AboutView.route
             AboutScreen(appNavController = appNavController)
         }
         composable(
@@ -159,6 +169,7 @@ fun AppNavigationHost(
             val keywords = navBackStackEntry.arguments?.getString(NavConstants.KEYWORD_NAME_KEY) ?: ""
             val id = navBackStackEntry.arguments?.getInt(NavConstants.KEYWORD_ID_KEY)!!
 
+            applicationViewModel.currentRoute.value = AppNavItem.KeywordsView.withArgs(type, keywords, id)
             KeywordResultsScreen(
                 type = type,
                 keyword = keywords,
@@ -174,6 +185,7 @@ fun AppNavigationHost(
         ) { navBackStackEntry ->
             val id = navBackStackEntry.arguments?.getInt(NavConstants.ID_KEY)!!
 
+            applicationViewModel.currentRoute.value = AppNavItem.KnownForView.withArgs(id)
             KnownForScreen(appNavController = appNavController, id = id)
         }
         composable(
@@ -186,6 +198,7 @@ fun AppNavigationHost(
             val type = navBackStackEntry.arguments?.safeGetSerializable(NavConstants.TYPE_KEY, MediaViewType::class.java)!!
             val id = navBackStackEntry.arguments?.getInt(NavConstants.ID_KEY)!!
 
+            applicationViewModel.currentRoute.value = AppNavItem.GalleryView.withArgs(type, id)
             GalleryView(id = id, type = type, appNavController = appNavController)
         }
         composable(
@@ -196,10 +209,11 @@ fun AppNavigationHost(
         ) { navBackStackEntry ->
             val id = navBackStackEntry.arguments?.getInt(NavConstants.ID_KEY)!!
 
+            applicationViewModel.currentRoute.value = AppNavItem.SeasonListView.withArgs(id)
             SeasonListScreen(id = id, appNavController = appNavController)
         }
         composable(
-            route = AppNavItem.CaseCrewListView.route.plus("/{${NavConstants.TYPE_KEY}}/{${NavConstants.ID_KEY}}"),
+            route = AppNavItem.CastCrewListView.route.plus("/{${NavConstants.TYPE_KEY}}/{${NavConstants.ID_KEY}}"),
             arguments = listOf(
                 navArgument(NavConstants.TYPE_KEY) { type = NavType.EnumType(MediaViewType::class.java) },
                 navArgument(NavConstants.ID_KEY) { type = NavType.IntType }
@@ -208,6 +222,7 @@ fun AppNavigationHost(
             val type = navBackStackEntry.arguments?.safeGetSerializable(NavConstants.TYPE_KEY, MediaViewType::class.java)!!
             val id = navBackStackEntry.arguments?.getInt(NavConstants.ID_KEY)!!
 
+            applicationViewModel.currentRoute.value = AppNavItem.CastCrewListView.withArgs(type, id)
             CastCrewListScreen(appNavController = appNavController, type = type, id = id)
         }
     }
@@ -244,7 +259,7 @@ sealed class AppNavItem(val route: String) {
     object SeasonListView: AppNavItem("season_list_route") {
         fun withArgs(id: Int) = route.plus("/$id")
     }
-    object CaseCrewListView: AppNavItem("cast_crew_list_route") {
+    object CastCrewListView: AppNavItem("cast_crew_list_route") {
         fun withArgs(type: MediaViewType, id: Int) = route.plus("/$type/$id")
     }
 

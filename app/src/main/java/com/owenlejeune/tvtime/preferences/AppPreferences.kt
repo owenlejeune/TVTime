@@ -35,6 +35,7 @@ class AppPreferences(context: Context) {
         private val SHOW_BTAB_LABELS = "show_btab_labels"
         private val SHOW_POSTER_TITLE = "show_poster_titles"
         private val SHOW_NEXT_MCU = "show_next_mcu"
+        private val STORED_TEST_ROUTE = "stored_test_route"
     }
 
     private val preferences: SharedPreferences = context.getSharedPreferences(PREF_FILE, Context.MODE_PRIVATE)
@@ -134,6 +135,11 @@ class AppPreferences(context: Context) {
     var showNextMcuProduction: Boolean
         get() = preferences.getBoolean(SHOW_NEXT_MCU, showNextMcuProductionDefault)
         set(value) { preferences.put(SHOW_NEXT_MCU, value) }
+
+    val storedTestRouteDefault: String = ""
+    var storedTestRoute: String
+        get() = preferences.getString(STORED_TEST_ROUTE, storedTestRouteDefault) ?: storedTestRouteDefault
+        set(value) { preferences.put(STORED_TEST_ROUTE, value) }
 
     /********* Helpers ********/
     private fun SharedPreferences.put(key: String, value: Any?) {

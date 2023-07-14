@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -30,8 +29,10 @@ import com.owenlejeune.tvtime.api.tmdb.api.v3.TvService
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.*
 import com.owenlejeune.tvtime.extensions.getCalendarYear
 import com.owenlejeune.tvtime.extensions.lazyPagingItems
+import com.owenlejeune.tvtime.ui.components.BackButton
 import com.owenlejeune.tvtime.ui.components.MediaResultCard
 import com.owenlejeune.tvtime.ui.components.PillSegmentedControl
+import com.owenlejeune.tvtime.ui.components.TVTTopAppBar
 import com.owenlejeune.tvtime.ui.viewmodel.ApplicationViewModel
 import com.owenlejeune.tvtime.ui.viewmodel.MainViewModel
 import com.owenlejeune.tvtime.ui.viewmodel.SearchViewModel
@@ -70,7 +71,8 @@ fun SearchScreen(
             }
         }
 
-        TopAppBar(
+        TVTTopAppBar(
+            appNavController = appNavController,
             title = {
                 TextField(
                     value = searchValue.value,
@@ -96,12 +98,7 @@ fun SearchScreen(
                 )
             },
             navigationIcon = {
-                IconButton(onClick = { appNavController.popBackStack() }) {
-                    Icon(
-                        imageVector = Icons.Filled.ArrowBack,
-                        contentDescription = stringResource(id = R.string.content_description_back_button)
-                    )
-                }
+                BackButton(navController = appNavController)
             }
         )
         Divider(thickness = 2.dp, color = MaterialTheme.colorScheme.surfaceVariant)

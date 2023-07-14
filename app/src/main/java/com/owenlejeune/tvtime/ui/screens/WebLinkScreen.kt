@@ -16,7 +16,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SmallTopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -24,6 +23,7 @@ import androidx.navigation.NavController
 import com.google.accompanist.web.AccompanistWebViewClient
 import com.google.accompanist.web.WebView
 import com.google.accompanist.web.rememberWebViewState
+import com.owenlejeune.tvtime.ui.components.TVTTopAppBar
 import com.owenlejeune.tvtime.ui.viewmodel.ApplicationViewModel
 import com.owenlejeune.tvtime.utils.SessionManager
 import org.koin.core.component.KoinComponent
@@ -41,8 +41,9 @@ fun WebLinkScreen(
 
     Scaffold(
         topBar = {
-            SmallTopAppBar(
+            TVTTopAppBar(
                 title = {},
+                appNavController = appNavController,
                 navigationIcon = {
                     IconButton(
                         onClick = {

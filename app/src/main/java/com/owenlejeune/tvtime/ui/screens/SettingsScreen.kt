@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -29,10 +30,10 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.DarkMode
 import androidx.compose.material.icons.outlined.Flare
 import androidx.compose.material.icons.outlined.LightMode
+import androidx.compose.material.icons.outlined.Restore
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -64,6 +65,7 @@ import com.kieronquinn.monetcompat.core.MonetCompat
 import com.owenlejeune.tvtime.BuildConfig
 import com.owenlejeune.tvtime.OnboardingActivity
 import com.owenlejeune.tvtime.R
+import com.owenlejeune.tvtime.extensions.unlessEmpty
 import com.owenlejeune.tvtime.preferences.AppPreferences
 import com.owenlejeune.tvtime.ui.components.CenteredIconCircle
 import com.owenlejeune.tvtime.ui.components.PaletteView
@@ -71,6 +73,7 @@ import com.owenlejeune.tvtime.ui.components.PreferenceHeading
 import com.owenlejeune.tvtime.ui.components.RadioButtonPreference
 import com.owenlejeune.tvtime.ui.components.SliderPreference
 import com.owenlejeune.tvtime.ui.components.SwitchPreference
+import com.owenlejeune.tvtime.ui.components.TVTLargeTopAppBar
 import com.owenlejeune.tvtime.ui.navigation.SettingsNavItem
 import com.owenlejeune.tvtime.ui.navigation.SettingsNavigationHost
 import com.owenlejeune.tvtime.ui.viewmodel.ApplicationViewModel
@@ -98,12 +101,9 @@ fun SettingsScreen(
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
-            LargeTopAppBar(
+            TVTLargeTopAppBar(
                 scrollBehavior = scrollBehavior,
-                colors = TopAppBarDefaults
-                    .largeTopAppBarColors(
-                        scrolledContainerColor = MaterialTheme.colorScheme.background
-                    ),
+                appNavController = appNavController,
                 title = { Text(text = appBarTitle.value) },
                 navigationIcon = {
                     IconButton(
@@ -516,6 +516,28 @@ fun DevPreferences() {
                         }
                     )
             )
+
+            val applicationViewModel = viewModel<ApplicationViewModel>()
+            val currentStoredRoute = remember { applicationViewModel.storedRoute }
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(text = "Current stored test route", fontSize = 18.sp)
+                    Text(text = currentStoredRoute.value.unlessEmpty("---"))
+                }
+                Spacer(modifier = Modifier.weight(1f))
+                IconButton(
+                    onClick = {
+                        applicationViewModel.setStoredRoute("")
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Restore,
+                        contentDescription = null
+                    )
+                }
+            }
         }
     }
 }

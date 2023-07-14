@@ -2,8 +2,6 @@ package com.owenlejeune.tvtime.ui.screens
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -37,9 +35,11 @@ import com.owenlejeune.tvtime.extensions.getCalendarYear
 import com.owenlejeune.tvtime.extensions.lazyPagingItems
 import com.owenlejeune.tvtime.extensions.unlessEmpty
 import com.owenlejeune.tvtime.ui.components.AccountIcon
+import com.owenlejeune.tvtime.ui.components.BackButton
 import com.owenlejeune.tvtime.ui.components.MediaResultCard
 import com.owenlejeune.tvtime.ui.components.PagingPosterGrid
 import com.owenlejeune.tvtime.ui.components.ScrollableTabs
+import com.owenlejeune.tvtime.ui.components.TVTLargeTopAppBar
 import com.owenlejeune.tvtime.ui.navigation.AppNavItem
 import com.owenlejeune.tvtime.ui.screens.tabs.AccountTabNavItem
 import com.owenlejeune.tvtime.ui.viewmodel.AccountViewModel
@@ -70,17 +70,11 @@ fun AccountScreen(
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
-            LargeTopAppBar(
+            TVTLargeTopAppBar(
                 scrollBehavior = scrollBehavior,
+                appNavController = appNavController,
                 navigationIcon = {
-                    IconButton(
-                        onClick = { appNavController.popBackStack() }
-                    ) {
-                        Icon(
-                            Icons.Filled.ArrowBack,
-                            contentDescription = null
-                        )
-                    }
+                    BackButton(navController = appNavController)
                 },
                 title = {
                     if (currentSession?.isAuthorized == false) {
@@ -90,7 +84,6 @@ fun AccountScreen(
                         Text(text = getAccountName(accountDetails.value))
                     }
                 },
-                colors = TopAppBarDefaults.largeTopAppBarColors(scrolledContainerColor = MaterialTheme.colorScheme.background),
                 actions = {
                     var showDropDownMenu by remember { mutableStateOf(false) }
                     AccountIcon(

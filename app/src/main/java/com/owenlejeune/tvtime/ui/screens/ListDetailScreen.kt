@@ -9,7 +9,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -41,9 +40,11 @@ import com.owenlejeune.tvtime.extensions.WindowSizeClass
 import com.owenlejeune.tvtime.extensions.unlessEmpty
 import com.owenlejeune.tvtime.ui.components.Actions
 import com.owenlejeune.tvtime.ui.components.ActionsView
+import com.owenlejeune.tvtime.ui.components.BackButton
 import com.owenlejeune.tvtime.ui.components.RatingView
 import com.owenlejeune.tvtime.ui.components.Spinner
 import com.owenlejeune.tvtime.ui.components.SwitchPreference
+import com.owenlejeune.tvtime.ui.components.TVTTopAppBar
 import com.owenlejeune.tvtime.ui.navigation.AppNavItem
 import com.owenlejeune.tvtime.ui.theme.*
 import com.owenlejeune.tvtime.ui.viewmodel.AccountViewModel
@@ -59,9 +60,7 @@ import kotlin.math.roundToInt
 @Composable
 fun ListDetailScreen(
     appNavController: NavController,
-    itemId: Int,
-    windowSize: WindowSizeClass,
-    service: ListV4Service = KoinJavaComponent.get(ListV4Service::class.java)
+    itemId: Int
 ) {
     val accountViewModel = viewModel<AccountViewModel>()
     LaunchedEffect(Unit) {
@@ -81,24 +80,12 @@ fun ListDetailScreen(
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
-            TopAppBar(
+            TVTTopAppBar(
                 scrollBehavior = scrollBehavior,
-                colors = TopAppBarDefaults
-                    .topAppBarColors(
-                        scrolledContainerColor = MaterialTheme.colorScheme.background,
-                        titleContentColor = MaterialTheme.colorScheme.primary
-                    ),
                 title = { Text(text = parentList?.name ?: "") },
+                appNavController = appNavController,
                 navigationIcon = {
-                    IconButton(
-                        onClick = { appNavController.popBackStack() }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.ArrowBack,
-                            contentDescription = stringResource(id = R.string.content_description_back_button),
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                    }
+                    BackButton(navController = appNavController)
                 }
             )
         }
@@ -148,7 +135,7 @@ private fun ListHeader(
             val url = TmdbUtils.getAccountGravatarUrl(list.createdBy.gravatarHash)
             val model = ImageRequest.Builder(LocalContext.current)
                 .data(url)
-                .diskCacheKey(url ?: "")
+                .diskCacheKey(url)
                 .networkCachePolicy(CachePolicy.ENABLED)
                 .memoryCachePolicy(CachePolicy.ENABLED)
                 .build()
