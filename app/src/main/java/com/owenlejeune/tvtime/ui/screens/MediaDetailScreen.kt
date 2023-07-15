@@ -47,7 +47,6 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -73,6 +72,7 @@ import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.rememberPagerState
 import com.owenlejeune.tvtime.R
+import com.owenlejeune.tvtime.api.LoadingState
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.DetailedItem
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.DetailedMovie
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.DetailedTv
@@ -89,8 +89,10 @@ import com.owenlejeune.tvtime.extensions.DateFormat
 import com.owenlejeune.tvtime.extensions.WindowSizeClass
 import com.owenlejeune.tvtime.extensions.format
 import com.owenlejeune.tvtime.extensions.getCalendarYear
+import com.owenlejeune.tvtime.extensions.isIn
 import com.owenlejeune.tvtime.extensions.lazyPagingItems
 import com.owenlejeune.tvtime.extensions.listItems
+import com.owenlejeune.tvtime.extensions.shimmerBackground
 import com.owenlejeune.tvtime.preferences.AppPreferences
 import com.owenlejeune.tvtime.ui.components.ActionsView
 import com.owenlejeune.tvtime.ui.components.AvatarImage
@@ -109,6 +111,8 @@ import com.owenlejeune.tvtime.ui.components.HtmlText
 import com.owenlejeune.tvtime.ui.components.ImageGalleryOverlay
 import com.owenlejeune.tvtime.ui.components.ListContentCard
 import com.owenlejeune.tvtime.ui.components.PillSegmentedControl
+import com.owenlejeune.tvtime.ui.components.PlaceholderDetailHeader
+import com.owenlejeune.tvtime.ui.components.PlaceholderPosterItem
 import com.owenlejeune.tvtime.ui.components.PosterItem
 import com.owenlejeune.tvtime.ui.components.RoundedChip
 import com.owenlejeune.tvtime.ui.components.RoundedTextField
@@ -121,31 +125,36 @@ import com.owenlejeune.tvtime.ui.viewmodel.SpecialFeaturesViewModel
 import com.owenlejeune.tvtime.utils.SessionManager
 import com.owenlejeune.tvtime.utils.TmdbUtils
 import com.owenlejeune.tvtime.utils.types.MediaViewType
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import org.koin.java.KoinJavaComponent.get
+import org.koin.java.KoinJavaComponent
 
-private suspend fun fetchData(
+private fun fetchData(
     mainViewModel: MainViewModel,
     itemId: Int,
     type: MediaViewType,
     force: Boolean = false
 ) {
-    mainViewModel.getById(itemId, type, force)
-    mainViewModel.getImages(itemId, type, force)
-    mainViewModel.getExternalIds(itemId, type, force)
-    mainViewModel.getKeywords(itemId, type, force)
-    mainViewModel.getCastAndCrew(itemId, type, force)
-    mainViewModel.getSimilar(itemId, type)
-    mainViewModel.getVideos(itemId, type, force)
-    mainViewModel.getWatchProviders(itemId, type, force)
-    mainViewModel.getReviews(itemId, type, force)
+    val scope = CoroutineScope(Dispatchers.IO)
+
+    scope.launch { mainViewModel.getById(itemId, type, force) }
+    scope.launch { mainViewModel.getImages(itemId, type, force) }
+    scope.launch { mainViewModel.getExternalIds(itemId, type, force) }
+    scope.launch { mainViewModel.getKeywords(itemId, type, force) }
+    scope.launch { mainViewModel.getCastAndCrew(itemId, type, force) }
+    scope.launch { mainViewModel.getSimilar(itemId, type) }
+    scope.launch { mainViewModel.getVideos(itemId, type, force) }
+    scope.launch { mainViewModel.getWatchProviders(itemId, type, force) }
+    scope.launch { mainViewModel.getReviews(itemId, type, force) }
+    scope.launch { mainViewModel.getAccountStates(itemId, type) }
 
     when (type) {
         MediaViewType.MOVIE -> {
-            mainViewModel.getReleaseDates(itemId, force)
+            scope.launch { mainViewModel.getReleaseDates(itemId, force) }
         }
         MediaViewType.TV -> {
-            mainViewModel.getContentRatings(itemId, force)
+            scope.launch { mainViewModel.getContentRatings(itemId, force) }
         }
         else -> {}
     }
@@ -159,8 +168,6 @@ fun MediaDetailScreen(
     type: MediaViewType,
     windowSize: WindowSizeClass
 ) {
-    val scope = rememberCoroutineScope()
-
     val mainViewModel = viewModel<MainViewModel>()
     val applicationViewModel = viewModel<ApplicationViewModel>()
 
@@ -193,12 +200,11 @@ fun MediaDetailScreen(
 
     val isRefreshing = remember { mutableStateOf(false) }
     mainViewModel.monitorDetailsLoadingRefreshing(refreshing = isRefreshing)
+
     val pullRefreshState = rememberPullRefreshState(
         refreshing = isRefreshing.value,
         onRefresh = {
-            scope.launch {
-                fetchData(mainViewModel, itemId, type, true)
-            }
+            fetchData(mainViewModel, itemId, type, true)
         }
     )
 
@@ -232,7 +238,7 @@ fun MediaDetailScreen(
                     windowSize = windowSize,
                     showImageGallery = showGalleryOverlay,
                     pagerState = pagerState,
-                    mainViewModel =  mainViewModel
+                    mainViewModel = mainViewModel
                 )
                 PullRefreshIndicator(
                     refreshing = isRefreshing.value,
@@ -254,9 +260,9 @@ fun MediaDetailScreen(
     }
 }
 
-@OptIn(ExperimentalPagerApi::class, ExperimentalMaterialApi::class)
+@OptIn(ExperimentalPagerApi::class)
 @Composable
-private fun MediaViewContent(
+fun MediaViewContent(
     appNavController: NavController,
     mainViewModel: MainViewModel,
     itemId: Int,
@@ -266,7 +272,7 @@ private fun MediaViewContent(
     windowSize: WindowSizeClass,
     showImageGallery: MutableState<Boolean>,
     pagerState: PagerState,
-    preferences: AppPreferences = get(AppPreferences::class.java)
+    preferences: AppPreferences = KoinJavaComponent.get(AppPreferences::class.java)
 ) {
     Row(
         modifier = Modifier
@@ -280,15 +286,22 @@ private fun MediaViewContent(
                 .verticalScroll(state = rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            DetailHeader(
-                posterUrl = TmdbUtils.getFullPosterPath(mediaItem?.posterPath),
-                posterContentDescription = mediaItem?.title,
-                backdropUrl = TmdbUtils.getFullBackdropPath(mediaItem?.backdropPath),
-                rating = mediaItem?.voteAverage?.let { it / 10 },
-                imageCollection = images,
-                showGalleryOverlay = showImageGallery,
-                pagerState = pagerState
-            )
+            val detailsLoadingState = remember { mainViewModel.produceDetailsLoadingStateFor(type) }
+            val isLoading = detailsLoadingState.value.isIn(LoadingState.LOADING, LoadingState.REFRESHING)
+
+            if (isLoading) {
+                PlaceholderDetailHeader()
+            } else {
+                DetailHeader(
+                    posterUrl = TmdbUtils.getFullPosterPath(mediaItem?.posterPath),
+                    posterContentDescription = mediaItem?.title,
+                    backdropUrl = TmdbUtils.getFullBackdropPath(mediaItem?.backdropPath),
+                    rating = mediaItem?.voteAverage?.let { it / 10 },
+                    imageCollection = images,
+                    showGalleryOverlay = showImageGallery,
+                    pagerState = pagerState
+                )
+            }
 
             Column(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -300,13 +313,11 @@ private fun MediaViewContent(
                     itemId =  itemId
                 )
 
-                val externalIdsMap = remember { mainViewModel.produceExternalIdsFor(type) }
-                externalIdsMap[itemId]?.let {
-                    ExternalIdsArea(
-                        externalIds = it,
-                        modifier = Modifier.padding(start = 20.dp)
-                    )
-                }
+                ExternalIdsArea(
+                    modifier = Modifier.padding(start = 20.dp),
+                    type = type,
+                    itemId = itemId
+                )
 
                 val currentSession = remember { SessionManager.currentSession }
                 currentSession.value?.let {
@@ -409,7 +420,8 @@ private fun MiscTvDetails(
             year = TmdbUtils.getSeriesRun(series),
             runtime = TmdbUtils.convertRuntimeToHoursMinutes(series),
             genres = series.genres,
-            contentRating = contentRating
+            contentRating = contentRating,
+            type = MediaViewType.TV
         )
     }
 }
@@ -420,23 +432,22 @@ private fun MiscMovieDetails(
     mediaItem: DetailedItem?,
     mainViewModel: MainViewModel
 ) {
-    mediaItem?.let { mi ->
-        val movie = mi as DetailedMovie
+    val movie = mediaItem as? DetailedMovie
 
-        val contentRatingsMap = remember { mainViewModel.movieReleaseDates }
-        val contentRating = TmdbUtils.getMovieRating(contentRatingsMap[itemId])
+    val contentRatingsMap = remember { mainViewModel.movieReleaseDates }
+    val contentRating = TmdbUtils.getMovieRating(contentRatingsMap[itemId])
 
-        MiscDetails(
-            modifier = Modifier
-                .fillMaxWidth()
-                .wrapContentHeight()
-                .padding(horizontal = 16.dp),
-            year = movie.releaseDate?.getCalendarYear()?.toString() ?: "",
-            runtime = TmdbUtils.convertRuntimeToHoursMinutes(movie),
-            genres = movie.genres,
-            contentRating = contentRating
-        )
-    }
+    MiscDetails(
+        modifier = Modifier
+            .fillMaxWidth()
+            .wrapContentHeight()
+            .padding(horizontal = 16.dp),
+        year = movie?.releaseDate?.getCalendarYear()?.toString() ?: "",
+        runtime = TmdbUtils.convertRuntimeToHoursMinutes(movie),
+        genres = movie?.genres ?: emptyList(),
+        contentRating = contentRating,
+        type = MediaViewType.MOVIE
+    )
 }
 
 @Composable
@@ -445,8 +456,19 @@ private fun MiscDetails(
     year: String,
     runtime: String,
     genres: List<Genre>,
-    contentRating: String
+    contentRating: String,
+    type: MediaViewType
 ) {
+    val mainViewModel = viewModel<MainViewModel>()
+    val detailsLoadingState = remember { mainViewModel.produceDetailsLoadingStateFor(type) }
+    val isLoading = detailsLoadingState.value.isIn(LoadingState.LOADING, LoadingState.REFRESHING)
+    val shimmerModifier = if (isLoading) {
+        Modifier
+            .shimmerBackground(RoundedCornerShape(5.dp))
+            .width(40.dp)
+    } else {
+        Modifier
+    }
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -454,28 +476,35 @@ private fun MiscDetails(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .wrapContentHeight()
+                .wrapContentHeight(),
+            horizontalArrangement = Arrangement.spacedBy(if (isLoading) 6.dp else 0.dp)
         ) {
-            Text(text = year, color = MaterialTheme.colorScheme.onBackground)
-            if (runtime != "0m") {
+            Text(
+                text = year.takeUnless { isLoading } ?: "",
+                color = MaterialTheme.colorScheme.onBackground,
+                modifier = shimmerModifier
+            )
+            if (runtime != "0m" || isLoading) {
                 Text(
-                    text = runtime,
+                    text = runtime.takeUnless { isLoading } ?: "",
                     color = MaterialTheme.colorScheme.onBackground,
-                    modifier = Modifier.padding(start = 12.dp)
+                    modifier = shimmerModifier.padding(start = 12.dp)
                 )
             }
             Text(
-                text = contentRating,
+                text = contentRating.takeUnless { isLoading } ?: "",
                 color = MaterialTheme.colorScheme.onBackground,
-                modifier = Modifier.padding(start = 12.dp)
+                modifier = shimmerModifier.padding(start = 12.dp)
             )
         }
 
+        val chips = if (isLoading) Genre.placeholderData else genres
         ChipGroup(
             modifier = Modifier
                 .fillMaxWidth()
                 .wrapContentHeight(),
-            chips = genres.map { ChipInfo(it.name, false) }
+            chips = chips.map { ChipInfo(it.name, false) },
+            isLoading = isLoading
         )
     }
 }
@@ -492,62 +521,127 @@ private fun OverviewCard(
     val keywordsMap = remember { mainViewModel.produceKeywordsFor(type) }
     val keywords = keywordsMap[itemId]
 
-    mediaItem?.let { mi ->
-        if (!mi.tagline.isNullOrEmpty() || keywords?.isNotEmpty() == true || !mi.overview.isNullOrEmpty()) {
-            ContentCard(
-                modifier = modifier
+    val detailsLoadingState = remember { mainViewModel.produceAccountStatesLoadingStateFor(type) }
+    val isLoading = detailsLoadingState.value.isIn(LoadingState.LOADING, LoadingState.REFRESHING)
+
+    if (isLoading) {
+        ContentCard(
+            modifier = modifier
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight(),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Column(
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
                     modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .width(150.dp)
+                        .shimmerBackground(RoundedCornerShape(10.dp)),
+                    text = "",
+                    color = MaterialTheme.colorScheme.tertiary,
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontStyle = FontStyle.Italic,
+                )
+                Text(
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
                         .fillMaxWidth()
-                        .wrapContentHeight(),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                        .height(100.dp)
+                        .shimmerBackground(RoundedCornerShape(10.dp)),
+                    text = "",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodyMedium
+                )
+
+
+                Row(
+                    modifier = Modifier.horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(ChipStyle.Rounded.mainAxisSpacing)
                 ) {
-                    Spacer(modifier = Modifier.height(8.dp))
-                    mi.tagline?.let { tagline ->
-                        if (tagline.isNotEmpty()) {
-                            Text(
-                                modifier = Modifier.padding(horizontal = 16.dp),
-                                text = tagline,
-                                color = MaterialTheme.colorScheme.tertiary
-                                ,
-                                style = MaterialTheme.typography.bodyLarge,
-                                fontStyle = FontStyle.Italic,
-                            )
-                        }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    ChipInfo.generatePlaceholders(4).forEach { keywordChipInfo ->
+                        RoundedChip(
+                            modifier = Modifier.width(60.dp),
+                            isLoading = true,
+                            chipInfo = keywordChipInfo,
+                            colors = ChipDefaults.roundedChipColors(
+                                unselectedContainerColor = MaterialTheme.colorScheme.primary,
+                                unselectedContentColor = MaterialTheme.colorScheme.primary
+                            ),
+                            onSelectionChanged = {}
+                        )
                     }
-                    Text(
-                        modifier = Modifier.padding(horizontal = 16.dp),
-                        text = mi.overview ?: "",
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        style = MaterialTheme.typography.bodyMedium
-                    )
+                }
 
-
-                    keywords?.let { keywords ->
-                        val keywordsChipInfo = keywords.map { ChipInfo(it.name, true, it.id) }
-                        Row(
-                            modifier = Modifier.horizontalScroll(rememberScrollState()),
-                            horizontalArrangement = Arrangement.spacedBy(ChipStyle.Rounded.mainAxisSpacing)
-                        ) {
-                            Spacer(modifier = Modifier.width(8.dp))
-                            keywordsChipInfo.forEach { keywordChipInfo ->
-                                RoundedChip(
-                                    chipInfo = keywordChipInfo,
-                                    colors = ChipDefaults.roundedChipColors(
-                                        unselectedContainerColor = MaterialTheme.colorScheme.primary,
-                                        unselectedContentColor = MaterialTheme.colorScheme.primary
-                                    ),
-                                    onSelectionChanged = { chip ->
-                                        appNavController.navigate(AppNavItem.KeywordsView.withArgs(type, chip.text, chip.id!!))
-                                    }
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+        }
+    } else {
+        mediaItem?.let { mi ->
+            if (!mi.tagline.isNullOrEmpty() || keywords?.isNotEmpty() == true || !mi.overview.isNullOrEmpty()) {
+                ContentCard(
+                    modifier = modifier
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .wrapContentHeight(),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        mi.tagline?.let { tagline ->
+                            if (tagline.isNotEmpty()) {
+                                Text(
+                                    modifier = Modifier.padding(horizontal = 16.dp),
+                                    text = tagline,
+                                    color = MaterialTheme.colorScheme.tertiary,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    fontStyle = FontStyle.Italic,
                                 )
                             }
-                            Spacer(modifier = Modifier.width(8.dp))
                         }
-                    }
+                        Text(
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                            text = mi.overview ?: "",
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
 
-                    Spacer(modifier = Modifier.height(8.dp))
+
+                        keywords?.let { keywords ->
+                            val keywordsChipInfo = keywords.map { ChipInfo(it.name, true, it.id) }
+                            Row(
+                                modifier = Modifier.horizontalScroll(rememberScrollState()),
+                                horizontalArrangement = Arrangement.spacedBy(ChipStyle.Rounded.mainAxisSpacing)
+                            ) {
+                                Spacer(modifier = Modifier.width(8.dp))
+                                keywordsChipInfo.forEach { keywordChipInfo ->
+                                    RoundedChip(
+                                        chipInfo = keywordChipInfo,
+                                        colors = ChipDefaults.roundedChipColors(
+                                            unselectedContainerColor = MaterialTheme.colorScheme.primary,
+                                            unselectedContentColor = MaterialTheme.colorScheme.primary
+                                        ),
+                                        onSelectionChanged = { chip ->
+                                            appNavController.navigate(
+                                                AppNavItem.KeywordsView.withArgs(
+                                                    type,
+                                                    chip.text,
+                                                    chip.id!!
+                                                )
+                                            )
+                                        }
+                                    )
+                                }
+                                Spacer(modifier = Modifier.width(8.dp))
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
                 }
             }
         }
@@ -702,6 +796,9 @@ private fun CastCard(
     val castMap = remember { mainViewModel.produceCastFor(type) }
     val cast = castMap[itemId]
 
+    val loadingState = remember { mainViewModel.produceDetailsLoadingStateFor(type) }
+    val isLoading = loadingState.value.isIn(LoadingState.LOADING, LoadingState.REFRESHING)
+
     ContentCard(
         modifier = modifier,
         title = stringResource(R.string.cast_label),
@@ -718,9 +815,15 @@ private fun CastCard(
                 item {
                     Spacer(modifier = Modifier.width(8.dp))
                 }
-                items(cast?.size ?: 0) { i ->
-                    cast?.get(i)?.let {
-                        CastCrewCard(appNavController = appNavController, person = it)
+                if (isLoading) {
+                    items(5) {
+                        PlaceholderPosterItem()
+                    }
+                } else {
+                    items(cast?.size ?: 0) { i ->
+                        cast?.get(i)?.let {
+                            CastCrewCard(appNavController = appNavController, person = it)
+                        }
                     }
                 }
                 item {
@@ -728,27 +831,40 @@ private fun CastCard(
                 }
             }
 
-            Text(
-                text = stringResource(R.string.see_all_cast_and_crew),
-                fontSize = 12.sp,
-                color = MaterialTheme.colorScheme.inversePrimary,
-                modifier = Modifier
-                    .padding(start = 12.dp, bottom = 12.dp)
-                    .clickable {
-                        appNavController.navigate(
-                            AppNavItem.CastCrewListView.withArgs(
-                                type,
-                                itemId
+            if (isLoading) {
+                Text(
+                    text = "",
+                    modifier = Modifier
+                        .padding(start = 12.dp, bottom = 12.dp)
+                        .width(80.dp)
+                        .shimmerBackground(RoundedCornerShape(10.dp))
+                )
+            } else {
+                Text(
+                    text = stringResource(R.string.see_all_cast_and_crew),
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.inversePrimary,
+                    modifier = Modifier
+                        .padding(start = 12.dp, bottom = 12.dp)
+                        .clickable {
+                            appNavController.navigate(
+                                AppNavItem.CastCrewListView.withArgs(
+                                    type,
+                                    itemId
+                                )
                             )
-                        )
-                    }
-            )
+                        }
+                )
+            }
         }
     }
 }
 
 @Composable
-private fun CastCrewCard(appNavController: NavController, person: Person) {
+private fun CastCrewCard(
+    appNavController: NavController,
+    person: Person
+) {
     TwoLineImageTextCard(
         title = person.name,
         modifier = Modifier
@@ -952,7 +1068,7 @@ private fun VideoGroup(results: List<Video>, type: Video.Type, title: String) {
 
         val posterWidth = 120.dp
         LazyRow(modifier = Modifier
-                .padding(vertical = 8.dp),
+            .padding(vertical = 8.dp),
             horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             item {
@@ -1193,124 +1309,124 @@ private fun ReviewsCard(
     val reviewsMap = remember { mainViewModel.produceReviewsFor(type) }
     val reviews = reviewsMap[itemId]
 
-   ListContentCard(
-       modifier = modifier,
-       header = {
-           Column(
-               verticalArrangement = Arrangement.spacedBy(9.dp)
-           ) {
-               Text(
-                   text = stringResource(R.string.reviews_title),
-                   style = MaterialTheme.typography.titleLarge,
-                   color = MaterialTheme.colorScheme.onSurfaceVariant
-               )
+    ListContentCard(
+        modifier = modifier,
+        header = {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(9.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.reviews_title),
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
 
-               if (SessionManager.currentSession.value?.isAuthorized == true) {
-                   Row(
-                       modifier = Modifier
-                           .fillMaxWidth()
-                           .height(50.dp)
-                           .padding(bottom = 4.dp),
-                       horizontalArrangement = Arrangement.spacedBy(8.dp)
-                   ) {
-                       var reviewTextState by remember { mutableStateOf("") }
+                if (SessionManager.currentSession.value?.isAuthorized == true) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(50.dp)
+                            .padding(bottom = 4.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        var reviewTextState by remember { mutableStateOf("") }
 
-                       RoundedTextField(
-                           modifier = Modifier
-                               .height(40.dp)
-                               .align(Alignment.CenterVertically)
-                               .weight(1f),
-                           value = reviewTextState,
-                           onValueChange = { reviewTextState = it },
-                           placeHolder = stringResource(R.string.add_a_review_hint),
-                           backgroundColor = MaterialTheme.colorScheme.secondary,
-                           placeHolderTextColor = MaterialTheme.colorScheme.background,
-                           textColor = MaterialTheme.colorScheme.onSecondary
-                       )
+                        RoundedTextField(
+                            modifier = Modifier
+                                .height(40.dp)
+                                .align(Alignment.CenterVertically)
+                                .weight(1f),
+                            value = reviewTextState,
+                            onValueChange = { reviewTextState = it },
+                            placeHolder = stringResource(R.string.add_a_review_hint),
+                            backgroundColor = MaterialTheme.colorScheme.secondary,
+                            placeHolderTextColor = MaterialTheme.colorScheme.background,
+                            textColor = MaterialTheme.colorScheme.onSecondary
+                        )
 
-                       val context = LocalContext.current
-                       CircleBackgroundColorImage(
-                           modifier = Modifier
-                               .align(Alignment.CenterVertically)
-                               .clickable(
-                                   onClick = {
-                                       Toast
-                                           .makeText(context, "TODO", Toast.LENGTH_SHORT)
-                                           .show()
-                                   }
-                               ),
-                           size = 40.dp,
-                           backgroundColor = MaterialTheme.colorScheme.tertiary,
-                           image = Icons.Filled.Send,
-                           colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.surfaceVariant),
-                           contentDescription = ""
-                       )
-                   }
-               }
-           }
-       },
-   ) {
-       if (reviews?.isNotEmpty() == true) {
-           reviews.reversed().forEachIndexed { index, review ->
-               Row(
-                   modifier = Modifier
-                       .fillMaxWidth()
-                       .padding(end = 16.dp),
-                   verticalAlignment = Alignment.Top,
-                   horizontalArrangement = Arrangement.spacedBy(16.dp)
-               ) {
-                   AvatarImage(
-                       size = 50.dp,
-                       author = review.authorDetails
-                   )
+                        val context = LocalContext.current
+                        CircleBackgroundColorImage(
+                            modifier = Modifier
+                                .align(Alignment.CenterVertically)
+                                .clickable(
+                                    onClick = {
+                                        Toast
+                                            .makeText(context, "TODO", Toast.LENGTH_SHORT)
+                                            .show()
+                                    }
+                                ),
+                            size = 40.dp,
+                            backgroundColor = MaterialTheme.colorScheme.tertiary,
+                            image = Icons.Filled.Send,
+                            colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.surfaceVariant),
+                            contentDescription = ""
+                        )
+                    }
+                }
+            }
+        },
+    ) {
+        if (reviews?.isNotEmpty() == true) {
+            reviews.reversed().forEachIndexed { index, review ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(end = 16.dp),
+                    verticalAlignment = Alignment.Top,
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    AvatarImage(
+                        size = 50.dp,
+                        author = review.authorDetails
+                    )
 
-                   Column(
-                       verticalArrangement = Arrangement.spacedBy(4.dp)
-                   ) {
-                       Text(
-                           text = review.author,
-                           color = MaterialTheme.colorScheme.secondary,
-                           fontWeight = FontWeight.Bold
-                       )
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Text(
+                            text = review.author,
+                            color = MaterialTheme.colorScheme.secondary,
+                            fontWeight = FontWeight.Bold
+                        )
 
-                       HtmlText(
-                           text = review.content,
-                           color = MaterialTheme.colorScheme.onSurfaceVariant
-                       )
+                        HtmlText(
+                            text = review.content,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
 
-                       val createdAt = TmdbUtils.formatDate(review.createdAt)
-                       val updatedAt = TmdbUtils.formatDate(review.updatedAt)
-                       var timestamp = stringResource(id = R.string.created_at_label, createdAt)
-                       if (updatedAt != createdAt) {
-                           timestamp += "\n${stringResource(id = R.string.updated_at_label, updatedAt)}"
-                       }
-                       Text(
-                           text = timestamp,
-                           color = MaterialTheme.colorScheme.onSurfaceVariant,
-                           fontSize = 12.sp
-                       )
-                   }
-               }
-               if (index != reviews.size - 1) {
-                   Divider(
-                       color = MaterialTheme.colorScheme.secondary,
-                       modifier = Modifier.padding(vertical = 12.dp)
-                   )
-               }
-           }
-       } else {
-           Text(
-               modifier = Modifier
-                   .fillMaxWidth()
-                   .wrapContentHeight()
-                   .padding(horizontal = 24.dp, vertical = 22.dp),
-               text = stringResource(R.string.no_reviews_label),
-               color = MaterialTheme.colorScheme.tertiary,
-               textAlign = TextAlign.Center,
-               style = MaterialTheme.typography.headlineMedium
-           )
-       }
-   }
+                        val createdAt = TmdbUtils.formatDate(review.createdAt)
+                        val updatedAt = TmdbUtils.formatDate(review.updatedAt)
+                        var timestamp = stringResource(id = R.string.created_at_label, createdAt)
+                        if (updatedAt != createdAt) {
+                            timestamp += "\n${stringResource(id = R.string.updated_at_label, updatedAt)}"
+                        }
+                        Text(
+                            text = timestamp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            fontSize = 12.sp
+                        )
+                    }
+                }
+                if (index != reviews.size - 1) {
+                    Divider(
+                        color = MaterialTheme.colorScheme.secondary,
+                        modifier = Modifier.padding(vertical = 12.dp)
+                    )
+                }
+            }
+        } else {
+            Text(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight()
+                    .padding(horizontal = 24.dp, vertical = 22.dp),
+                text = stringResource(R.string.no_reviews_label),
+                color = MaterialTheme.colorScheme.tertiary,
+                textAlign = TextAlign.Center,
+                style = MaterialTheme.typography.headlineMedium
+            )
+        }
+    }
 }
 
 @Composable
@@ -1334,3 +1450,4 @@ fun DetailsFor(
         )
     }
 }
+

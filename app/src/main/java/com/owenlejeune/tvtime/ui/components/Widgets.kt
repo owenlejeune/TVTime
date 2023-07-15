@@ -68,6 +68,7 @@ import coil.request.ImageRequest
 import com.google.accompanist.flowlayout.FlowRow
 import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.AuthorDetails
+import com.owenlejeune.tvtime.extensions.shimmerBackground
 import com.owenlejeune.tvtime.extensions.toDp
 import com.owenlejeune.tvtime.extensions.unlessEmpty
 import com.owenlejeune.tvtime.preferences.AppPreferences
@@ -285,7 +286,17 @@ class ChipInfo(
     val text: String,
     val enabled: Boolean = true,
     val id: Int? = null
-)
+) {
+    companion object {
+        fun generatePlaceholders(size: Int): List<ChipInfo> {
+            return emptyList<ChipInfo>().toMutableList().apply {
+                for (i in 0 until size) {
+                    add(ChipInfo(""))
+                }
+            }
+        }
+    }
+}
 
 sealed class ChipStyle(val mainAxisSpacing: Dp, val crossAxisSpacing: Dp) {
     object Boxy: ChipStyle(8.dp, 4.dp)
@@ -338,15 +349,17 @@ fun BoxyChip(
     style: TextStyle = MaterialTheme.typography.bodySmall,
     isSelected: Boolean = true,
     onSelectionChanged: (ChipInfo) -> Unit = {},
-    colors: ChipColors = ChipDefaults.boxyChipColors()
+    colors: ChipColors = ChipDefaults.boxyChipColors(),
+    isLoading: Boolean = false
 ) {
+    val shimmerModifier = if (isLoading) Modifier.shimmerBackground(shape = RoundedCornerShape(5.dp)) else Modifier
     Surface(
         shadowElevation = 2.dp,
         shape = RoundedCornerShape(5.dp),
         color = if (isSelected) colors.selectedContainerColor() else colors.unselectedContainerColor()
     ) {
         Row(
-            modifier = Modifier
+            modifier = shimmerModifier
                 .toggleable(
                     value = isSelected,
                     onValueChange = {
@@ -367,21 +380,25 @@ fun BoxyChip(
 
 @Composable
 fun RoundedChip(
+    modifier: Modifier = Modifier,
     chipInfo: ChipInfo,
     style: TextStyle = MaterialTheme.typography.bodySmall,
     isSelected: Boolean = false,
     onSelectionChanged: (ChipInfo) -> Unit = {},
-    colors: ChipColors = ChipDefaults.roundedChipColors()
+    colors: ChipColors = ChipDefaults.roundedChipColors(),
+    isLoading: Boolean = false
 ) {
     val borderColor = if (isSelected) colors.selectedContainerColor() else colors.unselectedContainerColor()
     val radius = style.fontSize.value.dp * 2
     Surface(
+        modifier = modifier,
         border = BorderStroke(width = 1.dp, borderColor),
         shape = RoundedCornerShape(radius),
         color = MaterialTheme.colorScheme.surfaceVariant
     ) {
+        val shimmerModifier = if(isLoading) Modifier.shimmerBackground(RoundedCornerShape(radius)) else Modifier
         Row(
-            modifier = Modifier
+            modifier = shimmerModifier
                 .toggleable(
                     value = isSelected,
                     onValueChange = {
@@ -403,6 +420,7 @@ fun RoundedChip(
 @Composable
 fun ChipGroup(
     modifier: Modifier = Modifier,
+    isLoading: Boolean = false,
     chips: List<ChipInfo> = emptyList(),
     onSelectedChanged: (ChipInfo) -> Unit = {},
     chipStyle: ChipStyle = ChipStyle.Boxy,
@@ -411,24 +429,26 @@ fun ChipGroup(
 ) {
 
     @Composable
-    fun DrawChip(chipStyle: ChipStyle, chip: ChipInfo) {
+    fun DrawChip(chipStyle: ChipStyle, chip: ChipInfo, isLoading: Boolean) {
         when (chipStyle) {
             ChipStyle.Boxy -> {
                 BoxyChip(
                     chipInfo = chip,
                     onSelectionChanged = onSelectedChanged,
-                    colors = boxyChipColors
+                    colors = boxyChipColors,
+                    isLoading = isLoading
                 )
             }
             ChipStyle.Rounded -> {
                 RoundedChip(
                     chipInfo = chip,
                     onSelectionChanged = onSelectedChanged,
-                    colors = roundedChipColors
+                    colors = roundedChipColors,
+                    isLoading = isLoading
                 )
             }
             is ChipStyle.Mixed -> {
-                DrawChip(chipStyle = chipStyle.predicate(chip), chip = chip)
+                DrawChip(chipStyle = chipStyle.predicate(chip), chip = chip, isLoading = isLoading)
             }
         }
     }
@@ -439,7 +459,7 @@ fun ChipGroup(
         mainAxisSpacing = chipStyle.mainAxisSpacing
     ) {
         chips.forEach { chip ->
-            DrawChip(chipStyle = chipStyle, chip = chip)
+            DrawChip(chipStyle = chipStyle, chip = chip, isLoading = isLoading)
         }
     }
 }

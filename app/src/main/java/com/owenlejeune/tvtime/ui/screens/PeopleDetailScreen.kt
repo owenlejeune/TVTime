@@ -135,14 +135,11 @@ fun PersonDetailScreen(
                     elevation = 0.dp
                 )
 
-                val externalIdsMap = remember { mainViewModel.peopleExternalIdsMap }
-                val externalIds = externalIdsMap[personId]
-                externalIds?.let {
-                    ExternalIdsArea(
-                        externalIds = it,
-                        modifier = Modifier.padding(start = 4.dp)
-                    )
-                }
+                ExternalIdsArea(
+                    modifier = Modifier.padding(start = 4.dp),
+                    type = MediaViewType.PERSON,
+                    itemId = personId
+                )
 
                 BiographyCard(person = person)
 

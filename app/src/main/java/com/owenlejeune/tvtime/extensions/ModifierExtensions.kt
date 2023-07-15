@@ -17,7 +17,10 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.TileMode
 
-fun Modifier.shimmerBackground(shape: Shape = RectangleShape): Modifier = composed {
+fun Modifier.shimmerBackground(
+    shape: Shape = RectangleShape,
+    tint: Color = Color.LightGray
+): Modifier = composed {
     val transition = rememberInfiniteTransition()
     val translateAnimation by transition.animateFloat(
         initialValue = 0f,
@@ -28,8 +31,8 @@ fun Modifier.shimmerBackground(shape: Shape = RectangleShape): Modifier = compos
         ),
     )
     val shimmerColors = listOf(
-        Color.LightGray.copy(alpha = 0.9f),
-        Color.LightGray.copy(alpha = 0.4f),
+        tint.copy(alpha = 0.9f),
+        tint.copy(alpha = 0.4f),
     )
     val brush = Brush.linearGradient(
         colors = shimmerColors,

@@ -176,7 +176,12 @@ class MainViewModel: ViewModel(), KoinComponent {
     }
 
     fun produceExternalIdsFor(type: MediaViewType): Map<Int, ExternalIds> {
-        return providesForType(type, { movieExternalIds }, { tvExternalIds })
+        return when (type) {
+            MediaViewType.MOVIE -> movieExternalIds
+            MediaViewType.TV -> tvExternalIds
+            MediaViewType.PERSON -> peopleExternalIdsMap
+            else -> throw ViewableMediaTypeException(type)
+        }
     }
 
     fun produceKeywordsFor(type: MediaViewType): Map<Int, List<Keyword>> {
@@ -261,6 +266,47 @@ class MainViewModel: ViewModel(), KoinComponent {
             }
             else -> throw ViewableMediaTypeException(mediaType)
         }
+    }
+
+    fun produceDetailsLoadingStateFor(mediaType: MediaViewType): MutableState<LoadingState> {
+        return providesForType(mediaType, { movieDetailsLoadingState }, { tvDetailsLoadingState})
+    }
+
+    fun produceImagesLoadingStateFor(mediaType: MediaViewType): MutableState<LoadingState> {
+        return providesForType(mediaType, { movieImagesLoadingState }, { tvImagesLoadingState })
+    }
+
+    fun produceCastCrewLoadingStateFor(mediaType: MediaViewType): MutableState<LoadingState> {
+        return providesForType(mediaType, { movieCastCrewLoadingState }, { tvCastCrewLoadingState })
+    }
+
+    fun produceVideosLoadingStateFor(mediaType: MediaViewType): MutableState<LoadingState> {
+        return providesForType(mediaType, { movieVideosLoadingState }, { tvVideosLoadingState })
+    }
+
+    fun produceReviewsLoadingStateFor(mediaType: MediaViewType): MutableState<LoadingState> {
+        return providesForType(mediaType, { movieReviewsLoadingState }, { tvReviewsLoadingState })
+    }
+
+    fun produceKeywordsLoadingStateFor(mediaType: MediaViewType): MutableState<LoadingState> {
+        return providesForType(mediaType, { movieKeywordsLoadingState }, { tvKeywordsLoadingState })
+    }
+
+    fun produceWatchProvidersLoadingStateFor(mediaType: MediaViewType): MutableState<LoadingState> {
+        return providesForType(mediaType, { movieWatchProvidersLoadingState }, { tvWatchProvidersLoadingState })
+    }
+
+    fun produceExternalIdsLoadingStateFor(mediaType: MediaViewType): MutableState<LoadingState> {
+        return when (mediaType) {
+            MediaViewType.MOVIE -> movieExternalIdsLoadingState
+            MediaViewType.TV -> tvExternalIdsLoadingState
+            MediaViewType.PERSON -> peopleExternalIdsLoadingState
+            else -> throw ViewableMediaTypeException(mediaType)
+        }
+    }
+
+    fun produceAccountStatesLoadingStateFor(mediaType: MediaViewType): MutableState<LoadingState> {
+        return providesForType(mediaType, { movieAccountStatesLoadingState }, { tvAccountStatesLoadingState })
     }
 
     suspend fun getById(id: Int, type: MediaViewType, force: Boolean = false) {
@@ -451,6 +497,45 @@ class MainViewModel: ViewModel(), KoinComponent {
                 tvAccountStates.value == LoadingState.REFRESHING || peopleDetails.value == LoadingState.REFRESHING ||
                 peopleCastCrew.value == LoadingState.REFRESHING || peopleImages.value == LoadingState.REFRESHING ||
                 peopleExternalIds.value == LoadingState.REFRESHING
+    }
+
+    @SuppressLint("ComposableNaming")
+    @Composable
+    fun monitorDetailsLoading(loading: MutableState<Boolean>) {
+        val movieDetails = remember { movieDetailsLoadingState }
+        val movieImages = remember { movieImagesLoadingState }
+        val movieCastCrew = remember { movieCastCrewLoadingState }
+        val movieVideos = remember { movieVideosLoadingState }
+        val movieReviews = remember { movieReviewsLoadingState }
+        val movieKeywords = remember { movieKeywordsLoadingState }
+        val movieWatchProviders = remember { movieWatchProvidersLoadingState }
+        val movieExternalIds = remember { movieExternalIdsLoadingState }
+        val movieReleaseDates = remember { movieReleaseDatesLoadingState }
+        val movieAccountStates = remember { movieAccountStatesLoadingState }
+        val tvDetails = remember { tvDetailsLoadingState }
+        val tvImages = remember { tvImagesLoadingState }
+        val tvCastCrew = remember { tvCastCrewLoadingState }
+        val tvVideos = remember { tvVideosLoadingState }
+        val tvReviews = remember { tvReviewsLoadingState }
+        val tvKeywords = remember { tvKeywordsLoadingState }
+        val tvWatchProviders = remember { tvWatchProvidersLoadingState }
+        val tvExternalIds = remember { tvExternalIdsLoadingState }
+        val tvSeasons = remember { tvSeasonsLoadingState }
+        val tvContentRatings = remember { tvContentRatingsLoadingState }
+        val tvAccountStates = remember { tvAccountStatesLoadingState }
+        val peopleDetails = remember { peopleDetailsLoadingState }
+        val peopleCastCrew = remember { peopleCastCrewLoadingState }
+        val peopleImages = remember { peopleImagesLoadingState }
+        val peopleExternalIds = remember { peopleExternalIdsLoadingState }
+
+        loading.value = listOf(
+            movieDetails.value, movieImages.value, movieCastCrew.value, movieVideos.value, movieReviews.value,
+            movieKeywords.value, movieWatchProviders.value, movieExternalIds.value, movieReleaseDates.value,
+            movieAccountStates.value, tvDetails.value, tvImages.value, tvCastCrew.value, tvVideos.value,
+            tvReviews.value, tvKeywords.value, tvWatchProviders.value, tvExternalIds.value, tvSeasons.value,
+            tvContentRatings.value, tvAccountStates.value, peopleDetails.value, peopleCastCrew.value,
+            peopleImages.value, peopleExternalIds.value
+        ).any { it == LoadingState.LOADING || it == LoadingState.REFRESHING }
     }
 
 }

@@ -172,14 +172,15 @@ fun PosterItem(
     var sizeImage by remember { mutableStateOf(IntSize.Zero) }
     Card(
         elevation = CardDefaults.elevatedCardElevation(defaultElevation = elevation),
-        modifier = modifier
+        modifier = modifier.then(Modifier
             .width(width = width)
             .height(height = height)
             .wrapContentHeight()
             .clickable(
                 enabled = enabled,
                 onClick = onClick
-            ),
+            )
+        ),
         shape = RoundedCornerShape(5.dp),
         colors = CardDefaults.cardColors(containerColor = Color.Transparent)
     ) {
@@ -258,4 +259,21 @@ fun PosterItem(
             }
         }
     }
+}
+
+@Composable
+fun PlaceholderPosterItem(
+    modifier: Modifier = Modifier,
+    width: Dp = POSTER_WIDTH,
+    height: Dp = POSTER_HEIGHT,
+    tint: Color = Color.LightGray
+) {
+    Box(
+        modifier = modifier.then(Modifier
+            .width(width)
+            .height(height)
+            .clip(RoundedCornerShape(5.dp))
+            .shimmerBackground(RoundedCornerShape(5.dp), tint)
+        )
+    )
 }

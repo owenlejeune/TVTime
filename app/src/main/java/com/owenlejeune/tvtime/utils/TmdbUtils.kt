@@ -104,8 +104,8 @@ object TmdbUtils {
         return "${startYear}-${endYear}"
     }
 
-    fun convertRuntimeToHoursMinutes(movie: DetailedMovie): String {
-        movie.runtime?.let { runtime ->
+    fun convertRuntimeToHoursMinutes(movie: DetailedMovie?): String {
+        movie?.runtime?.let { runtime ->
             return convertRuntimeToHoursAndMinutes(runtime)
         }
         return ""

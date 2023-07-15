@@ -9,3 +9,5 @@ fun Any.coroutineTask(runnable: suspend () -> Unit) {
 }
 
 fun <T> anyOf(vararg items: T, predicate: (T) -> Boolean): Boolean = items.any(predicate)
+
+fun <T: Any> T.isIn(vararg items: T): Boolean = items.any { it == this }

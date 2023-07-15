@@ -6,12 +6,15 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
@@ -23,6 +26,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
 import coil.request.CachePolicy
@@ -32,9 +36,14 @@ import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.rememberPagerState
 import com.owenlejeune.tvtime.R
+import com.owenlejeune.tvtime.api.LoadingState
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.ExternalIds
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.ImageCollection
+import com.owenlejeune.tvtime.extensions.shimmerBackground
+import com.owenlejeune.tvtime.extensions.toDp
+import com.owenlejeune.tvtime.ui.viewmodel.MainViewModel
 import com.owenlejeune.tvtime.utils.TmdbUtils
+import com.owenlejeune.tvtime.utils.types.MediaViewType
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -54,7 +63,9 @@ fun DetailHeader(
 ) {
     Box(
         modifier = modifier.then(
-            Modifier.fillMaxWidth().wrapContentHeight()
+            Modifier
+                .fillMaxWidth()
+                .wrapContentHeight()
         )
     ) {
         if (imageCollection != null) {
@@ -119,7 +130,8 @@ private fun BackdropContainer(
 
         Box(
             modifier = Modifier
-                .matchParentSize()
+                .width(sizeImage.value.width.toDp())
+                .height(sizeImage.value.height.toDp())
                 .background(gradient)
         )
     }
@@ -214,10 +226,35 @@ fun BackdropGallery(
 
 @Composable
 fun ExternalIdsArea(
-    externalIds: ExternalIds,
+    type: MediaViewType,
+    itemId: Int,
     modifier: Modifier = Modifier
 ) {
-    if (externalIds.hasExternalIds()) {
+    val mainViewModel = viewModel<MainViewModel>()
+    val loadingState = remember { mainViewModel.produceExternalIdsLoadingStateFor(type) }
+
+    val externalIdsMap = remember { mainViewModel.produceExternalIdsFor(type) }
+    val externalIds = externalIdsMap[itemId]
+
+    if (loadingState.value == LoadingState.LOADING || loadingState.value == LoadingState.REFRESHING) {
+        Row(
+            modifier = modifier,
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            for (i in 0 until 4) {
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(5.dp))
+                        .size(28.dp)
+                        .shimmerBackground(
+                            RoundedCornerShape(5.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                )
+            }
+        }
+    } else if (externalIds?.hasExternalIds() == true) {
         Row(
             modifier = modifier,
             verticalAlignment = Alignment.CenterVertically,
@@ -263,5 +300,33 @@ private fun ExternalIdLogo(
             tint = MaterialTheme.colorScheme.primary,
             modifier = Modifier.size(28.dp)
         )
+    }
+}
+
+@Composable
+fun PlaceholderDetailHeader() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .wrapContentHeight()
+            .aspectRatio(1.778f)
+            .shimmerBackground()
+    ) {
+        Row(
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+                .padding(start = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(20.dp),
+            verticalAlignment = Alignment.Bottom
+        ) {
+            PlaceholderPosterItem()
+
+            Box(
+                modifier = Modifier
+                    .clip(CircleShape)
+                    .size(60.dp)
+                    .shimmerBackground(tint = MaterialTheme.colorScheme.secondary)
+            )
+        }
     }
 }
