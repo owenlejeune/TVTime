@@ -1,5 +1,8 @@
 package com.owenlejeune.tvtime.ui.screens
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -43,6 +46,7 @@ import androidx.navigation.NavController
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.DetailPerson
+import com.owenlejeune.tvtime.extensions.combinedOnVisibilityChange
 import com.owenlejeune.tvtime.ui.components.BackButton
 import com.owenlejeune.tvtime.ui.components.ContentCard
 import com.owenlejeune.tvtime.ui.components.DetailHeader
@@ -52,6 +56,7 @@ import com.owenlejeune.tvtime.ui.components.PosterItem
 import com.owenlejeune.tvtime.ui.components.TVTTopAppBar
 import com.owenlejeune.tvtime.ui.components.TwoLineImageTextCard
 import com.owenlejeune.tvtime.ui.navigation.AppNavItem
+import com.owenlejeune.tvtime.ui.theme.Typography
 import com.owenlejeune.tvtime.ui.viewmodel.ApplicationViewModel
 import com.owenlejeune.tvtime.ui.viewmodel.MainViewModel
 import com.owenlejeune.tvtime.utils.TmdbUtils
@@ -105,12 +110,21 @@ fun PersonDetailScreen(
         }
     )
 
+    val titleViewHidden = remember { mutableStateOf(false) }
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             TVTTopAppBar(
                 scrollBehavior = scrollBehavior,
-                title = { Text(text = person?.name ?: "") },
+                title = {
+                    AnimatedVisibility(
+                        visible = titleViewHidden.value,
+                        enter = fadeIn(),
+                        exit = fadeOut()
+                    ) {
+                        Text(text = person?.name ?: "")
+                    }
+                },
                 appNavController = appNavController,
                 navigationIcon = {
                     BackButton(navController = appNavController)
@@ -133,6 +147,20 @@ fun PersonDetailScreen(
                     posterUrl = TmdbUtils.getFullPersonImagePath(person?.profilePath),
                     posterContentDescription = person?.profilePath,
                     elevation = 0.dp
+                )
+
+                Text(
+                    text = person?.name ?: "",
+                    color = MaterialTheme.colorScheme.secondary,
+                    style = Typography.headlineLarge,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .combinedOnVisibilityChange(
+                            onVisible = { titleViewHidden.value = false },
+                            onNotVisible = { titleViewHidden.value = true }
+                        )
                 )
 
                 ExternalIdsArea(

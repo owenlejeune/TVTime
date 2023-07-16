@@ -4,7 +4,10 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -87,6 +90,7 @@ import com.owenlejeune.tvtime.api.tmdb.api.v3.model.Video
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.WatchProviderDetails
 import com.owenlejeune.tvtime.extensions.DateFormat
 import com.owenlejeune.tvtime.extensions.WindowSizeClass
+import com.owenlejeune.tvtime.extensions.combinedOnVisibilityChange
 import com.owenlejeune.tvtime.extensions.format
 import com.owenlejeune.tvtime.extensions.getCalendarYear
 import com.owenlejeune.tvtime.extensions.isIn
@@ -119,6 +123,7 @@ import com.owenlejeune.tvtime.ui.components.RoundedTextField
 import com.owenlejeune.tvtime.ui.components.TVTTopAppBar
 import com.owenlejeune.tvtime.ui.components.TwoLineImageTextCard
 import com.owenlejeune.tvtime.ui.navigation.AppNavItem
+import com.owenlejeune.tvtime.ui.theme.Typography
 import com.owenlejeune.tvtime.ui.viewmodel.ApplicationViewModel
 import com.owenlejeune.tvtime.ui.viewmodel.MainViewModel
 import com.owenlejeune.tvtime.ui.viewmodel.SpecialFeaturesViewModel
@@ -208,6 +213,7 @@ fun MediaDetailScreen(
         }
     )
 
+    val titleViewHidden = remember { mutableStateOf(false) }
     Box(
         modifier = Modifier.fillMaxSize()
     ) {
@@ -217,7 +223,15 @@ fun MediaDetailScreen(
             topBar = {
                 TVTTopAppBar(
                     scrollBehavior = scrollBehavior,
-                    title = { Text(text = mediaItem?.title ?: "") },
+                    title = {
+                        AnimatedVisibility(
+                            visible = titleViewHidden.value,
+                            enter = fadeIn(),
+                            exit = fadeOut()
+                        ) {
+                            Text(text = mediaItem?.title ?: "")
+                        }
+                    },
                     appNavController = appNavController,
                     navigationIcon = {
                         BackButton(navController = appNavController)
@@ -238,7 +252,8 @@ fun MediaDetailScreen(
                     windowSize = windowSize,
                     showImageGallery = showGalleryOverlay,
                     pagerState = pagerState,
-                    mainViewModel = mainViewModel
+                    mainViewModel = mainViewModel,
+                    titleViewHidden = titleViewHidden
                 )
                 PullRefreshIndicator(
                     refreshing = isRefreshing.value,
@@ -272,6 +287,7 @@ fun MediaViewContent(
     windowSize: WindowSizeClass,
     showImageGallery: MutableState<Boolean>,
     pagerState: PagerState,
+    titleViewHidden: MutableState<Boolean>,
     preferences: AppPreferences = KoinJavaComponent.get(AppPreferences::class.java)
 ) {
     Row(
@@ -310,7 +326,8 @@ fun MediaViewContent(
                     type = type,
                     mediaItem = mediaItem,
                     mainViewModel = mainViewModel,
-                    itemId =  itemId
+                    itemId =  itemId,
+                    titleViewHidden = titleViewHidden
                 )
 
                 ExternalIdsArea(
@@ -404,6 +421,7 @@ fun MediaViewContent(
 private fun MiscTvDetails(
     itemId: Int,
     mediaItem: DetailedItem?,
+    titleViewHidden: MutableState<Boolean>,
     mainViewModel: MainViewModel
 ) {
     mediaItem?.let { tv ->
@@ -421,7 +439,9 @@ private fun MiscTvDetails(
             runtime = TmdbUtils.convertRuntimeToHoursMinutes(series),
             genres = series.genres,
             contentRating = contentRating,
-            type = MediaViewType.TV
+            type = MediaViewType.TV,
+            title = mediaItem.title,
+            titleViewHidden = titleViewHidden
         )
     }
 }
@@ -430,6 +450,7 @@ private fun MiscTvDetails(
 private fun MiscMovieDetails(
     itemId: Int,
     mediaItem: DetailedItem?,
+    titleViewHidden: MutableState<Boolean>,
     mainViewModel: MainViewModel
 ) {
     val movie = mediaItem as? DetailedMovie
@@ -446,18 +467,22 @@ private fun MiscMovieDetails(
         runtime = TmdbUtils.convertRuntimeToHoursMinutes(movie),
         genres = movie?.genres ?: emptyList(),
         contentRating = contentRating,
-        type = MediaViewType.MOVIE
+        type = MediaViewType.MOVIE,
+        title = mediaItem?.title ?: "",
+        titleViewHidden = titleViewHidden
     )
 }
 
 @Composable
 private fun MiscDetails(
     modifier: Modifier = Modifier,
+    title: String,
     year: String,
     runtime: String,
     genres: List<Genre>,
     contentRating: String,
-    type: MediaViewType
+    type: MediaViewType,
+    titleViewHidden: MutableState<Boolean>,
 ) {
     val mainViewModel = viewModel<MainViewModel>()
     val detailsLoadingState = remember { mainViewModel.produceDetailsLoadingStateFor(type) }
@@ -473,6 +498,20 @@ private fun MiscDetails(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
+        Text(
+            text = title.takeUnless { isLoading } ?: "",
+            color = MaterialTheme.colorScheme.secondary,
+            style = Typography.headlineLarge,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+            modifier = shimmerModifier
+                .width(400.dp)
+                .combinedOnVisibilityChange(
+                    onVisible = { titleViewHidden.value = false },
+                    onNotVisible = { titleViewHidden.value = true }
+                )
+        )
+
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -1434,19 +1473,22 @@ fun DetailsFor(
     type: MediaViewType,
     itemId: Int,
     mediaItem: DetailedItem?,
+    titleViewHidden: MutableState<Boolean>,
     mainViewModel: MainViewModel
 ) {
     if (type == MediaViewType.MOVIE) {
         MiscMovieDetails(
             itemId = itemId,
             mediaItem = mediaItem,
-            mainViewModel = mainViewModel
+            mainViewModel = mainViewModel,
+            titleViewHidden = titleViewHidden
         )
     } else {
         MiscTvDetails(
             itemId = itemId,
             mediaItem = mediaItem,
-            mainViewModel = mainViewModel
+            mainViewModel = mainViewModel,
+            titleViewHidden = titleViewHidden
         )
     }
 }

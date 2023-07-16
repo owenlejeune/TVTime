@@ -87,7 +87,7 @@ fun DetailHeader(
         Row(
             modifier = Modifier
                 .align(Alignment.BottomStart)
-                .padding(start = 16.dp),
+                .padding(start = 16.dp, top = 16.dp),
             horizontalArrangement = Arrangement.spacedBy(20.dp),
             verticalAlignment = Alignment.Bottom
         ) {
@@ -119,7 +119,7 @@ private fun BackdropContainer(
 
     val gradient = Brush.verticalGradient(
         colors = listOf(Color.Transparent, MaterialTheme.colorScheme.background),
-        startY = sizeImage.value.height.toFloat() / 3,
+        startY = 0f,//sizeImage.value.height.toFloat() / 4,
         endY = sizeImage.value.height.toFloat()
     )
 
@@ -130,8 +130,8 @@ private fun BackdropContainer(
 
         Box(
             modifier = Modifier
-                .width(sizeImage.value.width.toDp())
-                .height(sizeImage.value.height.toDp())
+                .width(sizeImage.value.width.toDp() + 2.dp)
+                .height(sizeImage.value.height.toDp() + 4.dp)
                 .background(gradient)
         )
     }
@@ -187,7 +187,10 @@ fun BackdropGallery(
             HorizontalPager(
                 count = imageCollection.backdrops.size,
                 state = pagerState,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight()
+                    .onGloballyPositioned { sizeImage.value = it.size },
             ) { page ->
                 val backdrop = imageCollection.backdrops[page]
                 val url = TmdbUtils.getFullBackdropPath(backdrop)
@@ -201,7 +204,6 @@ fun BackdropGallery(
                     model = model,
                     placeholder = rememberAsyncImagePainter(model = R.drawable.placeholder),
                     contentDescription = "",
-                    modifier = Modifier.onGloballyPositioned { sizeImage.value = it.size },
                     contentScale = ContentScale.FillWidth
                 )
             }
