@@ -48,6 +48,8 @@ import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.DetailPerson
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.DetailedMovie
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.DetailedTv
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.Image
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.ImageCollection
 import com.owenlejeune.tvtime.extensions.DateFormat
 import com.owenlejeune.tvtime.extensions.combinedOnVisibilityChange
 import com.owenlejeune.tvtime.extensions.format
@@ -146,42 +148,53 @@ fun PersonDetailScreen(
                 modifier = Modifier
                     .background(color = MaterialTheme.colorScheme.background)
                     .verticalScroll(state = rememberScrollState())
-                    .padding(bottom = 16.dp, start = 16.dp, end = 16.dp),
+                    .padding(bottom = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
+                val creditsMap = remember { mainViewModel.peopleCastMap }
+                val credits =
+                    creditsMap[personId]?.map { Image(it.backdropPath ?: "", 0, 0) } ?: emptyList()
+                val imageCollection = ImageCollection(backdrops = credits, posters = emptyList())
                 DetailHeader(
                     posterUrl = TmdbUtils.getFullPersonImagePath(person?.profilePath),
                     posterContentDescription = person?.profilePath,
+                    imageCollection = imageCollection,
                     elevation = 0.dp
                 )
 
-                Text(
-                    text = person?.name ?: "",
-                    color = MaterialTheme.colorScheme.secondary,
-                    style = Typography.headlineLarge,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
+                Column(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .combinedOnVisibilityChange(
-                            onVisible = { titleViewHidden.value = false },
-                            onNotVisible = { titleViewHidden.value = true }
-                        )
-                )
+                        .padding(start = 16.dp, end = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    Text(
+                        text = person?.name ?: "",
+                        color = MaterialTheme.colorScheme.secondary,
+                        style = Typography.headlineLarge,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .combinedOnVisibilityChange(
+                                onVisible = { titleViewHidden.value = false },
+                                onNotVisible = { titleViewHidden.value = true }
+                            )
+                    )
 
-                ExternalIdsArea(
-                    modifier = Modifier.padding(start = 4.dp),
-                    type = MediaViewType.PERSON,
-                    itemId = personId
-                )
+                    ExternalIdsArea(
+                        modifier = Modifier.padding(start = 4.dp),
+                        type = MediaViewType.PERSON,
+                        itemId = personId
+                    )
 
-                BiographyCard(person = person)
+                    BiographyCard(person = person)
 
-                CreditsCard(personId = personId, appNavController = appNavController)
-                
-                AdditionalDetailsCard(id = personId, mainViewModel = mainViewModel)
-                
-                ImagesCard(id = personId, appNavController = appNavController)
+                    CreditsCard(personId = personId, appNavController = appNavController)
+
+                    AdditionalDetailsCard(id = personId, mainViewModel = mainViewModel)
+
+                    ImagesCard(id = personId, appNavController = appNavController)
+                }
             }
             
             PullRefreshIndicator(
