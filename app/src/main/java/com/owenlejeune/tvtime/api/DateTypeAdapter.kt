@@ -20,7 +20,7 @@ class DateTypeAdapter: TypeAdapter<Date>() {
     override fun read(jrIn: JsonReader): Date? {
         if (jrIn.peek() == JsonToken.NULL) {
             jrIn.nextNull()
-            throw Exception("JSON must not be null")
+            return null
         }
         val dateFields = jrIn.nextString()
         if (dateFields.isEmpty()) {

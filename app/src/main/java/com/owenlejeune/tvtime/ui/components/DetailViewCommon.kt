@@ -8,9 +8,11 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -26,6 +28,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
@@ -329,6 +332,33 @@ fun PlaceholderDetailHeader() {
                     .size(60.dp)
                     .shimmerBackground(tint = MaterialTheme.colorScheme.secondary)
             )
+        }
+    }
+}
+
+@Composable
+fun AdditionalDetailItem(
+    title: String,
+    subtext: String,
+    includeDivider: Boolean = true
+) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Text(
+            text = title,
+            fontSize = 16.sp,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.padding(horizontal = 16.dp)
+        )
+        Text(
+            text = subtext,
+            fontSize = 14.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(horizontal = 16.dp)
+        )
+        if (includeDivider) {
+            Divider()
         }
     }
 }

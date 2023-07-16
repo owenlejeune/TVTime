@@ -256,4 +256,8 @@
     <string name="see_all_cast_and_crew">See all cast and crew</string>
     <string name="unreleased">Unreleased</string>
     <string name="tba">TBA</string>
+    <string name="also_known_as">Also Known As</string>
+    <string name="place_of_birth">Place of birth</string>
+    <string name="birthday">Birthday</string>
+    <string name="date_of_death">Date of death</string>
 </resources>

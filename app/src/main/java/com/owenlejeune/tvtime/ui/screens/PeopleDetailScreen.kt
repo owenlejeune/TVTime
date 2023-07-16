@@ -46,7 +46,13 @@ import androidx.navigation.NavController
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.DetailPerson
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.DetailedMovie
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.DetailedTv
+import com.owenlejeune.tvtime.extensions.DateFormat
 import com.owenlejeune.tvtime.extensions.combinedOnVisibilityChange
+import com.owenlejeune.tvtime.extensions.format
+import com.owenlejeune.tvtime.extensions.yearsSince
+import com.owenlejeune.tvtime.ui.components.AdditionalDetailItem
 import com.owenlejeune.tvtime.ui.components.BackButton
 import com.owenlejeune.tvtime.ui.components.ContentCard
 import com.owenlejeune.tvtime.ui.components.DetailHeader
@@ -173,6 +179,8 @@ fun PersonDetailScreen(
 
                 CreditsCard(personId = personId, appNavController = appNavController)
                 
+                AdditionalDetailsCard(id = personId, mainViewModel = mainViewModel)
+                
                 ImagesCard(id = personId, appNavController = appNavController)
             }
             
@@ -202,6 +210,49 @@ private fun BiographyCard(person: DetailPerson?) {
                 maxLines = if (isExpanded) Int.MAX_VALUE else 3,
                 overflow = TextOverflow.Ellipsis
             )
+        }
+    }
+}
+
+@Composable
+private fun AdditionalDetailsCard(
+    id: Int,
+    mainViewModel: MainViewModel,
+    modifier: Modifier = Modifier
+) {
+    val personMap = remember { mainViewModel.peopleMap }
+    val person = personMap[id]
+    
+    ContentCard(
+        modifier = modifier,
+        title = stringResource(R.string.additional_details_title)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentHeight()
+                .padding(vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            AdditionalDetailItem(
+                title = stringResource(R.string.also_known_as),
+                subtext = person?.alsoKnownAs?.joinToString(separator = ", ") ?: ""
+            )
+            AdditionalDetailItem(
+                title = stringResource(R.string.place_of_birth),
+                subtext = person?.birthplace ?: ""
+            )
+            val birthday = person?.birthday
+            AdditionalDetailItem(
+                title = stringResource(R.string.birthday),
+                subtext = "${birthday?.format(DateFormat.MMMM_dd_yyyy) ?: ""} (${birthday?.yearsSince(person.dateOfDeath)} years old)"
+            )
+            person?.dateOfDeath?.let {
+                AdditionalDetailItem(
+                    title = stringResource(R.string.date_of_death),
+                    subtext = it.format(DateFormat.MMMM_dd_yyyy)
+                )
+            }
         }
     }
 }

@@ -99,6 +99,7 @@ import com.owenlejeune.tvtime.extensions.listItems
 import com.owenlejeune.tvtime.extensions.shimmerBackground
 import com.owenlejeune.tvtime.preferences.AppPreferences
 import com.owenlejeune.tvtime.ui.components.ActionsView
+import com.owenlejeune.tvtime.ui.components.AdditionalDetailItem
 import com.owenlejeune.tvtime.ui.components.AvatarImage
 import com.owenlejeune.tvtime.ui.components.BackButton
 import com.owenlejeune.tvtime.ui.components.ChipDefaults
@@ -795,34 +796,6 @@ private fun AdditionalTvItems(
         includeDivider = false
     )
 }
-
-@Composable
-private fun AdditionalDetailItem(
-    title: String,
-    subtext: String,
-    includeDivider: Boolean = true
-) {
-    Column(
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        Text(
-            text = title,
-            fontSize = 16.sp,
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.padding(horizontal = 16.dp)
-        )
-        Text(
-            text = subtext,
-            fontSize = 14.sp,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(horizontal = 16.dp)
-        )
-        if (includeDivider) {
-            Divider()
-        }
-    }
-}
-
 
 @Composable
 private fun CastCard(
