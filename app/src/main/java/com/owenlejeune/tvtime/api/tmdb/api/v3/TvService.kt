@@ -172,9 +172,13 @@ class TvService: KoinComponent, DetailService, HomePageService {
     suspend fun getSeason(seriesId: Int, seasonId: Int, refreshing: Boolean) {
         loadRemoteData(
             { service.getSeason(seriesId, seasonId) },
-            {
-                _seasons[seriesId]?.add(it) ?: run {
-                    _seasons[seriesId] = mutableSetOf(it)
+            { season ->
+                _seasons[seriesId]?.let { seasonSet ->
+                    if (seasonSet.find { it.seasonNumber == seasonId } == null) {
+                        seasonSet.add(season)
+                    }
+                } ?: run {
+                    _seasons[seriesId] = mutableSetOf(season)
                 }
             },
             seasonsLoadingState,

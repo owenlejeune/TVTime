@@ -82,7 +82,7 @@ fun SeasonListScreen(
     LaunchedEffect(Unit) {
         val numSeasons = mainViewModel.detailedTv[id]!!.numberOfSeasons
         for (i in 0..numSeasons) {
-            mainViewModel.getSeason(id, i)
+            mainViewModel.getSeason(id, i, true)
         }
     }
 
@@ -112,8 +112,8 @@ fun SeasonListScreen(
                 val seasonsMap = remember { mainViewModel.tvSeasons }
                 val seasons = seasonsMap[id] ?: emptySet()
 
-                seasons.sortedBy { it.seasonNumber }.forEach { season ->
-                    SeasonSection(season = season, singleSeason = isSingleSeason(seasons))
+                seasons.sortedBy { it.seasonNumber }.forEachIndexed { index, season ->
+                    SeasonSection(season = season, expandedByDefault = index == 0)
                 }
 
                 Spacer(modifier = Modifier.height(6.dp))
@@ -123,8 +123,8 @@ fun SeasonListScreen(
 }
 
 @Composable
-private fun SeasonSection(season: Season, singleSeason: Boolean) {
-    var isExpanded by remember { mutableStateOf(singleSeason) }
+private fun SeasonSection(season: Season, expandedByDefault: Boolean) {
+    var isExpanded by remember { mutableStateOf(expandedByDefault) }
 
     Row(
         modifier = Modifier.padding(horizontal = 12.dp),
@@ -256,8 +256,4 @@ private fun EpisodeItem(episode: Episode) {
             }
         }
     }
-}
-
-private fun isSingleSeason(seasons: Set<Season>): Boolean {
-    return seasons.size == 1 || (seasons.size == 2 && seasons.any { it.seasonNumber == 0 })
 }

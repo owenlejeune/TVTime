@@ -86,6 +86,10 @@ class TmdbClient: KoinComponent {
         return clientV4.create(ListV4Api::class.java)
     }
 
+    private fun ignoreErrorResponseCode(urlSegments: List<String>): Boolean {
+        return (urlSegments.last() == "0" && urlSegments[urlSegments.size-2] == "season")
+    }
+
     @SuppressLint("AutoboxingStateValueProperty")
     private fun handleResponseCode(response: Response) {
         when (response.code) {
@@ -106,10 +110,9 @@ class TmdbClient: KoinComponent {
             val apiParam = QueryParam("api_key", BuildConfig.TMDB_ApiKey)
 
             val segments = chain.request().url.encodedPathSegments
-            val sessionIdParam: QueryParam? = sessionIdParam(segments)
 
             val builder = chain.request().url.newBuilder()
-            builder.addQueryParams(apiParam, sessionIdParam)
+            builder.addQueryParams(apiParam)
 
             if (shouldIncludeLanguageParam(segments)) {
                 val locale = Locale.current
@@ -130,20 +133,11 @@ class TmdbClient: KoinComponent {
             val request = requestBuilder.build()
             val response = chain.proceed(request)
 
-            handleResponseCode(response)
+            if (!ignoreErrorResponseCode(segments)) {
+                handleResponseCode(response)
+            }
 
             return response
-        }
-
-        private fun sessionIdParam(urlSegments: List<String>): QueryParam? {
-            var sessionIdParam: QueryParam? = null
-            if (urlSegments.size > 1 && urlSegments[1] == "account") {
-                val currentSession = SessionManager.currentSession.value
-                if (!currentSession?.sessionId.isNullOrEmpty()) {
-                    sessionIdParam = QueryParam("session_id", currentSession!!.sessionId)
-                }
-            }
-            return sessionIdParam
         }
 
         private fun shouldIncludeLanguageParam(urlSegments: List<String>): Boolean {
@@ -157,7 +151,7 @@ class TmdbClient: KoinComponent {
         }
 
         private fun shouldIncludeSessionIdParam(urlSegments: List<String>): Boolean {
-            val includedRoutes = listOf("account_states")
+            val includedRoutes = listOf("account_states", "account")
             for (route in includedRoutes) {
                 if (urlSegments.contains(route)) {
                     return true
@@ -191,7 +185,9 @@ class TmdbClient: KoinComponent {
 
             val response = chain.proceed(builder.build())
 
-            handleResponseCode(response)
+            if (!ignoreErrorResponseCode(chain.request().url.encodedPathSegments)) {
+                handleResponseCode(response)
+            }
 
             return response
         }
