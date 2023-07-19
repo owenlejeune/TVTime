@@ -56,9 +56,6 @@ interface TvApi {
         @Query("session_id") sessionId: String
     ): Response<StatusResponse>
 
-    @GET("tv/{id}/season/{season}")
-    suspend fun getSeason(@Path("id") seriesId: Int, @Path("season") seasonNumber: Int): Response<Season>
-
     @GET("tv/{id}/watch/providers")
     suspend fun getWatchProviders(@Path("id") seriesId: Int): Response<WatchProviderResponse>
 
@@ -73,4 +70,7 @@ interface TvApi {
 
     @GET("trending/tv/{time_window}")
     suspend fun trending(@Path("time_window") timeWindow: String, @Query("page") page: Int): Response<SearchResult<SearchResultTv>>
+
+    @GET("tv/{id}/season/{season}")
+    suspend fun getSeason(@Path("id") seriesId: Int, @Path("season") seasonNumber: Int): Response<Season>
 }

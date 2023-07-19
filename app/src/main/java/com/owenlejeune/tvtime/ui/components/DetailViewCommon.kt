@@ -5,9 +5,12 @@ import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -16,6 +19,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -24,12 +28,14 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
 import coil.request.CachePolicy
@@ -40,10 +46,16 @@ import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.rememberPagerState
 import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.api.LoadingState
-import com.owenlejeune.tvtime.api.tmdb.api.v3.model.ExternalIds
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.Episode
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.ImageCollection
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.MovieCastMember
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.MovieCrewMember
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.Person
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.TvCastMember
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.TvCrewMember
 import com.owenlejeune.tvtime.extensions.shimmerBackground
 import com.owenlejeune.tvtime.extensions.toDp
+import com.owenlejeune.tvtime.ui.navigation.AppNavItem
 import com.owenlejeune.tvtime.ui.viewmodel.MainViewModel
 import com.owenlejeune.tvtime.utils.TmdbUtils
 import com.owenlejeune.tvtime.utils.types.MediaViewType
@@ -58,6 +70,7 @@ fun DetailHeader(
     imageCollection: ImageCollection? = null,
     backdropUrl: String? = null,
     posterUrl: String? = null,
+    expandedPosterAsBackdrop: Boolean = false,
     backdropContentDescription: String? = null,
     posterContentDescription: String? = null,
     rating: Float? = null,
@@ -71,20 +84,48 @@ fun DetailHeader(
                 .wrapContentHeight()
         )
     ) {
-        if (imageCollection != null) {
-            BackdropGallery(
-                modifier = Modifier
-                    .clickable {
-                        showGalleryOverlay?.value = true
-                    },
-                imageCollection = imageCollection,
-                state = pagerState
-            )
+        if (expandedPosterAsBackdrop) {
+            Box {
+                val url = TmdbUtils.getFullPosterPath(posterUrl)
+                val model = ImageRequest.Builder(LocalContext.current)
+                    .data(url)
+                    .diskCacheKey(url ?: "")
+                    .networkCachePolicy(CachePolicy.ENABLED)
+                    .memoryCachePolicy(CachePolicy.ENABLED)
+                    .build()
+                AsyncImage(
+                    model = model,
+                    contentDescription = null,
+                    contentScale = ContentScale.FillWidth,
+                    modifier = Modifier
+                        .blur(radius = 10.dp)
+                        .fillMaxWidth()
+                        .aspectRatio(1.778f)
+                )
+
+                Box(
+                    modifier = Modifier
+                        .matchParentSize()
+                        .background(Color.Black.copy(alpha = 0.6f))
+                        .blur(radius = 5.dp)
+                )
+            }
         } else {
-            Backdrop(
-                imageUrl = backdropUrl,
-                contentDescription = backdropContentDescription
-            )
+            if (imageCollection != null) {
+                BackdropGallery(
+                    modifier = Modifier
+                        .clickable {
+                            showGalleryOverlay?.value = true
+                        },
+                    imageCollection = imageCollection,
+                    state = pagerState
+                )
+            } else {
+                Backdrop(
+                    imageUrl = backdropUrl,
+                    contentDescription = backdropContentDescription
+                )
+            }
         }
 
         Row(
@@ -361,4 +402,119 @@ fun AdditionalDetailItem(
             Divider()
         }
     }
+}
+
+@Composable
+fun EpisodeItem(
+    episode: Episode,
+    elevation: Dp = 10.dp,
+    maxDescriptionLines: Int = 2
+) {
+    Card(
+        shape = RoundedCornerShape(10.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = elevation),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable {
+
+            }
+    ) {
+        Box {
+            episode.stillPath?.let {
+//                Cloudy(
+//                    modifier = Modifier.background(Color.Black.copy(alpha = 0.4f))
+//                ) {
+                val url = TmdbUtils.getFullEpisodeStillPath(it)
+                val model = ImageRequest.Builder(LocalContext.current)
+                    .data(url)
+                    .diskCacheKey(url ?: "")
+                    .networkCachePolicy(CachePolicy.ENABLED)
+                    .memoryCachePolicy(CachePolicy.ENABLED)
+                    .build()
+                AsyncImage(
+                    model = model,
+                    contentDescription = null,
+                    contentScale = ContentScale.FillWidth,
+                    modifier = Modifier
+                        .blur(radius = 10.dp)
+//                        .fillMaxWidth()
+//                        .wrapContentHeight()
+                        .matchParentSize()
+                )
+
+                Box(
+                    modifier = Modifier
+//                        .fillMaxSize()
+                        .matchParentSize()
+                        .background(Color.Black.copy(alpha = 0.4f))
+                        .blur(radius = 5.dp)
+                )
+//                }
+            }
+
+            Column(
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+                modifier = Modifier.padding(12.dp)
+            ) {
+                val textColor = episode.stillPath?.let { Color.White } ?: if (isSystemInDarkTheme()) Color.White else Color.Black
+                Text(
+                    text = "S${episode.seasonNumber}E${episode.episodeNumber} • ${episode.name}",
+                    color = textColor,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                TmdbUtils.convertEpisodeDate(episode.airDate)?.let {
+                    Text(
+                        text = it,
+                        fontStyle = FontStyle.Italic,
+                        fontSize = 12.sp,
+                        color = textColor
+                    )
+                }
+                Text(
+                    text = episode.overview,
+                    overflow = TextOverflow.Ellipsis,
+                    color = textColor,
+                    maxLines = maxDescriptionLines
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun CastCrewCard(
+    appNavController: NavController,
+    person: Person
+) {
+    TwoLineImageTextCard(
+        title = person.name,
+        modifier = Modifier
+            .width(124.dp)
+            .wrapContentHeight(),
+        subtitle = when (person) {
+            is MovieCastMember -> person.character
+            is MovieCrewMember -> person.job
+            is TvCastMember -> {
+                val roles = person.roles.joinToString(separator = "/") { it.role }
+                val epsCount = person.totalEpisodeCount
+                "$roles ($epsCount Eps.)"
+            }
+            is TvCrewMember -> {
+                val roles = person.jobs.joinToString(separator = "/") { it.role }
+                val epsCount = person.totalEpisodeCount
+                "$roles ($epsCount Eps.)"
+            }
+            else -> null
+        },
+        imageUrl = TmdbUtils.getFullPersonImagePath(person),
+        titleTextColor = MaterialTheme.colorScheme.onPrimary,
+        subtitleTextColor = MaterialTheme.colorScheme.onSecondary,
+        onItemClicked = {
+            appNavController.navigate(
+                AppNavItem.DetailView.withArgs(MediaViewType.PERSON, person.id)
+            )
+        }
+    )
 }

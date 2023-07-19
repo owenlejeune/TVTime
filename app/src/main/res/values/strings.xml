@@ -260,4 +260,6 @@
     <string name="place_of_birth">Place of birth</string>
     <string name="birthday">Birthday</string>
     <string name="date_of_death">Date of death</string>
+    <string name="unexpected_error">An unexpected error occurred</string>
+    <string name="guest_stars_label">Guest stars</string>
 </resources>

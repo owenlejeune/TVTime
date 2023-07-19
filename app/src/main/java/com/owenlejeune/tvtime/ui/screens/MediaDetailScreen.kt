@@ -102,6 +102,7 @@ import com.owenlejeune.tvtime.ui.components.ActionsView
 import com.owenlejeune.tvtime.ui.components.AdditionalDetailItem
 import com.owenlejeune.tvtime.ui.components.AvatarImage
 import com.owenlejeune.tvtime.ui.components.BackButton
+import com.owenlejeune.tvtime.ui.components.CastCrewCard
 import com.owenlejeune.tvtime.ui.components.ChipDefaults
 import com.owenlejeune.tvtime.ui.components.ChipGroup
 import com.owenlejeune.tvtime.ui.components.ChipInfo
@@ -870,42 +871,6 @@ private fun CastCard(
             }
         }
     }
-}
-
-@Composable
-private fun CastCrewCard(
-    appNavController: NavController,
-    person: Person
-) {
-    TwoLineImageTextCard(
-        title = person.name,
-        modifier = Modifier
-            .width(124.dp)
-            .wrapContentHeight(),
-        subtitle = when (person) {
-            is MovieCastMember -> person.character
-            is MovieCrewMember -> person.job
-            is TvCastMember -> {
-                val roles = person.roles.joinToString(separator = "/") { it.role }
-                val epsCount = person.totalEpisodeCount
-                "$roles ($epsCount Eps.)"
-            }
-            is TvCrewMember -> {
-                val roles = person.jobs.joinToString(separator = "/") { it.role }
-                val epsCount = person.totalEpisodeCount
-                "$roles ($epsCount Eps.)"
-            }
-            else -> null
-        },
-        imageUrl = TmdbUtils.getFullPersonImagePath(person),
-        titleTextColor = MaterialTheme.colorScheme.onPrimary,
-        subtitleTextColor = MaterialTheme.colorScheme.onSecondary,
-        onItemClicked = {
-            appNavController.navigate(
-                AppNavItem.DetailView.withArgs(MediaViewType.PERSON, person.id)
-            )
-        }
-    )
 }
 
 @Composable
