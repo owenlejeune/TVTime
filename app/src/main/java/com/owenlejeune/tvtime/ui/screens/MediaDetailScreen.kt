@@ -1,11 +1,8 @@
 package com.owenlejeune.tvtime.ui.screens
 
 import android.annotation.SuppressLint
-import android.content.Intent
-import android.net.Uri
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.Crossfade
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
@@ -21,7 +18,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyRow
@@ -70,7 +66,6 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import coil.compose.AsyncImage
 import coil.request.CachePolicy
 import coil.request.ImageRequest
-import com.google.accompanist.flowlayout.FlowRow
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.rememberPagerState
@@ -81,15 +76,10 @@ import com.owenlejeune.tvtime.api.tmdb.api.v3.model.DetailedMovie
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.DetailedTv
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.Genre
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.ImageCollection
-import com.owenlejeune.tvtime.api.tmdb.api.v3.model.MovieCastMember
-import com.owenlejeune.tvtime.api.tmdb.api.v3.model.MovieCrewMember
-import com.owenlejeune.tvtime.api.tmdb.api.v3.model.Person
-import com.owenlejeune.tvtime.api.tmdb.api.v3.model.TvCastMember
-import com.owenlejeune.tvtime.api.tmdb.api.v3.model.TvCrewMember
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.Video
-import com.owenlejeune.tvtime.api.tmdb.api.v3.model.WatchProviderDetails
 import com.owenlejeune.tvtime.extensions.DateFormat
 import com.owenlejeune.tvtime.extensions.WindowSizeClass
+import com.owenlejeune.tvtime.extensions.combineWith
 import com.owenlejeune.tvtime.extensions.combinedOnVisibilityChange
 import com.owenlejeune.tvtime.extensions.format
 import com.owenlejeune.tvtime.extensions.getCalendarYear
@@ -116,7 +106,6 @@ import com.owenlejeune.tvtime.ui.components.FullScreenThumbnailVideoPlayer
 import com.owenlejeune.tvtime.ui.components.HtmlText
 import com.owenlejeune.tvtime.ui.components.ImageGalleryOverlay
 import com.owenlejeune.tvtime.ui.components.ListContentCard
-import com.owenlejeune.tvtime.ui.components.PillSegmentedControl
 import com.owenlejeune.tvtime.ui.components.PlaceholderDetailHeader
 import com.owenlejeune.tvtime.ui.components.PlaceholderPosterItem
 import com.owenlejeune.tvtime.ui.components.PosterItem
@@ -124,6 +113,8 @@ import com.owenlejeune.tvtime.ui.components.RoundedChip
 import com.owenlejeune.tvtime.ui.components.RoundedTextField
 import com.owenlejeune.tvtime.ui.components.TVTTopAppBar
 import com.owenlejeune.tvtime.ui.components.TwoLineImageTextCard
+import com.owenlejeune.tvtime.ui.components.VideosCard
+import com.owenlejeune.tvtime.ui.components.WatchProvidersCard
 import com.owenlejeune.tvtime.ui.navigation.AppNavItem
 import com.owenlejeune.tvtime.ui.theme.Typography
 import com.owenlejeune.tvtime.ui.viewmodel.ApplicationViewModel
@@ -377,7 +368,7 @@ fun MediaViewContent(
                         mainViewModel = mainViewModel
                     )
 
-                    VideosCard(
+                    VideosArea(
                         itemId = itemId,
                         modifier = Modifier.fillMaxWidth(),
                         mainViewModel = mainViewModel,
@@ -386,7 +377,7 @@ fun MediaViewContent(
 
                     AdditionalDetailsCard(mediaItem = mediaItem, type = type)
 
-                    WatchProvidersCard(itemId = itemId, type = type, mainViewModel = mainViewModel)
+                    WatchProvidersArea(itemId = itemId, type = type, mainViewModel = mainViewModel)
 
                     if (
                         mediaItem?.productionCompanies?.firstOrNull { it.name == "Marvel Studios" } != null
@@ -891,6 +882,9 @@ private fun SeasonCard(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .padding(all = 12.dp)
+                    .clickable {
+                        appNavController.navigate(AppNavItem.DetailView.withArgs(MediaViewType.SEASON, itemId.combineWith(it.seasonNumber)))
+                    }
             ) {
                 PosterItem(
                     url = TmdbUtils.getFullPosterPath(it.posterPath),
@@ -992,7 +986,7 @@ fun SimilarContentCard(
 }
 
 @Composable
-fun VideosCard(
+fun VideosArea(
     itemId: Int,
     type: MediaViewType,
     mainViewModel: MainViewModel,
@@ -1002,74 +996,13 @@ fun VideosCard(
     val videos = videosMap[itemId]
 
     if (videos?.any { it.isOfficial } == true) {
-        ExpandableContentCard(
-            modifier = modifier,
-            title = {
-                Text(
-                    text = stringResource(id = R.string.videos_label),
-                    style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.padding(start = 12.dp, top = 8.dp),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            },
-            toggleTextColor = MaterialTheme.colorScheme.primary
-        ) { isExpanded ->
-            VideoGroup(
-                results = videos,
-                type = Video.Type.TRAILER,
-                title = stringResource(id = Video.Type.TRAILER.stringRes)
-            )
-
-            if (isExpanded) {
-                Video.Type.values().filter { it != Video.Type.TRAILER }.forEach { type ->
-                    VideoGroup(
-                        results = videos,
-                        type = type,
-                        title = stringResource(id = type.stringRes)
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun VideoGroup(results: List<Video>, type: Video.Type, title: String) {
-    val videos = results.filter { it.isOfficial && it.type == type }
-    if (videos.isNotEmpty()) {
-        Text(
-            text = title,
-            color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.padding(start = 12.dp, top = 8.dp)
-        )
-
-        val posterWidth = 120.dp
-        LazyRow(modifier = Modifier
-            .padding(vertical = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            item {
-                Spacer(modifier = Modifier.width(8.dp))
-            }
-            listItems(videos) { video ->
-                FullScreenThumbnailVideoPlayer(
-                    key = video.key,
-                    title = video.name,
-                    modifier = Modifier
-                        .width(posterWidth)
-                        .wrapContentHeight()
-                )
-            }
-            item {
-                Spacer(modifier = Modifier.width(8.dp))
-            }
-        }
+        VideosCard(videos = videos, modifier = modifier)
     }
 }
 
 @SuppressLint("AutoboxingStateValueProperty")
 @Composable
-private fun WatchProvidersCard(
+private fun WatchProvidersArea(
     itemId: Int,
     type: MediaViewType,
     mainViewModel: MainViewModel,
@@ -1079,102 +1012,8 @@ private fun WatchProvidersCard(
     val watchProviders = watchProvidersMap[itemId]
     watchProviders?.let { providers ->
         if (providers.buy?.isNotEmpty() == true || providers.rent?.isNotEmpty() == true || providers.flaterate?.isNotEmpty() == true) {
-            Card(
-                modifier = modifier
-                    .fillMaxWidth()
-                    .wrapContentHeight(),
-                shape = RoundedCornerShape(10.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-            ) {
-                Text(
-                    text = stringResource(R.string.watch_providers_title),
-                    style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.padding(start = 16.dp, top = 12.dp),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-
-                val itemsMap = mutableMapOf<Int, List<WatchProviderDetails>>().apply {
-                    providers.flaterate?.let { put(0, it) }
-                    providers.rent?.let { put(1, it) }
-                    providers.buy?.let { put(2, it) }
-                }
-                val selected = remember { mutableStateOf(if (itemsMap.isEmpty()) null else itemsMap.values.first()) }
-
-                val context = LocalContext.current
-                PillSegmentedControl(
-                    items = itemsMap.values.toList(),
-                    itemLabel = { i, _ ->
-                        when (i) {
-                            0 -> context.getString(R.string.streaming_label)
-                            1 -> context.getString(R.string.rent_label)
-                            2 -> context.getString(R.string.buy_label)
-                            else -> ""
-                        }
-                    },
-                    onItemSelected = { i, _ -> selected.value = itemsMap.values.toList()[i] },
-                    modifier = Modifier.padding(all = 8.dp)
-                )
-
-                Crossfade(
-                    modifier = modifier.padding(top = 4.dp, bottom = 12.dp),
-                    targetState = selected.value
-                ) { value ->
-                    WatchProviderContainer(watchProviders = value!!, link = providers.link)
-                }
-            }
+            WatchProvidersCard(providers = providers, modifier = modifier)
         }
-    }
-}
-
-@Composable
-private fun WatchProviderContainer(
-    watchProviders: List<WatchProviderDetails>,
-    link: String
-) {
-    val context = LocalContext.current
-    FlowRow(
-        modifier = Modifier.padding(horizontal = 16.dp),
-        mainAxisSpacing = 8.dp,
-        crossAxisSpacing = 4.dp
-    ) {
-        watchProviders
-            .sortedBy { it.displayPriority }
-            .forEach { item ->
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(4.dp),
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(10.dp))
-                        .clickable {
-                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(link))
-                            context.startActivity(intent)
-                        }
-                ) {
-                    val url = TmdbUtils.fullLogoPath(item.logoPath)
-                    val model = ImageRequest.Builder(LocalContext.current)
-                        .data(url)
-                        .diskCacheKey(url)
-                        .networkCachePolicy(CachePolicy.ENABLED)
-                        .memoryCachePolicy(CachePolicy.ENABLED)
-                        .build()
-                    AsyncImage(
-                        model = model,
-                        contentDescription = null,
-                        modifier = Modifier
-                            .size(48.dp)
-                            .clip(RoundedCornerShape(10.dp))
-                    )
-                    Text(
-                        text = item.providerName,
-                        fontSize = 10.sp,
-                        modifier = Modifier.width(48.dp),
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
-                        textAlign = TextAlign.Center
-                    )
-                }
-            }
     }
 }
 

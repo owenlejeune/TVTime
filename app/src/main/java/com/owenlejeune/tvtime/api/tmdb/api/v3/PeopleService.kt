@@ -10,7 +10,7 @@ import com.owenlejeune.tvtime.api.tmdb.api.v3.model.DetailCrew
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.DetailPerson
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.ExternalIds
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.HomePagePeopleResponse
-import com.owenlejeune.tvtime.api.tmdb.api.v3.model.PersonImage
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.Image
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.SearchResult
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.SearchResultPerson
 import com.owenlejeune.tvtime.utils.types.TimeWindow
@@ -27,7 +27,7 @@ class PeopleService: KoinComponent {
     val peopleMap = Collections.synchronizedMap(mutableStateMapOf<Int, DetailPerson>())
     val castMap = Collections.synchronizedMap(mutableStateMapOf<Int, List<DetailCast>>())
     val crewMap = Collections.synchronizedMap(mutableStateMapOf<Int, List<DetailCrew>>())
-    val imagesMap = Collections.synchronizedMap(mutableStateMapOf<Int, List<PersonImage>>())
+    val imagesMap = Collections.synchronizedMap(mutableStateMapOf<Int, List<Image>>())
     val externalIdsMap = Collections.synchronizedMap(mutableStateMapOf<Int, ExternalIds>())
 
     val detailsLoadingState = mutableStateOf(LoadingState.INACTIVE)

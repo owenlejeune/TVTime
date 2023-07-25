@@ -27,9 +27,13 @@ import com.owenlejeune.tvtime.api.tmdb.api.v3.model.ReviewResponse
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.SearchResult
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.SearchResultMedia
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.Season
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.SeasonAccountStates
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.StatusResponse
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.TmdbItem
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.TvCastAndCrew
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.TvCastMember
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.TvContentRatings
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.TvCrewMember
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.Video
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.VideoResponse
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.WatchProviderResponse
@@ -69,6 +73,30 @@ class TvService: KoinComponent, DetailService, HomePageService {
     val seasons: MutableMap<Int, out Set<Season>>
         get() = _seasons
 
+    private val _seasonAccountStates = Collections.synchronizedMap(mutableStateMapOf<Int, MutableMap<Int, SeasonAccountStates>>())
+    val seasonAccountStates: MutableMap<Int, out Map<Int, SeasonAccountStates>>
+        get() = _seasonAccountStates
+
+    private val _seasonCast = Collections.synchronizedMap(mutableStateMapOf<Int, MutableMap<Int, List<TvCastMember>>>())
+    val seasonCast: MutableMap<Int, out Map<Int, List<TvCastMember>>>
+        get() = _seasonCast
+
+    private val _seasonCrew = Collections.synchronizedMap(mutableStateMapOf<Int, MutableMap<Int, List<TvCrewMember>>>())
+    val seasonCrew: MutableMap<Int, out Map<Int, List<TvCrewMember>>>
+        get() = _seasonCrew
+
+    private val _seasonImages = Collections.synchronizedMap(mutableStateMapOf<Int, MutableMap<Int, ImageCollection>>())
+    val seasonImages: Map<Int, out Map<Int, ImageCollection>>
+        get() = _seasonImages
+
+    private val _seasonVideos = Collections.synchronizedMap(mutableStateMapOf<Int, MutableMap<Int, List<Video>>>())
+    val seasonVideos: MutableMap<Int, out Map<Int, List<Video>>>
+        get() = _seasonVideos
+
+    private val _seasonWatchProviders = Collections.synchronizedMap(mutableStateMapOf<Int, MutableMap<Int, WatchProviders>>())
+    val seasonWatchProviders: MutableMap<Int, out Map<Int, WatchProviders>>
+        get() = _seasonWatchProviders
+
     val detailsLoadingState = mutableStateOf(LoadingState.INACTIVE)
     val imagesLoadingState = mutableStateOf(LoadingState.INACTIVE)
     val castCrewLoadingState = mutableStateOf(LoadingState.INACTIVE)
@@ -80,6 +108,11 @@ class TvService: KoinComponent, DetailService, HomePageService {
     val externalIdsLoadingState = mutableStateOf(LoadingState.INACTIVE)
     val accountStatesLoadingState = mutableStateOf(LoadingState.INACTIVE)
     val seasonsLoadingState = mutableStateOf(LoadingState.INACTIVE)
+    val seasonAccountStatesLoadingState = mutableStateOf(LoadingState.INACTIVE)
+    val seasonCreditsLoadingState = mutableStateOf(LoadingState.INACTIVE)
+    val seasonImagesLoadingState = mutableStateOf(LoadingState.INACTIVE)
+    val seasonVideosLoadingState = mutableStateOf(LoadingState.INACTIVE)
+    val seasonWatchProvidersLoadingState = mutableStateOf(LoadingState.INACTIVE)
 
     override suspend fun getById(id: Int, refreshing: Boolean) {
         loadRemoteData(
@@ -169,6 +202,15 @@ class TvService: KoinComponent, DetailService, HomePageService {
         )
     }
 
+    override suspend fun getExternalIds(id: Int, refreshing: Boolean) {
+        loadRemoteData(
+            { service.getExternalIds(id) },
+            { externalIds[id] = it },
+            externalIdsLoadingState,
+            refreshing
+        )
+    }
+
     suspend fun getSeason(seriesId: Int, seasonId: Int, refreshing: Boolean) {
         loadRemoteData(
             { service.getSeason(seriesId, seasonId) },
@@ -186,11 +228,78 @@ class TvService: KoinComponent, DetailService, HomePageService {
         )
     }
 
-    override suspend fun getExternalIds(id: Int, refreshing: Boolean) {
+    suspend fun getSeasonAccountStates(seriesId: Int, seasonId: Int, refreshing: Boolean) {
         loadRemoteData(
-            { service.getExternalIds(id) },
-            { externalIds[id] = it },
-            externalIdsLoadingState,
+            { service.getSeasonAccountStates(seriesId, seasonId) },
+            { sas ->
+                _seasonAccountStates
+                    .getOrPut(seriesId) {
+                        emptyMap<Int, SeasonAccountStates>().toMutableMap()
+                    }[seasonId] = sas
+            },
+            seasonAccountStatesLoadingState,
+            refreshing
+        )
+    }
+
+    suspend fun getSeasonCredits(seriesId: Int, seasonId: Int, refreshing: Boolean) {
+        loadRemoteData(
+            { service.getSeasonCredits(seriesId, seasonId) },
+            { sc ->
+                _seasonCast
+                    .getOrPut(seriesId) {
+                        emptyMap<Int, List<TvCastMember>>().toMutableMap()
+                    }[seasonId] = sc.cast
+                _seasonCrew
+                    .getOrPut(seriesId) {
+                        emptyMap<Int, List<TvCrewMember>>().toMutableMap()
+                    }[seasonId] = sc.crew
+            },
+            seasonCreditsLoadingState,
+            refreshing
+        )
+    }
+
+    suspend fun getSeasonImages(seriesId: Int, seasonId: Int, refreshing: Boolean) {
+        loadRemoteData(
+            { service.getSeasonImages(seriesId, seasonId) },
+            { si ->
+                _seasonImages
+                    .getOrPut(seriesId) {
+                        emptyMap<Int, ImageCollection>().toMutableMap()
+                    }[seasonId] = si
+            },
+            seasonImagesLoadingState,
+            refreshing
+        )
+    }
+
+    suspend fun getSeasonVideos(seriesId: Int, seasonId: Int, refreshing: Boolean) {
+        loadRemoteData(
+            { service.getSeasonVideos(seriesId, seasonId) },
+            { sv ->
+                _seasonVideos
+                    .getOrPut(seriesId) {
+                        emptyMap<Int, List<Video>>().toMutableMap()
+                    }[seasonId] = sv.results
+            },
+            seasonVideosLoadingState,
+            refreshing
+        )
+    }
+
+    suspend fun getSeasonWatchProviders(seriesId: Int, seasonId: Int, refreshing: Boolean) {
+        loadRemoteData(
+            { service.getSeasonWatchProviders(seriesId, seasonId) },
+            { si ->
+                si.results[Locale.getDefault().country]?.let { wp ->
+                    _seasonWatchProviders
+                        .getOrPut(seriesId) {
+                            emptyMap<Int, WatchProviders>().toMutableMap()
+                        }[seasonId] = wp
+                }
+            },
+            seasonWatchProvidersLoadingState,
             refreshing
         )
     }

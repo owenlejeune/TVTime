@@ -2,13 +2,18 @@ package com.owenlejeune.tvtime.ui.components
 
 import android.content.Intent
 import android.net.Uri
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
@@ -28,7 +33,9 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
@@ -47,12 +54,17 @@ import com.google.accompanist.pager.rememberPagerState
 import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.api.LoadingState
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.Episode
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.Image
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.ImageCollection
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.MovieCastMember
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.MovieCrewMember
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.Person
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.TvCastMember
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.TvCrewMember
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.Video
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.WatchProviderDetails
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.WatchProviders
+import com.owenlejeune.tvtime.extensions.listItems
 import com.owenlejeune.tvtime.extensions.shimmerBackground
 import com.owenlejeune.tvtime.extensions.toDp
 import com.owenlejeune.tvtime.ui.navigation.AppNavItem
@@ -408,7 +420,8 @@ fun AdditionalDetailItem(
 fun EpisodeItem(
     episode: Episode,
     elevation: Dp = 10.dp,
-    maxDescriptionLines: Int = 2
+    maxDescriptionLines: Int = 2,
+    rating: Int? = null
 ) {
     Card(
         shape = RoundedCornerShape(10.dp),
@@ -478,6 +491,14 @@ fun EpisodeItem(
                     color = textColor,
                     maxLines = maxDescriptionLines
                 )
+                rating?.let {
+                    Text(
+                        text = stringResource(id = R.string.your_rating, rating),
+                        color = textColor.copy(alpha = 0.8f),
+                        fontSize = 12.sp,
+                        fontStyle = FontStyle.Italic
+                    )
+                }
             }
         }
     }
@@ -517,4 +538,223 @@ fun CastCrewCard(
             )
         }
     )
+}
+
+@Composable
+fun WatchProvidersCard(
+    modifier: Modifier = Modifier,
+    providers: WatchProviders
+) {
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .wrapContentHeight(),
+        shape = RoundedCornerShape(10.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+    ) {
+        Text(
+            text = stringResource(R.string.watch_providers_title),
+            style = MaterialTheme.typography.titleLarge,
+            modifier = Modifier.padding(start = 16.dp, top = 12.dp),
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+
+        val itemsMap = mutableMapOf<Int, List<WatchProviderDetails>>().apply {
+            providers.flaterate?.let { put(0, it) }
+            providers.rent?.let { put(1, it) }
+            providers.buy?.let { put(2, it) }
+        }
+        val selected = remember { mutableStateOf(if (itemsMap.isEmpty()) null else itemsMap.values.first()) }
+
+        val context = LocalContext.current
+        PillSegmentedControl(
+            items = itemsMap.values.toList(),
+            itemLabel = { i, _ ->
+                when (i) {
+                    0 -> context.getString(R.string.streaming_label)
+                    1 -> context.getString(R.string.rent_label)
+                    2 -> context.getString(R.string.buy_label)
+                    else -> ""
+                }
+            },
+            onItemSelected = { i, _ -> selected.value = itemsMap.values.toList()[i] },
+            modifier = Modifier.padding(all = 8.dp)
+        )
+
+        Crossfade(
+            modifier = modifier.padding(top = 4.dp, bottom = 12.dp),
+            targetState = selected.value
+        ) { value ->
+            WatchProviderContainer(watchProviders = value!!, link = providers.link)
+        }
+    }
+}
+
+@Composable
+fun WatchProviderContainer(
+    watchProviders: List<WatchProviderDetails>,
+    link: String
+) {
+    val context = LocalContext.current
+    com.google.accompanist.flowlayout.FlowRow(
+        modifier = Modifier.padding(horizontal = 16.dp),
+        mainAxisSpacing = 8.dp,
+        crossAxisSpacing = 4.dp
+    ) {
+        watchProviders
+            .sortedBy { it.displayPriority }
+            .forEach { item ->
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(10.dp))
+                        .clickable {
+                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(link))
+                            context.startActivity(intent)
+                        }
+                ) {
+                    val url = TmdbUtils.fullLogoPath(item.logoPath)
+                    val model = ImageRequest.Builder(LocalContext.current)
+                        .data(url)
+                        .diskCacheKey(url)
+                        .networkCachePolicy(CachePolicy.ENABLED)
+                        .memoryCachePolicy(CachePolicy.ENABLED)
+                        .build()
+                    AsyncImage(
+                        model = model,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(48.dp)
+                            .clip(RoundedCornerShape(10.dp))
+                    )
+                    Text(
+                        text = item.providerName,
+                        fontSize = 10.sp,
+                        modifier = Modifier.width(48.dp),
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                        textAlign = TextAlign.Center
+                    )
+                }
+            }
+    }
+}
+
+@Composable
+fun VideosCard(
+    modifier: Modifier = Modifier,
+    videos: List<Video>
+) {
+    ExpandableContentCard(
+        modifier = modifier,
+        title = {
+            Text(
+                text = stringResource(id = R.string.videos_label),
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.padding(start = 12.dp, top = 8.dp),
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        },
+        toggleTextColor = MaterialTheme.colorScheme.primary
+    ) { isExpanded ->
+        VideoGroup(
+            results = videos,
+            type = Video.Type.TRAILER,
+            title = stringResource(id = Video.Type.TRAILER.stringRes)
+        )
+
+        if (isExpanded) {
+            Video.Type.values().filter { it != Video.Type.TRAILER }.forEach { type ->
+                VideoGroup(
+                    results = videos,
+                    type = type,
+                    title = stringResource(id = type.stringRes)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun VideoGroup(
+    results: List<Video>,
+    type: Video.Type,
+    title: String
+) {
+    val videos = results.filter { it.isOfficial && it.type == type }
+    if (videos.isNotEmpty()) {
+        Text(
+            text = title,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.padding(start = 12.dp, top = 8.dp)
+        )
+
+        val posterWidth = 120.dp
+        LazyRow(modifier = Modifier
+            .padding(vertical = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            item {
+                Spacer(modifier = Modifier.width(8.dp))
+            }
+            listItems(videos) { video ->
+                FullScreenThumbnailVideoPlayer(
+                    key = video.key,
+                    title = video.name,
+                    modifier = Modifier
+                        .width(posterWidth)
+                        .wrapContentHeight()
+                )
+            }
+            item {
+                Spacer(modifier = Modifier.width(8.dp))
+            }
+        }
+    }
+}
+
+@Composable
+fun ImagesCard(
+    images: List<Image>,
+    onSeeAll: (() -> Unit)? = null
+) {
+    ContentCard(
+        title = stringResource(R.string.images_title)
+    ) {
+        LazyRow(
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentHeight()
+                .padding(vertical = 12.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            item {
+                Spacer(modifier = Modifier.width(8.dp))
+            }
+            items(images) { image ->
+                PosterItem(
+                    width = 120.dp,
+                    url = TmdbUtils.getFullPersonImagePath(image.filePath),
+                    placeholder = Icons.Filled.Person,
+                    title = ""
+                )
+            }
+            item {
+                Spacer(modifier = Modifier.width(8.dp))
+            }
+        }
+
+        onSeeAll?.let {
+            Text(
+                text = stringResource(id = R.string.expand_see_all),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                fontSize = 12.sp,
+                modifier = Modifier
+                    .padding(start = 16.dp, bottom = 16.dp)
+                    .clickable(onClick = onSeeAll)
+            )
+        }
+    }
 }

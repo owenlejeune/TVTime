@@ -35,7 +35,10 @@ import com.owenlejeune.tvtime.ui.components.CastCrewCard
 import com.owenlejeune.tvtime.ui.components.ContentCard
 import com.owenlejeune.tvtime.ui.components.DetailHeader
 import com.owenlejeune.tvtime.ui.components.EpisodeItem
+import com.owenlejeune.tvtime.ui.components.ImagesCard
 import com.owenlejeune.tvtime.ui.components.TVTTopAppBar
+import com.owenlejeune.tvtime.ui.components.VideosCard
+import com.owenlejeune.tvtime.ui.components.WatchProvidersCard
 import com.owenlejeune.tvtime.ui.theme.Typography
 import com.owenlejeune.tvtime.ui.viewmodel.ApplicationViewModel
 import com.owenlejeune.tvtime.ui.viewmodel.MainViewModel
@@ -52,6 +55,11 @@ private fun fetchData(
 ) {
     val scope = CoroutineScope(Dispatchers.IO)
     scope.launch { mainViewModel.getSeason(seriesId, seasonNumber, force) }
+    scope.launch { mainViewModel.getSeasonAccountStates(seriesId, seasonNumber, force) }
+    scope.launch { mainViewModel.getSeasonImages(seriesId, seasonNumber, force) }
+    scope.launch { mainViewModel.getSeasonVideos(seriesId, seasonNumber, force) }
+    scope.launch { mainViewModel.getSeasonCredits(seriesId, seasonNumber, force) }
+    scope.launch { mainViewModel.getSeasonWatchProviders(seriesId, seasonNumber, force) }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -86,7 +94,14 @@ fun SeasonDetailsScreen(
         }
     ) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)) {
-            SeasonContent(appNavController = appNavController, season = season)
+            season?.let {
+                SeasonContent(
+                    seriesId = seriesId,
+                    appNavController = appNavController,
+                    mainViewModel = mainViewModel,
+                    season = season
+                )
+            }
         }
     }
 }
@@ -94,8 +109,10 @@ fun SeasonDetailsScreen(
 @OptIn(ExperimentalPagerApi::class)
 @Composable
 private fun SeasonContent(
+    seriesId: Int,
     appNavController: NavController,
-    season: Season?
+    mainViewModel: MainViewModel,
+    season: Season
 ) {
     Column(
         modifier = Modifier
@@ -104,7 +121,7 @@ private fun SeasonContent(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         DetailHeader(
-            posterUrl = TmdbUtils.getFullPosterPath(season?.posterPath),
+            posterUrl = TmdbUtils.getFullPosterPath(season.posterPath),
             elevation = 0.dp,
             expandedPosterAsBackdrop = true
         )
@@ -115,7 +132,7 @@ private fun SeasonContent(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(
-                text = season?.name ?: "",
+                text = season.name,
                 color = MaterialTheme.colorScheme.secondary,
                 style = Typography.headlineLarge,
                 maxLines = 2,
@@ -123,8 +140,32 @@ private fun SeasonContent(
                 modifier = Modifier.fillMaxWidth()
             )
 
-            season?.episodes?.forEach { episode ->
-                SeasonEpisodeItem(appNavController = appNavController, episode = episode)
+            val accountStatesMap = remember { mainViewModel.tvSeasonAccountStates }
+            val accountStates = accountStatesMap[seriesId]?.get(season.seasonNumber)
+
+            season.episodes.forEach { episode ->
+                val rating = accountStates?.results?.find { it.id == episode.id }?.takeUnless { !it.isRated }?.rating
+                SeasonEpisodeItem(appNavController = appNavController, episode = episode, rating = rating)
+            }
+
+            val imagesMap = remember { mainViewModel.tvSeasonImages }
+            val images = imagesMap[seriesId]?.get(season.seasonNumber)
+            images?.let {
+                ImagesCard(images = images.posters)
+            }
+
+            val videosMap = remember { mainViewModel.tvSeasonVideos }
+            val videos = videosMap[seriesId]?.get(season.seasonNumber)
+            if (videos?.any { it.isOfficial } == true) {
+                VideosCard(videos = videos, modifier = Modifier.fillMaxWidth())
+            }
+
+            val watchProvidersMap = remember { mainViewModel.tvSeasonWatchProviders }
+            val watchProviders = watchProvidersMap[seriesId]?.get(season.seasonNumber)
+            watchProviders?.let { providers ->
+                if (providers.buy?.isNotEmpty() == true || providers.rent?.isNotEmpty() == true || providers.flaterate?.isNotEmpty() == true) {
+                    WatchProvidersCard(providers = providers)
+                }
             }
         }
 
@@ -135,10 +176,16 @@ private fun SeasonContent(
 @Composable
 private fun SeasonEpisodeItem(
     appNavController: NavController,
-    episode: Episode
+    episode: Episode,
+    rating: Int?
 ) {
     ContentCard {
-        EpisodeItem(episode = episode, elevation = 0.dp, maxDescriptionLines = 5)
+        EpisodeItem(
+            episode = episode,
+            elevation = 0.dp,
+            maxDescriptionLines = 5,
+            rating = rating
+        )
 
         episode.guestStars?.let { guestStars ->
             Spacer(modifier = Modifier.height(12.dp))

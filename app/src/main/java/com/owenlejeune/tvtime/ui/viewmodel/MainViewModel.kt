@@ -103,6 +103,12 @@ class MainViewModel: ViewModel(), KoinComponent {
     val similarTv = tvService.similar
     val tvAccountStates = tvService.accountStates
     val tvKeywordResults = tvService.keywordResults
+    val tvSeasonAccountStates = tvService.seasonAccountStates
+    val tvSeasonCast = tvService.seasonCast
+    val tvSeasonCrew = tvService.seasonCrew
+    val tvSeasonImages = tvService.seasonImages
+    val tvSeasonVideos = tvService.seasonVideos
+    val tvSeasonWatchProviders = tvService.seasonWatchProviders
 
     val tvDetailsLoadingState = tvService.detailsLoadingState
     val tvImagesLoadingState = tvService.imagesLoadingState
@@ -115,6 +121,11 @@ class MainViewModel: ViewModel(), KoinComponent {
     val tvSeasonsLoadingState = tvService.seasonsLoadingState
     val tvContentRatingsLoadingState = tvService.contentRatingsLoadingState
     val tvAccountStatesLoadingState = tvService.accountStatesLoadingState
+    val tvSeasonAccountStatesLoadingState = tvService.seasonAccountStatesLoadingState
+    val tvSeasonCreditsLoadingState = tvService.seasonCreditsLoadingState
+    val tvSeasonImagesLoadingState = tvService.seasonImagesLoadingState
+    val tvSeasonVideosLoadingState = tvService.seasonVideosLoadingState
+    val tvSeasonWatchProvidersLoadingState = tvService.seasonWatchProvidersLoadingState
 
     val popularTv by lazy {
         createPagingFlow(
@@ -452,6 +463,39 @@ class MainViewModel: ViewModel(), KoinComponent {
     suspend fun getSeason(seriesId: Int, seasonId: Int, force: Boolean = false) {
         if (tvSeasons[seriesId] == null || force) {
             tvService.getSeason(seriesId, seasonId, force)
+        }
+    }
+
+    suspend fun getSeasonAccountStates(seriesId: Int, seasonId: Int, force: Boolean = false) {
+        if (tvSeasonAccountStates[seriesId]?.get(seasonId) == null || force) {
+            tvService.getSeasonAccountStates(seriesId, seasonId, force)
+        }
+    }
+
+    suspend fun getSeasonImages(seriesId: Int, seasonId: Int, force: Boolean = false) {
+        if (tvSeasonImages[seriesId]?.get(seasonId) == null || force) {
+            tvService.getSeasonImages(seriesId, seasonId, force)
+        }
+    }
+
+    suspend fun getSeasonVideos(seriesId: Int, seasonId: Int, force: Boolean = false) {
+        if (tvSeasonVideos[seriesId]?.get(seasonId) == null || force) {
+            tvService.getSeasonVideos(seriesId, seasonId, force)
+        }
+    }
+
+    suspend fun getSeasonCredits(seriesId: Int, seasonId: Int, force: Boolean = false) {
+        if (tvSeasonCast[seriesId]?.get(seasonId) == null ||
+            tvSeasonCrew[seriesId]?.get(seasonId) == null ||
+            force
+        ) {
+            tvService.getSeasonCredits(seriesId, seasonId, force)
+        }
+    }
+
+    suspend fun getSeasonWatchProviders(seriesId: Int, seasonId: Int, force: Boolean = false) {
+        if (tvSeasonWatchProviders[seriesId]?.get(seasonId) == null || force) {
+            tvService.getSeasonWatchProviders(seriesId, seasonId, force)
         }
     }
 

@@ -21,12 +21,14 @@ import com.owenlejeune.tvtime.api.tmdb.api.v3.deserializer.CreditMediaDeserializ
 import com.owenlejeune.tvtime.api.tmdb.api.v3.deserializer.DetailCastDeserializer
 import com.owenlejeune.tvtime.api.tmdb.api.v3.deserializer.DetailCrewDeserializer
 import com.owenlejeune.tvtime.api.tmdb.api.v3.deserializer.KnownForDeserializer
+import com.owenlejeune.tvtime.api.tmdb.api.v3.deserializer.SeasonAccountStatesResultDeserializer
 import com.owenlejeune.tvtime.api.tmdb.api.v3.deserializer.SortableSearchResultDeserializer
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.AccountStates
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.CreditMedia
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.DetailCast
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.DetailCrew
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.KnownFor
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.SeasonAccountStatesResult
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.SortableSearchResult
 import com.owenlejeune.tvtime.api.tmdb.api.v4.AccountV4Service
 import com.owenlejeune.tvtime.api.tmdb.api.v4.AuthenticationV4Service
@@ -86,7 +88,8 @@ val networkModule = module {
             DetailCast::class.java to DetailCastDeserializer(),
             DetailCrew::class.java to DetailCrewDeserializer(),
             CreditMedia::class.java to CreditMediaDeserializer(),
-            Date::class.java to DateTypeAdapter()
+            Date::class.java to DateTypeAdapter(),
+            SeasonAccountStatesResult::class.java to SeasonAccountStatesResultDeserializer()
         )
     }
 

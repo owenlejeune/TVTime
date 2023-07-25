@@ -33,7 +33,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -46,8 +45,6 @@ import androidx.navigation.NavController
 import com.google.accompanist.pager.ExperimentalPagerApi
 import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.DetailPerson
-import com.owenlejeune.tvtime.api.tmdb.api.v3.model.DetailedMovie
-import com.owenlejeune.tvtime.api.tmdb.api.v3.model.DetailedTv
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.Image
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.ImageCollection
 import com.owenlejeune.tvtime.extensions.DateFormat
@@ -60,6 +57,7 @@ import com.owenlejeune.tvtime.ui.components.ContentCard
 import com.owenlejeune.tvtime.ui.components.DetailHeader
 import com.owenlejeune.tvtime.ui.components.ExpandableContentCard
 import com.owenlejeune.tvtime.ui.components.ExternalIdsArea
+import com.owenlejeune.tvtime.ui.components.ImagesCard
 import com.owenlejeune.tvtime.ui.components.PosterItem
 import com.owenlejeune.tvtime.ui.components.TVTTopAppBar
 import com.owenlejeune.tvtime.ui.components.TwoLineImageTextCard
@@ -193,7 +191,7 @@ fun PersonDetailScreen(
 
                     AdditionalDetailsCard(id = personId, mainViewModel = mainViewModel)
 
-                    ImagesCard(id = personId, appNavController = appNavController)
+                    ImagesArea(id = personId, appNavController = appNavController)
                 }
             }
             
@@ -331,7 +329,7 @@ private fun CreditsCard(
 }
 
 @Composable
-private fun ImagesCard(
+private fun ImagesArea(
     id: Int,
     appNavController: NavController
 ) {
@@ -339,46 +337,12 @@ private fun ImagesCard(
     val imagesMap = remember { mainViewModel.peopleImagesMap }
     val images = imagesMap[id] ?: emptyList()
 
-    ContentCard(
-        title = stringResource(R.string.images_title)
-    ) {
-        LazyRow(
-            modifier = Modifier
-                .fillMaxWidth()
-                .wrapContentHeight()
-                .padding(vertical = 12.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            item {
-                Spacer(modifier = Modifier.width(8.dp))
-            }
-            items(images) { image ->
-                PosterItem(
-                    width = 120.dp,
-                    url = TmdbUtils.getFullPersonImagePath(image.filePath),
-                    placeholder = Icons.Filled.Person,
-                    title = ""
-                )
-            }
-            item {
-                Spacer(modifier = Modifier.width(8.dp))
-            }
-        }
-
-        Text(
-            text = stringResource(id = R.string.expand_see_all),
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            fontSize = 12.sp,
-            modifier = Modifier
-                .padding(start = 16.dp, bottom = 16.dp)
-                .clickable {
-                    appNavController.navigate(
-                        AppNavItem.GalleryView.withArgs(
-                            MediaViewType.PERSON,
-                            id
-                        )
-                    )
-                }
+    ImagesCard(images = images) {
+        appNavController.navigate(
+            AppNavItem.GalleryView.withArgs(
+                MediaViewType.PERSON,
+                id
+            )
         )
     }
 }

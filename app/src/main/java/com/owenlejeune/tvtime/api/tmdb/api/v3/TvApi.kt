@@ -73,4 +73,19 @@ interface TvApi {
 
     @GET("tv/{id}/season/{season}")
     suspend fun getSeason(@Path("id") seriesId: Int, @Path("season") seasonNumber: Int): Response<Season>
+
+    @GET("tv/{id}/season/{season}/account_states")
+    suspend fun getSeasonAccountStates(@Path("id") seriesId: Int, @Path("season") seasonNumber: Int): Response<SeasonAccountStates>
+
+    @GET("tv/{id}/season/{season}/aggregate_credits")
+    suspend fun getSeasonCredits(@Path("id") seriesId: Int, @Path("season") seasonNumber: Int): Response<TvCastAndCrew>
+
+    @GET("tv/{id}/season/{season}/images")
+    suspend fun getSeasonImages(@Path("id") seriesId: Int, @Path("season") seasonNumber: Int): Response<ImageCollection>
+
+    @GET("tv/{id}/season/{season}/videos")
+    suspend fun getSeasonVideos(@Path("id") seriesId: Int, @Path("season") seasonNumber: Int): Response<VideoResponse>
+
+    @GET("tv/{id}/season/{season}/watch/providers")
+    suspend fun getSeasonWatchProviders(@Path("id") seriesId: Int, @Path("season") seasonNumber: Int): Response<WatchProviderResponse>
 }
