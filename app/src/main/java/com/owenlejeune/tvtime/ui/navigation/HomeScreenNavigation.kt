@@ -1,5 +1,7 @@
 package com.owenlejeune.tvtime.ui.navigation
 
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.material.icons.Icons
@@ -35,8 +37,8 @@ fun HomeScreenNavHost(
     NavHost(
         navController = navController,
         startDestination = startDestination,
-        enterTransition = { fadeIn() },
-        exitTransition = { fadeOut() }
+        enterTransition = { EnterTransition.None },
+        exitTransition = { ExitTransition.None }
     ) {
         composable(HomeScreenNavItem.Movies.route) {
             homeScreenViewModel.appBarActions.value = {}

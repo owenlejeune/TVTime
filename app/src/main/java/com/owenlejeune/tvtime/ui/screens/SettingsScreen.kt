@@ -16,7 +16,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.IconButton
 import androidx.compose.material.TextButton
 import androidx.compose.material.icons.Icons
@@ -67,6 +69,7 @@ import com.kieronquinn.monetcompat.core.MonetCompat
 import com.owenlejeune.tvtime.BuildConfig
 import com.owenlejeune.tvtime.OnboardingActivity
 import com.owenlejeune.tvtime.R
+import com.owenlejeune.tvtime.extensions.WindowSizeClass
 import com.owenlejeune.tvtime.extensions.unlessEmpty
 import com.owenlejeune.tvtime.preferences.AppPreferences
 import com.owenlejeune.tvtime.ui.components.CenteredIconCircle
@@ -89,7 +92,8 @@ import org.koin.java.KoinJavaComponent.get
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
-    appNavController: NavController
+    appNavController: NavController,
+    windowSizeClass: WindowSizeClass
 ) {
     val applicationViewModel = viewModel<ApplicationViewModel>()
     applicationViewModel.statusBarColor.value = MaterialTheme.colorScheme.background
@@ -137,7 +141,8 @@ fun SettingsScreen(
             SettingsNavigationHost(
                 appNavController = appNavController,
                 appBarTitle = appBarTitle,
-                popBackAction = popBackAction
+                popBackAction = popBackAction,
+                windowSizeClass = windowSizeClass
             )
         }
     }
@@ -150,7 +155,8 @@ fun SettingsHome(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(all = 24.dp),
+            .padding(horizontal = 24.dp)
+            .verticalScroll(state = rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
         TopLevelSettingsCard(
@@ -202,7 +208,8 @@ fun SearchPreferences() {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(all = 24.dp),
+            .padding(horizontal = 24.dp)
+            .verticalScroll(state = rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
         SwitchPreference(
@@ -235,7 +242,8 @@ fun DesignPreferences(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(all = 24.dp),
+            .padding(horizontal = 24.dp)
+            .verticalScroll(state = rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
         TopLevelSettingsCard(
@@ -325,7 +333,8 @@ fun DarkModePreferences() {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(all = 24.dp),
+            .padding(horizontal = 24.dp)
+            .verticalScroll(state = rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
         PreferenceHeading(text = stringResource(R.string.preference_dark_mode_automatic_heading))
@@ -359,13 +368,14 @@ fun DarkModePreferences() {
 }
 
 @Composable
-fun HomeScreenPreferences() {
+fun HomeScreenPreferences(windowSizeClass: WindowSizeClass) {
     val settingsViewModel = viewModel<SettingsViewModel>()
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(all = 24.dp),
+            .padding(horizontal = 24.dp)
+            .verticalScroll(state = rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
         PreferenceHeading(text = stringResource(R.string.preference_look_and_feel_heading))
@@ -387,6 +397,17 @@ fun HomeScreenPreferences() {
                 settingsViewModel.toggleShowPosterTitles()
             }
         )
+        
+        if (windowSizeClass != WindowSizeClass.Expanded) {
+            SwitchPreference(
+                titleText = "Floating bottom navigation bar",
+                subtitleText = "Show the bottom navigation bar as a floating overlay",
+                checkState = settingsViewModel.showFloatingBottomBar.collectAsState(),
+                onCheckedChange = {
+                    settingsViewModel.toggleShowFloatingBottomBar()
+                }
+            )
+        }
 
         PreferenceHeading(text = stringResource(R.string.preference_home_tab_order_heading))
 
@@ -398,6 +419,7 @@ fun HomeScreenPreferences() {
                     shape = RoundedCornerShape(10.dp)
                 )
                 .padding(horizontal = 12.dp)
+                .wrapContentHeight()
         ) {
             AndroidView(
                 modifier = Modifier.fillMaxWidth(),
@@ -424,7 +446,8 @@ fun SpecialFeaturePreferences() {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(all = 24.dp),
+            .padding(horizontal = 24.dp)
+            .verticalScroll(state = rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
         SwitchPreference(
@@ -449,7 +472,8 @@ fun DevPreferences(preferences: AppPreferences = get(AppPreferences::class.java)
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(all = 24.dp),
+                .padding(horizontal = 24.dp)
+                .verticalScroll(state = rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
             SwitchPreference(

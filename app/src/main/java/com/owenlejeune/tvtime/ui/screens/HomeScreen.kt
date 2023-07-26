@@ -2,13 +2,19 @@ package com.owenlejeune.tvtime.ui.screens
 
 import android.app.Activity
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Scaffold
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -28,6 +34,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.compositeOver
@@ -40,6 +47,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.owenlejeune.tvtime.extensions.WindowSizeClass
+import com.owenlejeune.tvtime.extensions.defaultNavBarColor
 import com.owenlejeune.tvtime.extensions.navigateInBottomBar
 import com.owenlejeune.tvtime.preferences.AppPreferences
 import com.owenlejeune.tvtime.ui.components.AccountIcon
@@ -50,13 +58,20 @@ import com.owenlejeune.tvtime.ui.navigation.HomeScreenNavHost
 import com.owenlejeune.tvtime.ui.navigation.HomeScreenNavItem
 import com.owenlejeune.tvtime.ui.viewmodel.HomeScreenViewModel
 import org.koin.java.KoinJavaComponent
+import org.koin.java.KoinJavaComponent.get
+
+object HomeScreen {
+    val FLOATING_NAV_BAR_HEIGHT = 80.dp
+    val FLOATING_NAV_BAR_OFFSET = (-24).dp
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     appNavController: NavHostController,
     mainNavStartRoute: String = HomeScreenNavItem.SortedItems[0].route,
-    windowSize: WindowSizeClass
+    windowSize: WindowSizeClass,
+    preferences: AppPreferences = get(AppPreferences::class.java)
 ) {
     val navController = rememberNavController()
 
@@ -74,13 +89,11 @@ fun HomeScreen(
         )
     }
 
-    val defaultNavBarColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.08f).compositeOver(background = MaterialTheme.colorScheme.surface)
-
     ProfileMenuContainer(
         appNavController = appNavController,
         visible = showProfileMenuOverlay.value,
         onDismissRequest = { showProfileMenuOverlay.value = false },
-        colors = ProfileMenuDefaults.systemBarColors(navBarColor = defaultNavBarColor)
+        colors = ProfileMenuDefaults.systemBarColors(navBarColor = MaterialTheme.colorScheme.defaultNavBarColor())
     ) {
         Scaffold(
             modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -98,7 +111,7 @@ fun HomeScreen(
                 fab.value()
             },
             bottomBar = {
-                if (windowSize != WindowSizeClass.Expanded) {
+                if (windowSize != WindowSizeClass.Expanded && !preferences.floatingBottomBar) {
                     BottomNavBar(navController = navController)
                 }
             }
@@ -112,6 +125,10 @@ fun HomeScreen(
                     mainNavStartRoute = mainNavStartRoute,
                     navigationIcon = navigationIcon
                 )
+
+                if (windowSize != WindowSizeClass.Expanded && preferences.floatingBottomBar) {
+                    FloatingBottomNavBar(navController = navController, modifier = Modifier.align(Alignment.BottomCenter))
+                }
             }
         }
     }
@@ -138,9 +155,59 @@ private fun TopBar(
 }
 
 @Composable
+private fun FloatingBottomNavBar(
+    navController: NavHostController,
+    modifier: Modifier = Modifier,
+    preferences: AppPreferences = get(AppPreferences::class.java)
+) {
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+
+    Box(
+        modifier = modifier.then(
+            Modifier
+                .fillMaxWidth()
+                .height(HomeScreen.FLOATING_NAV_BAR_HEIGHT)
+                .padding(horizontal = 24.dp)
+                .offset(y = HomeScreen.FLOATING_NAV_BAR_OFFSET)
+                .clip(RoundedCornerShape(50))
+                .background(MaterialTheme.colorScheme.defaultNavBarColor())
+        )
+    ) {
+        Row(
+            modifier = Modifier.align(Alignment.Center),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            HomeScreenNavItem.SortedItems.forEach { item ->
+                val isSelected = currentRoute == item.route
+                NavigationBarItem(
+                    modifier = Modifier.clip(RoundedCornerShape(25.dp)),
+                    icon = { Icon(imageVector = item.icon, contentDescription = null) },
+                    label = {
+                        if (preferences.showBottomTabLabels) {
+                            Text(text = item.name)
+                        }
+                    },
+                    selected = isSelected,
+                    onClick = {
+                        if (!isSelected) {
+                            navController.navigateInBottomBar(item.route)
+                        }
+                    },
+                    colors = NavigationBarItemDefaults.colors(
+                        indicatorColor = MaterialTheme.colorScheme.secondary,
+                        selectedIconColor = MaterialTheme.colorScheme.onSecondary
+                    )
+                )
+            }
+        }
+    }
+}
+
+@Composable
 private fun BottomNavBar(
     navController: NavController,
-    preferences: AppPreferences = KoinJavaComponent.get(AppPreferences::class.java)
+    preferences: AppPreferences = get(AppPreferences::class.java)
 ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
@@ -220,7 +287,7 @@ private fun DualColumnMainContent(
     topBarScrollBehaviour: TopAppBarScrollBehavior,
     navigationIcon: @Composable () -> Unit = {},
     mainNavStartRoute: String = HomeScreenNavItem.SortedItems[0].route,
-    preferences: AppPreferences = KoinJavaComponent.get(AppPreferences::class.java)
+    preferences: AppPreferences = get(AppPreferences::class.java)
 ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route

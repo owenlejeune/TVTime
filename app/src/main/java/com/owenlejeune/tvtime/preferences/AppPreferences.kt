@@ -36,6 +36,7 @@ class AppPreferences(context: Context) {
         private val SHOW_POSTER_TITLE = "show_poster_titles"
         private val SHOW_NEXT_MCU = "show_next_mcu"
         private val STORED_TEST_ROUTE = "stored_test_route"
+        private val FLOATING_BOTTOM_BAR = "floating_bottom_bar"
     }
 
     private val preferences: SharedPreferences = context.getSharedPreferences(PREF_FILE, Context.MODE_PRIVATE)
@@ -105,7 +106,7 @@ class AppPreferences(context: Context) {
         get() = preferences.getInt(ACCOUNT_TAB_POSITION, accountTabPositionDefault)
         set(value) { preferences.put(ACCOUNT_TAB_POSITION, value) }
 
-    val showBottomTabLabelsDefault: Boolean = true
+    val showBottomTabLabelsDefault: Boolean = false
     var showBottomTabLabels: Boolean
         get() = preferences.getBoolean(SHOW_BTAB_LABELS, showBottomTabLabelsDefault)
         set(value) { preferences.put(SHOW_BTAB_LABELS, value) }
@@ -114,6 +115,11 @@ class AppPreferences(context: Context) {
     var showPosterTitles: Boolean
         get() = preferences.getBoolean(SHOW_POSTER_TITLE, showPosterTitlesDefault)
         set(value) { preferences.put(SHOW_POSTER_TITLE, value) }
+
+    val floatingBottomBarDefault: Boolean = false
+    var floatingBottomBar: Boolean
+        get() = preferences.getBoolean(FLOATING_BOTTOM_BAR, floatingBottomBarDefault)
+        set(value) { preferences.put(FLOATING_BOTTOM_BAR, value) }
 
     /******** Dev Preferences ********/
     val firstLaunchTestingDefault: Boolean = false

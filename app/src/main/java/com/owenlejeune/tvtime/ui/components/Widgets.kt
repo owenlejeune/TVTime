@@ -73,6 +73,7 @@ import com.owenlejeune.tvtime.extensions.toDp
 import com.owenlejeune.tvtime.extensions.unlessEmpty
 import com.owenlejeune.tvtime.preferences.AppPreferences
 import com.owenlejeune.tvtime.ui.navigation.AppNavItem
+import com.owenlejeune.tvtime.ui.screens.HomeScreen
 import com.owenlejeune.tvtime.ui.viewmodel.HomeScreenViewModel
 import com.owenlejeune.tvtime.utils.SessionManager
 import com.owenlejeune.tvtime.utils.TmdbUtils
@@ -229,7 +230,8 @@ fun SearchView(
                 contentColor = MaterialTheme.colorScheme.tertiary,
                 onClick = {
                     appNavController.navigate(route)
-                }
+                },
+                modifier = Modifier.offset(y = if (preferences.floatingBottomBar) -(HomeScreen.FLOATING_NAV_BAR_HEIGHT - HomeScreen.FLOATING_NAV_BAR_OFFSET) else 0.dp)
             ) {
                 Icon(Icons.Filled.Search, stringResource(id = R.string.preference_heading_search))
             }

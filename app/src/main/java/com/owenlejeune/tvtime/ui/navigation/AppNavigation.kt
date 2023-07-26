@@ -235,7 +235,7 @@ fun AppNavigationHost(
         // Settings View
         composable(AppNavItem.SettingsView.route) {
             applicationViewModel.currentRoute.value = AppNavItem.SettingsView.route
-            SettingsScreen(appNavController = appNavController)
+            SettingsScreen(appNavController = appNavController, windowSizeClass = windowSize)
         }
         // Web Link View
         composable(

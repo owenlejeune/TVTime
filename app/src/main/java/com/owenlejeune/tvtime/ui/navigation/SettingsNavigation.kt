@@ -12,6 +12,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.owenlejeune.tvtime.R
+import com.owenlejeune.tvtime.extensions.WindowSizeClass
 import com.owenlejeune.tvtime.ui.screens.DarkModePreferences
 import com.owenlejeune.tvtime.ui.screens.DesignPreferences
 import com.owenlejeune.tvtime.ui.screens.DevPreferences
@@ -23,6 +24,7 @@ import com.owenlejeune.tvtime.ui.screens.SpecialFeaturePreferences
 @Composable
 fun SettingsNavigationHost(
     appNavController: NavController,
+    windowSizeClass: WindowSizeClass,
     appBarTitle: MutableState<String>,
     popBackAction: MutableState<() -> Unit>
 ) {
@@ -58,7 +60,7 @@ fun SettingsNavigationHost(
         composable(SettingsNavItem.HomeScreen.route) {
             appBarTitle.value = stringResource(id = R.string.preference_heading_home_screen)
             popBackAction.value = { settingsNavController.popBackStack() }
-            HomeScreenPreferences()
+            HomeScreenPreferences(windowSizeClass = windowSizeClass)
         }
         composable(SettingsNavItem.SpecialFeatures.route) {
             appBarTitle.value = stringResource(id = R.string.preference_heading_special_features)

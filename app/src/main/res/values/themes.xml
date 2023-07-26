@@ -2,5 +2,6 @@
 <resources>
 
     <style name="Theme.TVTime" parent="Theme.AppCompat.NoActionBar">
+        <item name="android:navigationBarColor">@android:color/transparent</item>
     </style>
 </resources>

@@ -55,7 +55,6 @@ import kotlinx.coroutines.launch
 
 private const val ALPHA = 0.7f
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileMenuOverlay(
     appNavController: NavController,
@@ -73,7 +72,7 @@ fun ProfileMenuOverlay(
             Card(
                 modifier = Modifier
                     .align(Alignment.TopCenter)
-                    .padding(vertical = 100.dp, horizontal = 12.dp)
+                    .padding(vertical = 100.dp, horizontal = 24.dp)
                     .fillMaxWidth()
                     .wrapContentHeight(),
                 colors = CardDefaults.cardColors(
