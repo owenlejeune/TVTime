@@ -105,8 +105,8 @@ fun KnownForScreen(
                 items(items) { item ->
                     val additionalDetails = emptyList<String>().toMutableList()
                     when (item) {
-                        is MovieCast -> additionalDetails.add(stringResource(id = R.string.cast_character_template, item.character.unlessEmpty("-")))
-                        is TvCast -> additionalDetails.add(stringResource(id = R.string.cast_tv_character_template, item.character.unlessEmpty("-"), item.episodeCount))
+                        is MovieCast -> additionalDetails.add(stringResource(id = R.string.cast_character_template, item.character.unlessEmpty(stringResource(id = R.string.uncredited))))
+                        is TvCast -> additionalDetails.add(stringResource(id = R.string.cast_tv_character_template, item.character.unlessEmpty(stringResource(id = R.string.uncredited)), item.episodeCount))
                         is DetailCrew -> additionalDetails.add(stringResource(id = R.string.crew_template, item.job))
                     }
 

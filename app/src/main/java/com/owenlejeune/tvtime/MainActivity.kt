@@ -96,7 +96,7 @@ class MainActivity : MonetCompatActivity() {
                         ) { innerPadding ->
                             val windowSize = rememberWindowSizeClass()
                             val appNavController = rememberNavController()
-                            Box(modifier = Modifier.padding(innerPadding.copy(bottom = 0.dp))) {
+                            Box(modifier = Modifier.padding(innerPadding.copy(bottom = 0.dp, top = 0.dp))) {
                                 AppNavigationHost(
                                     appNavController = appNavController,
                                     mainNavStartRoute = mainNavStartRoute,
