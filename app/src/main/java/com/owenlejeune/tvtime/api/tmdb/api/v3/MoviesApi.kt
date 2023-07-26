@@ -43,11 +43,12 @@ interface MoviesApi {
     @GET("movie/{id}/keywords")
     suspend fun getKeywords(@Path("id") id: Int): Response<KeywordsResponse>
 
+    @FormUrlEncoded
     @POST("movie/{id}/rating")
     suspend fun postMovieRatingAsUser(
         @Path("id") id: Int,
         @Query("session_id") sessionId: String,
-        @Body ratingBody: RatingBody
+        @Field("value") rating: Float
     ): Response<StatusResponse>
 
     @DELETE("movie/{id}/rating")

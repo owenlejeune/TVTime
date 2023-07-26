@@ -9,8 +9,15 @@ interface ListV4Api {
     @GET("list/{id}")
     suspend fun getList(@Path("id") listId: Int): Response<MediaList>
 
+    @FormUrlEncoded
     @POST("list")
-    suspend fun createList(@Body body: CreateListBody): Response<CreateListResponse>
+    suspend fun createList(
+        @Field("name") name: String,
+        @Field("iso_639_1") language: String,
+        @Field("description") description: String,
+        @Field("public") isPublic: Boolean,
+        @Field("iso_3166_1") localeCode: String
+    ): Response<CreateListResponse>
 
     @PUT("list/{id}")
     suspend fun updateList(@Path("id") listId: Int, @Body body: ListUpdateBody): Response<StatusResponse>

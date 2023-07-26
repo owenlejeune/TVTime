@@ -9,9 +9,7 @@ import com.owenlejeune.tvtime.api.tmdb.api.v3.AccountService
 import com.owenlejeune.tvtime.api.tmdb.api.v3.AuthenticationService
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.*
 import com.owenlejeune.tvtime.api.tmdb.api.v4.AuthenticationV4Service
-import com.owenlejeune.tvtime.api.tmdb.api.v4.model.AuthAccessBody
 import com.owenlejeune.tvtime.api.tmdb.api.v4.model.AuthDeleteBody
-import com.owenlejeune.tvtime.api.tmdb.api.v4.model.AuthRequestBody
 import com.owenlejeune.tvtime.preferences.AppPreferences
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -74,7 +72,7 @@ object SessionManager: KoinComponent {
         onRedirect: (url: String) -> Unit
     ) {
         val service = AuthenticationV4Service()
-        val requestTokenResponse = service.createRequestToken(AuthRequestBody(redirect = "app://tvtime.auth.return"))
+        val requestTokenResponse = service.createRequestToken(redirect = "app://tvtime.auth.return")
         if (requestTokenResponse.isSuccessful) {
             requestTokenResponse.body()?.let { ctr ->
                 val url = context.getString(R.string.tmdb_auth_url, ctr.requestToken)
@@ -92,11 +90,11 @@ object SessionManager: KoinComponent {
     ) {
         if (currentSession.value is InProgressSession) {
             val requestToken = currentSession.value!!.sessionId
-            val authResponse = authenticationV4Service.createAccessToken(AuthAccessBody(requestToken))
+            val authResponse = authenticationV4Service.createAccessToken(requestToken)
             if (authResponse.isSuccessful) {
                 authResponse.body()?.let { ar ->
                     if (ar.success) {
-                        val sessionResponse = authenticationService.createSessionFromV4Token(V4TokenBody(ar.accessToken))
+                        val sessionResponse = authenticationService.createSessionFromV4Token(ar.accessToken)
                         if (sessionResponse.isSuccessful) {
                             sessionResponse.body()?.let { sr ->
                                 preferences.authorizedSessionValues = AuthorizedSessionValues(

@@ -4,39 +4,26 @@ import android.util.Log
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.paging.PagingData
-import androidx.paging.PagingSource
-import androidx.paging.PagingState
 import com.owenlejeune.tvtime.api.LoadingState
 import com.owenlejeune.tvtime.api.loadRemoteData
-import com.owenlejeune.tvtime.api.storedIn
-import com.owenlejeune.tvtime.api.tmdb.TmdbClient
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.AccountStates
-import com.owenlejeune.tvtime.api.tmdb.api.v3.model.CastAndCrew
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.CastMember
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.CrewMember
-import com.owenlejeune.tvtime.api.tmdb.api.v3.model.DetailedItem
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.DetailedTv
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.ExternalIds
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.HomePageResponse
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.ImageCollection
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.Keyword
-import com.owenlejeune.tvtime.api.tmdb.api.v3.model.KeywordsResponse
-import com.owenlejeune.tvtime.api.tmdb.api.v3.model.RatingBody
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.Review
-import com.owenlejeune.tvtime.api.tmdb.api.v3.model.ReviewResponse
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.SearchResult
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.SearchResultMedia
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.Season
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.SeasonAccountStates
-import com.owenlejeune.tvtime.api.tmdb.api.v3.model.StatusResponse
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.TmdbItem
-import com.owenlejeune.tvtime.api.tmdb.api.v3.model.TvCastAndCrew
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.TvCastMember
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.TvContentRatings
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.TvCrewMember
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.Video
-import com.owenlejeune.tvtime.api.tmdb.api.v3.model.VideoResponse
-import com.owenlejeune.tvtime.api.tmdb.api.v3.model.WatchProviderResponse
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.WatchProviders
 import com.owenlejeune.tvtime.utils.SessionManager
 import com.owenlejeune.tvtime.utils.types.TimeWindow
@@ -304,9 +291,9 @@ class TvService: KoinComponent, DetailService, HomePageService {
         )
     }
 
-    override suspend fun postRating(id: Int, ratingBody: RatingBody) {
+    override suspend fun postRating(id: Int, rating: Float) {
         val session = SessionManager.currentSession.value ?: throw Exception("Session must not be null")
-        val response = service.postTvRatingAsUser(id, session.sessionId, ratingBody)
+        val response = service.postTvRatingAsUser(id, session.sessionId, rating)
         if (response.isSuccessful) {
             Log.d(TAG, "Successfully posted rating")
         } else {

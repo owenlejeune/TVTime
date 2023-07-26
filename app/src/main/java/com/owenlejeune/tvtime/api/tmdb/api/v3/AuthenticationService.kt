@@ -8,7 +8,7 @@ class AuthenticationService {
 
     private val service by lazy { TmdbClient().createAuthenticationService() }
 
-    suspend fun createSessionFromV4Token(body: V4TokenBody): Response<CreateSessionResponse> {
-        return service.createSessionFromV4Token(body)
+    suspend fun createSessionFromV4Token(accessToken: String): Response<CreateSessionResponse> {
+        return service.createSessionFromV4Token(accessToken)
     }
 }

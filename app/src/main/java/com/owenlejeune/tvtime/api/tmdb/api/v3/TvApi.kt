@@ -43,11 +43,12 @@ interface TvApi {
     @GET("tv/{id}/keywords")
     suspend fun getKeywords(@Path("id") id: Int): Response<KeywordsResponse>
 
+    @FormUrlEncoded
     @POST("tv/{id}/rating")
     suspend fun postTvRatingAsUser(
         @Path("id") id: Int,
         @Query("session_id") sessionId: String,
-        @Body ratingBody: RatingBody
+        @Field("value") rating: Float
     ): Response<StatusResponse>
 
     @DELETE("tv/{id}/rating")

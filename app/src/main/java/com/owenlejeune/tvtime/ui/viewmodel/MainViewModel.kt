@@ -18,13 +18,11 @@ import com.owenlejeune.tvtime.api.tmdb.api.v3.model.DetailedItem
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.ExternalIds
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.ImageCollection
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.Keyword
-import com.owenlejeune.tvtime.api.tmdb.api.v3.model.RatingBody
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.Review
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.SearchResultMedia
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.TmdbItem
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.Video
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.WatchProviders
-import com.owenlejeune.tvtime.extensions.anyOf
 import com.owenlejeune.tvtime.ui.screens.tabs.MediaTabNavItem
 import com.owenlejeune.tvtime.utils.types.MediaViewType
 import com.owenlejeune.tvtime.utils.types.TimeWindow
@@ -398,8 +396,8 @@ class MainViewModel: ViewModel(), KoinComponent {
 
     suspend fun postRating(id: Int, rating: Float, type: MediaViewType) {
         when (type) {
-            MediaViewType.MOVIE -> movieService.postRating(id, RatingBody(rating))
-            MediaViewType.TV -> tvService.postRating(id, RatingBody(rating))
+            MediaViewType.MOVIE -> movieService.postRating(id, rating)
+            MediaViewType.TV -> tvService.postRating(id, rating)
             else -> {}
         }
     }

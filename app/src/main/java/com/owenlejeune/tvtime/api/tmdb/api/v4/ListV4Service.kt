@@ -4,9 +4,7 @@ import android.content.Context
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.runtime.mutableStateOf
 import com.owenlejeune.tvtime.api.tmdb.api.v4.model.AddToListBody
-import com.owenlejeune.tvtime.api.tmdb.api.v4.model.CreateListBody
 import com.owenlejeune.tvtime.api.tmdb.api.v4.model.DeleteListItemsBody
 import com.owenlejeune.tvtime.api.tmdb.api.v4.model.ListUpdateBody
 import com.owenlejeune.tvtime.api.tmdb.api.v4.model.MediaList
@@ -34,8 +32,14 @@ class ListV4Service: KoinComponent {
         }
     }
 
-    suspend fun createList(body: CreateListBody) {//}: Response<CreateListResponse> {
-        service.createList(body)
+    suspend fun createList(
+        name: String,
+        language: String,
+        description: String,
+        isPublic: Boolean,
+        localeCode: String
+    ) {
+        service.createList(name, language, description, isPublic, localeCode)
     }
 
     suspend fun updateList(listId: Int, body: ListUpdateBody) {

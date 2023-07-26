@@ -4,8 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.paging.PagingData
 import com.owenlejeune.tvtime.api.tmdb.api.createPagingFlow
 import com.owenlejeune.tvtime.api.tmdb.api.v3.AccountService
-import com.owenlejeune.tvtime.api.tmdb.api.v3.model.MarkAsFavoriteBody
-import com.owenlejeune.tvtime.api.tmdb.api.v3.model.WatchlistBody
 import com.owenlejeune.tvtime.api.tmdb.api.v4.AccountV4Service
 import com.owenlejeune.tvtime.api.tmdb.api.v4.ListV4Service
 import com.owenlejeune.tvtime.api.tmdb.api.v4.model.AddToListBody
@@ -139,12 +137,12 @@ class AccountViewModel: ViewModel(), KoinComponent {
 
     suspend fun addToFavourites(type: MediaViewType, itemId: Int, favourited: Boolean) {
         val accountId = SessionManager.currentSession.value?.accountDetails?.value?.id ?: throw Exception("Session must not be null")
-        accountService.markAsFavorite(accountId, MarkAsFavoriteBody(type, itemId, favourited))
+        accountService.markAsFavorite(accountId, type, itemId, favourited)
     }
 
     suspend fun addToWatchlist(type: MediaViewType, itemId: Int, watchlisted: Boolean) {
         val accountId = SessionManager.currentSession.value?.accountDetails?.value?.id ?: throw Exception("Session must not be null")
-        accountService.addToWatchlist(accountId, WatchlistBody(type, itemId, watchlisted))
+        accountService.addToWatchlist(accountId, type, itemId, watchlisted)
     }
 
 }

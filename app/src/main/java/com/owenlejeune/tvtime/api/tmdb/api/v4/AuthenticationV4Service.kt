@@ -9,12 +9,12 @@ class AuthenticationV4Service {
 
     private val service by lazy { TmdbClient().createV4AuthenticationService() }
 
-    suspend fun createRequestToken(body: AuthRequestBody): Response<AuthResponse> {
-        return service.createRequestToken(body)
+    suspend fun createRequestToken(redirect: String): Response<AuthResponse> {
+        return service.createRequestToken(redirect)
     }
 
-    suspend fun createAccessToken(body: AuthAccessBody): Response<AccessResponse> {
-        return service.createAccessToken(body)
+    suspend fun createAccessToken(requestToken: String): Response<AccessResponse> {
+        return service.createAccessToken(requestToken)
     }
 
     suspend fun deleteAccessToken(body: AuthDeleteBody): Response<StatusResponse> {
