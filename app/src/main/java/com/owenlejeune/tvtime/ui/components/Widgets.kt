@@ -231,7 +231,11 @@ fun SearchView(
                 onClick = {
                     appNavController.navigate(route)
                 },
-                modifier = Modifier.offset(y = if (preferences.floatingBottomBar) -(HomeScreen.FLOATING_NAV_BAR_HEIGHT - HomeScreen.FLOATING_NAV_BAR_OFFSET) else 0.dp)
+                modifier = Modifier
+                    .navigationBarsPadding()
+                    .offset(
+                        y = if (preferences.floatingBottomBar) -(HomeScreen.FLOATING_NAV_BAR_HEIGHT - HomeScreen.FLOATING_NAV_BAR_OFFSET) else 0.dp
+                    )
             ) {
                 Icon(Icons.Filled.Search, stringResource(id = R.string.preference_heading_search))
             }

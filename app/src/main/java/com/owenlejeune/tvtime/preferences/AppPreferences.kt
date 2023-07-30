@@ -37,6 +37,7 @@ class AppPreferences(context: Context) {
         private val SHOW_NEXT_MCU = "show_next_mcu"
         private val STORED_TEST_ROUTE = "stored_test_route"
         private val FLOATING_BOTTOM_BAR = "floating_bottom_bar"
+        private val RECENT_SEARCHES = "recent_searches"
     }
 
     private val preferences: SharedPreferences = context.getSharedPreferences(PREF_FILE, Context.MODE_PRIVATE)
@@ -147,6 +148,11 @@ class AppPreferences(context: Context) {
         get() = preferences.getString(STORED_TEST_ROUTE, storedTestRouteDefault) ?: storedTestRouteDefault
         set(value) { preferences.put(STORED_TEST_ROUTE, value) }
 
+    /******** General Storage ********/
+    var recentSearches: Set<String>
+        get() = preferences.getStringSet(RECENT_SEARCHES, emptySet()) ?: emptySet()
+        set(value) { preferences.put(RECENT_SEARCHES, value) }
+
     /********* Helpers ********/
     private fun SharedPreferences.put(key: String, value: Any?) {
         edit().apply {
@@ -157,6 +163,7 @@ class AppPreferences(context: Context) {
                 is Float -> putFloat(key, value)
                 is Double -> putFloat(key, value.toFloat())
                 is String -> putString(key, value)
+                is Set<*> -> putStringSet(key, value as Set<String>)
                 else -> throw UnsupportedTypeError()
             }
             apply()

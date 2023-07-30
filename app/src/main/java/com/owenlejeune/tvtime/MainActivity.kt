@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -96,7 +97,10 @@ class MainActivity : MonetCompatActivity() {
                         ) { innerPadding ->
                             val windowSize = rememberWindowSizeClass()
                             val appNavController = rememberNavController()
-                            Box(modifier = Modifier.padding(innerPadding.copy(bottom = 0.dp, top = 0.dp))) {
+                            Box(modifier = Modifier
+                                .padding(innerPadding.copy(bottom = 0.dp, top = 0.dp))
+                                .fillMaxSize()
+                            ) {
                                 AppNavigationHost(
                                     appNavController = appNavController,
                                     mainNavStartRoute = mainNavStartRoute,

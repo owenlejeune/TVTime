@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
@@ -37,6 +38,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
@@ -62,7 +64,7 @@ import org.koin.java.KoinJavaComponent.get
 
 object HomeScreen {
     val FLOATING_NAV_BAR_HEIGHT = 80.dp
-    val FLOATING_NAV_BAR_OFFSET = (-24).dp
+    val FLOATING_NAV_BAR_OFFSET = (-12).dp
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -116,7 +118,10 @@ fun HomeScreen(
                 }
             }
         ) { innerPadding ->
-            Box(modifier = Modifier.padding(innerPadding)) {
+            Box(modifier = Modifier
+                .padding(innerPadding)
+                .fillMaxSize()
+            ) {
                 MainContent(
                     windowSize = windowSize,
                     appNavController = appNavController,
@@ -167,9 +172,11 @@ private fun FloatingBottomNavBar(
         modifier = modifier.then(
             Modifier
                 .fillMaxWidth()
-                .height(HomeScreen.FLOATING_NAV_BAR_HEIGHT)
+                .navigationBarsPadding()
                 .padding(horizontal = 24.dp)
-                .offset(y = HomeScreen.FLOATING_NAV_BAR_OFFSET)
+                .padding(bottom = 12.dp)
+                .height(HomeScreen.FLOATING_NAV_BAR_HEIGHT)
+//                .offset(y = HomeScreen.FLOATING_NAV_BAR_OFFSET)
                 .clip(RoundedCornerShape(50))
                 .background(MaterialTheme.colorScheme.defaultNavBarColor())
         )
@@ -181,7 +188,9 @@ private fun FloatingBottomNavBar(
             HomeScreenNavItem.SortedItems.forEach { item ->
                 val isSelected = currentRoute == item.route
                 NavigationBarItem(
-                    modifier = Modifier.clip(RoundedCornerShape(25.dp)),
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(25.dp))
+                        .padding(top = 4.dp),
                     icon = { Icon(imageVector = item.icon, contentDescription = null) },
                     label = {
                         if (preferences.showBottomTabLabels) {

@@ -1,13 +1,17 @@
+@file:Suppress("UNCHECKED_CAST")
+
 package com.owenlejeune.tvtime.ui.screens
 
 import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.outlined.Restore
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -17,11 +21,13 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.paging.LoadState
+import androidx.paging.PagingData
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.api.tmdb.api.v3.MoviesService
@@ -29,6 +35,7 @@ import com.owenlejeune.tvtime.api.tmdb.api.v3.TvService
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.*
 import com.owenlejeune.tvtime.extensions.getCalendarYear
 import com.owenlejeune.tvtime.extensions.lazyPagingItems
+import com.owenlejeune.tvtime.preferences.AppPreferences
 import com.owenlejeune.tvtime.ui.components.BackButton
 import com.owenlejeune.tvtime.ui.components.MediaResultCard
 import com.owenlejeune.tvtime.ui.components.PillSegmentedControl
@@ -38,6 +45,8 @@ import com.owenlejeune.tvtime.ui.viewmodel.MainViewModel
 import com.owenlejeune.tvtime.ui.viewmodel.SearchViewModel
 import com.owenlejeune.tvtime.utils.TmdbUtils
 import com.owenlejeune.tvtime.utils.types.MediaViewType
+import com.owenlejeune.tvtime.utils.types.ViewableMediaTypeException
+import kotlinx.coroutines.flow.Flow
 import org.koin.java.KoinJavaComponent.get
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -45,7 +54,8 @@ import org.koin.java.KoinJavaComponent.get
 fun SearchScreen(
     appNavController: NavHostController,
     title: String,
-    mediaViewType: MediaViewType
+    mediaViewType: MediaViewType,
+    preferences: AppPreferences = get(AppPreferences::class.java)
 ) {
     val searchViewModel = viewModel<SearchViewModel>()
     val applicationViewModel = viewModel<ApplicationViewModel>()
@@ -104,7 +114,15 @@ fun SearchScreen(
         Divider(thickness = 2.dp, color = MaterialTheme.colorScheme.surfaceVariant)
 
         val searchTypes = listOf(MediaViewType.MOVIE, MediaViewType.TV, MediaViewType.PERSON, MediaViewType.MIXED)
-        val selected = remember { mutableStateOf(searchTypes[0]) }
+        val selected = remember {
+            mutableStateOf(
+                if (preferences.multiSearch) {
+                    MediaViewType.MIXED
+                } else {
+                    mediaViewType
+                }
+            )
+        }
 
         val context = LocalContext.current
         PillSegmentedControl(
@@ -121,8 +139,89 @@ fun SearchScreen(
             onItemSelected = { _, i ->
                 selected.value = i
             },
+            defaultSelectedItemIndex = searchTypes.indexOf(selected.value),
             modifier = Modifier.padding(start = 12.dp, top = 12.dp, end = 12.dp)
         )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        val results = remember { searchViewModel.produceSearchResultsFor(viewType.value) }
+        results.value?.let {
+            val pagingItems = (results.value as Flow<PagingData<SortableSearchResult>>).collectAsLazyPagingItems()
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 12.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                handleLoadState(context, pagingItems.loadState.refresh)
+                item {
+                    if (pagingItems.itemCount == 0) {
+                        Column(
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            Spacer(modifier = Modifier.weight(1f))
+                            Text(
+                                text = stringResource(R.string.no_search_results),
+                                color = MaterialTheme.colorScheme.onBackground,
+                                modifier = Modifier.align(Alignment.CenterHorizontally),
+                                fontSize = 18.sp
+                            )
+                            Spacer(modifier = Modifier.weight(1f))
+                        }
+                    }
+                }
+                lazyPagingItems(
+                    lazyPagingItems = pagingItems,
+                    key = { i -> pagingItems[i]?.id ?: -1 }
+                ) { item ->
+                    when (item?.mediaType) {
+                        MediaViewType.MOVIE -> {
+                            MovieSearchResultView(
+                                appNavController = appNavController,
+                                result = item as SearchResultMovie
+                            )
+                        }
+                        MediaViewType.TV -> {
+                            TvSearchResultView(
+                                appNavController = appNavController,
+                                result = item as SearchResultTv
+                            )
+                        }
+                        MediaViewType.PERSON -> {
+                            PeopleSearchResultView(
+                                appNavController = appNavController,
+                                result = item as SearchResultPerson
+                            )
+                        }
+                        else -> {}
+                    }
+                }
+                item { Spacer(modifier = Modifier.height(12.dp)) }
+                handleLoadState(context, pagingItems.loadState.refresh)
+            }
+        } ?: run {
+            listOf("Michael Meyers", "Mutant", "Deadpool", "Ryan Reynolds", "Boardwalk Empire")//preferences.recentSearches
+            .forEach {
+                Row(
+                    modifier = Modifier
+                        .padding(vertical = 12.dp, horizontal = 16.dp)
+                        .clickable {
+                            searchValue.value = it
+                        },
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Restore,
+                        contentDescription = null
+                    )
+                    Text(
+                        text = it,
+                        fontStyle = FontStyle.Italic
+                    )
+                }
+            }
+        }
 
         when (viewType.value) {
             MediaViewType.TV -> {

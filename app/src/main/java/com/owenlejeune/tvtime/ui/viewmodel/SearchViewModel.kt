@@ -9,6 +9,7 @@ import com.owenlejeune.tvtime.api.tmdb.api.v3.SearchResultProvider
 import com.owenlejeune.tvtime.api.tmdb.api.v3.SearchService
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.Searchable
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.SortableSearchResult
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.TmdbItem
 import com.owenlejeune.tvtime.utils.types.MediaViewType
 import com.owenlejeune.tvtime.utils.types.ViewableMediaTypeException
 import kotlinx.coroutines.flow.Flow
@@ -38,6 +39,16 @@ class SearchViewModel: ViewModel(), KoinComponent {
             MediaViewType.PERSON -> searchForPeople(query)
             MediaViewType.MIXED -> searchMulti(query)
             else -> {}
+        }
+    }
+
+    fun produceSearchResultsFor(type: MediaViewType): MutableState<out Flow<PagingData<out SortableSearchResult>>?> {
+        return when (type) {
+            MediaViewType.MOVIE -> movieResults
+            MediaViewType.TV -> tvResults
+            MediaViewType.PERSON -> peopleResults
+            MediaViewType.MIXED -> multiResults
+            else -> throw ViewableMediaTypeException(type)
         }
     }
 
