@@ -2,6 +2,7 @@ package com.owenlejeune.tvtime.preferences
 
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.compose.runtime.toMutableStateList
 import com.google.gson.Gson
 import com.kieronquinn.monetcompat.core.MonetCompat
 import com.owenlejeune.tvtime.utils.SessionManager
@@ -149,9 +150,9 @@ class AppPreferences(context: Context) {
         set(value) { preferences.put(STORED_TEST_ROUTE, value) }
 
     /******** General Storage ********/
-    var recentSearches: Set<String>
-        get() = preferences.getStringSet(RECENT_SEARCHES, emptySet()) ?: emptySet()
-        set(value) { preferences.put(RECENT_SEARCHES, value) }
+    var recentSearches: MutableList<String>
+        get() = preferences.getStringSet(RECENT_SEARCHES, emptySet())?.toMutableList() ?: emptySet<String>().toMutableList()
+        set(value) { preferences.put(RECENT_SEARCHES, value.toSet()) }
 
     /********* Helpers ********/
     private fun SharedPreferences.put(key: String, value: Any?) {

@@ -37,7 +37,8 @@ fun MediaResultCard(
     title: String,
     additionalDetails: List<String>,
     modifier: Modifier = Modifier,
-    rating: Float? = null
+    rating: Float? = null,
+    additionalOnClick: () -> Unit = {}
 ) {
     Card(
         shape = RoundedCornerShape(10.dp),
@@ -47,6 +48,7 @@ fun MediaResultCard(
             .fillMaxWidth()
             .clickable(
                 onClick = {
+                    additionalOnClick()
                     appNavController.navigate(
                         AppNavItem.DetailView.withArgs(mediaViewType, id)
                     )
