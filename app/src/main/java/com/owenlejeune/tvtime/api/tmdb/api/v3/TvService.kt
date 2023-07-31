@@ -101,6 +101,12 @@ class TvService: KoinComponent, DetailService, HomePageService {
     val seasonVideosLoadingState = mutableStateOf(LoadingState.INACTIVE)
     val seasonWatchProvidersLoadingState = mutableStateOf(LoadingState.INACTIVE)
 
+    val isPopularTvLoading = mutableStateOf(false)
+    val isTopRatedTvLoading = mutableStateOf(false)
+    val isAiringTodayTvLoading = mutableStateOf(false)
+    val isOnTheAirTvLoading = mutableStateOf(false)
+    val isTrendingTvLoading = mutableStateOf(false)
+
     override suspend fun getById(id: Int, refreshing: Boolean) {
         loadRemoteData(
             { service.getTvShowById(id) },

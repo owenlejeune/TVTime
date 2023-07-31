@@ -63,6 +63,12 @@ class MoviesService: KoinComponent, DetailService, HomePageService {
     val releaseDatesLoadingState = mutableStateOf(LoadingState.INACTIVE)
     val accountStatesLoadingState = mutableStateOf(LoadingState.INACTIVE)
 
+    val isPopularMoviesLoading = mutableStateOf(false)
+    val isTopRatedMoviesLoading = mutableStateOf(false)
+    val isNowPlayingMoviesLoading = mutableStateOf(false)
+    val isUpcomingMoviesLoading = mutableStateOf(false)
+    val isTrendingMoviesLoading = mutableStateOf(false)
+
     override suspend fun getById(id: Int, refreshing: Boolean) {
         loadRemoteData(
             { movieService.getMovieById(id) },

@@ -2,6 +2,8 @@ package com.owenlejeune.tvtime.api.tmdb.api
 
 import android.content.Context
 import android.widget.Toast
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
@@ -19,19 +21,22 @@ import retrofit2.Response
 
 fun <T: Any, S> ViewModel.createPagingFlow(
     fetcher: suspend (Int) -> Response<S>,
-    processor: (S) -> List<T>
+    processor: (S) -> List<T>,
+    refreshState: MutableState<Boolean> = mutableStateOf(false)
 ): Flow<PagingData<T>> {
     return Pager(PagingConfig(pageSize = ViewModelConstants.PAGING_SIZE)) {
         BasePagingSource(
             fetcher = fetcher,
-            processor = processor
+            processor = processor,
+            refreshState = refreshState
         )
     }.flow.cachedIn(viewModelScope)
 }
 
 class BasePagingSource<T: Any, S>(
     private val fetcher: suspend (Int) -> Response<S>,
-    private val processor: (S) -> List<T>
+    private val processor: (S) -> List<T>,
+    private val refreshState: MutableState<Boolean>
 ): PagingSource<Int, T>(), KoinComponent {
 
     private val context: Context by inject()
@@ -43,16 +48,21 @@ class BasePagingSource<T: Any, S>(
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, T> {
         return try {
             val page = params.key ?: 1
+            if (page == 1) {
+                refreshState.value = true
+            }
             val response = fetcher(page)
             if (response.isSuccessful) {
                 val responseBody = response.body()
                 val results = responseBody?.let(processor) ?: emptyList()
+                refreshState.value = false
                 LoadResult.Page(
                     data = results,
                     prevKey = if (page == 1) { null } else { page - 1},
                     nextKey = if (results.isEmpty()) { null } else { page + 1}
                 )
             } else {
+                refreshState.value = false
 //                Toast.makeText(context, context.getString(R.string.no_result_found), Toast.LENGTH_SHORT).show()
                 LoadResult.Invalid()
             }

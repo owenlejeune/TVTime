@@ -35,6 +35,10 @@ class PeopleService: KoinComponent {
     val imagesLoadingState = mutableStateOf(LoadingState.INACTIVE)
     val externalIdsLoadingState = mutableStateOf(LoadingState.INACTIVE)
 
+    val isPopularPeopleLoading = mutableStateOf(false)
+    val isTrendingPeopleLoading = mutableStateOf(false
+    )
+
     suspend fun getPerson(id: Int, refreshing: Boolean) {
         loadRemoteData(
             { service.getPerson(id) },

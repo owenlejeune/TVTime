@@ -1,12 +1,18 @@
 package com.owenlejeune.tvtime.ui.screens.tabs
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -63,6 +69,7 @@ fun MediaTab(
     }
 }
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun MediaTabContent(
     appNavController: NavHostController,
@@ -71,17 +78,34 @@ fun MediaTabContent(
 ) {
     val viewModel = viewModel<MainViewModel>()
     val mediaListItems = viewModel.produceMediaTabFlowFor(mediaType, mediaTabItem.type).collectAsLazyPagingItems()
+    val isRefreshing = remember { viewModel.produceMediaTabLoadingFor(mediaType, mediaTabItem.type) }
 
-    PagingPosterGrid(
-        lazyPagingItems = mediaListItems,
-        onClick = { id ->
-            appNavController.navigate(
-                AppNavItem.DetailView.withArgs(mediaType, id)
-            )
-        }
+    val pullRefreshState = rememberPullRefreshState(
+        refreshing = isRefreshing.value,
+        onRefresh = { mediaListItems.refresh() }
     )
+
+    Box(
+        modifier = Modifier.pullRefresh(state = pullRefreshState)
+    ) {
+        PagingPosterGrid(
+            lazyPagingItems = mediaListItems,
+            onClick = { id ->
+                appNavController.navigate(
+                    AppNavItem.DetailView.withArgs(mediaType, id)
+                )
+            }
+        )
+
+        PullRefreshIndicator(
+            refreshing = isRefreshing.value,
+            state = pullRefreshState,
+            modifier = Modifier.align(alignment = Alignment.TopCenter)
+        )
+    }
 }
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun MediaTabTrendingContent(
     appNavController: NavHostController,
@@ -92,6 +116,7 @@ fun MediaTabTrendingContent(
 
     val timeWindow = remember { mutableStateOf(TimeWindow.DAY) }
     val flow = remember { mutableStateOf(viewModel.produceTrendingFor(mediaType, timeWindow.value)) }
+    val isRefreshing = remember { viewModel.produceTrendingLoadingFor(mediaType) }
 
     LaunchedEffect(timeWindow.value) {
         flow.value = viewModel.produceTrendingFor(mediaType, timeWindow.value)
@@ -99,33 +124,50 @@ fun MediaTabTrendingContent(
 
     val mediaListItems = flow.value.collectAsLazyPagingItems()
 
-    PagingPosterGrid(
-        lazyPagingItems = mediaListItems,
-        headerContent = {
-            val options = listOf(TimeWindow.DAY, TimeWindow.WEEK)
-
-            val context = LocalContext.current
-            PillSegmentedControl(
-                items = options,
-                itemLabel = { _, i ->
-                    when (i) {
-                        TimeWindow.DAY -> context.getString(R.string.time_window_day)
-                        TimeWindow.WEEK -> context.getString(R.string.time_window_week)
-                    }
-                },
-                onItemSelected = { _, i -> timeWindow.value = i },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 4.dp)
-                    .padding(bottom = 4.dp)
-            )
-        },
-        onClick = { id ->
-            appNavController.navigate(
-                AppNavItem.DetailView.withArgs(mediaType, id)
-            )
+    val pullRefreshState = rememberPullRefreshState(
+        refreshing = isRefreshing.value,
+        onRefresh = {
+            mediaListItems.refresh()
         }
     )
+
+    Box(
+        modifier = Modifier.pullRefresh(pullRefreshState)
+    ) {
+        PagingPosterGrid(
+            lazyPagingItems = mediaListItems,
+            headerContent = {
+                val options = listOf(TimeWindow.DAY, TimeWindow.WEEK)
+
+                val context = LocalContext.current
+                PillSegmentedControl(
+                    items = options,
+                    itemLabel = { _, i ->
+                        when (i) {
+                            TimeWindow.DAY -> context.getString(R.string.time_window_day)
+                            TimeWindow.WEEK -> context.getString(R.string.time_window_week)
+                        }
+                    },
+                    onItemSelected = { _, i -> timeWindow.value = i },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 4.dp)
+                        .padding(bottom = 4.dp)
+                )
+            },
+            onClick = { id ->
+                appNavController.navigate(
+                    AppNavItem.DetailView.withArgs(mediaType, id)
+                )
+            }
+        )
+
+        PullRefreshIndicator(
+            refreshing = isRefreshing.value,
+            state = pullRefreshState,
+            modifier = Modifier.align(alignment = Alignment.TopCenter)
+        )
+    }
 }
 
 @OptIn(ExperimentalPagerApi::class)
