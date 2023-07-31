@@ -148,9 +148,8 @@ class MoviesService: KoinComponent, DetailService, HomePageService {
     }
 
     override suspend fun getAccountStates(id: Int) {
-        val sessionId = SessionManager.currentSession.value?.sessionId ?: throw Exception("Session must not be null")
         loadRemoteData(
-            { movieService.getAccountStates(id, sessionId) },
+            { movieService.getAccountStates(id) },
             { accountStates[id] = it },
             accountStatesLoadingState,
             false

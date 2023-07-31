@@ -145,7 +145,9 @@ private fun fetchData(
     scope.launch { mainViewModel.getVideos(itemId, type, force) }
     scope.launch { mainViewModel.getWatchProviders(itemId, type, force) }
     scope.launch { mainViewModel.getReviews(itemId, type, force) }
-    scope.launch { mainViewModel.getAccountStates(itemId, type) }
+    if (SessionManager.isLoggedIn) {
+        scope.launch { mainViewModel.getAccountStates(itemId, type) }
+    }
 
     when (type) {
         MediaViewType.MOVIE -> {
@@ -190,6 +192,9 @@ fun MediaDetailScreen(
     if (type == MediaViewType.TV) {
         LaunchedEffect(mediaItem) {
             val lastSeason = (mediaItem as DetailedTv?)?.numberOfSeasons ?: 0
+//            for (i in lastSeason downTo 0) {
+//                mainViewModel.getSeason(itemId, i)
+//            }
             if (lastSeason > 0) {
                 mainViewModel.getSeason(itemId, lastSeason)
             }
@@ -871,7 +876,7 @@ private fun SeasonCard(
     appNavController: NavController
 ) {
     val seasonsMap = remember { mainViewModel.tvSeasons }
-    val lastSeason = seasonsMap[itemId]?.lastOrNull()
+    val lastSeason = seasonsMap[itemId]?.maxByOrNull { it.seasonNumber }
 
     lastSeason?.let {
         ContentCard(

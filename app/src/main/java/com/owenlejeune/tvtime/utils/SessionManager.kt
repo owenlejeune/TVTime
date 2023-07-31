@@ -29,6 +29,9 @@ object SessionManager: KoinComponent {
 
     val currentSession = mutableStateOf<Session?>(null)
 
+    val isLoggedIn: Boolean
+        get() = currentSession.value?.isAuthorized == true
+
     class AuthorizedSessionValues(
         @SerializedName("session_id") val sessionId: String,
         @SerializedName("access_token") val accessToken: String,

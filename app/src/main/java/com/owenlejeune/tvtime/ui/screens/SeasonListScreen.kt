@@ -102,7 +102,7 @@ fun SeasonListScreen(
                         appNavController = appNavController,
                         seriesId = id,
                         season = season,
-                        expandedByDefault = index == 0
+                        expandedByDefault = index == 1
                     )
                 }
 
