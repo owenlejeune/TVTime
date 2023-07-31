@@ -54,6 +54,8 @@ import com.google.accompanist.pager.rememberPagerState
 import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.api.LoadingState
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.Episode
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.EpisodeCastMember
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.EpisodeCrewMember
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.Image
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.ImageCollection
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.MovieCastMember
@@ -64,6 +66,7 @@ import com.owenlejeune.tvtime.api.tmdb.api.v3.model.TvCrewMember
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.Video
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.WatchProviderDetails
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.WatchProviders
+import com.owenlejeune.tvtime.extensions.combineWith
 import com.owenlejeune.tvtime.extensions.listItems
 import com.owenlejeune.tvtime.extensions.shimmerBackground
 import com.owenlejeune.tvtime.extensions.toDp
@@ -147,13 +150,15 @@ fun DetailHeader(
             horizontalArrangement = Arrangement.spacedBy(20.dp),
             verticalAlignment = Alignment.Bottom
         ) {
-            PosterItem(
-                url = posterUrl,
-                title = posterContentDescription,
-                elevation = elevation,
-                overrideShowTitle = false,
-                enabled = false
-            )
+            posterUrl?.let {
+                PosterItem(
+                    url = posterUrl,
+                    title = posterContentDescription,
+                    elevation = elevation,
+                    overrideShowTitle = false,
+                    enabled = false
+                )
+            }
 
             rating?.let {
                 if (it > 0f) {
@@ -418,7 +423,9 @@ fun AdditionalDetailItem(
 
 @Composable
 fun EpisodeItem(
+    seriesId: Int,
     episode: Episode,
+    appNavController: NavController,
     elevation: Dp = 10.dp,
     maxDescriptionLines: Int = 2,
     rating: Int? = null
@@ -430,7 +437,10 @@ fun EpisodeItem(
         modifier = Modifier
             .fillMaxWidth()
             .clickable {
-
+                val codedId = seriesId.combineWith(episode.seasonNumber).combineWith(episode.episodeNumber)
+                appNavController.navigate(
+                    AppNavItem.DetailView.withArgs(MediaViewType.EPISODE, codedId)
+                )
             }
     ) {
         Box {
@@ -527,6 +537,12 @@ fun CastCrewCard(
                 val epsCount = person.totalEpisodeCount
                 "$roles ($epsCount Eps.)"
             }
+            is EpisodeCastMember -> {
+                person.character
+            }
+            is EpisodeCrewMember -> {
+                person.job
+            }
             else -> null
         },
         imageUrl = TmdbUtils.getFullPersonImagePath(person),
@@ -584,7 +600,8 @@ fun WatchProvidersCard(
 
         Crossfade(
             modifier = modifier.padding(top = 4.dp, bottom = 12.dp),
-            targetState = selected.value
+            targetState = selected.value,
+            label = ""
         ) { value ->
             WatchProviderContainer(watchProviders = value!!, link = providers.link)
         }
@@ -755,6 +772,68 @@ fun ImagesCard(
                     .padding(start = 16.dp, bottom = 16.dp)
                     .clickable(onClick = onSeeAll)
             )
+        }
+    }
+}
+
+@Composable
+fun CastCard(
+    title: String,
+    isLoading: Boolean,
+    cast: List<Person>?,
+    appNavController: NavController,
+    onSeeMore: (() -> Unit)? = null,
+    modifier: Modifier = Modifier,
+    backgroundColor: Color = MaterialTheme.colorScheme.primary,
+    textColor: Color = MaterialTheme.colorScheme.background
+) {
+    ContentCard(
+        modifier = modifier,
+        title = title,
+        backgroundColor = backgroundColor,
+        textColor = textColor
+    ) {
+        Column {
+            LazyRow(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 16.dp)
+            ) {
+                item { Spacer(modifier = Modifier.width(8.dp)) }
+                if (isLoading) {
+                    items(5) {
+                        PlaceholderPosterItem()
+                    }
+                } else {
+                    items(cast?.size ?: 0) { i ->
+                        cast?.get(i)?.let {
+                            CastCrewCard(appNavController = appNavController, person = it)
+                        }
+                    }
+                }
+                item { Spacer(modifier = Modifier.width(8.dp)) }
+            }
+
+            onSeeMore?.let {
+                if (isLoading) {
+                    Text(
+                        text = "",
+                        modifier = Modifier
+                            .padding(start = 12.dp, bottom = 12.dp)
+                            .width(80.dp)
+                            .shimmerBackground(RoundedCornerShape(10.dp))
+                    )
+                } else {
+                    Text(
+                        text = stringResource(R.string.see_all_cast_and_crew),
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.inversePrimary,
+                        modifier = Modifier
+                            .padding(start = 12.dp, bottom = 12.dp)
+                            .clickable(onClick = onSeeMore)
+                    )
+                }
+            }
         }
     }
 }

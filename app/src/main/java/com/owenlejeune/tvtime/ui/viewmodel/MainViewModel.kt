@@ -16,6 +16,7 @@ import com.owenlejeune.tvtime.api.tmdb.api.v3.model.AccountStates
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.CastMember
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.CrewMember
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.DetailedItem
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.Episode
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.ExternalIds
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.ImageCollection
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.Keyword
@@ -24,6 +25,7 @@ import com.owenlejeune.tvtime.api.tmdb.api.v3.model.SearchResultMedia
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.TmdbItem
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.Video
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.WatchProviders
+import com.owenlejeune.tvtime.extensions.createEpisodeKey
 import com.owenlejeune.tvtime.ui.screens.tabs.MediaTabNavItem
 import com.owenlejeune.tvtime.utils.types.MediaViewType
 import com.owenlejeune.tvtime.utils.types.TimeWindow
@@ -119,6 +121,12 @@ class MainViewModel: ViewModel(), KoinComponent {
     val tvSeasonImages = tvService.seasonImages
     val tvSeasonVideos = tvService.seasonVideos
     val tvSeasonWatchProviders = tvService.seasonWatchProviders
+    val tvEpisodes = tvService.episodesMap
+    val tvEpisodesAccountStates = tvService.episodeAccountStates
+    val tvEpisodeCast = tvService.episodeCast
+    val tvEpisodeCrew = tvService.episodeCrew
+    val tvEpisodeGuestStars = tvService.episodeGuestStars
+    val tvEpisodeImages = tvService.episodeImages
 
     val tvDetailsLoadingState = tvService.detailsLoadingState
     val tvImagesLoadingState = tvService.imagesLoadingState
@@ -136,6 +144,10 @@ class MainViewModel: ViewModel(), KoinComponent {
     val tvSeasonImagesLoadingState = tvService.seasonImagesLoadingState
     val tvSeasonVideosLoadingState = tvService.seasonVideosLoadingState
     val tvSeasonWatchProvidersLoadingState = tvService.seasonWatchProvidersLoadingState
+    val tvEpisodeLoadingState = tvService.episodeLoadingState
+    val tvEpisodeAccountStateLoadingState = tvService.episodeAccountStateLoadingState
+    val tvEpisodeCreditsLoadingState = tvService.episodeCreditsLoadingState
+    val tvEpisodeImagesLoadingState = tvService.episodeImagesLoadingState
 
     val isPopularTvLoading = tvService.isPopularTvLoading
     val isTopRatedTvLoading = tvService.isTopRatedTvLoading
@@ -556,6 +568,34 @@ class MainViewModel: ViewModel(), KoinComponent {
     suspend fun getSeasonWatchProviders(seriesId: Int, seasonId: Int, force: Boolean = false) {
         if (tvSeasonWatchProviders[seriesId]?.get(seasonId) == null || force) {
             tvService.getSeasonWatchProviders(seriesId, seasonId, force)
+        }
+    }
+
+    suspend fun getEpisode(seriesId: Int, seasonId: Int, episodeId: Int, force: Boolean = false) {
+        val key = createEpisodeKey(seriesId, seasonId, episodeId)
+        if (tvEpisodes[key] == null || force) {
+            tvService.getEpisode(seriesId, seasonId, episodeId, force)
+        }
+    }
+
+    suspend fun getEpisodeAccountStates(seriesId: Int, seasonId: Int, episodeId: Int, force: Boolean = false) {
+        val key = createEpisodeKey(seriesId, seasonId, episodeId)
+        if (tvEpisodesAccountStates[key] == null || force) {
+            tvService.getEpisodeAccountStates(seriesId, seasonId, episodeId, force)
+        }
+    }
+
+    suspend fun getEpisodeCredits(seriesId: Int, seasonId: Int, episodeInt: Int, force: Boolean = false) {
+        val key = createEpisodeKey(seriesId, seasonId, episodeInt)
+        if (tvEpisodeCast[key] == null || tvEpisodeCrew[key] == null || tvEpisodeGuestStars[key] == null || force) {
+            tvService.getEpisodeCredits(seriesId, seasonId, episodeInt, force)
+        }
+    }
+
+    suspend fun getEpisodeImages(seriesId: Int, seasonId: Int, episodeId: Int, force: Boolean = false) {
+        val key = createEpisodeKey(seriesId, seasonId, episodeId)
+        if (tvEpisodeImages[key] == null || force) {
+            tvService.getEpisodeImages(seriesId, seasonId, episodeId, force)
         }
     }
 

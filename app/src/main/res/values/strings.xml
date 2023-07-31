@@ -28,6 +28,7 @@
 
     <!-- Headings -->
     <string name="cast_label">Cast</string>
+    <string name="crew_label">Crew</string>
     <string name="recommended_label">Recommended</string>
     <string name="videos_label">Videos</string>
     <string name="known_for_label">Known For</string>

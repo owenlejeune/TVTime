@@ -10,6 +10,11 @@ import com.owenlejeune.tvtime.api.tmdb.api.v3.model.AccountStates
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.CastMember
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.CrewMember
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.DetailedTv
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.Episode
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.EpisodeAccountState
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.EpisodeCastMember
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.EpisodeCrewMember
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.EpisodeImageCollection
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.ExternalIds
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.HomePageResponse
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.ImageCollection
@@ -25,6 +30,7 @@ import com.owenlejeune.tvtime.api.tmdb.api.v3.model.TvContentRatings
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.TvCrewMember
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.Video
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.WatchProviders
+import com.owenlejeune.tvtime.extensions.createEpisodeKey
 import com.owenlejeune.tvtime.utils.SessionManager
 import com.owenlejeune.tvtime.utils.types.TimeWindow
 import kotlinx.coroutines.flow.Flow
@@ -84,6 +90,30 @@ class TvService: KoinComponent, DetailService, HomePageService {
     val seasonWatchProviders: MutableMap<Int, out Map<Int, WatchProviders>>
         get() = _seasonWatchProviders
 
+    private val _episodesMap = Collections.synchronizedMap(mutableStateMapOf<String, Episode>())
+    val episodesMap: Map<String, Episode>
+        get() = _episodesMap
+
+    private val _episodeAccountStates = Collections.synchronizedMap(mutableStateMapOf<String, EpisodeAccountState>())
+    val episodeAccountStates: Map<String, EpisodeAccountState>
+        get() = _episodeAccountStates
+
+    private val _episodeCast = Collections.synchronizedMap(mutableStateMapOf<String, List<EpisodeCastMember>>())
+    val episodeCast: Map<String, List<EpisodeCastMember>>
+        get() = _episodeCast
+
+    private val _episodeCrew = Collections.synchronizedMap(mutableStateMapOf<String, List<EpisodeCrewMember>>())
+    val episodeCrew: Map<String, List<EpisodeCrewMember>>
+        get() = _episodeCrew
+
+    private val _episodeGuestStars = Collections.synchronizedMap(mutableStateMapOf<String, List<EpisodeCastMember>>())
+    val episodeGuestStars: Map<String, List<EpisodeCastMember>>
+        get() = _episodeGuestStars
+
+    private val _episodeImages = Collections.synchronizedMap(mutableStateMapOf<String, EpisodeImageCollection>())
+    val episodeImages: Map<String, EpisodeImageCollection>
+        get() = _episodeImages
+
     val detailsLoadingState = mutableStateOf(LoadingState.INACTIVE)
     val imagesLoadingState = mutableStateOf(LoadingState.INACTIVE)
     val castCrewLoadingState = mutableStateOf(LoadingState.INACTIVE)
@@ -100,6 +130,10 @@ class TvService: KoinComponent, DetailService, HomePageService {
     val seasonImagesLoadingState = mutableStateOf(LoadingState.INACTIVE)
     val seasonVideosLoadingState = mutableStateOf(LoadingState.INACTIVE)
     val seasonWatchProvidersLoadingState = mutableStateOf(LoadingState.INACTIVE)
+    val episodeLoadingState = mutableStateOf(LoadingState.INACTIVE)
+    val episodeAccountStateLoadingState = mutableStateOf(LoadingState.INACTIVE)
+    val episodeCreditsLoadingState = mutableStateOf(LoadingState.INACTIVE)
+    val episodeImagesLoadingState = mutableStateOf(LoadingState.INACTIVE)
 
     val isPopularTvLoading = mutableStateOf(false)
     val isTopRatedTvLoading = mutableStateOf(false)
@@ -284,8 +318,8 @@ class TvService: KoinComponent, DetailService, HomePageService {
     suspend fun getSeasonWatchProviders(seriesId: Int, seasonId: Int, refreshing: Boolean) {
         loadRemoteData(
             { service.getSeasonWatchProviders(seriesId, seasonId) },
-            { si ->
-                si.results[Locale.getDefault().country]?.let { wp ->
+            { swp ->
+                swp.results[Locale.getDefault().country]?.let { wp ->
                     _seasonWatchProviders
                         .getOrPut(seriesId) {
                             emptyMap<Int, WatchProviders>().toMutableMap()
@@ -295,6 +329,91 @@ class TvService: KoinComponent, DetailService, HomePageService {
             seasonWatchProvidersLoadingState,
             refreshing
         )
+    }
+
+    suspend fun getEpisode(
+        seriesId: Int,
+        seasonId: Int,
+        episodeId: Int,
+        refreshing: Boolean
+    ) {
+        loadRemoteData(
+            { service.getEpisodeDetails(seriesId, seasonId, episodeId) },
+            { episode ->
+                val key = createEpisodeKey(seriesId, seasonId, episodeId)
+                _episodesMap[key] = episode
+            },
+            episodeLoadingState,
+            refreshing
+        )
+    }
+
+    suspend fun getEpisodeAccountStates(
+        seriesId: Int,
+        seasonId: Int,
+        episodeId: Int,
+        refreshing: Boolean
+    ) {
+        loadRemoteData(
+            { service.getEpisodeAccountStates(seriesId, seasonId, episodeId) },
+            { eas ->
+                val key = createEpisodeKey(seriesId, seasonId, episodeId)
+                _episodeAccountStates[key] = eas
+            },
+            episodeAccountStateLoadingState,
+            refreshing
+        )
+    }
+
+    suspend fun getEpisodeCredits(
+        seriesId: Int,
+        seasonId: Int,
+        episodeId: Int,
+        refreshing: Boolean
+    ) {
+        loadRemoteData(
+            { service.getEpisodeCredits(seriesId, seasonId, episodeId) },
+            { ec ->
+                val key = createEpisodeKey(seriesId, seasonId, episodeId)
+                _episodeCast[key] = ec.cast
+                _episodeCrew[key] = ec.crew
+                _episodeGuestStars[key] = ec.guestStars
+            },
+            episodeCreditsLoadingState,
+            refreshing
+        )
+    }
+
+    suspend fun getEpisodeImages(
+        seriesId: Int,
+        seasonId: Int,
+        episodeId: Int,
+        refreshing: Boolean
+    ) {
+        loadRemoteData(
+            { service.getEpisodeImages(seriesId, seasonId, episodeId) },
+            { ei ->
+                val key = createEpisodeKey(seriesId, seasonId, episodeId)
+                _episodeImages[key] = ei
+            },
+            episodeImagesLoadingState,
+            refreshing
+        )
+    }
+
+    suspend fun postEpisodeRating(
+        seriesId: Int,
+        seasonId: Int,
+        episodeId: Int,
+        rating: Float
+    ) {
+        val session = SessionManager.currentSession.value ?: throw Exception("Session must not be null")
+        val response = service.postTvEpisodeRatingAsUser(seriesId, seasonId, episodeId, session.sessionId, rating)
+        if (response.isSuccessful) {
+            Log.d(TAG, "Successfully posted rating")
+        } else {
+            Log.w(TAG, "Issue posting rating")
+        }
     }
 
     override suspend fun postRating(id: Int, rating: Float) {

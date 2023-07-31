@@ -22,6 +22,7 @@ import com.owenlejeune.tvtime.preferences.AppPreferences
 import com.owenlejeune.tvtime.ui.screens.AboutScreen
 import com.owenlejeune.tvtime.ui.screens.AccountScreen
 import com.owenlejeune.tvtime.ui.screens.CastCrewListScreen
+import com.owenlejeune.tvtime.ui.screens.EpisodeDetailsScreen
 import com.owenlejeune.tvtime.ui.screens.GalleryView
 import com.owenlejeune.tvtime.ui.screens.HomeScreen
 import com.owenlejeune.tvtime.ui.screens.KeywordResultsScreen
@@ -125,6 +126,12 @@ fun AppNavigationHost(
                 }
                 MediaViewType.SEASON -> {
                     SeasonDetailsScreen(
+                        appNavController = appNavController,
+                        codedId = id
+                    )
+                }
+                MediaViewType.EPISODE -> {
+                    EpisodeDetailsScreen(
                         appNavController = appNavController,
                         codedId = id
                     )

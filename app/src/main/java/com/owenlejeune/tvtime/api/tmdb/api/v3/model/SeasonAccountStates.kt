@@ -4,12 +4,12 @@ import com.google.gson.annotations.SerializedName
 
 class SeasonAccountStates(
     @SerializedName("id") val id: Int,
-    @SerializedName("results") val results: List<SeasonAccountStatesResult>
+    @SerializedName("results") val results: List<EpisodeAccountState>
 )
 
-class SeasonAccountStatesResult(
+class EpisodeAccountState(
     @SerializedName("id") val id: Int,
-    @SerializedName("episode_number") val episodeNumber: Int,
+    @SerializedName("episode_number") val episodeNumber: Int?,
     val isRated: Boolean,
     var rating: Int
 )

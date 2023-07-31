@@ -36,7 +36,8 @@ class EpisodeCastMember(
     originalName: String,
     popularity: Float,
     order: Int,
-    @SerializedName("credit_id") val creditId: String
+    @SerializedName("credit_id") val creditId: String,
+    @SerializedName("character") val character: String
 ): CastMember(id, name, gender, profilePath, isAdult, knownForDepartment, originalName, popularity, order)
 
 class TvCastMember(
@@ -90,7 +91,8 @@ class EpisodeCrewMember(
     originalName: String,
     popularity: Float,
     department: String,
-    @SerializedName("credit_id") val creditId: String
+    @SerializedName("credit_id") val creditId: String,
+    @SerializedName("job") val job: String
 ): CrewMember(id, name, gender, profilePath, isAdult, knownForDepartment, originalName, popularity, department)
 
 class TvCrewMember(

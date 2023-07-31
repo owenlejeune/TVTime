@@ -10,3 +10,9 @@ abstract class CastAndCrew<C, R>(
 class TvCastAndCrew(cast: List<TvCastMember>, crew: List<TvCrewMember>): CastAndCrew<TvCastMember, TvCrewMember>(cast, crew)
 
 class MovieCastAndCrew(cast: List<MovieCastMember>, crew: List<MovieCrewMember>): CastAndCrew<MovieCastMember, MovieCrewMember>(cast, crew)
+
+class EpisodeCastAndCrew(
+    cast: List<EpisodeCastMember>,
+    crew: List<EpisodeCrewMember>,
+    @SerializedName("guest_stars") val guestStars: List<EpisodeCastMember>
+): CastAndCrew<EpisodeCastMember, EpisodeCrewMember>(cast, crew)

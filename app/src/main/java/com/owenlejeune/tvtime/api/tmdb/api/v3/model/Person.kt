@@ -5,7 +5,7 @@ import com.owenlejeune.tvtime.utils.types.Gender
 
 open class Person(
     @SerializedName("id") val id: Int,
-    @SerializedName("name") val name: String,
+    @SerializedName("name", alternate = ["title"]) val name: String,
     @SerializedName("gender") val gender: Gender,
     @SerializedName("profile_path") val profilePath: String?
 )

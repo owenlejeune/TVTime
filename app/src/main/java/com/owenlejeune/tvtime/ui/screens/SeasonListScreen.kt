@@ -174,7 +174,11 @@ private fun SeasonSection(
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             season.episodes.forEach { episode ->
-                EpisodeItem(episode = episode)
+                EpisodeItem(
+                    seriesId = seriesId,
+                    episode = episode,
+                    appNavController = appNavController
+                )
             }
         }
     }

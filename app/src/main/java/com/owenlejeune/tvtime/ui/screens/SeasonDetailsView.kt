@@ -193,6 +193,7 @@ private fun SeasonContent(
                 ) {
                     season.episodes.forEach { episode ->
                         DrawEpisodeCard(
+                            seriesId = seriesId,
                             episode = episode,
                             accountStates = accountStates,
                             appNavController = appNavController
@@ -228,23 +229,32 @@ private fun SeasonContent(
 
 @Composable
 private fun DrawEpisodeCard(
+    seriesId: Int,
     episode: Episode,
     accountStates: SeasonAccountStates?,
     appNavController: NavController
 ) {
     val rating = accountStates?.results?.find { it.id == episode.id }?.takeUnless { !it.isRated }?.rating
-    SeasonEpisodeItem(appNavController = appNavController, episode = episode, rating = rating)
+    SeasonEpisodeItem(
+        appNavController = appNavController,
+        seriesId = seriesId,
+        episode = episode,
+        rating = rating
+    )
 }
 
 @Composable
 private fun SeasonEpisodeItem(
     appNavController: NavController,
+    seriesId: Int,
     episode: Episode,
     rating: Int?
 ) {
     ContentCard {
         EpisodeItem(
+            seriesId = seriesId,
             episode = episode,
+            appNavController = appNavController,
             elevation = 0.dp,
             maxDescriptionLines = 5,
             rating = rating

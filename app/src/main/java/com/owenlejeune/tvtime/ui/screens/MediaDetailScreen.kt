@@ -76,7 +76,6 @@ import com.owenlejeune.tvtime.api.tmdb.api.v3.model.DetailedMovie
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.DetailedTv
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.Genre
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.ImageCollection
-import com.owenlejeune.tvtime.api.tmdb.api.v3.model.Video
 import com.owenlejeune.tvtime.extensions.DateFormat
 import com.owenlejeune.tvtime.extensions.WindowSizeClass
 import com.owenlejeune.tvtime.extensions.combineWith
@@ -85,13 +84,13 @@ import com.owenlejeune.tvtime.extensions.format
 import com.owenlejeune.tvtime.extensions.getCalendarYear
 import com.owenlejeune.tvtime.extensions.isIn
 import com.owenlejeune.tvtime.extensions.lazyPagingItems
-import com.owenlejeune.tvtime.extensions.listItems
 import com.owenlejeune.tvtime.extensions.shimmerBackground
 import com.owenlejeune.tvtime.preferences.AppPreferences
 import com.owenlejeune.tvtime.ui.components.ActionsView
 import com.owenlejeune.tvtime.ui.components.AdditionalDetailItem
 import com.owenlejeune.tvtime.ui.components.AvatarImage
 import com.owenlejeune.tvtime.ui.components.BackButton
+import com.owenlejeune.tvtime.ui.components.CastCard
 import com.owenlejeune.tvtime.ui.components.CastCrewCard
 import com.owenlejeune.tvtime.ui.components.ChipDefaults
 import com.owenlejeune.tvtime.ui.components.ChipGroup
@@ -100,14 +99,11 @@ import com.owenlejeune.tvtime.ui.components.ChipStyle
 import com.owenlejeune.tvtime.ui.components.CircleBackgroundColorImage
 import com.owenlejeune.tvtime.ui.components.ContentCard
 import com.owenlejeune.tvtime.ui.components.DetailHeader
-import com.owenlejeune.tvtime.ui.components.ExpandableContentCard
 import com.owenlejeune.tvtime.ui.components.ExternalIdsArea
-import com.owenlejeune.tvtime.ui.components.FullScreenThumbnailVideoPlayer
 import com.owenlejeune.tvtime.ui.components.HtmlText
 import com.owenlejeune.tvtime.ui.components.ImageGalleryOverlay
 import com.owenlejeune.tvtime.ui.components.ListContentCard
 import com.owenlejeune.tvtime.ui.components.PlaceholderDetailHeader
-import com.owenlejeune.tvtime.ui.components.PlaceholderPosterItem
 import com.owenlejeune.tvtime.ui.components.PosterItem
 import com.owenlejeune.tvtime.ui.components.RoundedChip
 import com.owenlejeune.tvtime.ui.components.RoundedTextField
@@ -192,9 +188,6 @@ fun MediaDetailScreen(
     if (type == MediaViewType.TV) {
         LaunchedEffect(mediaItem) {
             val lastSeason = (mediaItem as DetailedTv?)?.numberOfSeasons ?: 0
-//            for (i in lastSeason downTo 0) {
-//                mainViewModel.getSeason(itemId, i)
-//            }
             if (lastSeason > 0) {
                 mainViewModel.getSeason(itemId, lastSeason)
             }
@@ -351,7 +344,7 @@ fun MediaViewContent(
                         appNavController = appNavController
                     )
 
-                    CastCard(
+                    CastArea(
                         itemId = itemId,
                         appNavController = appNavController,
                         type = type,
@@ -795,7 +788,7 @@ private fun AdditionalTvItems(
 }
 
 @Composable
-private fun CastCard(
+private fun CastArea(
     itemId: Int,
     type: MediaViewType,
     mainViewModel: MainViewModel,
@@ -808,65 +801,21 @@ private fun CastCard(
     val loadingState = remember { mainViewModel.produceDetailsLoadingStateFor(type) }
     val isLoading = loadingState.value.isIn(LoadingState.LOADING, LoadingState.REFRESHING)
 
-    ContentCard(
+    CastCard(
         modifier = modifier,
         title = stringResource(R.string.cast_label),
-        backgroundColor = MaterialTheme.colorScheme.primary,
-        textColor = MaterialTheme.colorScheme.background
-    ) {
-        Column {
-            LazyRow(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                item {
-                    Spacer(modifier = Modifier.width(8.dp))
-                }
-                if (isLoading) {
-                    items(5) {
-                        PlaceholderPosterItem()
-                    }
-                } else {
-                    items(cast?.size ?: 0) { i ->
-                        cast?.get(i)?.let {
-                            CastCrewCard(appNavController = appNavController, person = it)
-                        }
-                    }
-                }
-                item {
-                    Spacer(modifier = Modifier.width(8.dp))
-                }
-            }
-
-            if (isLoading) {
-                Text(
-                    text = "",
-                    modifier = Modifier
-                        .padding(start = 12.dp, bottom = 12.dp)
-                        .width(80.dp)
-                        .shimmerBackground(RoundedCornerShape(10.dp))
+        isLoading = isLoading,
+        cast = cast,
+        appNavController = appNavController,
+        onSeeMore = {
+            appNavController.navigate(
+                AppNavItem.CastCrewListView.withArgs(
+                    type,
+                    itemId
                 )
-            } else {
-                Text(
-                    text = stringResource(R.string.see_all_cast_and_crew),
-                    fontSize = 12.sp,
-                    color = MaterialTheme.colorScheme.inversePrimary,
-                    modifier = Modifier
-                        .padding(start = 12.dp, bottom = 12.dp)
-                        .clickable {
-                            appNavController.navigate(
-                                AppNavItem.CastCrewListView.withArgs(
-                                    type,
-                                    itemId
-                                )
-                            )
-                        }
-                )
-            }
+            )
         }
-    }
+    )
 }
 
 @Composable

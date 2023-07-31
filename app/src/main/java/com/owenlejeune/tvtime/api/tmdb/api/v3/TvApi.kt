@@ -1,7 +1,6 @@
 package com.owenlejeune.tvtime.api.tmdb.api.v3
 
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.*
-import com.owenlejeune.tvtime.utils.types.TimeWindow
 import retrofit2.Response
 import retrofit2.http.*
 
@@ -89,4 +88,26 @@ interface TvApi {
 
     @GET("tv/{id}/season/{season}/watch/providers")
     suspend fun getSeasonWatchProviders(@Path("id") seriesId: Int, @Path("season") seasonNumber: Int): Response<WatchProviderResponse>
+
+    @GET("tv/{id}/season/{season}/episode/{episode}")
+    suspend fun getEpisodeDetails(@Path("id") seriesId: Int, @Path("season") seasonNumber: Int, @Path("episode") episodeNumber: Int): Response<Episode>
+
+    @GET("tv/{id}/season/{season}/episode/{episode}/account_states")
+    suspend fun getEpisodeAccountStates(@Path("id") seriesId: Int, @Path("season") seasonNumber: Int, @Path("episode") episodeNumber: Int): Response<EpisodeAccountState>
+
+    @GET("tv/{id}/season/{season}/episode/{episode}/credits")
+    suspend fun getEpisodeCredits(@Path("id") seriesId: Int, @Path("season") seasonNumber: Int, @Path("episode") episodeNumber: Int): Response<EpisodeCastAndCrew>
+
+    @GET("tv/{id}/season/{season}/episode/{episode}/images")
+    suspend fun getEpisodeImages(@Path("id") seriesId: Int, @Path("season") seasonNumber: Int, @Path("episode") episodeNumber: Int): Response<EpisodeImageCollection>
+
+    @FormUrlEncoded
+    @POST("tv/{id}/season/{season}/episode/{episode}/rating")
+    suspend fun postTvEpisodeRatingAsUser(
+        @Path("id") id: Int,
+        @Path("season") seasonNumber: Int,
+        @Path("episode") episodeNumber: Int,
+        @Query("session_id") sessionId: String,
+        @Field("value") rating: Float
+    ): Response<StatusResponse>
 }

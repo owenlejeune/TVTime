@@ -1,8 +1,6 @@
 package com.owenlejeune.tvtime.di.modules
 
 import com.google.gson.GsonBuilder
-import com.google.gson.JsonDeserializer
-import com.google.gson.TypeAdapter
 import com.owenlejeune.tvtime.BuildConfig
 import com.owenlejeune.tvtime.api.*
 import com.owenlejeune.tvtime.api.nextmcu.NextMCUClient
@@ -28,7 +26,7 @@ import com.owenlejeune.tvtime.api.tmdb.api.v3.model.CreditMedia
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.DetailCast
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.DetailCrew
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.KnownFor
-import com.owenlejeune.tvtime.api.tmdb.api.v3.model.SeasonAccountStatesResult
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.EpisodeAccountState
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.SortableSearchResult
 import com.owenlejeune.tvtime.api.tmdb.api.v4.AccountV4Service
 import com.owenlejeune.tvtime.api.tmdb.api.v4.AuthenticationV4Service
@@ -37,7 +35,6 @@ import com.owenlejeune.tvtime.api.tmdb.api.v4.deserializer.ListItemDeserializer
 import com.owenlejeune.tvtime.api.tmdb.api.v4.model.ListItem
 import com.owenlejeune.tvtime.preferences.AppPreferences
 import com.owenlejeune.tvtime.ui.viewmodel.ConfigurationViewModel
-import com.owenlejeune.tvtime.ui.viewmodel.SettingsViewModel
 import com.owenlejeune.tvtime.utils.NetworkConnectivityService
 import com.owenlejeune.tvtime.utils.NetworkConnectivityServiceImpl
 import com.owenlejeune.tvtime.utils.ResourceUtils
@@ -89,7 +86,7 @@ val networkModule = module {
             DetailCrew::class.java to DetailCrewDeserializer(),
             CreditMedia::class.java to CreditMediaDeserializer(),
             Date::class.java to DateTypeAdapter(),
-            SeasonAccountStatesResult::class.java to SeasonAccountStatesResultDeserializer()
+            EpisodeAccountState::class.java to SeasonAccountStatesResultDeserializer()
         )
     }
 
