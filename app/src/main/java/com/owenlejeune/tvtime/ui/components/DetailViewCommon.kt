@@ -437,7 +437,9 @@ fun EpisodeItem(
         modifier = Modifier
             .fillMaxWidth()
             .clickable {
-                val codedId = seriesId.combineWith(episode.seasonNumber).combineWith(episode.episodeNumber)
+                val codedId = seriesId
+                    .combineWith(episode.seasonNumber)
+                    .combineWith(episode.episodeNumber)
                 appNavController.navigate(
                     AppNavItem.DetailView.withArgs(MediaViewType.EPISODE, codedId)
                 )
@@ -604,6 +606,23 @@ fun WatchProvidersCard(
             label = ""
         ) { value ->
             WatchProviderContainer(watchProviders = value!!, link = providers.link)
+        }
+
+        Row(
+            modifier = Modifier.padding(start = 12.dp, bottom = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                text = stringResource(id = R.string.powered_by),
+                fontSize = 12.sp
+            )
+
+            Image(
+                painter = painterResource(id = R.drawable.justwatch_logo_large),
+                contentDescription = null,
+                modifier = Modifier.height(14.dp)
+            )
         }
     }
 }

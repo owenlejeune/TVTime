@@ -218,6 +218,7 @@ fun SearchScreen(
             preferences.recentSearches.forEach {
                 Row(
                     modifier = Modifier
+                        .fillMaxWidth()
                         .padding(vertical = 12.dp, horizontal = 16.dp)
                         .clickable {
                             searchValue.value = it
