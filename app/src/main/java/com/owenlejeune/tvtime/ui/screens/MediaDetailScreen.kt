@@ -76,6 +76,7 @@ import com.owenlejeune.tvtime.api.tmdb.api.v3.model.DetailedMovie
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.DetailedTv
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.Genre
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.ImageCollection
+import com.owenlejeune.tvtime.api.tmdb.api.v3.model.Review
 import com.owenlejeune.tvtime.extensions.DateFormat
 import com.owenlejeune.tvtime.extensions.WindowSizeClass
 import com.owenlejeune.tvtime.extensions.combineWith
@@ -99,6 +100,7 @@ import com.owenlejeune.tvtime.ui.components.ChipStyle
 import com.owenlejeune.tvtime.ui.components.CircleBackgroundColorImage
 import com.owenlejeune.tvtime.ui.components.ContentCard
 import com.owenlejeune.tvtime.ui.components.DetailHeader
+import com.owenlejeune.tvtime.ui.components.ExpandableContentCard
 import com.owenlejeune.tvtime.ui.components.ExternalIdsArea
 import com.owenlejeune.tvtime.ui.components.HtmlText
 import com.owenlejeune.tvtime.ui.components.ImageGalleryOverlay
@@ -385,7 +387,7 @@ fun MediaViewContent(
                     }
 
                     if (windowSize != WindowSizeClass.Expanded) {
-                        ReviewsCard(itemId = itemId, type = type, mainViewModel = mainViewModel)
+                        ReviewsCard(itemId = itemId, type = type, mainViewModel = mainViewModel, windowSize = windowSize)
                     }
                 }
             }
@@ -400,7 +402,7 @@ fun MediaViewContent(
                     .weight(1f)
                     .verticalScroll(state = rememberScrollState())
             ) {
-                ReviewsCard(itemId = itemId, type = type, mainViewModel = mainViewModel)
+                ReviewsCard(itemId = itemId, type = type, mainViewModel = mainViewModel, windowSize = windowSize)
 
                 Spacer(modifier = Modifier.height(16.dp))
             }
@@ -837,7 +839,12 @@ private fun SeasonCard(
                 modifier = Modifier
                     .padding(all = 12.dp)
                     .clickable {
-                        appNavController.navigate(AppNavItem.DetailView.withArgs(MediaViewType.SEASON, itemId.combineWith(it.seasonNumber)))
+                        appNavController.navigate(
+                            AppNavItem.DetailView.withArgs(
+                                MediaViewType.SEASON,
+                                itemId.combineWith(it.seasonNumber)
+                            )
+                        )
                     }
             ) {
                 PosterItem(
@@ -1073,129 +1080,173 @@ private fun NextMcuProjectCard(
 private fun ReviewsCard(
     itemId: Int,
     type: MediaViewType,
+    windowSize: WindowSizeClass,
     mainViewModel: MainViewModel,
     modifier: Modifier = Modifier
 ) {
     val reviewsMap = remember { mainViewModel.produceReviewsFor(type) }
     val reviews = reviewsMap[itemId]
 
-    ListContentCard(
-        modifier = modifier,
-        header = {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(9.dp)
-            ) {
-                Text(
-                    text = stringResource(R.string.reviews_title),
-                    style = MaterialTheme.typography.titleLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-
-                if (SessionManager.currentSession.value?.isAuthorized == true) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(50.dp)
-                            .padding(bottom = 4.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        var reviewTextState by remember { mutableStateOf("") }
-
-                        RoundedTextField(
-                            modifier = Modifier
-                                .height(40.dp)
-                                .align(Alignment.CenterVertically)
-                                .weight(1f),
-                            value = reviewTextState,
-                            onValueChange = { reviewTextState = it },
-                            placeHolder = stringResource(R.string.add_a_review_hint),
-                            backgroundColor = MaterialTheme.colorScheme.secondary,
-                            placeHolderTextColor = MaterialTheme.colorScheme.background,
-                            textColor = MaterialTheme.colorScheme.onSecondary
-                        )
-
-                        val context = LocalContext.current
-                        CircleBackgroundColorImage(
-                            modifier = Modifier
-                                .align(Alignment.CenterVertically)
-                                .clickable(
-                                    onClick = {
-                                        Toast
-                                            .makeText(context, "TODO", Toast.LENGTH_SHORT)
-                                            .show()
-                                    }
-                                ),
-                            size = 40.dp,
-                            backgroundColor = MaterialTheme.colorScheme.tertiary,
-                            image = Icons.Filled.Send,
-                            colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.surfaceVariant),
-                            contentDescription = ""
-                        )
-                    }
-                }
-            }
-        },
-    ) {
-        if (reviews?.isNotEmpty() == true) {
-            reviews.reversed().forEachIndexed { index, review ->
-                Row(
+    if (windowSize == WindowSizeClass.Expanded) {
+        ListContentCard(
+            modifier = modifier,
+            header = {
+                ReviewsCardHeader()
+            },
+        ) {
+            ReviewsCardContent(reviews = reviews)
+        }
+    } else {
+        ExpandableContentCard(
+            modifier = modifier,
+            title = {
+                Box(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(end = 16.dp),
-                    verticalAlignment = Alignment.Top,
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                        .padding(horizontal = 16.dp)
+                        .padding(top = 16.dp)
                 ) {
-                    AvatarImage(
-                        size = 50.dp,
-                        author = review.authorDetails
-                    )
-
-                    Column(
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        Text(
-                            text = review.author,
-                            color = MaterialTheme.colorScheme.secondary,
-                            fontWeight = FontWeight.Bold
-                        )
-
-                        HtmlText(
-                            text = review.content,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-
-                        val createdAt = TmdbUtils.formatDate(review.createdAt)
-                        val updatedAt = TmdbUtils.formatDate(review.updatedAt)
-                        var timestamp = stringResource(id = R.string.created_at_label, createdAt)
-                        if (updatedAt != createdAt) {
-                            timestamp += "\n${stringResource(id = R.string.updated_at_label, updatedAt)}"
-                        }
-                        Text(
-                            text = timestamp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            fontSize = 12.sp
-                        )
-                    }
-                }
-                if (index != reviews.size - 1) {
-                    Divider(
-                        color = MaterialTheme.colorScheme.secondary,
-                        modifier = Modifier.padding(vertical = 12.dp)
-                    )
+                    ReviewsCardHeader()
                 }
             }
-        } else {
-            Text(
+        ) { isExpanded ->
+            val reviewsSubList = reviews?.let { 
+                if (isExpanded) {
+                    reviews
+                } else {
+                    reviews.subList(0, 3)
+                }
+            } ?: emptyList()
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .wrapContentHeight()
-                    .padding(horizontal = 24.dp, vertical = 22.dp),
-                text = stringResource(R.string.no_reviews_label),
-                color = MaterialTheme.colorScheme.tertiary,
-                textAlign = TextAlign.Center,
-                style = MaterialTheme.typography.headlineMedium
-            )
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                ReviewsCardContent(reviews = reviewsSubList)
+            }
         }
+    }
+}
+
+@Composable
+private fun ReviewsCardHeader() {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(9.dp)
+    ) {
+        Text(
+            text = stringResource(R.string.reviews_title),
+            style = MaterialTheme.typography.titleLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+
+        if (SessionManager.currentSession.value?.isAuthorized == true) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp)
+                    .padding(bottom = 4.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                var reviewTextState by remember { mutableStateOf("") }
+
+                RoundedTextField(
+                    modifier = Modifier
+                        .height(40.dp)
+                        .align(Alignment.CenterVertically)
+                        .weight(1f),
+                    value = reviewTextState,
+                    onValueChange = { reviewTextState = it },
+                    placeHolder = stringResource(R.string.add_a_review_hint),
+                    backgroundColor = MaterialTheme.colorScheme.secondary,
+                    placeHolderTextColor = MaterialTheme.colorScheme.background,
+                    textColor = MaterialTheme.colorScheme.onSecondary
+                )
+
+                val context = LocalContext.current
+                CircleBackgroundColorImage(
+                    modifier = Modifier
+                        .align(Alignment.CenterVertically)
+                        .clickable(
+                            onClick = {
+                                Toast
+                                    .makeText(context, "TODO", Toast.LENGTH_SHORT)
+                                    .show()
+                            }
+                        ),
+                    size = 40.dp,
+                    backgroundColor = MaterialTheme.colorScheme.tertiary,
+                    image = Icons.Filled.Send,
+                    colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.surfaceVariant),
+                    contentDescription = ""
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ReviewsCardContent(
+    reviews: List<Review>?
+) {
+    if (reviews?.isNotEmpty() == true) {
+        reviews.reversed().forEachIndexed { index, review ->
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(end = 16.dp),
+                verticalAlignment = Alignment.Top,
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                AvatarImage(
+                    size = 50.dp,
+                    author = review.authorDetails
+                )
+
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Text(
+                        text = review.author,
+                        color = MaterialTheme.colorScheme.secondary,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    HtmlText(
+                        text = review.content,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+
+                    val createdAt = TmdbUtils.formatDate(review.createdAt)
+                    val updatedAt = TmdbUtils.formatDate(review.updatedAt)
+                    var timestamp = stringResource(id = R.string.created_at_label, createdAt)
+                    if (updatedAt != createdAt) {
+                        timestamp += "\n${stringResource(id = R.string.updated_at_label, updatedAt)}"
+                    }
+                    Text(
+                        text = timestamp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontSize = 12.sp
+                    )
+                }
+            }
+            if (index != reviews.size - 1) {
+                Divider(
+                    color = MaterialTheme.colorScheme.secondary,
+                    modifier = Modifier.padding(vertical = 12.dp)
+                )
+            }
+        }
+    } else {
+        Text(
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentHeight()
+                .padding(horizontal = 24.dp, vertical = 22.dp),
+            text = stringResource(R.string.no_reviews_label),
+            color = MaterialTheme.colorScheme.tertiary,
+            textAlign = TextAlign.Center,
+            style = MaterialTheme.typography.headlineMedium
+        )
     }
 }
 
