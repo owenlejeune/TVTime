@@ -39,6 +39,7 @@ class AppPreferences(context: Context) {
         private val STORED_TEST_ROUTE = "stored_test_route"
         private val FLOATING_BOTTOM_BAR = "floating_bottom_bar"
         private val RECENT_SEARCHES = "recent_searches"
+        private val SHOW_GOT_QUOTES = "show_got_quotes"
     }
 
     private val preferences: SharedPreferences = context.getSharedPreferences(PREF_FILE, Context.MODE_PRIVATE)
@@ -138,16 +139,21 @@ class AppPreferences(context: Context) {
         get() = preferences.getBoolean(SHOW_BACKDROP_GALLERY, showBackdropGalleryDefault)
         set(value) { preferences.put(SHOW_BACKDROP_GALLERY, value) }
 
-    /******** Special Features Preferences ********/
-    val showNextMcuProductionDefault: Boolean = false
-    var showNextMcuProduction: Boolean
-        get() = preferences.getBoolean(SHOW_NEXT_MCU, showNextMcuProductionDefault)
-        set(value) { preferences.put(SHOW_NEXT_MCU, value) }
-
     val storedTestRouteDefault: String = ""
     var storedTestRoute: String
         get() = preferences.getString(STORED_TEST_ROUTE, storedTestRouteDefault) ?: storedTestRouteDefault
         set(value) { preferences.put(STORED_TEST_ROUTE, value) }
+
+    /******** Special Features Preferences ********/
+    val showNextMcuProductionDefault: Boolean = true
+    var showNextMcuProduction: Boolean
+        get() = preferences.getBoolean(SHOW_NEXT_MCU, showNextMcuProductionDefault)
+        set(value) { preferences.put(SHOW_NEXT_MCU, value) }
+
+    val showGotQuotesDefault: Boolean = true
+    var showGotQuotes: Boolean
+        get() = preferences.getBoolean(SHOW_GOT_QUOTES, showGotQuotesDefault)
+        set(value) { preferences.put(SHOW_GOT_QUOTES, value) }
 
     /******** General Storage ********/
     var recentSearches: MutableList<String>

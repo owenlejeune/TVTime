@@ -1,8 +1,7 @@
 package com.owenlejeune.tvtime.extensions
 
-import com.owenlejeune.tvtime.api.QueryParam
+import com.owenlejeune.tvtime.api.common.QueryParam
 import okhttp3.HttpUrl
-import okhttp3.Request
 
 fun HttpUrl.Builder.addQueryParams(vararg queryParams: QueryParam?): HttpUrl.Builder {
     return apply {

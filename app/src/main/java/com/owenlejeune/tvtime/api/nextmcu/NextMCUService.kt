@@ -1,7 +1,7 @@
 package com.owenlejeune.tvtime.api.nextmcu
 
 import androidx.compose.runtime.mutableStateOf
-import com.owenlejeune.tvtime.api.LoadingState
+import com.owenlejeune.tvtime.api.common.LoadingState
 import com.owenlejeune.tvtime.api.nextmcu.model.NextMCU
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject

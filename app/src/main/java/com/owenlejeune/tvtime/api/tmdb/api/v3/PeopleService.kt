@@ -2,8 +2,8 @@ package com.owenlejeune.tvtime.api.tmdb.api.v3
 
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
-import com.owenlejeune.tvtime.api.LoadingState
-import com.owenlejeune.tvtime.api.loadRemoteData
+import com.owenlejeune.tvtime.api.common.LoadingState
+import com.owenlejeune.tvtime.api.common.loadRemoteData
 import com.owenlejeune.tvtime.api.tmdb.TmdbClient
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.DetailCast
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.DetailCrew

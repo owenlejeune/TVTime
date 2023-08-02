@@ -3,11 +3,10 @@ package com.owenlejeune.tvtime.ui.viewmodel
 import android.annotation.SuppressLint
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.lifecycle.ViewModel
 import androidx.paging.PagingData
-import com.owenlejeune.tvtime.api.LoadingState
+import com.owenlejeune.tvtime.api.common.LoadingState
 import com.owenlejeune.tvtime.api.tmdb.api.createPagingFlow
 import com.owenlejeune.tvtime.api.tmdb.api.v3.MoviesService
 import com.owenlejeune.tvtime.api.tmdb.api.v3.PeopleService
@@ -16,7 +15,6 @@ import com.owenlejeune.tvtime.api.tmdb.api.v3.model.AccountStates
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.CastMember
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.CrewMember
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.DetailedItem
-import com.owenlejeune.tvtime.api.tmdb.api.v3.model.Episode
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.ExternalIds
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.ImageCollection
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.Keyword
@@ -31,7 +29,6 @@ import com.owenlejeune.tvtime.utils.types.MediaViewType
 import com.owenlejeune.tvtime.utils.types.TimeWindow
 import com.owenlejeune.tvtime.utils.types.ViewableMediaTypeException
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.cancellable
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 

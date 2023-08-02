@@ -1,8 +1,6 @@
-package com.owenlejeune.tvtime.api
+package com.owenlejeune.tvtime.api.common
 
 import com.google.gson.Gson
-import com.google.gson.GsonBuilder
-import com.google.gson.JsonDeserializer
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import retrofit2.Converter

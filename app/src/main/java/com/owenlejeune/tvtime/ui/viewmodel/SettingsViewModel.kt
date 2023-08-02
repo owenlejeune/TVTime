@@ -20,11 +20,12 @@ class SettingsViewModel: ViewModel() {
         private val _chromaMultiplier = MutableStateFlow(preferences.chromaMultiplier)
         private val _selectedColor = MutableStateFlow(preferences.selectedColor)
         private val _showBottomTabLabels = MutableStateFlow(preferences.showBottomTabLabels)
+        private val _showFloatingBottomBar = MutableStateFlow(preferences.floatingBottomBar)
         private val _showPosterTitles = MutableStateFlow(preferences.showPosterTitles)
         private val _firstLaunchTesting = MutableStateFlow(preferences.firstLaunchTesting)
         private val _showBackdropGallery = MutableStateFlow(preferences.showBackdropGallery)
         private val _showNextMcuProduction = MutableStateFlow(preferences.showNextMcuProduction)
-        private val _showFloatingBottomBar = MutableStateFlow(preferences.floatingBottomBar)
+        private val _showGotQuotes = MutableStateFlow(preferences.showGotQuotes)
     }
 
     val showSearchBar = _showSearchBar.asStateFlow()
@@ -34,12 +35,13 @@ class SettingsViewModel: ViewModel() {
     val useSystemColors = _useSystemColors.asStateFlow()
     val chromaMultiplier = _chromaMultiplier.asStateFlow()
     val selectedColor = _selectedColor.asStateFlow()
+    val showFloatingBottomBar = _showFloatingBottomBar.asStateFlow()
     val showBottomTabLabels = _showBottomTabLabels.asStateFlow()
     val showPosterTitles = _showPosterTitles.asStateFlow()
     val firstLaunchTesting = _firstLaunchTesting.asStateFlow()
     val showBackdropGallery = _showBackdropGallery.asStateFlow()
     val showNextMcuProduction = _showNextMcuProduction.asStateFlow()
-    val showFloatingBottomBar = _showFloatingBottomBar.asStateFlow()
+    val showGotQuotes = _showGotQuotes.asStateFlow()
 
     fun toggleShowSearchBar() {
         _showSearchBar.value = _showSearchBar.value.not()
@@ -154,6 +156,16 @@ class SettingsViewModel: ViewModel() {
     fun setShowFloatingBottomBar(value: Boolean) {
         _showFloatingBottomBar.value = value
         preferences.floatingBottomBar = value
+    }
+
+    fun toggleShowGotQuotes() {
+        _showGotQuotes.value = _showGotQuotes.value.not()
+        preferences.showGotQuotes = _showGotQuotes.value
+    }
+
+    fun setShowGotQuotes(value: Boolean) {
+        _showGotQuotes.value = value
+        preferences.showGotQuotes = value
     }
 
 }

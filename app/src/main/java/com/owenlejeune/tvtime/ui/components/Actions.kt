@@ -29,14 +29,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.owenlejeune.tvtime.api.LoadingState
-import com.owenlejeune.tvtime.extensions.isIn
-import com.owenlejeune.tvtime.extensions.shimmerBackground
 import com.owenlejeune.tvtime.ui.theme.FavoriteSelected
 import com.owenlejeune.tvtime.ui.theme.RatingSelected
 import com.owenlejeune.tvtime.ui.theme.WatchlistSelected
 import com.owenlejeune.tvtime.ui.viewmodel.AccountViewModel
-import com.owenlejeune.tvtime.ui.viewmodel.ApplicationViewModel
 import com.owenlejeune.tvtime.ui.viewmodel.MainViewModel
 import com.owenlejeune.tvtime.utils.types.MediaViewType
 import kotlinx.coroutines.launch

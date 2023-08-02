@@ -1,20 +1,20 @@
-package com.owenlejeune.tvtime.api.nextmcu
+package com.owenlejeune.tvtime.api.gotquotes
 
 import com.owenlejeune.tvtime.api.common.Client
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import org.koin.core.parameter.parametersOf
 
-class NextMCUClient: KoinComponent {
+class GotQuotesClient: KoinComponent {
 
     companion object {
-        private const val BASE_URL = "https://dev.whenisthenextmcufilm.com/"
+        private const val BASE_URL = "https://api.gameofthronesquotes.xyz/v1/"
     }
 
     private val client: Client by inject { parametersOf(BASE_URL) }
 
-    fun createNextMcuService(): NextMCUApi {
-        return client.create(NextMCUApi::class.java)
+    fun createQuotesApi(): GotQuotesApi {
+        return client.create(GotQuotesApi::class.java)
     }
 
 }

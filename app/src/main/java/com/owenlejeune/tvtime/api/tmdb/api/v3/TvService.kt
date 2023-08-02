@@ -4,8 +4,8 @@ import android.util.Log
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.paging.PagingData
-import com.owenlejeune.tvtime.api.LoadingState
-import com.owenlejeune.tvtime.api.loadRemoteData
+import com.owenlejeune.tvtime.api.common.LoadingState
+import com.owenlejeune.tvtime.api.common.loadRemoteData
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.AccountStates
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.CastMember
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.CrewMember

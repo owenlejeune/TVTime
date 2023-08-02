@@ -1,4 +1,4 @@
-package com.owenlejeune.tvtime.api
+package com.owenlejeune.tvtime.api.common
 
 import com.google.gson.TypeAdapter
 import com.google.gson.stream.JsonReader

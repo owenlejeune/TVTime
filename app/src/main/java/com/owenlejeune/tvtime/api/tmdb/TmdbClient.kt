@@ -2,10 +2,9 @@ package com.owenlejeune.tvtime.api.tmdb
 
 import android.annotation.SuppressLint
 import androidx.compose.ui.text.intl.Locale
-import androidx.lifecycle.viewmodel.viewModelFactory
 import com.owenlejeune.tvtime.BuildConfig
-import com.owenlejeune.tvtime.api.Client
-import com.owenlejeune.tvtime.api.QueryParam
+import com.owenlejeune.tvtime.api.common.Client
+import com.owenlejeune.tvtime.api.common.QueryParam
 import com.owenlejeune.tvtime.api.tmdb.api.v3.AccountApi
 import com.owenlejeune.tvtime.api.tmdb.api.v3.AuthenticationApi
 import com.owenlejeune.tvtime.api.tmdb.api.v3.ConfigurationApi
@@ -18,7 +17,6 @@ import com.owenlejeune.tvtime.api.tmdb.api.v4.AccountV4Api
 import com.owenlejeune.tvtime.api.tmdb.api.v4.AuthenticationV4Api
 import com.owenlejeune.tvtime.api.tmdb.api.v4.ListV4Api
 import com.owenlejeune.tvtime.extensions.addQueryParams
-import com.owenlejeune.tvtime.preferences.AppPreferences
 import com.owenlejeune.tvtime.ui.viewmodel.ConfigurationViewModel
 import com.owenlejeune.tvtime.utils.SessionManager
 import okhttp3.Interceptor

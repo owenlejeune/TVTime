@@ -458,6 +458,15 @@ fun SpecialFeaturePreferences() {
                 settingsViewModel.toggleShowNextMcuProduction()
             }
         )
+
+        SwitchPreference(
+            titleText = "Show Game of Thrones Quotes",
+            subtitleText = "Show random quotes from Game of Thrones on the show",
+            checkState = settingsViewModel.showGotQuotes.collectAsState(),
+            onCheckedChange = {
+                settingsViewModel.toggleShowGotQuotes()
+            }
+        )
     }
 }
 

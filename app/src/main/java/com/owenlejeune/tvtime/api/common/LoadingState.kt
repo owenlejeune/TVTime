@@ -1,4 +1,4 @@
-package com.owenlejeune.tvtime.api
+package com.owenlejeune.tvtime.api.common
 
 enum class LoadingState {
 

@@ -37,7 +37,6 @@ import androidx.paging.compose.LazyPagingItems
 import coil.compose.AsyncImage
 import coil.request.CachePolicy
 import coil.request.ImageRequest
-import com.owenlejeune.tvtime.api.LoadingState
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.HomePagePerson
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.TmdbItem
 import com.owenlejeune.tvtime.extensions.header

@@ -63,6 +63,28 @@ fun ContentCard(
 }
 
 @Composable
+fun ContentCard(
+    modifier: Modifier = Modifier,
+    heading: (@Composable () -> Unit)? = null,
+    backgroundColor: Color = MaterialTheme.colorScheme.surfaceVariant,
+    content: @Composable () -> Unit = {}
+) {
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .wrapContentHeight(),
+        shape = RoundedCornerShape(10.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+        colors = CardDefaults.cardColors(containerColor = backgroundColor)
+    ) {
+        Column(modifier = Modifier.fillMaxSize()) {
+            heading?.invoke()
+            content()
+        }
+    }
+}
+
+@Composable
 fun ExpandableContentCard(
     modifier: Modifier = Modifier,
     backgroundColor: Color = MaterialTheme.colorScheme.surfaceVariant,

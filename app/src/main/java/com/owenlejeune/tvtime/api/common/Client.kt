@@ -1,4 +1,4 @@
-package com.owenlejeune.tvtime.api
+package com.owenlejeune.tvtime.api.common
 
 import okhttp3.Interceptor
 import org.koin.core.component.KoinComponent

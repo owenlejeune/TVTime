@@ -52,7 +52,7 @@ import com.google.accompanist.pager.HorizontalPager
 import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.rememberPagerState
 import com.owenlejeune.tvtime.R
-import com.owenlejeune.tvtime.api.LoadingState
+import com.owenlejeune.tvtime.api.common.LoadingState
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.Episode
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.EpisodeCastMember
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.EpisodeCrewMember

@@ -70,7 +70,7 @@ import com.google.accompanist.pager.ExperimentalPagerApi
 import com.google.accompanist.pager.PagerState
 import com.google.accompanist.pager.rememberPagerState
 import com.owenlejeune.tvtime.R
-import com.owenlejeune.tvtime.api.LoadingState
+import com.owenlejeune.tvtime.api.common.LoadingState
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.DetailedItem
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.DetailedMovie
 import com.owenlejeune.tvtime.api.tmdb.api.v3.model.DetailedTv
@@ -92,7 +92,6 @@ import com.owenlejeune.tvtime.ui.components.AdditionalDetailItem
 import com.owenlejeune.tvtime.ui.components.AvatarImage
 import com.owenlejeune.tvtime.ui.components.BackButton
 import com.owenlejeune.tvtime.ui.components.CastCard
-import com.owenlejeune.tvtime.ui.components.CastCrewCard
 import com.owenlejeune.tvtime.ui.components.ChipDefaults
 import com.owenlejeune.tvtime.ui.components.ChipGroup
 import com.owenlejeune.tvtime.ui.components.ChipInfo
@@ -118,6 +117,7 @@ import com.owenlejeune.tvtime.ui.theme.Typography
 import com.owenlejeune.tvtime.ui.viewmodel.ApplicationViewModel
 import com.owenlejeune.tvtime.ui.viewmodel.MainViewModel
 import com.owenlejeune.tvtime.ui.viewmodel.SpecialFeaturesViewModel
+import com.owenlejeune.tvtime.ui.views.extras.SpecialFeaturesViews
 import com.owenlejeune.tvtime.utils.SessionManager
 import com.owenlejeune.tvtime.utils.TmdbUtils
 import com.owenlejeune.tvtime.utils.types.MediaViewType
@@ -385,6 +385,8 @@ fun MediaViewContent(
                     ) {
                         NextMcuProjectCard(itemId = itemId, appNavController = appNavController)
                     }
+
+                    SpecialFeaturesViews.viewsMap[itemId]?.invoke()
 
                     if (windowSize != WindowSizeClass.Expanded) {
                         ReviewsCard(itemId = itemId, type = type, mainViewModel = mainViewModel, windowSize = windowSize)

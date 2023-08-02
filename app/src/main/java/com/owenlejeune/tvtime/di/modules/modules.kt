@@ -2,7 +2,14 @@ package com.owenlejeune.tvtime.di.modules
 
 import com.google.gson.GsonBuilder
 import com.owenlejeune.tvtime.BuildConfig
-import com.owenlejeune.tvtime.api.*
+import com.owenlejeune.tvtime.api.common.Client
+import com.owenlejeune.tvtime.api.common.ConverterFactoryFactory
+import com.owenlejeune.tvtime.api.common.DateTypeAdapter
+import com.owenlejeune.tvtime.api.common.DebugHttpClient
+import com.owenlejeune.tvtime.api.common.GsonConverter
+import com.owenlejeune.tvtime.api.common.ProdHttpClient
+import com.owenlejeune.tvtime.api.gotquotes.GotQuotesClient
+import com.owenlejeune.tvtime.api.gotquotes.GotQuotesService
 import com.owenlejeune.tvtime.api.nextmcu.NextMCUClient
 import com.owenlejeune.tvtime.api.nextmcu.NextMCUService
 import com.owenlejeune.tvtime.api.tmdb.TmdbClient
@@ -75,6 +82,10 @@ val networkModule = module {
     single { NextMCUClient() }
     single { get<NextMCUClient>().createNextMcuService() }
     single { NextMCUService() }
+
+    single { GotQuotesClient() }
+    single { get<GotQuotesClient>().createQuotesApi() }
+    single { GotQuotesService() }
 
     single<Map<Class<*>, Any>> {
         mapOf(
