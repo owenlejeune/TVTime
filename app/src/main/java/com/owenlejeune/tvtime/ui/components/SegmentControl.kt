@@ -52,7 +52,7 @@ fun <T> PillSegmentedControl(
     val textViewSize = remember { mutableStateOf(IntSize.Zero) }
     val maxTextViewSize = remember { mutableStateOf(IntSize.Zero) }
 
-    val offsetAnimation by animateDpAsState(targetValue = (selectedIndex.value * textViewSize.value.width).toDp())
+    val offsetAnimation by animateDpAsState(targetValue = ((selectedIndex.value * textViewSize.value.width) + (2 * selectedIndex.value)).toDp(), label = "")
 
     BoxWithConstraints(
         modifier = modifier.then(
