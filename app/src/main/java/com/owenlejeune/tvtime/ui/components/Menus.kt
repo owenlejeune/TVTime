@@ -98,23 +98,6 @@ fun ProfileMenuOverlay(
                                 fontWeight = FontWeight.Bold
                             )
                         }
-
-                        MenuDivider()
-
-                        ProfileMenuItem(
-                            onClick = {
-                                Toast.makeText(context, "Under construction", Toast.LENGTH_SHORT).show()
-                            }
-                        ) {
-                            Icon(
-                                imageVector = Icons.Outlined.PersonAdd,
-                                contentDescription = null
-                            )
-                            Text(
-                                text = stringResource(id = R.string.account_add),
-                                fontSize = 16.sp
-                            )
-                        }
                     } ?: run {
                         ProfileMenuItem {
                             Text(
