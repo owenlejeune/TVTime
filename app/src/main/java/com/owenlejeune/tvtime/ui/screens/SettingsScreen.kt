@@ -60,6 +60,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.recyclerview.widget.ItemTouchHelper
@@ -85,7 +86,9 @@ import com.owenlejeune.tvtime.ui.viewmodel.ApplicationViewModel
 import com.owenlejeune.tvtime.ui.viewmodel.SettingsViewModel
 import com.owenlejeune.tvtime.ui.views.HomeTabRecyclerAdapter
 import com.owenlejeune.tvtime.ui.views.ItemMoveCallback
+import com.owenlejeune.tvtime.utils.BiometricUtils
 import com.owenlejeune.tvtime.utils.SessionManager
+import com.owenlejeune.tvtime.utils.canShowBiometricsPrompt
 import kotlinx.coroutines.launch
 import org.koin.java.KoinJavaComponent.get
 
@@ -237,7 +240,7 @@ fun DesignPreferences(
     settingsNavController: NavController,
 ) {
     val settingsViewModel = viewModel<SettingsViewModel>()
-    val activity = LocalContext.current as Activity
+    val activity = LocalContext.current as FragmentActivity
 
     Column(
         modifier = Modifier
@@ -314,6 +317,24 @@ fun DesignPreferences(
         )
         if (showWallpaperPicker.value) {
             WallpaperPicker(showPopup = showWallpaperPicker)
+        }
+
+        if (canShowBiometricsPrompt()) {
+            SwitchPreference(
+                titleText = "Biometrics",
+                subtitleText = "###",
+                checkState = settingsViewModel.useAccountBiometrics.collectAsState(),
+                onCheckedChange = {
+                    settingsViewModel.toggleUseAccountBiometrics()
+                    if (it) {
+                        BiometricUtils.showBiometricPrompt(
+                            activity,
+                            onFailed = { settingsViewModel.setUseAccountBiometrics(false) },
+                            onError = { settingsViewModel.setUseAccountBiometrics(false) }
+                        )
+                    }
+                }
+            )
         }
     }
 }

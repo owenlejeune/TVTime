@@ -93,6 +93,8 @@ dependencies {
     implementation "androidx.paging:paging-compose:$compose_paging"
     implementation "androidx.constraintlayout:constraintlayout-compose:$compose_constraint_layout"
     implementation "com.google.accompanist:accompanist-webview:$compose_accompanist"
+    implementation "androidx.biometric:biometric-ktx:1.2.0-alpha05"
+
 
     // material you
     def monet_compat = "0.4.1"

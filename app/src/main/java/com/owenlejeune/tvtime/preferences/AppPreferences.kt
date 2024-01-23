@@ -40,6 +40,7 @@ class AppPreferences(context: Context) {
         private val FLOATING_BOTTOM_BAR = "floating_bottom_bar"
         private val RECENT_SEARCHES = "recent_searches"
         private val SHOW_GOT_QUOTES = "show_got_quotes"
+        private val USE_ACCOUNT_BIOMETRICS = "use_account_biometrics"
     }
 
     private val preferences: SharedPreferences = context.getSharedPreferences(PREF_FILE, Context.MODE_PRIVATE)
@@ -80,6 +81,11 @@ class AppPreferences(context: Context) {
     var selectedColor: Int
         get() = preferences.getInt(SELECTED_COLOR, selectedColorDefault)
         set(value) { preferences.put(SELECTED_COLOR, value) }
+
+    val accountBiometricsDefault: Boolean = false
+    var accountBiometrics: Boolean
+        get() = preferences.getBoolean(USE_ACCOUNT_BIOMETRICS, accountBiometricsDefault)
+        set(value) { preferences.put(USE_ACCOUNT_BIOMETRICS, value) }
 
     /******* Session Tokens ********/
     var authorizedSessionValues: SessionManager.AuthorizedSessionValues?

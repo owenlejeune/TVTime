@@ -13,10 +13,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.paging.compose.LazyPagingItems
@@ -34,6 +36,7 @@ import com.owenlejeune.tvtime.api.tmdb.api.v4.model.RatedTv
 import com.owenlejeune.tvtime.extensions.getCalendarYear
 import com.owenlejeune.tvtime.extensions.lazyPagingItems
 import com.owenlejeune.tvtime.extensions.unlessEmpty
+import com.owenlejeune.tvtime.preferences.AppPreferences
 import com.owenlejeune.tvtime.ui.components.AccountIcon
 import com.owenlejeune.tvtime.ui.components.BackButton
 import com.owenlejeune.tvtime.ui.components.MediaResultCard
@@ -44,16 +47,38 @@ import com.owenlejeune.tvtime.ui.navigation.AppNavItem
 import com.owenlejeune.tvtime.ui.screens.tabs.AccountTabNavItem
 import com.owenlejeune.tvtime.ui.viewmodel.AccountViewModel
 import com.owenlejeune.tvtime.ui.viewmodel.ApplicationViewModel
+import com.owenlejeune.tvtime.utils.BiometricUtils
 import com.owenlejeune.tvtime.utils.SessionManager
 import com.owenlejeune.tvtime.utils.TmdbUtils
 import com.owenlejeune.tvtime.utils.types.MediaViewType
 import kotlinx.coroutines.launch
+import org.koin.java.KoinJavaComponent.get
 import java.util.Date
 import kotlin.reflect.KClass
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AccountScreen(
+    appNavController: NavHostController,
+    doSignInPartTwo: Boolean = false,
+    appPreferences: AppPreferences = get(AppPreferences::class.java)
+) {
+    var proceed by remember { mutableStateOf(!appPreferences.accountBiometrics) }
+    if (!proceed) {
+        val activity = LocalContext.current as FragmentActivity
+        BiometricUtils.showBiometricPrompt(
+            activity,
+            onFailed = { appNavController.popBackStack() },
+            onError = { appNavController.popBackStack() },
+            onSuccess = { proceed = true }
+        )
+    } else {
+        AccountView(appNavController = appNavController, doSignInPartTwo = doSignInPartTwo)
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AccountView(
     appNavController: NavHostController,
     doSignInPartTwo: Boolean = false
 ) {

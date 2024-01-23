@@ -26,6 +26,7 @@ class SettingsViewModel: ViewModel() {
         private val _showBackdropGallery = MutableStateFlow(preferences.showBackdropGallery)
         private val _showNextMcuProduction = MutableStateFlow(preferences.showNextMcuProduction)
         private val _showGotQuotes = MutableStateFlow(preferences.showGotQuotes)
+        private val _useAccountBiometrics = MutableStateFlow(preferences.accountBiometrics)
     }
 
     val showSearchBar = _showSearchBar.asStateFlow()
@@ -42,6 +43,7 @@ class SettingsViewModel: ViewModel() {
     val showBackdropGallery = _showBackdropGallery.asStateFlow()
     val showNextMcuProduction = _showNextMcuProduction.asStateFlow()
     val showGotQuotes = _showGotQuotes.asStateFlow()
+    val useAccountBiometrics = _useAccountBiometrics.asStateFlow()
 
     fun toggleShowSearchBar() {
         _showSearchBar.value = _showSearchBar.value.not()
@@ -166,6 +168,16 @@ class SettingsViewModel: ViewModel() {
     fun setShowGotQuotes(value: Boolean) {
         _showGotQuotes.value = value
         preferences.showGotQuotes = value
+    }
+
+    fun toggleUseAccountBiometrics() {
+        _useAccountBiometrics.value = _useAccountBiometrics.value.not()
+        preferences.accountBiometrics = _useAccountBiometrics.value
+    }
+
+    fun setUseAccountBiometrics(value: Boolean) {
+        _useAccountBiometrics.value = value
+        preferences.accountBiometrics = value
     }
 
 }

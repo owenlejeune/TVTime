@@ -1,7 +1,6 @@
 package com.owenlejeune.tvtime.api.tmdb.api
 
 import android.content.Context
-import android.widget.Toast
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -12,7 +11,6 @@ import androidx.paging.PagingData
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import androidx.paging.cachedIn
-import com.owenlejeune.tvtime.R
 import com.owenlejeune.tvtime.ui.viewmodel.ViewModelConstants
 import kotlinx.coroutines.flow.Flow
 import org.koin.core.component.KoinComponent

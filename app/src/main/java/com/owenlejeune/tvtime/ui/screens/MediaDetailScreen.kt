@@ -1115,7 +1115,7 @@ private fun ReviewsCard(
                 if (isExpanded) {
                     reviews
                 } else {
-                    reviews.subList(0, 3)
+                    reviews.subList(0, minOf(reviews.size, 3))
                 }
             } ?: emptyList()
             Column(
